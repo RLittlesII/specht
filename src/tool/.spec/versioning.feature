@@ -793,7 +793,7 @@ Feature: Schema versioning
 
     Examples:
       | shipped | pin   | policy       |
-      | 0.3.5   | 0.3.9 | latest-patch |
+      | 0.3.10  | 0.3.9 | latest-patch |
       | 1.2.0   | 1.0.9 | latest-minor |
 
   @B-146

@@ -23,6 +23,11 @@ and "Stay on pin, record OQ-73"; recorded by `spec-author`
 2. **`upgrade`'s version line (B-017).** Under a `pinPolicy` that has the check
    use a version above the pin, the line names the version in use, the version
    the files are brought to (C-18).
+
+   Clarified 2026-11-02, the same day: the card's question named both of
+   `upgrade`'s version lines, "rewritten to" and "current at", so the call
+   covers the line a current root prints (B-006, B-142) too (C-18).
+
 3. **Every other command (OQ-73).** Under a floating `pinPolicy`,
    `specht rules`, `specht --explain`, `specht rules set`, `specht manifest`,
    `specht init` beside an existing manifest and `specht schema pin`'s
@@ -69,7 +74,8 @@ while the check reports the version in use's.
 ## Affects
 
 - B-017 amended; B-153 added, with its scenario and a `Missing` § 9 row.
-- C-18 amended.
+- C-18 amended; amended again 2026-11-02 for the line a current root prints
+  (call 2 clarified).
 - The scenarios of B-053, B-056 and B-146 to B-150 move their example versions
   to `0.3.0` and above; their claims are unchanged.
 - OQ-70 resolved; OQ-73 raised and resolved; § 5 row 33 added.
