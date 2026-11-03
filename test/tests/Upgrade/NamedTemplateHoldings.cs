@@ -33,7 +33,7 @@ public sealed class NamedTemplateHoldings : TheoryData<string, byte[]?>
             ["version"] = "2026.10",
             ["hashes"] = new JsonObject(new[] { "feature", "task", "epic" }.Select(kind => KeyValuePair.Create(
                 kind,
-                (JsonNode?)("sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(
+                (JsonNode?) ("sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(
                     shipped.Single(file => file.Relative == $".specht/schema/frontmatter/{kind}.schema.json").Bytes)))))),
             ["templates"] = new JsonObject
             {

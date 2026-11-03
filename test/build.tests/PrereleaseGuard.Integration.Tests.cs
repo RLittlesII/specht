@@ -14,12 +14,12 @@ public sealed class PrereleaseGuardIntegrationTests
         var tag = await repository.Initialize();
 
         // When
-        var result = await repository.RunTarget("Release", tag);
+        var (ExitCode, Output) = await repository.RunTarget("Release", tag);
 
         // Then
-        result.ExitCode.Should().NotBe(0);
-        result.Output.Should().Contain($"The version '{tag[1..]}' is below 1.0.0 and carries no prerelease label");
-        result.Output.Should().NotContain("║ Pack");
+        ExitCode.Should().NotBe(0);
+        Output.Should().Contain($"The version '{tag[1..]}' is below 1.0.0 and carries no prerelease label");
+        Output.Should().NotContain("║ Pack");
     }
 
     [Theory]
@@ -33,10 +33,10 @@ public sealed class PrereleaseGuardIntegrationTests
         var tag = await repository.Initialize();
 
         // When
-        var result = await repository.RunTarget("VerifyTag", tag);
+        var (ExitCode, Output) = await repository.RunTarget("VerifyTag", tag);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Output);
+        ExitCode.Should().Be(0, Output);
     }
 
     private const string LockedEntries = "{\"0.1.0\":\"digest\",\"0.2.0\":\"digest\"}";

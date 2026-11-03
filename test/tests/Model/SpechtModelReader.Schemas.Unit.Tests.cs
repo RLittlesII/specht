@@ -174,7 +174,7 @@ public sealed class SpechtModelReaderSchemasUnitTests
         byte[]? epicFile)
     {
         // Given
-        var pinned = (SchemaVersion)new SchemaVersionFixture() with { EpicSchema = """{ "const": "read from the pinned version" }""" };
+        var pinned = (SchemaVersion) new SchemaVersionFixture() with { EpicSchema = """{ "const": "read from the pinned version" }""" };
         var files = new Dictionary<string, MockFileData>
         {
             [Path.Combine(Root, SpechtTree.ManifestPath)] = Recording(new JsonObject(), ("feature", Local), ("task", Local)),
@@ -275,7 +275,7 @@ public sealed class SpechtModelReaderSchemasUnitTests
             ["hashes"] = new JsonObject(
                 files.Select(static file => KeyValuePair.Create(
                     file.Kind,
-                    (JsonNode?)("sha256:" + Convert.ToHexStringLower(SHA256.HashData(file.Fetched)))))),
+                    (JsonNode?) ("sha256:" + Convert.ToHexStringLower(SHA256.HashData(file.Fetched)))))),
         };
 
         return new MockFileData(manifest.ToJsonString());

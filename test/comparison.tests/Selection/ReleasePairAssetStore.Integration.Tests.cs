@@ -23,7 +23,10 @@ public sealed class ReleasePairAssetStoreIntegrationTests
         {
             methods.Add(request.Method);
             if (request.Method == HttpMethod.Post)
+            {
                 return new HttpResponseMessage(HttpStatusCode.UnprocessableEntity);
+            }
+
             var path = request.RequestUri!.PathAndQuery;
             if (path == "/repos/example/tool/releases/20/assets?per_page=100&page=1")
             {
@@ -33,6 +36,7 @@ public sealed class ReleasePairAssetStoreIntegrationTests
                 listed = true;
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(result) };
             }
+
             path.Should().Be("/repos/example/tool/releases/assets/50");
             request.Headers.Accept.Select(static x => x.MediaType).Should().Contain("application/octet-stream");
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ComparisonJson.Write(winner)) };
@@ -42,7 +46,11 @@ public sealed class ReleasePairAssetStoreIntegrationTests
         // When
         var pair = await new ReleasePairAssetStore(client).GetOrCreateAsync(current, _ =>
         {
-            if (!conflict) throw new InvalidOperationException("Existing durable pair must skip selection");
+            if (!conflict)
+            {
+                throw new InvalidOperationException("Existing durable pair must skip selection");
+            }
+
             return Task.FromResult(proposed);
         }, TestContext.Current.CancellationToken);
 
@@ -69,6 +77,7 @@ public sealed class ReleasePairAssetStoreIntegrationTests
                 uploaded = true;
                 return new HttpResponseMessage(HttpStatusCode.Created);
             }
+
             if (request.RequestUri!.AbsolutePath.EndsWith("/assets", StringComparison.Ordinal))
             {
                 return new HttpResponseMessage(HttpStatusCode.OK)

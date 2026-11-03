@@ -27,6 +27,12 @@ internal sealed class GherkinClaimPolicyFixture : AutoFixtureBase<GherkinClaimPo
     private GherkinClaimPolicy Build() => new(_claim, _featureScope, _epicScope, _plannedTags, _withdrawnTags, _supersededTags,
         _fileSets);
 
+    private readonly IReadOnlyList<string> _withdrawnTags = ["@withdrawn"];
+
+    private readonly IReadOnlyList<string> _supersededTags = ["@superseded"];
+
+    private readonly IReadOnlyList<GherkinClaimFileSet> _fileSets = [new("specifications/*.feature", "arithmetic", null, null)];
+
     private GherkinTagForm _claim = new("@{claim}", "claim", false, "^REQ-FIX-[0-9]{3}$");
 
     private GherkinTagForm? _featureScope = new("@spec.feature:{feature}", "feature", false, null);
@@ -34,10 +40,4 @@ internal sealed class GherkinClaimPolicyFixture : AutoFixtureBase<GherkinClaimPo
     private GherkinTagForm? _epicScope = new("@spec.epic:{epic}", "epic", false, null);
 
     private IReadOnlyList<string> _plannedTags = ["@ignore"];
-
-    private IReadOnlyList<string> _withdrawnTags = ["@withdrawn"];
-
-    private IReadOnlyList<string> _supersededTags = ["@superseded"];
-
-    private IReadOnlyList<GherkinClaimFileSet> _fileSets = [new("specifications/*.feature", "arithmetic", null, null)];
 }

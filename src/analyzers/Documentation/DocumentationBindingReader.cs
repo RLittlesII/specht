@@ -58,7 +58,7 @@ public sealed class DocumentationBindingReader
                 var names = new HashSet<int>();
                 foreach (var node in documentation.DescendantNodes().Where(static node => node is XmlEmptyElementSyntax or XmlElementSyntax))
                 {
-                    var name = node is XmlEmptyElementSyntax empty ? empty.Name : ((XmlElementSyntax)node).StartTag.Name;
+                    var name = node is XmlEmptyElementSyntax empty ? empty.Name : ((XmlElementSyntax) node).StartTag.Name;
                     var role = name.ToString();
                     if (role is not ("spec" or "verifies" or "implements" or "follows"))
                     {
@@ -67,7 +67,7 @@ public sealed class DocumentationBindingReader
 
                     names.Add(name.SpanStart);
 
-                    var attributes = node is XmlEmptyElementSyntax singleton ? singleton.Attributes : ((XmlElementSyntax)node).StartTag.Attributes;
+                    var attributes = node is XmlEmptyElementSyntax singleton ? singleton.Attributes : ((XmlElementSyntax) node).StartTag.Attributes;
                     var values = new Dictionary<string, string>(StringComparer.Ordinal);
                     var allowed = role == "spec" ? new[] { "epic", "feature" }
                         : role == "follows" ? new[] { "epic", "feature", "adr" } : new[] { "epic", "feature", "claim" };
@@ -75,7 +75,7 @@ public sealed class DocumentationBindingReader
                         && !node.DescendantTokens().Any(static token => token.IsMissing)
                         && (node is not XmlElementSyntax paired || paired.StartTag.Name.ToString() == paired.EndTag.Name.ToString())
                         && !node.Ancestors().OfType<XmlElementSyntax>().Any()
-                        && (node is XmlEmptyElementSyntax || ((XmlElementSyntax)node).Content.Count == 0)
+                        && (node is XmlEmptyElementSyntax || ((XmlElementSyntax) node).Content.Count == 0)
                         && attributes.All(attribute => attribute is XmlTextAttributeSyntax text
                             && allowed.Contains(text.Name.ToString(), StringComparer.Ordinal))
                         && (role == "spec" ? symbol is INamedTypeSymbol

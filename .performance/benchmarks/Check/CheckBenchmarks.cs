@@ -27,10 +27,10 @@ public class CheckBenchmarks
     {
         _root = Directory.CreateTempSubdirectory("specht-check-").FullName;
         _resolver = new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var generator = (SpechtTreeGenerator)_resolver.Resolve(typeof(SpechtTreeGenerator))!;
-        var store = (SpechtTreeStore)_resolver.Resolve(typeof(SpechtTreeStore))!;
+        var generator = (SpechtTreeGenerator) _resolver.Resolve(typeof(SpechtTreeGenerator))!;
+        var store = (SpechtTreeStore) _resolver.Resolve(typeof(SpechtTreeStore))!;
         store.Save(generator.Generate(Specifications), _root);
-        _runner = (SpechtRunner?)_resolver.Resolve(typeof(SpechtRunner))
+        _runner = (SpechtRunner?) _resolver.Resolve(typeof(SpechtRunner))
                   ?? throw new InvalidOperationException("AddSpechtEngine() registers no SpechtRunner.");
 
         var report = _runner.Run(_root);

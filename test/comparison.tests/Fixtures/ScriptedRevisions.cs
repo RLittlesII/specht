@@ -11,7 +11,10 @@ internal sealed class ScriptedRevisions(string root)
     {
         get
         {
-            lock (_gate) return [.. _requests];
+            lock (_gate)
+            {
+                return [.. _requests];
+            }
         }
     }
 
@@ -72,7 +75,9 @@ internal sealed class ScriptedRevisions(string root)
             var step = StepOf(request);
             await During.Invoke(side, step, cancellationToken);
             if (ExitCodes.TryGetValue((side, step), out var exitCode))
+            {
                 return new ProcessOutcome(exitCode, [$"fatal: secret-detail under {root}"]);
+            }
 
             var source = step == "clone" ? request.Arguments[^1] : request.WorkingDirectory;
             var workspace = Path.Combine(root, Path.GetDirectoryName(source)!);
@@ -107,7 +112,10 @@ internal sealed class ScriptedRevisions(string root)
                     var results = Path.Combine(workspace, "results", "results");
                     Directory.CreateDirectory(results);
                     foreach (var (name, json) in Exports[side])
+                    {
                         await File.WriteAllTextAsync(Path.Combine(results, name), json, cancellationToken);
+                    }
+
                     await File.WriteAllTextAsync(Path.Combine(results, "Specht.Benchmarks.Engine.CheckBenchmarks-report-github.md"), "| Method |",
                         cancellationToken);
                     Directory.CreateDirectory(Path.Combine(workspace, "home"));
@@ -121,7 +129,10 @@ internal sealed class ScriptedRevisions(string root)
         }
         finally
         {
-            lock (_gate) _active--;
+            lock (_gate)
+            {
+                _active--;
+            }
         }
     }
 

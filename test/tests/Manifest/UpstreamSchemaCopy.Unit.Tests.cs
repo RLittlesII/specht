@@ -89,7 +89,7 @@ public sealed class UpstreamSchemaCopyUnitTests
         var files = new Dictionary<string, byte[]?>(StringComparer.Ordinal)
         {
             ["feature"] = null,
-            ["task"] = [.. Fetched, (byte)' '],
+            ["task"] = [.. Fetched, (byte) ' '],
             ["epic"] = Fetched,
         };
 

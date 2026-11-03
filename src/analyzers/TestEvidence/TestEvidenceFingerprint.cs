@@ -40,11 +40,11 @@ public sealed class TestEvidenceFingerprint
     private static void Append(Stream stream, string value)
     {
         var bytes = Encoding.UTF8.GetBytes(value);
-        var length = (uint)bytes.Length;
-        stream.WriteByte((byte)(length >> 24));
-        stream.WriteByte((byte)(length >> 16));
-        stream.WriteByte((byte)(length >> 8));
-        stream.WriteByte((byte)length);
+        var length = (uint) bytes.Length;
+        stream.WriteByte((byte) (length >> 24));
+        stream.WriteByte((byte) (length >> 16));
+        stream.WriteByte((byte) (length >> 8));
+        stream.WriteByte((byte) length);
         stream.Write(bytes, 0, bytes.Length);
     }
 

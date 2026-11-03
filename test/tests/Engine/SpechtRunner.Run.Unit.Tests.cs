@@ -30,9 +30,9 @@ public sealed class SpechtRunnerRunUnitTests
                 [Path.Combine("repo", SpechtTree.ManifestPath)] = new("""{ "notAKeyTheEngineKnows": true }"""),
             });
         var rule = new RecordingRule();
-        using var resolver = (TypeResolver)new TypeRegistrar(
+        using var resolver = (TypeResolver) new TypeRegistrar(
             new ServiceCollection().AddSingleton<IFileSystem>(fileSystem).AddSpechtEngine().AddSingleton<ISpechtRule>(rule)).Build();
-        var runner = (SpechtRunner)resolver.Resolve(typeof(SpechtRunner))!;
+        var runner = (SpechtRunner) resolver.Resolve(typeof(SpechtRunner))!;
 
         // When
         var running = () => runner.Run(fileSystem.Path.GetFullPath("repo"));

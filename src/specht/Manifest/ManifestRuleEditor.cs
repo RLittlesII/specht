@@ -34,6 +34,7 @@ public sealed class ManifestRuleEditor(ManifestPinEditor manifest)
                         var value = $"{{{JsonSerializer.Serialize(id)}:{JsonSerializer.Serialize(level)}}}";
                         return Replace(bytes, utf8, text, encoding, preamble, reader.TokenStartIndex, reader.BytesConsumed, value);
                     }
+
                     inRules = true;
                 }
             }
@@ -47,6 +48,7 @@ public sealed class ManifestRuleEditor(ManifestPinEditor manifest)
                     {
                         return bytes;
                     }
+
                     var start = reader.TokenStartIndex;
                     reader.Skip();
                     return Replace(bytes, utf8, text, encoding, preamble, start, reader.BytesConsumed, JsonSerializer.Serialize(level));
@@ -63,6 +65,7 @@ public sealed class ManifestRuleEditor(ManifestPinEditor manifest)
                 return Replace(bytes, utf8, text, encoding, preamble, reader.TokenStartIndex, reader.TokenStartIndex, addition);
             }
         }
+
         throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: expected a manifest object.");
     }
 

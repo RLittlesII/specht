@@ -29,7 +29,7 @@ public sealed class TestEvidenceMtpCollector : IDataConsumer
             return Task.CompletedTask;
         }
 
-        _sessionId ??= ((DataWithSessionUid)update).SessionUid.Value;
+        _sessionId ??= ((DataWithSessionUid) update).SessionUid.Value;
         var node = update.TestNode;
         var method = node.Properties.SingleOrDefault<TestMethodIdentifierProperty>();
         if (method is null || string.IsNullOrWhiteSpace(node.Uid.Value))

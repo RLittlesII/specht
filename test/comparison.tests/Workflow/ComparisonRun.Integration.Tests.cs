@@ -21,7 +21,11 @@ public sealed class ComparisonRunIntegrationTests : IDisposable
         _processes.Heads["current"] = new string('a', 40);
         _handler = new ScriptedHttpHandler(request =>
         {
-            lock (_requests) _requests.Add(request.RequestUri!.PathAndQuery);
+            lock (_requests)
+            {
+                _requests.Add(request.RequestUri!.PathAndQuery);
+            }
+
             return _artifacts.Respond(request) ?? new HttpResponseMessage(HttpStatusCode.NotFound);
         });
         _client = new HttpClient(_handler);
@@ -71,8 +75,8 @@ public sealed class ComparisonRunIntegrationTests : IDisposable
     {
         // Given
         _artifacts.Add(1, "comparison-request-1234-1", false, ActionsArtifacts.Zip(("receipt.json",
-            ComparisonJson.Write((ComparisonReceipt)new ComparisonReceiptFixture().WithAttempt(1))),
-            ("pair.json", ComparisonJson.Write((ReleasePair)ReportFixtures.Pair()))));
+            ComparisonJson.Write((ComparisonReceipt) new ComparisonReceiptFixture().WithAttempt(1))),
+            ("pair.json", ComparisonJson.Write((ReleasePair) ReportFixtures.Pair()))));
         var comparing = Comparison().RunAsync(new RunContextFixture(), "result", TestContext.Current.CancellationToken);
         await _artifacts.Listed.Task;
 
@@ -229,7 +233,13 @@ public sealed class ComparisonRunIntegrationTests : IDisposable
         _processes.During = (side, step, _) =>
         {
             if (side == "current" && step == "run")
-                foreach (var export in Directory.GetFiles(previousResults, "*-report-full.json")) File.Delete(export);
+            {
+                foreach (var export in Directory.GetFiles(previousResults, "*-report-full.json"))
+                {
+                    File.Delete(export);
+                }
+            }
+
             return Task.CompletedTask;
         };
         Request(new ComparisonReceiptFixture(), ReportFixtures.Pair());
@@ -321,7 +331,10 @@ public sealed class ComparisonRunIntegrationTests : IDisposable
     {
         _client.Dispose();
         _handler.Dispose();
-        if (Directory.Exists(_root)) Directory.Delete(_root, true);
+        if (Directory.Exists(_root))
+        {
+            Directory.Delete(_root, true);
+        }
     }
 
     private ComparisonRun Comparison(Action<ReportingStage>? enter = null) =>

@@ -19,16 +19,30 @@ public sealed class ProcessRunner(string repositoryRoot, TimeProvider time)
             RedirectStandardOutput = true,
             UseShellExecute = false,
         };
-        foreach (var argument in request.Arguments) start.ArgumentList.Add(argument);
+        foreach (var argument in request.Arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
+
         start.Environment.Clear();
-        foreach (var (name, value) in request.Environment) start.Environment[name] = value;
+        foreach (var (name, value) in request.Environment)
+        {
+            start.Environment[name] = value;
+        }
 
         var output = ImmutableArray.CreateBuilder<string>();
         using var process = new Process { StartInfo = start };
         process.OutputDataReceived += (_, line) =>
         {
-            if (line.Data is null) return;
-            lock (output) output.Add(line.Data);
+            if (line.Data is null)
+            {
+                return;
+            }
+
+            lock (output)
+            {
+                output.Add(line.Data);
+            }
         };
         process.Start();
         process.BeginOutputReadLine();
@@ -51,7 +65,10 @@ public sealed class ProcessRunner(string repositoryRoot, TimeProvider time)
             throw;
         }
 
-        lock (output) return new ProcessOutcome(process.ExitCode, output.ToImmutable());
+        lock (output)
+        {
+            return new ProcessOutcome(process.ExitCode, output.ToImmutable());
+        }
     }
 
     private static readonly TimeSpan KillGrace = TimeSpan.FromSeconds(30);

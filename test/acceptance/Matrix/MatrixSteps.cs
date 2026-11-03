@@ -21,7 +21,7 @@ public sealed class MatrixSteps
     public void GivenRepository()
     {
         _tree = new SpechtTree();
-        _manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
+        Manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
         Manifest["schemaVersion"] = "0.2.0";
     }
 
@@ -129,7 +129,7 @@ public sealed class MatrixSteps
     [Given("the manifest excludes {string}")]
     public void GivenExclusion(string exclusion)
     {
-        var exclusions = Manifest["exclusions"] as JsonArray ?? (JsonArray)(Manifest["exclusions"] = new JsonArray());
+        var exclusions = Manifest["exclusions"] as JsonArray ?? (JsonArray) (Manifest["exclusions"] = new JsonArray());
         if (!exclusions.Any(existing => existing!.GetValue<string>() == exclusion))
         {
             exclusions.Add(exclusion);
@@ -377,8 +377,8 @@ public sealed class MatrixSteps
     [Then("the report is byte-for-byte the one the tool gave that tree before this Feature")]
     public void ThenOriginalReport()
     {
-        using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var original = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
+        using var services = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        var original = ((IEnumerable<ISpechtRule>) services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
             rule.Id is not ("SPEC034" or "SPEC035"));
         var baseline = new SpechtEvaluator(original, new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
         SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
@@ -389,9 +389,9 @@ public sealed class MatrixSteps
     public void DisposeTree() => _tree?.Dispose();
 
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No tree was prepared.");
-    private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
-    private JsonObject Rules => Manifest["rules"] as JsonObject ?? (JsonObject)(Manifest["rules"] = new JsonObject());
-    private JsonObject Claim => Manifest["claim"] as JsonObject ?? (JsonObject)(Manifest["claim"] = new JsonObject());
+    private JsonObject Manifest { get => field ?? throw new InvalidOperationException("No manifest was read."); set; }
+    private JsonObject Rules => Manifest["rules"] as JsonObject ?? (JsonObject) (Manifest["rules"] = new JsonObject());
+    private JsonObject Claim => Manifest["claim"] as JsonObject ?? (JsonObject) (Manifest["claim"] = new JsonObject());
 
     private SpechtViolation UnresolvedRow()
     {
@@ -406,7 +406,6 @@ public sealed class MatrixSteps
         .Where(violation => violation.RuleId == id);
 
     private SpechtTree? _tree;
-    private JsonObject? _manifest;
     private SpechtReport? _report;
     private string _claim = "Active";
     private string _claimId = "B-004";

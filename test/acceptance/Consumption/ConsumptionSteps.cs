@@ -172,9 +172,9 @@ public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
     public async Task ThenTheToolIsAvailableAtThePinnedVersion()
     {
         _result.ExitCode.Should().Be(0, _result.Output);
-        var result = await Run(Repository, "tool", "run", "specht");
-        result.ExitCode.Should().Be(0, result.Output);
-        result.Output.Trim().Should().Be(_manifest!["tools"]!["specht.tool"]!["version"]!.GetValue<string>());
+        var (ExitCode, Output) = await Run(Repository, "tool", "run", "specht");
+        ExitCode.Should().Be(0, Output);
+        Output.Trim().Should().Be(_manifest!["tools"]!["specht.tool"]!["version"]!.GetValue<string>());
     }
 
     [Then("this repository's committed tool manifest names the tool at a published version")]
@@ -254,16 +254,16 @@ public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
                 .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(System.Reflection.Assembly.GetExecutingAssembly())!
                 .InformationalVersion);
             """);
-        var packed = await Run(_root, "pack", "package/package.csproj", "--output", "feeds/nuget.org",
+        var (ExitCode, Output) = await Run(_root, "pack", "package/package.csproj", "--output", "feeds/nuget.org",
             "-p:PackageId=specht.tool", "-p:Version=" + _feedVersion, "-p:ToolCommandName=specht");
-        packed.ExitCode.Should().Be(0, packed.Output);
+        ExitCode.Should().Be(0, Output);
     }
 
     private async Task WriteClone(XDocument configuration)
     {
         foreach (var source in configuration.Root!.Element("packageSources")!.Elements("add"))
         {
-            var feed = (string?)source.Attribute("key") == "specht" ? "feeds/checker" : "feeds/public";
+            var feed = (string?) source.Attribute("key") == "specht" ? "feeds/checker" : "feeds/public";
             Directory.CreateDirectory(Path.Combine(Repository, feed));
             source.SetAttributeValue("value", feed);
         }

@@ -23,7 +23,11 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
 {
     public async Task<ReportingOutcome?> RunAsync(RunContext context, string directory, CancellationToken cancellationToken)
     {
-        if (!ReleaseTrigger.IsReleasePublication(context)) return null;
+        if (!ReleaseTrigger.IsReleasePublication(context))
+        {
+            return null;
+        }
+
         var outcome = await CompareAsync(context, directory, cancellationToken);
         enter?.Invoke(ReportingStage.ResultTransport);
         try
@@ -59,26 +63,44 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
             return ReportingOutcome.Failed(ReportingStage.Receipt, null);
         }
 
-        if (!found) return ReportingOutcome.Failed(ReportingStage.ReceiptWait, null);
+        if (!found)
+        {
+            return ReportingOutcome.Failed(ReportingStage.ReceiptWait, null);
+        }
+
         enter?.Invoke(ReportingStage.Receipt);
         ReleasePair pair;
         try
         {
             pair = ComparisonJson.ReadPair(await fileSystem.File.ReadAllTextAsync(Full($"{request}/pair.json"), cancellationToken));
             var receipt = ComparisonJson.ReadReceipt(await fileSystem.File.ReadAllTextAsync(Full($"{request}/receipt.json"), cancellationToken));
-            if (ReleaseTrigger.Validate(receipt, context, pair) is { } rejection) return ReportingOutcome.Failed(ReportingStage.Receipt, rejection);
+            if (ReleaseTrigger.Validate(receipt, context, pair) is { } rejection)
+            {
+                return ReportingOutcome.Failed(ReportingStage.Receipt, rejection);
+            }
         }
         catch (Exception exception) when (exception is InvalidDataException or IOException or UnauthorizedAccessException)
         {
             return ReportingOutcome.Failed(ReportingStage.Receipt, null);
         }
 
-        if (pair.Previous is null) return NoBaseline(pair, context, session, directory);
+        if (pair.Previous is null)
+        {
+            return NoBaseline(pair, context, session, directory);
+        }
+
         enter?.Invoke(ReportingStage.Collection);
         if (pair.Previous.Commit is null)
+        {
             return ReportingOutcome.UnresolvedPredecessor(pair.Previous);
+        }
+
         var plan = CollectionPlan.For(pair, context.Sha, Version(), context.RunId, context.Attempt, session, runnerIdentity, Filter, Job);
-        if (plan is null) return ReportingOutcome.Failed(ReportingStage.Collection, null);
+        if (plan is null)
+        {
+            return ReportingOutcome.Failed(ReportingStage.Collection, null);
+        }
+
         var collection = await collector.CollectAsync(plan, cancellationToken);
         var sides = new[] { collection.Previous, collection.Current };
         if (sides.Any(static side => side.Status != CollectionStatus.Collected))
@@ -104,7 +126,11 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
             .Where(static read => !read.Inventory.Diagnostics.IsEmpty)
             .Select(static read => $"{Capitalised(read.Side)} revision: {string.Join(' ', read.Inventory.Diagnostics.Distinct(StringComparer.Ordinal))}")
             .ToArray();
-        if (unread.Length > 0) return ReportingOutcome.Failed(ReportingStage.Parsing, string.Join(' ', unread));
+        if (unread.Length > 0)
+        {
+            return ReportingOutcome.Failed(ReportingStage.Parsing, string.Join(' ', unread));
+        }
+
         enter?.Invoke(ReportingStage.Evaluation);
         var document = ComparisonEvaluation.Evaluate(collection.Session, CasePairing.Pair(previous, current, collection.Session));
         var reasons = sides.Where(static side => side.InventoryReason is not null)

@@ -12,13 +12,19 @@ public sealed class CasePairingUnitTests
     public void KnownOneSidedWorkload_WhenPairing_ShouldRetainItWithoutJudgment(bool added, string status)
     {
         // Given
-        var previous = ((MeasurementInventory)new MeasurementInventoryFixture());
-        var current = ((MeasurementInventory)new MeasurementInventoryFixture());
-        if (added) previous = previous with { Cases = [] };
-        else current = current with { Cases = [] };
+        var previous = ((MeasurementInventory) new MeasurementInventoryFixture());
+        var current = ((MeasurementInventory) new MeasurementInventoryFixture());
+        if (added)
+        {
+            previous = previous with { Cases = [] };
+        }
+        else
+        {
+            current = current with { Cases = [] };
+        }
 
         // When
-        var pairs = CasePairing.Pair(previous, current, ((SessionManifest)new SessionManifestFixture()));
+        var pairs = CasePairing.Pair(previous, current, ((SessionManifest) new SessionManifestFixture()));
 
         // Then
         pairs.Should().ContainSingle().Which.Status.ToString().Should().Be(status);
@@ -40,9 +46,9 @@ public sealed class CasePairingUnitTests
     public void ChangedOrUnknownEquivalence_WhenPairing_ShouldNameTheCondition(string condition)
     {
         // Given
-        var previous = ((MeasurementInventory)new MeasurementInventoryFixture());
-        var current = ((MeasurementInventory)new MeasurementInventoryFixture());
-        var session = ((SessionManifest)new SessionManifestFixture());
+        var previous = ((MeasurementInventory) new MeasurementInventoryFixture());
+        var current = ((MeasurementInventory) new MeasurementInventoryFixture());
+        var session = ((SessionManifest) new SessionManifestFixture());
         (current, session) = EvidenceData.Change(condition, current, session);
 
         // When
@@ -57,7 +63,7 @@ public sealed class CasePairingUnitTests
     public void MatchingCases_WhenPairing_ShouldKeepSeparateSizesAndBothMetrics()
     {
         // Given
-        var first = ((MeasurementInventory)new MeasurementInventoryFixture());
+        var first = ((MeasurementInventory) new MeasurementInventoryFixture());
         var larger = first.Cases[0] with
         {
             Case = first.Cases[0].Case with
@@ -68,7 +74,7 @@ public sealed class CasePairingUnitTests
         var inventory = first with { Cases = first.Cases.Add(larger) };
 
         // When
-        var pairs = CasePairing.Pair(inventory, inventory, ((SessionManifest)new SessionManifestFixture()));
+        var pairs = CasePairing.Pair(inventory, inventory, ((SessionManifest) new SessionManifestFixture()));
 
         // Then
         pairs.Should().HaveCount(2).And.OnlyContain(static x => x.Status == PairingStatus.Comparable);
@@ -83,7 +89,7 @@ public sealed class CasePairingUnitTests
         var previous = new MeasurementInventory(false, [], ["Discovery failed"]);
 
         // When
-        var pairs = CasePairing.Pair(previous, ((MeasurementInventory)new MeasurementInventoryFixture()), ((SessionManifest)new SessionManifestFixture()));
+        var pairs = CasePairing.Pair(previous, ((MeasurementInventory) new MeasurementInventoryFixture()), ((SessionManifest) new SessionManifestFixture()));
 
         // Then
         pairs.Should().ContainSingle().Which.Status.Should().Be(PairingStatus.InsufficientEvidence);
@@ -93,11 +99,11 @@ public sealed class CasePairingUnitTests
     public void InvalidTimingWithDifferentConditions_WhenPairing_ShouldValidateBeforeEquivalenceAndKeepAllocation()
     {
         // Given
-        var inventory = ((MeasurementInventory)new MeasurementInventoryFixture());
+        var inventory = ((MeasurementInventory) new MeasurementInventoryFixture());
         var evidence = inventory.Cases[0];
         var invalid = evidence.Observations[0] with { Value = null, InvalidReason = "Invalid time" };
         var current = inventory with { Cases = [evidence with { Observations = [invalid, evidence.Observations[1]] }] };
-        var session = ((SessionManifest)new SessionManifestFixture());
+        var session = ((SessionManifest) new SessionManifestFixture());
         session = session with { Current = session.Current with { Conditions = session.Current.Conditions with { Runtime = "other" } } };
 
         // When
@@ -112,13 +118,13 @@ public sealed class CasePairingUnitTests
     public void DuplicateRecords_WhenPairing_ShouldKeepAllSourceLocatorsAndInvalidateOnlyThatMetric()
     {
         // Given
-        var inventory = ((MeasurementInventory)new MeasurementInventoryFixture());
+        var inventory = ((MeasurementInventory) new MeasurementInventoryFixture());
         var first = inventory.Cases[0];
         var duplicate = first.Observations[0] with { Locator = "/Benchmarks/1/Statistics" };
         var current = inventory with { Cases = [first with { Observations = first.Observations.Add(duplicate) }] };
 
         // When
-        var pair = CasePairing.Pair(inventory, current, ((SessionManifest)new SessionManifestFixture())).Single();
+        var pair = CasePairing.Pair(inventory, current, ((SessionManifest) new SessionManifestFixture())).Single();
 
         // Then
         var timing = pair.Metrics.Single(static x => x.Metric == MetricKind.Time);

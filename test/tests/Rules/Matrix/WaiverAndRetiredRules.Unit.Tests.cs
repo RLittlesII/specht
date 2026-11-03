@@ -38,8 +38,8 @@ public sealed class WaiverAndRetiredRulesUnitTests
             """;
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(text, "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
-        using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var rule = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC034");
+        using var services = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        var rule = ((IEnumerable<ISpechtRule>) services.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC034");
 
         // When
         rule.Should().NotBeNull("schema 0.2.0 ships the waiver rule");
@@ -83,8 +83,8 @@ public sealed class WaiverAndRetiredRulesUnitTests
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(text, "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(tags));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
-        using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var rule = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC035");
+        using var services = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        var rule = ((IEnumerable<ISpechtRule>) services.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC035");
 
         // When
         rule.Should().NotBeNull("schema 0.2.0 ships the retired-claim rule");

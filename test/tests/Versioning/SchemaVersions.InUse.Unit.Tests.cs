@@ -17,7 +17,7 @@ public sealed class SchemaVersionsInUseUnitTests
         string[] held, string pin, PinPolicy policy, string expected)
     {
         // Given
-        var versions = new SchemaVersions(held.Select(static number => (SchemaVersion)new SchemaVersionFixture().WithNumber(Version(number))));
+        var versions = new SchemaVersions(held.Select(static number => (SchemaVersion) new SchemaVersionFixture().WithNumber(Version(number))));
 
         // When
         var inUse = versions.InUse(Version(pin), policy);

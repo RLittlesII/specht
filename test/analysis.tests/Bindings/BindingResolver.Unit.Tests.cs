@@ -174,7 +174,7 @@ public sealed class BindingResolverUnitTests
     public void TargetCardinality_WhenResolved_ShouldDistinguishMissingUniqueAndAmbiguous(int count, BindingResolution expected)
     {
         // Given
-        var claims = Enumerable.Range(0, count).Select(static index => (BindingClaim)new BindingClaimFixture().WithLine(index + 12)).ToArray();
+        var claims = Enumerable.Range(0, count).Select(static index => (BindingClaim) new BindingClaimFixture().WithLine(index + 12)).ToArray();
         BindingCatalog catalog = new BindingCatalogFixture().WithFeatures(new BindingFeature[] { new BindingFeatureFixture().WithClaims(claims) });
         var resolver = new BindingResolver(catalog, new BindingPolicyFixture());
 
@@ -211,6 +211,7 @@ public sealed class BindingResolverUnitTests
         {
             claim.Target!.Epic.Should().BeNull();
         }
+
         adr.Status.Should().Be(duplicate ? BindingResolution.Ambiguous : BindingResolution.Resolved);
         if (!duplicate)
         {

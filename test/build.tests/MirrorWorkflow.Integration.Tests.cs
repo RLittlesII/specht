@@ -9,7 +9,7 @@ public sealed class MirrorWorkflowIntegrationTests
     [Fact]
     public void B036_PushToMainOnAMirroredPath_WhenGenerated_ShouldTriggerTheMirror()
     {
-        var push = (YamlMappingNode)Triggers()["push"];
+        var push = (YamlMappingNode) Triggers()["push"];
 
         Scalars(push["branches"]).Should().Equal("main");
         Scalars(push["paths"]).Should().Equal(MirroredPaths);
@@ -21,8 +21,8 @@ public sealed class MirrorWorkflowIntegrationTests
     [Fact]
     public void B037_ManualStart_WhenGenerated_ShouldTriggerTheMirrorWithABackfillInputOffByDefault()
     {
-        var dispatch = (YamlMappingNode)Triggers()["workflow_dispatch"];
-        var backfill = (YamlMappingNode)((YamlMappingNode)dispatch["inputs"])["backfill"];
+        var dispatch = (YamlMappingNode) Triggers()["workflow_dispatch"];
+        var backfill = (YamlMappingNode) ((YamlMappingNode) dispatch["inputs"])["backfill"];
 
         backfill["type"].ToString().Should().Be("boolean");
         backfill["default"].ToString().Should().Be("false");
@@ -32,7 +32,7 @@ public sealed class MirrorWorkflowIntegrationTests
     [Fact]
     public void B038_PushToMainOffTheMirroredPaths_WhenGenerated_ShouldNotTriggerTheMirror()
     {
-        var push = (YamlMappingNode)Triggers()["push"];
+        var push = (YamlMappingNode) Triggers()["push"];
 
         push.Children.Keys.Select(static key => key.ToString()).Should().BeEquivalentTo("branches", "paths");
         Scalars(push["paths"]).Should().NotContain(static path => path == "**" || path.StartsWith('!'));
@@ -44,13 +44,13 @@ public sealed class MirrorWorkflowIntegrationTests
         var triggers = Triggers();
 
         triggers.Children.Keys.Select(static key => key.ToString()).Should().BeEquivalentTo("push", "workflow_dispatch");
-        Scalars(((YamlMappingNode)triggers["push"])["branches"]).Should().Equal("main");
+        Scalars(((YamlMappingNode) triggers["push"])["branches"]).Should().Equal("main");
     }
 
     [Fact]
     public void B040_RunStartedWhileAnotherRuns_WhenGenerated_ShouldQueueAndCancelNeither()
     {
-        var concurrency = (YamlMappingNode)Workflow()["concurrency"];
+        var concurrency = (YamlMappingNode) Workflow()["concurrency"];
 
         concurrency["group"].ToString().Should().Be("mirror");
         concurrency["cancel-in-progress"].ToString().Should().Be("false");
@@ -59,7 +59,7 @@ public sealed class MirrorWorkflowIntegrationTests
     [Fact]
     public void C5_Permissions_WhenGenerated_ShouldGrantTheWorkflowTokenOnlyIssuesAndPullRequestsWriteAndContentsRead()
     {
-        var permissions = (YamlMappingNode)Workflow()["permissions"];
+        var permissions = (YamlMappingNode) Workflow()["permissions"];
         var granted = permissions.Children
             .Where(static permission => permission.Value.ToString() != "none")
             .ToDictionary(static permission => permission.Key.ToString(), static permission => permission.Value.ToString());
@@ -88,7 +88,7 @@ public sealed class MirrorWorkflowIntegrationTests
         var checkout = steps.Single(static step =>
             step.Children.ContainsKey("uses") && step["uses"].ToString().StartsWith("actions/checkout@", StringComparison.Ordinal));
 
-        ((YamlMappingNode)checkout["with"])["fetch-depth"].ToString().Should().Be("0");
+        ((YamlMappingNode) checkout["with"])["fetch-depth"].ToString().Should().Be("0");
         Array.IndexOf(steps, checkout).Should().BeLessThan(Array.IndexOf(steps, MirrorStep()));
     }
 
@@ -101,27 +101,27 @@ public sealed class MirrorWorkflowIntegrationTests
         var stream = new YamlStream();
         using var input = File.OpenText(path);
         stream.Load(input);
-        return (YamlMappingNode)stream.Documents[0].RootNode;
+        return (YamlMappingNode) stream.Documents[0].RootNode;
     }
 
-    private static YamlMappingNode Triggers() => (YamlMappingNode)Workflow()["on"];
+    private static YamlMappingNode Triggers() => (YamlMappingNode) Workflow()["on"];
 
     private static YamlMappingNode[] Steps()
     {
-        var jobs = (YamlMappingNode)Workflow()["jobs"];
-        var job = (YamlMappingNode)jobs.Children.Values.Single();
-        return ((YamlSequenceNode)job["steps"]).Cast<YamlMappingNode>().ToArray();
+        var jobs = (YamlMappingNode) Workflow()["jobs"];
+        var job = (YamlMappingNode) jobs.Children.Values.Single();
+        return ((YamlSequenceNode) job["steps"]).Cast<YamlMappingNode>().ToArray();
     }
 
     private static YamlMappingNode MirrorStep() =>
         Steps().Single(static step =>
             step.Children.ContainsKey("id") && step["id"].ToString() == "mirror");
 
-    private static YamlMappingNode MirrorEnvironment() => (YamlMappingNode)MirrorStep()["env"];
+    private static YamlMappingNode MirrorEnvironment() => (YamlMappingNode) MirrorStep()["env"];
 
     private static string MirrorCommand() => MirrorStep()["run"].ToString().Trim();
 
-    private static string[] Scalars(YamlNode node) => ((YamlSequenceNode)node).Select(static item => item.ToString()).ToArray();
+    private static string[] Scalars(YamlNode node) => ((YamlSequenceNode) node).Select(static item => item.ToString()).ToArray();
 
     private static string FindRepositoryRoot()
     {

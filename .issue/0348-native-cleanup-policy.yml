@@ -1,0 +1,33 @@
+id: "0348"
+type: task
+title: Adopt native CSharp cleanup settings and fill Roslynator gaps
+status: done
+value: 3
+risk: 3
+parent: null
+children: []
+depends_on: ["0346"]
+spikes: []
+spec: null
+claims: []
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: "2026-11-03"
+summary: |
+  Follow up merged PR 699 with the supplied native EditorConfig preferences
+  that fit this repository and Roslynator rules for uncovered conventions.
+acceptance_criteria:
+  - "Native style, formatting and naming settings encode the compatible supplied preferences."
+  - "Roslynator fills gaps without duplicating native diagnostics or changing runtime behavior."
+  - "Explicit cleanup converges and the verify-only Format gate and full build pass."
+  - "No .feature change needed: formatting preserves 0055-F1 C-1, C-2, C-3; 0001-F1 C-9; 0109-F5 C-1, C-4, C-5."
+decisions:
+  - "2026-11-03: PR 699 is merged; deliver the requested extension as a follow-up from main."
+  - "2026-11-03: Preserve LF, existing modifier order, file-scoped namespaces, single-line expression-body preferences, primary constructors, explicit entry points and static lambdas. Omit namespace-folder matching because shared and linked sources use intentional namespaces."
+  - "2026-11-03: Keep the supplied suggestion severities advisory. Native rules own brace and whitespace cleanup; Roslynator adds blank-line spacing and one-line documentation summaries."
+  - "2026-11-03: Omit Serilog, XAML-specific, obsolete-diagnostic downgrades, unrelated CA exclusions, the unrecognized pattern-local option, and the mislabelled suppression option."
+  - "2026-11-03: Apply bulk fixes one project/framework at a time: the pinned SDK produces conflicting shared-file edits when applying fixes across multiple target contexts. The solution-wide verify-only gate remains unchanged."
+  - "2026-11-03: Full NUKE verification passed: 5844 unit, 1388 integration and 2296 acceptance tests; 206 expected skips. Package inspection found no Roslynator binaries or dependencies in either shipped package."
+  - "2026-11-03: Final reservation check found newly opened PR 701 claiming 0347; this unpublished item takes 0348 before its first commit."
+out_of_scope:
+  - "Runtime behavior, changing async context, public API renames, compiler-warning downgrades, and unrelated library-specific analyzers."

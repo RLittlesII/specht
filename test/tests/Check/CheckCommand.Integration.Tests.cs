@@ -393,7 +393,7 @@ public sealed class CheckCommandIntegrationTests
     {
         // Given
         SpechtReport report = new SpechtReportFixture().WithViolations(
-            [.. severities.Select(static severity => (SpechtViolation)new SpechtViolationFixture().WithSeverity(severity))]);
+            [.. severities.Select(static severity => (SpechtViolation) new SpechtViolationFixture().WithSeverity(severity))]);
 
         // When
         var result = Check(_ => report, args);

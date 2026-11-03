@@ -429,7 +429,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static Dictionary<string, IReadOnlyList<string>> Tables(JsonNode node) =>
         node.AsObject().ToDictionary(
             static entry => entry.Key,
-            static entry => (IReadOnlyList<string>)Strings(Present(entry.Value)),
+            static entry => (IReadOnlyList<string>) Strings(Present(entry.Value)),
             StringComparer.Ordinal);
 
     /// <implements epic="0001" feature="F5" claim="B-048" />

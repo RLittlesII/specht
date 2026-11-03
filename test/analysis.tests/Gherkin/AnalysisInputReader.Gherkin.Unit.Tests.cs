@@ -483,6 +483,7 @@ public sealed class AnalysisInputReaderGherkinUnitTests
         new AnalysisInputReader().Read(inputs, TestContext.Current.CancellationToken);
 
     private const string Record = "---\nid: arithmetic\nspec_status: draft\n---\n# Arithmetic\n";
+
     private const string TableRecord = "---\nid: arithmetic\nspec_status: draft\n---\n## 3. Acceptance Criteria\n"
         + "| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n| REQ-FIX-777 | A table claim | Agreement | Active |\n";
 }

@@ -68,37 +68,37 @@ public static class EngineServices
 
     /// <summary>Resolves direct schema operations with an optional synthetic catalog.</summary>
     public static SchemaVersionManager Commands(SchemaVersions? versions = null) =>
-        (SchemaVersionManager)Resolve(typeof(SchemaVersionManager), versions: versions);
+        (SchemaVersionManager) Resolve(typeof(SchemaVersionManager), versions: versions);
 
     /// <summary>Resolves a runner with the chosen catalog.</summary>
-    public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner)Resolve(typeof(SpechtRunner), versions: versions);
+    public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner) Resolve(typeof(SpechtRunner), versions: versions);
 
     /// <summary>Resolves the model reader over the supplied file system and catalog, or the real ones.</summary>
     public static SpechtModelReader Reader(IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
-        (SpechtModelReader)Resolve(typeof(SpechtModelReader), fileSystem, versions);
+        (SpechtModelReader) Resolve(typeof(SpechtModelReader), fileSystem, versions);
 
     /// <summary>Resolves the composed rule set.</summary>
-    public static IEnumerable<ISpechtRule> Rules() => (IEnumerable<ISpechtRule>)Resolve(typeof(IEnumerable<ISpechtRule>));
+    public static IEnumerable<ISpechtRule> Rules() => (IEnumerable<ISpechtRule>) Resolve(typeof(IEnumerable<ISpechtRule>));
 
     /// <summary>Resolves the shipped instance catalog.</summary>
-    public static SchemaVersions Versions() => (SchemaVersions)Resolve(typeof(SchemaVersions));
+    public static SchemaVersions Versions() => (SchemaVersions) Resolve(typeof(SchemaVersions));
 
     /// <summary>Resolves the pure manifest parser.</summary>
-    public static SpechtManifestParser Parser() => (SpechtManifestParser)Resolve(typeof(SpechtManifestParser));
+    public static SpechtManifestParser Parser() => (SpechtManifestParser) Resolve(typeof(SpechtManifestParser));
 
     /// <summary>Resolves the tree generator with the chosen catalog.</summary>
     public static SpechtTreeGenerator Generator(SchemaVersions? versions = null) =>
-        (SpechtTreeGenerator)Resolve(typeof(SpechtTreeGenerator), versions: versions);
+        (SpechtTreeGenerator) Resolve(typeof(SpechtTreeGenerator), versions: versions);
 
     /// <summary>Resolves the tree store over the supplied file system.</summary>
-    public static SpechtTreeStore Store(IFileSystem fileSystem) => (SpechtTreeStore)Resolve(typeof(SpechtTreeStore), fileSystem);
+    public static SpechtTreeStore Store(IFileSystem fileSystem) => (SpechtTreeStore) Resolve(typeof(SpechtTreeStore), fileSystem);
 
     /// <summary>Reads and parses a manifest without check-only pin resolution.</summary>
     public static SpechtStructure Manifest(IFileSystem fileSystem, string root) => Reader(fileSystem).ReadManifest(root);
 
     /// <summary>Reads the manifest document over the existing validation and file-system seams.</summary>
     public static JsonObject EffectiveManifest(string root, IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
-        ((EffectiveManifestReader)Resolve(typeof(EffectiveManifestReader), fileSystem, versions)).Read(root);
+        ((EffectiveManifestReader) Resolve(typeof(EffectiveManifestReader), fileSystem, versions)).Read(root);
 
     /// <summary>Reads the embedded or verified upstream schemas.</summary>
     public static SpechtSchemas ReadSchemas(IFileSystem fileSystem, string root, SchemaVersions versions) =>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+
 namespace Specht.Acceptance.Reconciliation;
 
 internal sealed class EvidenceTree : IDisposable
@@ -132,7 +133,7 @@ internal sealed class EvidenceTree : IDisposable
         foreach (var name in names)
         {
             Directory.CreateDirectory(Path.Combine(Root, "test", name));
-            File.WriteAllBytes(Path.Combine(Root, "test", name, name + ".dll"), [(byte)name[0], 9]);
+            File.WriteAllBytes(Path.Combine(Root, "test", name, name + ".dll"), [(byte) name[0], 9]);
             projects.Add(new JsonObject { ["path"] = ProjectPath(name), ["targetFrameworks"] = new JsonArray("net10.0") });
         }
 
@@ -155,7 +156,7 @@ internal sealed class EvidenceTree : IDisposable
             };
         }
 
-        artifact["discovery"]!["cases"] = new JsonArray(cases.Select(static item => (JsonNode?)new JsonObject
+        artifact["discovery"]!["cases"] = new JsonArray(cases.Select(static item => (JsonNode?) new JsonObject
         {
             ["caseId"] = item.CaseId,
             ["methodSymbolId"] = "M:test",
@@ -170,7 +171,7 @@ internal sealed class EvidenceTree : IDisposable
             ["state"] = "available",
             ["runId"] = "run-" + name,
             ["cases"] = new JsonArray(cases.Where(static item => item.Selected && item.Outcome is not null)
-                .Select(static item => (JsonNode?)new JsonObject { ["caseId"] = item.CaseId, ["outcome"] = item.Outcome, ["detail"] = null }).ToArray()),
+                .Select(static item => (JsonNode?) new JsonObject { ["caseId"] = item.CaseId, ["outcome"] = item.Outcome, ["detail"] = null }).ToArray()),
         };
         var linked = cases.Where(static item => item.Link is not null).ToArray();
         if (linked.Length > 0)
@@ -190,7 +191,7 @@ internal sealed class EvidenceTree : IDisposable
                     ["target"] = target,
                     ["matches"] = new JsonArray(),
                 }),
-                ["cases"] = new JsonArray(linked.Select(static item => (JsonNode?)new JsonObject
+                ["cases"] = new JsonArray(linked.Select(static item => (JsonNode?) new JsonObject
                 {
                     ["rowId"] = null,
                     ["caseId"] = item.CaseId,
@@ -248,10 +249,10 @@ internal sealed class EvidenceTree : IDisposable
             foreach (var value in new[] { input.Path, input.Kind, input.Digest })
             {
                 var bytes = Encoding.UTF8.GetBytes(value);
-                stream.WriteByte((byte)(bytes.Length >> 24));
-                stream.WriteByte((byte)(bytes.Length >> 16));
-                stream.WriteByte((byte)(bytes.Length >> 8));
-                stream.WriteByte((byte)bytes.Length);
+                stream.WriteByte((byte) (bytes.Length >> 24));
+                stream.WriteByte((byte) (bytes.Length >> 16));
+                stream.WriteByte((byte) (bytes.Length >> 8));
+                stream.WriteByte((byte) bytes.Length);
                 stream.Write(bytes);
             }
         }
@@ -385,6 +386,7 @@ internal sealed class EvidenceTree : IDisposable
                 ["cases"] = new JsonArray(new JsonObject { ["rowId"] = null, ["caseId"] = "case-1", ["status"] = "resolved", ["state"] = "active" }),
             });
         }
+
         return evidence;
     }
 

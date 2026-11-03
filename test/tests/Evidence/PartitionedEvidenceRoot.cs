@@ -10,14 +10,14 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
 {
     public PartitionedEvidenceRoot()
     {
-        Directory.CreateDirectory(Path.Combine(_root, ".specht"));
-        Directory.CreateDirectory(Path.Combine(_root, "src", "read", ".spec"));
-        Directory.CreateDirectory(Path.Combine(_root, "test", "a"));
-        Directory.CreateDirectory(Path.Combine(_root, "test", "b"));
-        File.WriteAllText(Path.Combine(_root, "test", "Shared.cs"), "class Shared { }");
-        File.WriteAllBytes(Path.Combine(_root, "test", "a", "a.dll"), [1]);
-        File.WriteAllBytes(Path.Combine(_root, "test", "b", "b.dll"), [2]);
-        File.WriteAllText(Path.Combine(_root, "src", "read", ".spec", "README.md"), """
+        Directory.CreateDirectory(Path.Combine(Root, ".specht"));
+        Directory.CreateDirectory(Path.Combine(Root, "src", "read", ".spec"));
+        Directory.CreateDirectory(Path.Combine(Root, "test", "a"));
+        Directory.CreateDirectory(Path.Combine(Root, "test", "b"));
+        File.WriteAllText(Path.Combine(Root, "test", "Shared.cs"), "class Shared { }");
+        File.WriteAllBytes(Path.Combine(Root, "test", "a", "a.dll"), [1]);
+        File.WriteAllBytes(Path.Combine(Root, "test", "b", "b.dll"), [2]);
+        File.WriteAllText(Path.Combine(Root, "src", "read", ".spec", "README.md"), """
             ---
             id: cap:read
             spec_status: approved
@@ -52,10 +52,10 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
                 ["exemptions"] = new JsonArray(),
             },
         };
-        File.WriteAllText(Path.Combine(_root, ".specht", "manifest.json"), configuration.ToJsonString());
+        File.WriteAllText(Path.Combine(Root, ".specht", "manifest.json"), configuration.ToJsonString());
     }
 
-    public string Root => _root;
+    public string Root { get; } = Directory.CreateTempSubdirectory("specht-partitioned-evidence-").FullName;
 
     public void Write(string name, string project, int formatVersion, string runId, JsonArray cases, JsonArray results, JsonArray? scenarios = null)
     {
@@ -111,7 +111,7 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
                 ["location"] = null,
             }),
             ["results"] = new JsonObject { ["state"] = "available", ["runId"] = runId, ["cases"] = results },
-            ["inputs"] = new JsonArray(inputs.Select(static input => (JsonNode?)new JsonObject
+            ["inputs"] = new JsonArray(inputs.Select(static input => (JsonNode?) new JsonObject
             {
                 ["path"] = input.Path,
                 ["sha256"] = input.Sha256,
@@ -123,15 +123,15 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
             artifact["scenarios"] = scenarios;
         }
 
-        File.WriteAllText(Path.Combine(_root, name), artifact.ToJsonString());
+        File.WriteAllText(Path.Combine(Root, name), artifact.ToJsonString());
     }
 
-    public void Edit(string relativePath, string text) => File.WriteAllText(Path.Combine(_root, relativePath), text);
+    public void Edit(string relativePath, string text) => File.WriteAllText(Path.Combine(Root, relativePath), text);
 
     public EvidenceResult Reconcile(params string[] evidence) =>
-        new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(_root, evidence, null);
+        new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(Root, evidence, null);
 
-    public void Dispose() => Directory.Delete(_root, true);
+    public void Dispose() => Directory.Delete(Root, true);
 
     private static JsonObject Method(string symbolId, string name) => new()
     {
@@ -143,7 +143,5 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
         ["location"] = null,
     };
 
-    private string Hash(string relativePath) => Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(_root, relativePath))));
-
-    private readonly string _root = Directory.CreateTempSubdirectory("specht-partitioned-evidence-").FullName;
+    private string Hash(string relativePath) => Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(Root, relativePath))));
 }

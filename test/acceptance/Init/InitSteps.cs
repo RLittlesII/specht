@@ -141,7 +141,7 @@ public sealed partial class InitSteps
     public void WhenItsEmbeddedCopiesOfTheNewestVersionAreComparedWithThisRepositorysLiveManifestFrontmatterSchemasAndTemplates()
     {
         var version = NewestVersion();
-        _files = ToolOwnedFiles.ToDictionary(
+        Files = ToolOwnedFiles.ToDictionary(
             static file => file,
             file => (Read(Embedded(file, version)), File.Exists(Live(file)) ? File.ReadAllBytes(Live(file)) : null));
         var manifest = Read(Embedded(Manifest, version));
@@ -430,7 +430,7 @@ public sealed partial class InitSteps
     public void GivenTheSourceServesOneSchemaMatchingItsRecordedHashAndAnotherThatDoesNot() => Source.Mode = "mixed";
 
     [Given("the source responds with status {int}")]
-    public void GivenTheSourceRespondsWithStatus(int status) => Source.Status = (HttpStatusCode)status;
+    public void GivenTheSourceRespondsWithStatus(int status) => Source.Status = (HttpStatusCode) status;
 
     [Given("the network is unavailable")]
     public void GivenTheNetworkIsUnavailable()
@@ -563,8 +563,11 @@ public sealed partial class InitSteps
 
     private string SecondRoot => Path.Combine(Sandbox, _secondTyped);
 
-    private Dictionary<string, (byte[]? Embedded, byte[]? Live)> Files =>
-        _files ?? throw new InvalidOperationException("Nothing was compared.");
+    private Dictionary<string, (byte[]? Embedded, byte[]? Live)> Files
+    {
+        get =>
+        field ?? throw new InvalidOperationException("Nothing was compared."); set;
+    }
 
     private static string Live(string file) => Path.Combine([AppContext.BaseDirectory, ".specht", .. file.Split('/')]);
 
@@ -756,7 +759,6 @@ public sealed partial class InitSteps
     private string[] _upstreamOptions = [];
     private SourceHandler? _sourceHandler;
     private JsonObject? _liveManifest;
-    private Dictionary<string, (byte[]? Embedded, byte[]? Live)>? _files;
     private JsonObject? _embeddedManifest;
     private string? _sandbox;
     private Dictionary<string, byte[]>? _snapshot;

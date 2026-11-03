@@ -9,6 +9,7 @@ internal sealed class AdoptionFile(string path, string? text, string kind) : Add
 {
     public override string Path => path;
     public string Kind => kind;
+
     public override SourceText? GetText(CancellationToken cancellationToken = default) =>
         text is null ? null : SourceText.From(text, Encoding.UTF8);
 }

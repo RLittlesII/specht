@@ -11,9 +11,21 @@ public static class RunSummary
     public static string Markdown(ReportingOutcome outcome)
     {
         var text = new StringBuilder("## Release baseline comparison\n\n");
-        if (outcome.State == ReportingState.Incomplete) text.Append("Incomplete: ").Append(ComparisonReport.Escape(outcome.Reason ?? "")).Append("\n\n");
-        if (outcome.Judgment is { } judgment) text.Append("Overall judgment: ").Append(ComparisonReport.Display(judgment)).Append("\n\n");
-        if (outcome.State == ReportingState.Completed && outcome.Reason is { } reason) text.Append(ComparisonReport.Escape(reason)).Append("\n\n");
+        if (outcome.State == ReportingState.Incomplete)
+        {
+            text.Append("Incomplete: ").Append(ComparisonReport.Escape(outcome.Reason ?? "")).Append("\n\n");
+        }
+
+        if (outcome.Judgment is { } judgment)
+        {
+            text.Append("Overall judgment: ").Append(ComparisonReport.Display(judgment)).Append("\n\n");
+        }
+
+        if (outcome.State == ReportingState.Completed && outcome.Reason is { } reason)
+        {
+            text.Append(ComparisonReport.Escape(reason)).Append("\n\n");
+        }
+
         if (outcome.Report is { } report)
         {
             text.Append("Report: [").Append(ComparisonReport.Escape(report.Bundle.Name)).Append("](https://github.com/")
@@ -21,7 +33,11 @@ public static class RunSummary
                 .Append(Uri.EscapeDataString(report.Bundle.Name)).Append(")\n\n");
         }
 
-        if (outcome.Flags.IsDefaultOrEmpty) return text.ToString();
+        if (outcome.Flags.IsDefaultOrEmpty)
+        {
+            return text.ToString();
+        }
+
         text.Append("| Case | Metric | Reason |\n| --- | --- | --- |\n");
         foreach (var flag in outcome.Flags)
         {

@@ -47,11 +47,13 @@ public sealed class RulesCommand(IAnsiConsole console, RuleEntriesReader entries
                 })));
                 return Task.FromResult(ExitCodes.Success);
             }
+
             foreach (var rule in rules)
             {
                 console.Profile.Out.Writer.WriteLine($"{rule.Id}\t{rule.Family}\t{rule.DefaultSeverity.ToString().ToLowerInvariant()}\t"
                     + rule.EffectiveLevel.ToString().ToLowerInvariant());
             }
+
             return Task.FromResult(ExitCodes.Success);
         }
         catch (SpechtRootNotFoundException)

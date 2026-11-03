@@ -4,6 +4,9 @@ public sealed class ReportingStages : TheoryData<ReportingStage>
 {
     public ReportingStages()
     {
-        foreach (var stage in Enum.GetValues<ReportingStage>()) Add(stage);
+        foreach (var stage in Enum.GetValues<ReportingStage>())
+        {
+            Add(stage);
+        }
     }
 }

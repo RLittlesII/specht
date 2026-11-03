@@ -23,12 +23,12 @@ public sealed class RulesCommandIntegrationTests
         string[] arguments = explicitRoot ? ["rules", "--root", "."] : ["rules"];
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, arguments);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, arguments);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Stderr);
-        result.Stderr.Should().BeEmpty();
-        var lines = result.Stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(static line => line.TrimEnd('\r').Split('\t')).ToArray();
+        ExitCode.Should().Be(0, Stderr);
+        Stderr.Should().BeEmpty();
+        var lines = Stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(static line => line.TrimEnd('\r').Split('\t')).ToArray();
         lines.Should().HaveCount(version.RuleIds.Count);
         lines.Should().OnlyContain(static fields => fields.Length == 4);
         lines.Select(static fields => fields[0]).Should().Equal(version.RuleIds.Order(StringComparer.Ordinal));
@@ -47,17 +47,17 @@ public sealed class RulesCommandIntegrationTests
         // Given
         using var tree = new SpechtTree();
         tree.WriteRaw(SpechtTree.ManifestPath, manifest);
-        var check = AcceptanceTool.Launch(tree.Root);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root);
 
         // When
         var result = AcceptanceTool.Launch(tree.Root, "rules", "--root", ".");
 
         // Then
-        check.ExitCode.Should().Be(3, check.Stderr);
-        check.Stderr.Should().Contain(namedFault);
+        ExitCode.Should().Be(3, Stderr);
+        Stderr.Should().Contain(namedFault);
         result.ExitCode.Should().Be(3);
         result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Be(check.Stderr).And.NotContain(tree.Root).And.NotContain("\\");
+        result.Stderr.Should().Be(Stderr).And.NotContain(tree.Root).And.NotContain("\\");
     }
 
     [Theory]
@@ -69,12 +69,12 @@ public sealed class RulesCommandIntegrationTests
         var typedRoot = absolute ? Path.Combine(tree.Root, "absent") : "absent";
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "rules", "--root", typedRoot);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "rules", "--root", typedRoot);
 
         // Then
-        result.ExitCode.Should().Be(2);
-        result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Be($"specht: '{typedRoot}' is not a directory.{Environment.NewLine}");
+        ExitCode.Should().Be(2);
+        Stdout.Should().BeEmpty();
+        Stderr.Should().Be($"specht: '{typedRoot}' is not a directory.{Environment.NewLine}");
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public sealed class RulesCommandIntegrationTests
         // Given
         using var tree = new SpechtTree();
         File.Delete(Path.Combine(tree.Root, SpechtTree.ManifestPath));
-        var check = AcceptanceTool.Launch(tree.Root);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root);
 
         // When
         var result = AcceptanceTool.Launch(tree.Root, "rules", "--root", tree.Root);
@@ -91,7 +91,7 @@ public sealed class RulesCommandIntegrationTests
         // Then
         result.ExitCode.Should().Be(2);
         result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Be(check.Stderr).And.Contain(SpechtTree.ManifestPath).And.NotContain(tree.Root).And.NotContain("\\");
+        result.Stderr.Should().Be(Stderr).And.Contain(SpechtTree.ManifestPath).And.NotContain(tree.Root).And.NotContain("\\");
     }
 
     [Theory]
@@ -105,18 +105,19 @@ public sealed class RulesCommandIntegrationTests
         {
             tree.WriteRaw(SpechtTree.ManifestPath, "{");
         }
+
         var before = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path).Replace('\\', '/'), static path => File.ReadAllBytes(path));
 
         // When
-        var first = AcceptanceTool.Launch(tree.Root, "rules");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "rules");
         var second = AcceptanceTool.Launch(tree.Root, "rules");
 
         // Then
-        first.ExitCode.Should().Be(valid ? 0 : 3, first.Stderr);
-        second.ExitCode.Should().Be(first.ExitCode);
-        second.Stdout.Should().Be(first.Stdout);
-        second.Stderr.Should().Be(first.Stderr);
+        ExitCode.Should().Be(valid ? 0 : 3, Stderr);
+        second.ExitCode.Should().Be(ExitCode);
+        second.Stdout.Should().Be(Stdout);
+        second.Stderr.Should().Be(Stderr);
         var after = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path).Replace('\\', '/'), static path => File.ReadAllBytes(path));
         after.Should().BeEquivalentTo(before);

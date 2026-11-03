@@ -222,6 +222,7 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
                 explicitlyMissing = true;
                 findings.Add(new EvidenceFinding("missingRun", "", 0, runId, "The requested run was not found."));
             }
+
             var selectedRuns = new Dictionary<(string Project, string Framework), string?>();
             foreach (var pair in currentArtifacts.GroupBy(static entry => (entry.Artifact.ProjectPath, entry.Artifact.TargetFramework)))
             {
@@ -469,7 +470,7 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
             ["formatVersion"] = 1,
             ["scope"] = scope,
             ["inputState"] = new JsonObject { ["state"] = stateName, ["inputs"] = Array(inputRows) },
-            ["claims"] = new JsonArray(orderedClaims.Select(static claim => (JsonNode?)claim.ToJson()).ToArray()),
+            ["claims"] = new JsonArray(orderedClaims.Select(static claim => (JsonNode?) claim.ToJson()).ToArray()),
             ["bindings"] = Array(bindingRows.OrderBy(static row => row["project"]!.GetValue<string>(), StringComparer.Ordinal)
                 .ThenBy(static row => row["symbolId"]!.GetValue<string>(), StringComparer.Ordinal)),
             ["cases"] = Array(caseRows.OrderBy(static row => row["project"]!.GetValue<string>(), StringComparer.Ordinal)
@@ -479,7 +480,7 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
             ["findings"] = new JsonArray(findings.OrderBy(static finding => finding.Path, StringComparer.Ordinal)
                 .ThenBy(static finding => finding.Line).ThenBy(static finding => finding.Kind, StringComparer.Ordinal)
                 .ThenBy(static finding => finding.Identity, StringComparer.Ordinal)
-                .Select(static finding => (JsonNode?)finding.ToJson()).ToArray()),
+                .Select(static finding => (JsonNode?) finding.ToJson()).ToArray()),
             ["summary"] = new JsonObject
             {
                 ["selectedClaims"] = claims.Count,
@@ -538,7 +539,7 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
         .ToHashSet(StringComparer.Ordinal);
 
     /// <implements epic="0201" feature="F5" claim="B-001" />
-    private static JsonArray Array(IEnumerable<JsonObject> entries) => new(entries.Select(static entry => (JsonNode?)entry).ToArray());
+    private static JsonArray Array(IEnumerable<JsonObject> entries) => new(entries.Select(static entry => (JsonNode?) entry).ToArray());
 
     /// <implements epic="0201" feature="F5" claim="B-001" />
     private static string Role(string kind) => kind switch { "test" => "verifies", "implementation" => "implements", _ => "follows" };
@@ -688,9 +689,9 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
             ["links"] = Links,
             ["cases"] = new JsonArray(Cases.Distinct().OrderBy(static item => item.Project, StringComparer.Ordinal)
                 .ThenBy(static item => item.TargetFramework, StringComparer.Ordinal).ThenBy(static item => item.CaseId, StringComparer.Ordinal)
-                .Select(static item => (JsonNode?)JsonValue.Create(item.CaseId)).ToArray()),
+                .Select(static item => (JsonNode?) JsonValue.Create(item.CaseId)).ToArray()),
             ["scenarios"] = new JsonArray(Scenarios.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
-                .Select(static item => (JsonNode?)JsonValue.Create(item)).ToArray()),
+                .Select(static item => (JsonNode?) JsonValue.Create(item)).ToArray()),
         };
     }
 

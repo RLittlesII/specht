@@ -183,9 +183,15 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
                 ["DOTNET_NOLOGO"] = "1",
             });
             foreach (var key in new[] { "HOME", "USERPROFILE", "DOTNET_CLI_HOME" })
+            {
                 Path.GetFullPath(request.Environment[key], _root).Should().Be(Path.GetFullPath($"{workspace}/home", _root));
+            }
+
             foreach (var key in new[] { "TMPDIR", "TMP", "TEMP" })
+            {
                 Path.GetFullPath(request.Environment[key], _root).Should().Be(Path.GetFullPath($"{workspace}/temp", _root));
+            }
+
             Path.GetFullPath(request.Environment["NUGET_PACKAGES"], _root)
                 .Should().Be(Path.GetFullPath(".artifacts/benchmarks/comparison/session-1/nuget", _root));
             request.Environment.Values.Should().NotContain(static value => value.Contains("secret", StringComparison.Ordinal));
@@ -395,11 +401,23 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
     public async Task CleanupFailure_WhenAFolderCannotBeRemoved_ShouldKeepTheCollectedResults()
     {
         // Given
-        if (OperatingSystem.IsWindows()) Assert.Skip("The cleanup failure is arranged with a Unix file mode.");
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("The cleanup failure is arranged with a Unix file mode.");
+        }
+
         _processes.During = (side, step, _) =>
         {
-            if (OperatingSystem.IsWindows()) return Task.CompletedTask;
-            if (side != "previous" || step != "run") return Task.CompletedTask;
+            if (OperatingSystem.IsWindows())
+            {
+                return Task.CompletedTask;
+            }
+
+            if (side != "previous" || step != "run")
+            {
+                return Task.CompletedTask;
+            }
+
             var locked = Path.Combine(_root, ".artifacts/benchmarks/comparison/session-1/previous/source/locked");
             Directory.CreateDirectory(locked);
             File.WriteAllText(Path.Combine(locked, "held.txt"), "held");
@@ -523,7 +541,11 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
         var observed = CancellationToken.None;
         _processes.During = (side, step, token) =>
         {
-            if (side != "previous" || step != "run") return Task.CompletedTask;
+            if (side != "previous" || step != "run")
+            {
+                return Task.CompletedTask;
+            }
+
             observed = token;
             caller.Cancel();
             return Hang(TimeSpan.Zero, token);
@@ -547,11 +569,17 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
 
     public void Dispose()
     {
-        if (!Directory.Exists(_root)) return;
+        if (!Directory.Exists(_root))
+        {
+            return;
+        }
+
         if (!OperatingSystem.IsWindows())
         {
             foreach (var directory in Directory.EnumerateDirectories(_root, "*", SearchOption.AllDirectories))
+            {
                 File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            }
         }
 
         Directory.Delete(_root, true);

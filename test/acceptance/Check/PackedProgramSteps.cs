@@ -72,7 +72,7 @@ public sealed class PackedProgramSteps(PackedTool tool)
     public async Task GivenTheToolIsBuiltTheWayAContinuousIntegrationRunBuildsIt() => await tool.BuildAsContinuousIntegrationAsync();
 
     [When("that build is packed")]
-    public async Task WhenThatBuildIsPacked() => _built = await tool.PackThatBuildAsync();
+    public async Task WhenThatBuildIsPacked() => Built = await tool.PackThatBuildAsync();
 
     [Then("no program file of the tool in the package names a directory of the machine that built it")]
     public void ThenNoProgramFileOfTheToolInThePackageNamesADirectoryOfTheMachineThatBuiltIt()
@@ -100,7 +100,7 @@ public sealed class PackedProgramSteps(PackedTool tool)
 
     private static Guid SourceLink { get; } = new("CC110556-A091-4D38-9FEC-25AB9A351A6A");
 
-    private string Built => _built ?? throw new InvalidOperationException("No build was packed.");
+    private string Built { get => field ?? throw new InvalidOperationException("No build was packed."); set; }
 
     private static IEnumerable<(string Program, byte[] File)> Carried(string package, string extension) =>
         Programs.SelectMany(program => Carried(package, program, extension).Select(file => (program, file)));
@@ -145,6 +145,4 @@ public sealed class PackedProgramSteps(PackedTool tool)
 
     private static bool Names(byte[] file, string directory) =>
         file.AsSpan().IndexOf(Encoding.UTF8.GetBytes(directory)) >= 0 || file.AsSpan().IndexOf(Encoding.Unicode.GetBytes(directory)) >= 0;
-
-    private string? _built;
 }

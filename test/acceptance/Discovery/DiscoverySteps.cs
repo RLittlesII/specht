@@ -28,7 +28,7 @@ public sealed class DiscoverySteps
 
     [Given("the manifest is the default one this repository checks itself with")]
     public void GivenTheManifestIsTheDefaultOneThisRepositoryChecksItselfWith() =>
-        _manifest = JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
+        Manifest = JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
 
     [Given("the manifest declares a third layout whose specification file is a differently named markdown file under a documentation folder")]
     public void GivenTheManifestDeclaresAThirdLayout() =>
@@ -39,7 +39,7 @@ public sealed class DiscoverySteps
 
     [Given("the root holds a specification at that place")]
     public void GivenTheRootHoldsASpecificationAtThatPlace() =>
-        Write(_subject = "docs/guide/specification.md", "F1", sections: ThreeDefects);
+        Write(Subject = "docs/guide/specification.md", "F1", sections: ThreeDefects);
 
     [Given("the manifest declares one layout only, the features layout")]
     public void GivenTheManifestDeclaresOneLayoutOnlyTheFeaturesLayout() =>
@@ -59,7 +59,7 @@ public sealed class DiscoverySteps
 
     [Given("the root holds a co-located specification three levels below a {string} directory")]
     public void GivenTheRootHoldsACoLocatedSpecificationThreeLevelsBelowADirectory(string directory) =>
-        Write(_subject = $"src/{directory}/one/two/three/.spec/README.md", "F1");
+        Write(Subject = $"src/{directory}/one/two/three/.spec/README.md", "F1");
 
     [Given("the root holds a README in its root {string} folder")]
     public void GivenTheRootHoldsAReadmeInItsRootFolder(string folder) => Write(_rootReadme = $"{folder}/README.md", "F1");
@@ -186,7 +186,7 @@ public sealed class DiscoverySteps
 
     [Given("the root holds a second specification in that layout whose Feature folder does not match its frontmatter")]
     public void GivenTheRootHoldsASecondSpecificationInThatLayoutWhoseFeatureFolderDoesNotMatchItsFrontmatter() =>
-        Write(_subject = $"{_layoutFolder}/0001-epic/F9-feature/spec.md", "F2");
+        Write(Subject = $"{_layoutFolder}/0001-epic/F9-feature/spec.md", "F2");
 
     [Given("the manifest renames its epics layout {string} and keeps the path segments that layout declares")]
     public void GivenTheManifestRenamesItsEpicsLayoutAndKeepsThePathSegmentsThatLayoutDeclares(string name)
@@ -197,13 +197,13 @@ public sealed class DiscoverySteps
 
     [Given("the root holds a specification in that layout whose Feature folder does not match its frontmatter")]
     public void GivenTheRootHoldsASpecificationInThatLayoutWhoseFeatureFolderDoesNotMatchItsFrontmatter() =>
-        Write(_subject = $"{_layoutFolder}/0001-epic/F9-feature/spec.md", "F1");
+        Write(Subject = $"{_layoutFolder}/0001-epic/F9-feature/spec.md", "F1");
 
     [When("the check runs")]
     public void WhenTheCheckRuns()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = EngineServices.Runner().Run(Tree.Root);
+        Report = EngineServices.Runner().Run(Tree.Root);
     }
 
     [Then("that specification is discovered")]
@@ -316,11 +316,11 @@ public sealed class DiscoverySteps
 
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
-    private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
+    private JsonObject Manifest { get => field ?? throw new InvalidOperationException("No manifest was read."); set; }
 
-    private SpechtReport Report => _report ?? throw new InvalidOperationException("The check gave no report.");
+    private SpechtReport Report { get => field ?? throw new InvalidOperationException("The check gave no report."); set; }
 
-    private string Subject => _subject ?? throw new InvalidOperationException("No step named that specification.");
+    private string Subject { get => field ?? throw new InvalidOperationException("No step named that specification."); set; }
 
     private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
 
@@ -368,9 +368,6 @@ public sealed class DiscoverySteps
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";
 
     private SpechtTree? _tree;
-    private JsonObject? _manifest;
-    private SpechtReport? _report;
-    private string? _subject;
     private string? _underEpics;
     private string? _besideCode;
     private string? _rootReadme;

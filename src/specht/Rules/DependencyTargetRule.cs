@@ -37,7 +37,7 @@ public sealed class DependencyTargetRule : ISpechtRule
                         Expected = new JsonObject
                         {
                             ["features"] = new JsonArray(graph.Identities.Order(StringComparer.Ordinal)
-                                .Select(static identity => (JsonNode?)JsonValue.Create(identity)).ToArray()),
+                                .Select(static identity => (JsonNode?) JsonValue.Create(identity)).ToArray()),
                         },
                     };
                 }

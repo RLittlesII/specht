@@ -42,9 +42,16 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
     {
         var invocation = Invocation(plan);
         if (total.IsCancellationRequested)
+        {
             return Unavailable(side, commit, invocation, caller.IsCancellationRequested ? Cancelled : PairExceeded);
+        }
+
         var workspace = $"{plan.Workspace}/{side}";
-        if (fileSystem.Directory.Exists(Full(workspace))) return Unavailable(side, commit, invocation, "Revision workspace already exists.");
+        if (fileSystem.Directory.Exists(Full(workspace)))
+        {
+            return Unavailable(side, commit, invocation, "Revision workspace already exists.");
+        }
+
         using var bound = new CancellationTokenSource(RevisionBound, time);
         using var limit = CancellationTokenSource.CreateLinkedTokenSource(total, bound.Token);
         try
@@ -62,7 +69,10 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
         }
         finally
         {
-            foreach (var folder in new[] { "source", "home", "temp" }) Remove(Full($"{workspace}/{folder}"));
+            foreach (var folder in new[] { "source", "home", "temp" })
+            {
+                Remove(Full($"{workspace}/{folder}"));
+            }
         }
     }
 
@@ -76,32 +86,67 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
         fileSystem.Directory.CreateDirectory(Full($"{workspace}/temp"));
 
         var clone = await Step("git", ".", ["clone", "--quiet", "--no-checkout", "--shared", ".", source]);
-        if (clone.ExitCode != 0) return Failed("Revision clone", clone);
+        if (clone.ExitCode != 0)
+        {
+            return Failed("Revision clone", clone);
+        }
+
         var checkout = await Step("git", source, ["checkout", "--quiet", "--detach", commit]);
-        if (checkout.ExitCode != 0) return Failed("Revision checkout", checkout);
+        if (checkout.ExitCode != 0)
+        {
+            return Failed("Revision checkout", checkout);
+        }
+
         var head = await Step("git", source, ["rev-parse", "HEAD"]);
-        if (head.ExitCode != 0) return Failed("Revision identity check", head);
+        if (head.ExitCode != 0)
+        {
+            return Failed("Revision identity check", head);
+        }
+
         if (head.Output is not [var printed] || printed.Trim() != commit)
+        {
             return Unavailable(side, commit, invocation, "Checked-out revision does not match the pinned commit.");
+        }
+
         if (!fileSystem.File.Exists(Full($"{source}/{Harness}")))
+        {
             return Unavailable(side, commit, invocation, "Revision has no native benchmark harness.");
+        }
 
         var build = await Step("dotnet", source,
             ["build", Harness, "--configuration", "Release", "--framework", "net10.0", "--disable-build-servers"]);
-        if (build.ExitCode != 0) return Failed("Benchmark build", build);
+        if (build.ExitCode != 0)
+        {
+            return Failed("Benchmark build", build);
+        }
+
         var listing = await Step("dotnet", source, [.. RunPrefix, .. invocation, "--list", "flat"]);
-        if (listing.ExitCode != 0) return Failed("Benchmark listing", listing);
+        if (listing.ExitCode != 0)
+        {
+            return Failed("Benchmark listing", listing);
+        }
+
         var selected = RevisionEvidence.Select(listing.Output);
-        if (selected.IsEmpty) return Unavailable(side, commit, invocation, "No benchmarks selected for the filter.");
+        if (selected.IsEmpty)
+        {
+            return Unavailable(side, commit, invocation, "No benchmarks selected for the filter.");
+        }
+
         if (RevisionEvidence.NeedsTool(selected))
         {
             var pack = await Step("dotnet", source,
                 ["pack", "src/tool/tool.csproj", "--configuration", "Release", "--output", ".artifacts/nupkg", "--disable-build-servers"]);
-            if (pack.ExitCode != 0) return Failed("Tool pack", pack);
+            if (pack.ExitCode != 0)
+            {
+                return Failed("Tool pack", pack);
+            }
         }
 
         var measured = await Step("dotnet", source, [.. RunPrefix, .. invocation]);
-        if (measured.ExitCode != 0) return Failed("Benchmark run", measured);
+        if (measured.ExitCode != 0)
+        {
+            return Failed("Benchmark run", measured);
+        }
 
         var results = $"{workspace}/results/results";
         var files = fileSystem.Directory.Exists(Full(results))
@@ -109,10 +154,16 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
                 .Select(file => $"{results}/{fileSystem.Path.GetFileName(file)}").Order(StringComparer.Ordinal).ToImmutableArray()
             : [];
         var exports = ImmutableArray.CreateBuilder<string>(files.Length);
-        foreach (var file in files) exports.Add(await fileSystem.File.ReadAllTextAsync(Full(file), cancellationToken));
+        foreach (var file in files)
+        {
+            exports.Add(await fileSystem.File.ReadAllTextAsync(Full(file), cancellationToken));
+        }
+
         var reading = RevisionEvidence.Read(exports.MoveToImmutable());
         if (reading is not { ExporterVersion: { } exporter, Conditions: { } conditions })
+        {
             return Unavailable(side, commit, invocation, reading.Failure!);
+        }
 
         var mappings = Declarations(source, commit);
         var expected = mappings.IsEmpty ? null : RevisionEvidence.Inventory(mappings, commit, selected);
@@ -130,7 +181,11 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
     private ImmutableArray<IdentityMapping> Declarations(string source, string commit)
     {
         var assembly = Full($"{source}/{DeclaringAssembly}");
-        if (!fileSystem.File.Exists(assembly)) return [];
+        if (!fileSystem.File.Exists(assembly))
+        {
+            return [];
+        }
+
         using var stream = fileSystem.File.OpenRead(assembly);
         return DeclaredIdentity.Read(stream, commit, Full(source), relative =>
         {
@@ -155,7 +210,10 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
     {
         try
         {
-            if (fileSystem.Directory.Exists(path)) fileSystem.Directory.Delete(path, true);
+            if (fileSystem.Directory.Exists(path))
+            {
+                fileSystem.Directory.Delete(path, true);
+            }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

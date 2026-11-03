@@ -62,6 +62,7 @@ public sealed class DocumentationBindingAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
+
         var path = reference.SyntaxTree.FilePath;
         if (options.GetOptions(reference.SyntaxTree).TryGetValue("specht_relative_path", out var relative))
         {

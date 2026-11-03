@@ -26,7 +26,7 @@ public sealed class SpechtClaims
                 var row = Section.Rows[index];
                 var id = row.Count == 0 ? string.Empty : row[0].Trim();
                 var valid = grammar?.IsMatch(id) == true;
-                var first = valid && id.Length > 0 && ids.TryGetValue(id, out var previous) ? previous : (int?)null;
+                var first = valid && id.Length > 0 && ids.TryGetValue(id, out var previous) ? previous : (int?) null;
                 rows.Add(new SpechtClaim(id, Section.RowLines[index], valid, first));
                 if (valid && id.Length > 0)
                 {

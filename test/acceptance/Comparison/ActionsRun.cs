@@ -20,7 +20,10 @@ internal sealed class ActionsRun : DelegatingHandler
     {
         get
         {
-            lock (_gate) return [.. _requests];
+            lock (_gate)
+            {
+                return [.. _requests];
+            }
         }
     }
 
@@ -28,7 +31,10 @@ internal sealed class ActionsRun : DelegatingHandler
 
     public void Add(string name, byte[] zip)
     {
-        lock (_gate) _artifacts.Add((100L + _artifacts.Count, name, zip));
+        lock (_gate)
+        {
+            _artifacts.Add((100L + _artifacts.Count, name, zip));
+        }
     }
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -41,7 +47,11 @@ internal sealed class ActionsRun : DelegatingHandler
             artifacts = [.. _artifacts];
         }
 
-        if (request.Method == HttpMethod.Post && FailUploads) return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        if (request.Method == HttpMethod.Post && FailUploads)
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        }
+
         if (request.Method == HttpMethod.Get && uri.Host == "api.github.com" && uri.AbsolutePath == "/repos/example/tool/actions/runs/1234/artifacts")
         {
             var name = HttpUtility.ParseQueryString(uri.Query)["name"];
@@ -65,11 +75,20 @@ internal sealed class ActionsRun : DelegatingHandler
 
         var stored = artifacts.Where(artifact => uri.AbsolutePath == $"/repos/example/tool/actions/artifacts/{artifact.Id}/zip").ToArray();
         if (request.Method == HttpMethod.Get && stored.Length == 1)
+        {
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(stored[0].Zip) });
+        }
+
         if (request.Method == HttpMethod.Get && uri.Host == "api.github.com" && Catalog.TryGetValue(uri.PathAndQuery, out var json))
+        {
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
+        }
+
         if (uri.AbsolutePath.StartsWith("/repos/example/tool/git/", StringComparison.Ordinal))
+        {
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+        }
+
         return base.SendAsync(request, cancellationToken);
     }
 

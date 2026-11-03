@@ -42,7 +42,7 @@ public sealed class ClaimTagRule : ISpechtRule
                     {
                         Expected = new JsonObject
                         {
-                            ["claims"] = new JsonArray(model.Claims[feature].Ids.Keys.Select(static id => (JsonNode?)JsonValue.Create(id)).ToArray()),
+                            ["claims"] = new JsonArray(model.Claims[feature].Ids.Keys.Select(static id => (JsonNode?) JsonValue.Create(id)).ToArray()),
                         },
                     };
                 }

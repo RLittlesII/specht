@@ -132,8 +132,8 @@ public sealed partial class EngineSteps
 
     private ISpechtRule[] FaultRules()
     {
-        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        return ((IEnumerable<ISpechtRule>)resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
+        using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        return ((IEnumerable<ISpechtRule>) resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
             .Select(rule => rule.Id == "SPEC030" ? new FaultIsolatedRule(_fault!) : rule).ToArray();
     }
 

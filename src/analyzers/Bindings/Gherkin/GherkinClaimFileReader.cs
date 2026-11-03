@@ -285,7 +285,7 @@ public sealed class GherkinClaimFileReader
 
         private void ReadTags(string line, int number)
         {
-            foreach (var token in line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var token in line.Split((char[]?) null, StringSplitOptions.RemoveEmptyEntries))
             {
                 if (token[0] == '#')
                 {

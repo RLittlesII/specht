@@ -37,7 +37,7 @@ public sealed class TestEvidenceArtifactWriter
         if (artifact.Scenarios.Count > 0)
         {
             value["scenarios"] = new JsonArray(artifact.Scenarios.Select(static scenario =>
-                (JsonNode?)JsonNode.Parse(scenario.GetRawText())).ToArray());
+                (JsonNode?) JsonNode.Parse(scenario.GetRawText())).ToArray());
         }
 
         if (artifact.Catalog is not null)
@@ -50,20 +50,20 @@ public sealed class TestEvidenceArtifactWriter
 
     private static JsonObject Catalog(IReadOnlyList<TestEvidenceCatalogFeature> features) => new()
     {
-        ["features"] = new JsonArray(features.Select(static feature => (JsonNode?)new JsonObject
+        ["features"] = new JsonArray(features.Select(static feature => (JsonNode?) new JsonObject
         {
             ["epic"] = feature.Epic,
             ["feature"] = feature.Feature,
             ["state"] = feature.State,
             ["path"] = feature.Path,
-            ["claims"] = new JsonArray(feature.Claims.Select(static claim => (JsonNode?)new JsonObject
+            ["claims"] = new JsonArray(feature.Claims.Select(static claim => (JsonNode?) new JsonObject
             {
                 ["id"] = claim.Id,
                 ["state"] = claim.State,
                 ["element"] = claim.Element,
                 ["path"] = claim.Path,
                 ["line"] = claim.Line,
-                ["cases"] = new JsonArray(claim.Cases.Select(static item => (JsonNode?)new JsonObject
+                ["cases"] = new JsonArray(claim.Cases.Select(static item => (JsonNode?) new JsonObject
                 {
                     ["line"] = item.Line,
                     ["planned"] = item.Planned,
@@ -93,10 +93,10 @@ public sealed class TestEvidenceArtifactWriter
             ["declaringType"] = method.DeclaringType,
             ["name"] = method.Name,
             ["genericArity"] = method.GenericArity,
-            ["parameterTypes"] = new JsonArray(method.ParameterTypes.Select(static parameter => (JsonNode?)JsonValue.Create(parameter)).ToArray()),
+            ["parameterTypes"] = new JsonArray(method.ParameterTypes.Select(static parameter => (JsonNode?) JsonValue.Create(parameter)).ToArray()),
             ["location"] = Location(method.Location),
         }).ToArray()),
-        ["cases"] = new JsonArray(discovery.Cases.Select(static item => (JsonNode?)Case(item)).ToArray()),
+        ["cases"] = new JsonArray(discovery.Cases.Select(static item => (JsonNode?) Case(item)).ToArray()),
     };
 
     private static JsonObject Case(TestEvidenceCase item)
@@ -110,7 +110,7 @@ public sealed class TestEvidenceArtifactWriter
         };
         if (StatesCaseFacts(item))
         {
-            value["categories"] = new JsonArray(item.Categories!.Select(static category => (JsonNode?)JsonValue.Create(category)).ToArray());
+            value["categories"] = new JsonArray(item.Categories!.Select(static category => (JsonNode?) JsonValue.Create(category)).ToArray());
             value["owned"] = item.Owned;
             value["selected"] = item.Selected;
         }
@@ -137,7 +137,7 @@ public sealed class TestEvidenceArtifactWriter
             ["status"] = binding.Status,
             ["isEligible"] = binding.IsEligible,
             ["target"] = Target(binding.Target),
-            ["matches"] = new JsonArray(binding.Matches.Select(static target => (JsonNode?)Target(target)).ToArray()),
+            ["matches"] = new JsonArray(binding.Matches.Select(static target => (JsonNode?) Target(target)).ToArray()),
             ["location"] = Location(binding.Location),
         };
     }
@@ -167,7 +167,7 @@ public sealed class TestEvidenceArtifactWriter
         {
             ["state"] = "available",
             ["runId"] = results.RunId,
-            ["cases"] = new JsonArray(results.Cases.Select(static item => (JsonNode?)new JsonObject
+            ["cases"] = new JsonArray(results.Cases.Select(static item => (JsonNode?) new JsonObject
             {
                 ["caseId"] = item.CaseId,
                 ["outcome"] = item.Outcome,

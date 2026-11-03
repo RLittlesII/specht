@@ -169,28 +169,20 @@ internal sealed partial class SpechtBuild
         return configuration;
     }
 
-    /// <summary>
-    /// GitHub Actions related methods.
-    /// </summary>
+    /// <summary>GitHub Actions related methods.</summary>
     public static class GitHubActionsTasks
     {
-        /// <summary>
-        /// A function that evaluates whether this build is running on GitHub Actions.
-        /// </summary>
+        /// <summary>A function that evaluates whether this build is running on GitHub Actions.</summary>
         public static Func<bool> IsRunningOnGitHubActions => static ()
             => Host is GitHubActions || Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == true.ToString();
 
-        /// <summary>
-        /// A function that evaluates whether this build is running on GitHub Actions.
-        /// </summary>
+        /// <summary>A function that evaluates whether this build is running on GitHub Actions.</summary>
         public static Func<bool> IsNotRunningOnGitHubActions => static ()
             => !(Host is GitHubActions ||
                  Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == true.ToString());
     }
 
-    /// <summary>
-    /// Removes the generator's tool-restore and global NUKE install steps and runs every target step through the entry script.
-    /// </summary>
+    /// <summary>Removes the generator's tool-restore and global NUKE install steps and runs every target step through the entry script.</summary>
     private static void RunThroughEntryScript(RocketSurgeonsGithubActionsJob buildJob)
     {
         buildJob.Steps.RemoveAll(static z => z is RunStep { StepName: "Install Nuke Global Tool" or "dotnet tool restore" });
@@ -200,9 +192,7 @@ internal sealed partial class SpechtBuild
         }
     }
 
-    /// <summary>
-    /// Uploads the Cobertura reports the tier targets write to Codecov from the macOS leg only, after the last tier, and warns when the upload fails.
-    /// </summary>
+    /// <summary>Uploads tier coverage reports to Codecov on macOS after the last tier, warning on upload failure.</summary>
     private static void AddCodecovUpload(RocketSurgeonsGithubActionsJob buildJob)
     {
         var acceptanceTestStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static z => z.Id == "acceptanceTest");
@@ -258,9 +248,7 @@ internal sealed partial class SpechtBuild
         buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(buildStep) + 1, [benchmarkStep, uploadStep]);
     }
 
-    /// <summary>
-    /// Gives the Specht step the event and the pull request's commits, so the target decides what to annotate.
-    /// </summary>
+    /// <summary>Gives the Specht step the event and the pull request's commits, so the target decides what to annotate.</summary>
     private static void PassAnnotationContext(RocketSurgeonsGithubActionsJob buildJob)
     {
         var spechtStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Id == "specht");
@@ -275,9 +263,7 @@ internal sealed partial class SpechtBuild
     [GeneratedRegex(@"^(?<file>.+?)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3}): (?<message>.*)$")]
     private static partial Regex Diagnostic();
 
-    /// <summary>
-    /// Decides inside each leg whether the run builds, and runs every later step only when it does.
-    /// </summary>
+    /// <summary>Decides inside each leg whether the run builds, and runs every later step only when it does.</summary>
     private static void GateOnChangedFiles(RocketSurgeonsGithubActionsJob buildJob)
     {
         // B-012, B-014, B-015, C-5: a pull request skips on windows, and on macOS when its changed files are all
@@ -325,9 +311,7 @@ internal sealed partial class SpechtBuild
 
     private static string EscapeProperty(string value) => EscapeData(value).Replace(":", "%3A").Replace(",", "%2C");
 
-    /// <summary>
-    /// Writes each violation in a pull request's changed files as a GitHub annotation, from the macOS runner only.
-    /// </summary>
+    /// <summary>Writes each violation in a pull request's changed files as a GitHub annotation, from the macOS runner only.</summary>
     private void AnnotateChangedFiles(IReadOnlyCollection<string> output)
     {
         if (GitHubActions.Instance is null

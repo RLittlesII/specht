@@ -25,12 +25,12 @@ public sealed class SchemaPinCommandIntegrationTests
         File.WriteAllBytes(path, [.. encoding.GetPreamble(), .. encoding.GetBytes(text)]);
 
         // When
-        var check = AcceptanceTool.Launch(tree.Root);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root);
         var list = AcceptanceTool.Launch(tree.Root, "schema", "list");
         var pin = AcceptanceTool.Launch(tree.Root, "schema", "pin", "0.2.0");
 
         // Then
-        check.ExitCode.Should().Be(0, check.Stderr);
+        ExitCode.Should().Be(0, Stderr);
         list.ExitCode.Should().Be(0, list.Stderr);
         list.Stdout.Should().Contain("0.1.0 (pinned)");
         pin.ExitCode.Should().Be(0, pin.Stderr);
@@ -47,11 +47,11 @@ public sealed class SchemaPinCommandIntegrationTests
         File.WriteAllText(path, before);
 
         // When
-        var pin = AcceptanceTool.Launch(tree.Root, "schema", "pin", "0.1.0");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "schema", "pin", "0.1.0");
         var check = AcceptanceTool.Launch(tree.Root);
 
         // Then
-        pin.ExitCode.Should().Be(0, pin.Stderr);
+        ExitCode.Should().Be(0, Stderr);
         File.ReadAllText(path).Should().Be(before.Replace("0.2.0", "0.1.0", StringComparison.Ordinal));
         check.ExitCode.Should().Be(3);
         check.Stderr.Should().Contain("claim");
@@ -74,11 +74,11 @@ public sealed class SchemaPinCommandIntegrationTests
             file => Path.GetRelativePath(tree.Root, file).Replace('\\', '/'), File.ReadAllBytes);
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "schema", "pin", target);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "schema", "pin", target);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Stderr);
-        result.Stdout.Should().Contain(target).And.Contain(SpechtTree.ManifestPath);
+        ExitCode.Should().Be(0, Stderr);
+        Stdout.Should().Contain(target).And.Contain(SpechtTree.ManifestPath);
         File.ReadAllBytes(path).Should().Equal([0xEF, 0xBB, 0xBF, .. Encoding.UTF8.GetBytes(text.Replace('"' + before + '"', '"' + target + '"'))]);
         Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories).Select(file => Path.GetRelativePath(tree.Root, file).Replace('\\', '/'))
             .Should().BeEquivalentTo(snapshot.Keys);
@@ -99,12 +99,12 @@ public sealed class SchemaPinCommandIntegrationTests
         var before = File.ReadAllBytes(path);
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "schema", "pin", target);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "schema", "pin", target);
 
         // Then
-        result.ExitCode.Should().Be(code);
-        result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Contain(target).And.Contain("0.2.0").And.NotContain(tree.Root);
+        ExitCode.Should().Be(code);
+        Stdout.Should().BeEmpty();
+        Stderr.Should().Contain(target).And.Contain("0.2.0").And.NotContain(tree.Root);
         File.ReadAllBytes(path).Should().Equal(before);
     }
 
@@ -129,12 +129,12 @@ public sealed class SchemaPinCommandIntegrationTests
         }
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "schema", "pin", "7.0.0");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "schema", "pin", "7.0.0");
 
         // Then
-        result.ExitCode.Should().Be(code);
-        result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(tree.Root);
+        ExitCode.Should().Be(code);
+        Stdout.Should().BeEmpty();
+        Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(tree.Root);
         if (text is null)
         {
             File.Exists(path).Should().BeFalse();

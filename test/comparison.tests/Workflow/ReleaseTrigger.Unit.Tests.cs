@@ -44,7 +44,7 @@ public sealed class ReleaseTriggerUnitTests
         var context = RunContext.From(environment);
 
         // Then
-        context.Should().Be((RunContext)new RunContextFixture());
+        context.Should().Be((RunContext) new RunContextFixture());
     }
 
     [Theory]

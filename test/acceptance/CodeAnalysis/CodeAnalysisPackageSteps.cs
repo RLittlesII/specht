@@ -75,10 +75,10 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
         var stream = new YamlStream();
         using var workflow = File.OpenText(Path.Combine(tool.Repository, ".github", "workflows", "release.yml"));
         stream.Load(workflow);
-        var root = (YamlMappingNode)stream.Documents[0].RootNode;
-        var jobs = (YamlMappingNode)root["jobs"];
-        var publish = (YamlMappingNode)jobs["publish"];
-        var steps = ((YamlSequenceNode)publish["steps"]).Cast<YamlMappingNode>().ToArray();
+        var root = (YamlMappingNode) stream.Documents[0].RootNode;
+        var jobs = (YamlMappingNode) root["jobs"];
+        var publish = (YamlMappingNode) jobs["publish"];
+        var steps = ((YamlSequenceNode) publish["steps"]).Cast<YamlMappingNode>().ToArray();
         steps.Should().Contain(static step => step.Children.ContainsKey("uses") && step["uses"].ToString() == "NuGet/login@v1");
         steps.Should().ContainSingle(static step => step["name"].ToString() == "Push release packages")
             .Which["run"].ToString().TrimEnd().Should().Be("./build.cmd --target PushReleasePackages");
@@ -257,10 +257,10 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
             </Project>
             """);
         var project = Path.Combine(_consumer!, "Consumer.csproj");
-        var restore = await tool.DotNetAsync("restore", project, "--source", Path.GetDirectoryName(_analysisPackage)!,
+        var (Stdout, Stderr, ExitCode) = await tool.DotNetAsync("restore", project, "--source", Path.GetDirectoryName(_analysisPackage)!,
             "--source", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages"),
             "--packages", Path.Combine(_consumer!, "packages"));
-        restore.ExitCode.Should().Be(0, restore.Stdout + restore.Stderr);
+        ExitCode.Should().Be(0, Stdout + Stderr);
         if (_evidence is not null)
         {
             await MatchEvidenceToTheCompilation(project);
@@ -296,9 +296,9 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
         var generated = Directory.CreateTempSubdirectory("specht-codeanalysis-generated-").FullName;
         try
         {
-            var first = await tool.DotNetAsync("build", project, "--no-restore", "-p:UseSharedCompilation=false",
+            var (Stdout, Stderr, ExitCode) = await tool.DotNetAsync("build", project, "--no-restore", "-p:UseSharedCompilation=false",
                 "-p:EmitCompilerGeneratedFiles=true", $"-p:CompilerGeneratedFilesOutputPath={generated}");
-            first.ExitCode.Should().Be(0, first.Stdout + first.Stderr);
+            ExitCode.Should().Be(0, Stdout + Stderr);
             var file = Directory.GetFiles(generated, "Specht.TestEvidence.CompilationExport.g.cs", SearchOption.AllDirectories).Single();
             var export = JsonNode.Parse(CSharpSyntaxTree.ParseText(await File.ReadAllTextAsync(file)).GetRoot()
                 .DescendantNodes().OfType<LiteralExpressionSyntax>().Single().Token.ValueText)!;

@@ -21,7 +21,7 @@ public sealed class SpechtSchemaCompilerUnitTests
     public void AVersionsSchemaText_WhenCompiled_ShouldBuildEachKindsSchemaFromThatTextWithTheVersionAndTheSourceGiven()
     {
         // Given
-        var version = (SchemaVersion)new SchemaVersionFixture() with
+        var version = (SchemaVersion) new SchemaVersionFixture() with
         {
             FeatureSchema = """{ "const": "feature" }""",
             ItemSchema = """{ "const": "task" }""",
@@ -45,7 +45,7 @@ public sealed class SpechtSchemaCompilerUnitTests
     public void CompiledSchemas_WhenAValueBreakingTheirFormatIsEvaluatedWithTheirOptions_ShouldBeInvalid()
     {
         // Given
-        var version = (SchemaVersion)new SchemaVersionFixture() with { FeatureSchema = """{ "format": "date" }""" };
+        var version = (SchemaVersion) new SchemaVersionFixture() with { FeatureSchema = """{ "format": "date" }""" };
         var schemas = new SpechtSchemaCompiler().Compile(version, EngineServices.Parser().Parse("{}"), SpechtSchemaSource.Embedded);
 
         // When
@@ -79,7 +79,7 @@ public sealed class SpechtSchemaCompilerUnitTests
     public void ALocalSetUnderAManifestDeclaringNoEpicGrammar_WhenCompiled_ShouldKeepTheReadTextsAndTheVersionsEpicSchemaUnread()
     {
         // Given
-        var version = (SchemaVersion)new SchemaVersionFixture() with { EpicSchema = """{ "const": "the version's epic" }""" };
+        var version = (SchemaVersion) new SchemaVersionFixture() with { EpicSchema = """{ "const": "the version's epic" }""" };
         var read = new List<string>();
 
         // When

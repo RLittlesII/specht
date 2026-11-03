@@ -74,8 +74,8 @@ public sealed partial class VersioningSteps
         GivenTheManifestPinsVersion(files);
         var schemas = Path.Combine(Tree.Root, SpechtTree.ConfigurationFolder, "schema");
         Directory.Delete(schemas, recursive: true);
-        var result = AcceptanceTool.Launch(Tree.Root, "init", "--all");
-        result.ExitCode.Should().Be(0, result.Stderr);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(Tree.Root, "init", "--all");
+        ExitCode.Should().Be(0, Stderr);
         GivenTheManifestPinsVersion(pin);
     }
 

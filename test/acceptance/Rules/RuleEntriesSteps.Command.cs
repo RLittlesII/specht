@@ -49,6 +49,7 @@ public sealed partial class RuleEntriesSteps
             default:
                 throw new ArgumentException("Unrecognised rejection example.", nameof(reason));
         }
+
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
@@ -95,9 +96,9 @@ public sealed partial class RuleEntriesSteps
     [Then("the standard error names what the check names for that manifest")]
     public void ThenStderrMatchesCheck()
     {
-        var check = AcceptanceTool.Launch(Tree.Root, "--root", _rootArgument);
-        check.ExitCode.Should().Be(3, check.Stderr);
-        _result.Stderr.Should().Be(check.Stderr);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(Tree.Root, "--root", _rootArgument);
+        ExitCode.Should().Be(3, Stderr);
+        _result.Stderr.Should().Be(Stderr);
     }
 
     [Then("no file under the root was created, modified or deleted")]

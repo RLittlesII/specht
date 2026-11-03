@@ -23,7 +23,12 @@ internal sealed class ReleaseAssets : HttpMessageHandler
                 Content = new StringContent(JsonSerializer.Serialize(new { id = asset.Id, name = asset.Name, state = "uploaded" })),
             };
         }
-        if (request.Method != HttpMethod.Get || uri.Host != "api.github.com") return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+        if (request.Method != HttpMethod.Get || uri.Host != "api.github.com")
+        {
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
+        }
+
         if (uri.AbsolutePath == "/repos/example/tool/releases/20/assets")
         {
             var size = int.Parse(query["per_page"] ?? "30", CultureInfo.InvariantCulture);
@@ -31,6 +36,7 @@ internal sealed class ReleaseAssets : HttpMessageHandler
             var listed = _assets.Skip((page - 1) * size).Take(size).Select(static asset => new { id = asset.Id, name = asset.Name, state = "uploaded" });
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(listed)) };
         }
+
         var stored = _assets.Where(asset => uri.AbsolutePath == $"/repos/example/tool/releases/assets/{asset.Id}").ToArray();
         return stored.Length == 1
             ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(stored[0].Content) }

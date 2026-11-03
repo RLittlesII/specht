@@ -37,6 +37,7 @@ public sealed class SchemaVersionIndependenceSteps(PackedTool tool) : IDisposabl
                 File.Delete(copy);
             }
         }
+
         await Run(Source, "git", "add", "--all");
         await Commit("Capture working build inputs");
         var path = Path.Combine(Source, "version.json");
@@ -102,6 +103,7 @@ public sealed class SchemaVersionIndependenceSteps(PackedTool tool) : IDisposabl
         {
             start.ArgumentList.Add(argument);
         }
+
         using var process = Process.Start(start) ?? throw new InvalidOperationException($"{command} did not start.");
         process.StandardInput.Close();
         var stdout = process.StandardOutput.ReadToEndAsync();

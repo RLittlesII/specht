@@ -32,7 +32,7 @@ public sealed class PackageVersioningSteps(PackedTool tool) : IDisposable
     {
         var (stdout, stderr, exitCode) = await tool.DotNetAsync("nbgv", "get-version", "--variable", "NuGetPackageVersion");
         exitCode.Should().Be(0, stdout + stderr);
-        _computed = stdout.Trim();
+        Computed = stdout.Trim();
     }
 
     [Given("a commit on the main branch")]
@@ -53,7 +53,7 @@ public sealed class PackageVersioningSteps(PackedTool tool) : IDisposable
             new Dictionary<string, string> { ["GITHUB_ACTIONS"] = string.Empty },
             "nbgv", "get-version", "-p", Synthetic, "--variable", "NuGetPackageVersion");
         exitCode.Should().Be(0, stdout + stderr);
-        _computed = stdout.Trim();
+        Computed = stdout.Trim();
     }
 
     [Then("the package's version is the version computed for that commit")]
@@ -79,7 +79,7 @@ public sealed class PackageVersioningSteps(PackedTool tool) : IDisposable
         parts[1].Split('-', '.')[0].Should().Be(label);
     }
 
-    private string Computed => _computed ?? throw new InvalidOperationException("No version was computed.");
+    private string Computed { get => field ?? throw new InvalidOperationException("No version was computed."); set; }
 
     private string Synthetic => _synthetic ?? throw new InvalidOperationException("No commit was made.");
 
@@ -115,6 +115,5 @@ public sealed class PackageVersioningSteps(PackedTool tool) : IDisposable
         return await stdout;
     }
 
-    private string? _computed;
     private string? _synthetic;
 }

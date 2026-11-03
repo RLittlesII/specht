@@ -209,6 +209,7 @@ internal sealed class ColdStartSession : IDisposable
     private readonly string _repository;
     private readonly string _dotnet;
     private readonly string _root;
+
     private readonly Dictionary<string, string> _environment = new()
     {
         ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",

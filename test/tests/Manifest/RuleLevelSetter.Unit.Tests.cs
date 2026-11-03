@@ -71,6 +71,7 @@ public sealed class RuleLevelSetterUnitTests
         {
             (exception is SpechtManifestException or SpechtManifestUnreadableException).Should().BeTrue();
         }
+
         files.File.ReadAllBytes("consumer/.specht/manifest.json").Should().Equal(Encoding.UTF8.GetBytes(text));
         files.AllFiles.Should().ContainSingle();
     }
@@ -86,6 +87,7 @@ public sealed class RuleLevelSetterUnitTests
         {
             files.Directory.CreateDirectory("consumer");
         }
+
         var setter = new RuleLevelSetter(new SpechtManifestStore(files), EngineServices.Parser(),
             new ManifestRuleEditor(new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions())),
             new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions()));
@@ -102,6 +104,7 @@ public sealed class RuleLevelSetterUnitTests
         {
             exception.Should().BeOfType<SpechtRootNotFoundException>();
         }
+
         files.AllFiles.Should().BeEmpty();
     }
 }

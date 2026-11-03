@@ -30,6 +30,7 @@ public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManife
                 throw new SpechtManifestUnreadableException(exception);
             }
         }
+
         return (Shipped(), pin, inUse);
     }
 
@@ -52,6 +53,7 @@ public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManife
         {
             throw new SchemaVersionNotFoundException(version, Shipped());
         }
+
         var changed = editor.Change(bytes, target);
         if (!bytes.AsSpan().SequenceEqual(changed))
         {
@@ -64,6 +66,7 @@ public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManife
                 throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: the manifest could not be replaced; check write access.");
             }
         }
+
         return target;
     }
 
@@ -77,10 +80,12 @@ public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManife
         {
             throw new SpechtRootNotFoundException();
         }
+
         if (!store.ManifestExists(root))
         {
             return required ? throw new SpechtManifestNotFoundException(store.RetiredManifestExists(root)) : null;
         }
+
         try
         {
             return store.ReadManifestBytes(root);

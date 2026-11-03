@@ -22,6 +22,7 @@ public sealed partial class VersioningSteps
             (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, "schema", "list");
             return;
         }
+
         var versions = new SchemaVersions(_shipped.Values);
         var console = new TestConsole();
         using var error = new StringWriter();

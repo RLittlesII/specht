@@ -68,6 +68,7 @@ public sealed class SchemaSourceUnitTests
         {
             files.AddFile(path, new MockFileData(text));
         }
+
         var root = files.Path.GetFullPath("repo");
 
         // When
@@ -112,6 +113,7 @@ public sealed class SchemaSourceUnitTests
         {
             files.AddFile("repo/" + SpechtTree.FeatureSchemaPath, new MockFileData("{}"));
         }
+
         var reader = EngineServices.Reader(files);
 
         // When

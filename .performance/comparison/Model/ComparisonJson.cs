@@ -19,7 +19,11 @@ public static class ComparisonJson
             : value;
         using var document = JsonDocument.Parse(JsonSerializer.Serialize(canonical, Options));
         using var buffer = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(buffer)) WriteCanonical(document.RootElement, writer);
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            WriteCanonical(document.RootElement, writer);
+        }
+
         return Encoding.UTF8.GetString(buffer.ToArray());
     }
 
@@ -113,7 +117,11 @@ public static class ComparisonJson
             throw new InvalidDataException("Saved release pair does not identify this published release.");
         }
 
-        if (pair.Previous is not { } previous) return;
+        if (pair.Previous is not { } previous)
+        {
+            return;
+        }
+
         ValidateRelease(previous);
         if (previous.Id == pair.Current.Id || previous.Draft || previous.PublishedAt is null || previous.Repository != pair.Current.Repository
             || previous.PublishedAt > pair.Current.PublishedAt
@@ -149,11 +157,22 @@ public static class ComparisonJson
         {
             var properties = element.EnumerateObject().ToArray();
             if (properties.GroupBy(static p => p.Name, StringComparer.Ordinal).Any(static group => group.Count() != 1))
+            {
                 throw new InvalidDataException("Evidence document has duplicate JSON properties.");
-            foreach (var property in properties) CheckDuplicateProperties(property.Value);
+            }
+
+            foreach (var property in properties)
+            {
+                CheckDuplicateProperties(property.Value);
+            }
         }
         else if (element.ValueKind == JsonValueKind.Array)
-            foreach (var child in element.EnumerateArray()) CheckDuplicateProperties(child);
+        {
+            foreach (var child in element.EnumerateArray())
+            {
+                CheckDuplicateProperties(child);
+            }
+        }
     }
 
     private static T Read<T>(string json)
@@ -180,15 +199,23 @@ public static class ComparisonJson
                 writer.WritePropertyName(property.Name);
                 WriteCanonical(property.Value, writer);
             }
+
             writer.WriteEndObject();
         }
         else if (element.ValueKind == JsonValueKind.Array)
         {
             writer.WriteStartArray();
-            foreach (var child in element.EnumerateArray()) WriteCanonical(child, writer);
+            foreach (var child in element.EnumerateArray())
+            {
+                WriteCanonical(child, writer);
+            }
+
             writer.WriteEndArray();
         }
-        else element.WriteTo(writer);
+        else
+        {
+            element.WriteTo(writer);
+        }
     }
 
     private static SessionSide CanonicalSide(SessionSide side) => side with
@@ -206,7 +233,11 @@ public static class ComparisonJson
             throw new InvalidDataException("Session side is missing native harness, inventory or environment evidence.");
         }
 
-        foreach (var workload in side.ExpectedCases) _ = WorkloadIdentity.Key(workload);
+        foreach (var workload in side.ExpectedCases)
+        {
+            _ = WorkloadIdentity.Key(workload);
+        }
+
         if (side.ExpectedCases.GroupBy(static workload => WorkloadIdentity.Key(workload), StringComparer.Ordinal)
             .Any(static group => group.Count() > 1))
         {

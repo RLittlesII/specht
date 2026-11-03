@@ -43,7 +43,7 @@ public sealed class BindingResolver
     {
         var fault = string.IsNullOrEmpty(reference.Adr) ? BindingResolution.Incomplete
             : reference.Feature is not null ? OwnerFault(reference.Epic, reference.Feature)
-            : reference.Epic is not null ? BindingResolution.Invalid : (BindingResolution?)null;
+            : reference.Epic is not null ? BindingResolution.Invalid : (BindingResolution?) null;
         if (fault is not null)
         {
             return new BindingResult(fault.Value, null, null, []);

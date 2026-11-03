@@ -27,10 +27,12 @@ public sealed class SchemaPinUnitTests
         {
             files.AddDirectory("repo");
         }
+
         if (manifest is not null)
         {
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
+
         var versions = EngineServices.Versions();
         var handler = new SchemaVersionManager(new SpechtManifestStore(files), new SpechtManifestParser(versions),
             new ManifestPinEditor(new SpechtManifestParser(versions), versions), versions);
