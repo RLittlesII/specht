@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup Label="Analyzers">
+    <PackageVersion Include="Roslynator.Analyzers" Version="5.0.1" />
+    <PackageVersion Include="Roslynator.CodeFixes" Version="5.0.1" />
     <PackageVersion Include="Rocket.Surgery.Airframe.CodeAnalysis" Version="0.12.1" />
     <PackageVersion Include="Specht.CodeAnalysis" Version="$(SpechtCodeAnalysisPackageVersion)" Condition="'$(SpechtCodeAnalysisPackageVersion)' != ''" />
   </ItemGroup>

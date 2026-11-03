@@ -27,7 +27,10 @@ public sealed class ReleaseCatalogReader(HttpClient client)
             {
                 if (!visited.Add(next) || visited.Count > 10000 || next.Scheme != "https" || next.Host != "api.github.com"
                     || next.AbsolutePath != $"/repos/{repository}/releases" || !next.IsDefaultPort || next.UserInfo.Length != 0)
+                {
                     return new ReleaseCatalog(releases.ToImmutable(), false, "Release catalog pagination identity is invalid.");
+                }
+
                 using var response = await client.GetAsync(next, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));

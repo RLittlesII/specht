@@ -444,7 +444,9 @@ public sealed class ReportBundlerUnitTests
                         "ns/op", "1/2 of the samples failed", "raw/current/x.json", "--artifacts raw/current", "dotnet build /p:Configuration=Release",
                         "https://example.com/a",
                     })
+                {
                     Add(placement, kept);
+                }
             }
         }
     }

@@ -549,8 +549,11 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
     {
         if (!Directory.Exists(_root)) return;
         if (!OperatingSystem.IsWindows())
+        {
             foreach (var directory in Directory.EnumerateDirectories(_root, "*", SearchOption.AllDirectories))
                 File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+
         Directory.Delete(_root, true);
     }
 

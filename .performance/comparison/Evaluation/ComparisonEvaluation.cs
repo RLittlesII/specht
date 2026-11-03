@@ -27,6 +27,7 @@ public static class ComparisonEvaluation
     private static IEnumerable<CoverageGap> Gaps(CaseComparison comparison)
     {
         if (!comparison.Metrics.Any(static m => m.Metric is MetricKind.Time or MetricKind.ManagedAllocation))
+        {
             return [new CoverageGap(comparison.Key, null, comparison.Reason
                 ?? comparison.Evidence.Previous?.Failure ?? comparison.Evidence.Current?.Failure ?? comparison.Status switch
                 {
@@ -34,6 +35,8 @@ public static class ComparisonEvaluation
                     PairingStatus.Removed => "Workload is only in the previous release; it has no regression judgment.",
                     _ => "Workload case has no timing or managed-allocation result to judge.",
                 })];
+        }
+
         return comparison.Metrics
             .Where(static m => m.Judgment is MetricJudgment.InsufficientEvidence or MetricJudgment.NotComparable)
             .Select(m => new CoverageGap(comparison.Key, m.Metric, m.Reason!));
@@ -43,8 +46,11 @@ public static class ComparisonEvaluation
     {
         var informational = pair.Metric == MetricKind.ToolPeakMemory;
         if (pair.Status != PairingStatus.Comparable)
+        {
             return Unmeasured(pair, informational ? MetricJudgment.Informational
                 : pair.Status == PairingStatus.NotComparable ? MetricJudgment.NotComparable : MetricJudgment.InsufficientEvidence, pair.Reason);
+        }
+
         var before = pair.Previous[0];
         var after = pair.Current[0];
         try

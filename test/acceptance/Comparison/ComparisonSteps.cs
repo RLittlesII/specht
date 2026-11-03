@@ -179,6 +179,7 @@ public sealed class ComparisonSteps : IDisposable
         var reasons = string.Join(" ", _pairs.SelectMany(static pair => pair.Metrics.Select(static metric => metric.Reason).Append(pair.Reason)));
         reasons.Should().NotBeNullOrWhiteSpace();
         if (_condition is not null)
+        {
             reasons.Should().Contain(_condition switch
             {
                 "workload definitions" => "fixture",
@@ -192,6 +193,7 @@ public sealed class ComparisonSteps : IDisposable
                 "benchmark jobs" => "job",
                 _ => "confidence",
             });
+        }
     }
 
     [Then("the pair receives no regression judgment")]
@@ -712,8 +714,10 @@ public sealed class ComparisonSteps : IDisposable
     public void ThenEachEnvironment()
     {
         foreach (var side in new[] { _collection!.Session.Previous, _collection.Session.Current })
+        {
             side.Conditions.Should().Be(new MeasurementConditions("Invented OS 1.0", ".NET 10.0.0", "X64", "11.0.100-invented.1", "Job default",
                 "ShortRun(Toolchain=.NET 10.0, IterationCount=3, LaunchCount=1, WarmupCount=3)"));
+        }
     }
 
     [Given("a release has been successfully published")]

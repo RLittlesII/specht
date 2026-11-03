@@ -17,7 +17,10 @@ public static class ReleaseSelection
         foreach (var release in catalog.Releases) ComparisonJson.ValidateRelease(release);
         if (catalog.Releases.Any(release => release.Repository != current.Repository)
             || catalog.Releases.GroupBy(static release => release.Id).Any(static group => group.Count() != 1))
+        {
             throw new InvalidDataException("Release catalog has duplicate identities or a different repository.");
+        }
+
         var published = catalog.Releases.Where(static release => !release.Draft && release.PublishedAt is not null)
             .OrderBy(static release => release.PublishedAt).ThenBy(static release => release.Id).ToArray();
         var recorded = published.SingleOrDefault(release => release.Id == current.Id);

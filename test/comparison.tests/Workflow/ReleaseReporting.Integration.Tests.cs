@@ -28,7 +28,10 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
             if (_artifacts.Respond(request) is { } artifact) return artifact;
             if (request.Method == HttpMethod.Get && request.RequestUri!.Host == "api.github.com"
                 && _catalog.TryGetValue(request.RequestUri.PathAndQuery, out var json))
+            {
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
+            }
+
             return _storage.Respond(request);
         });
         _client = new HttpClient(_handler);

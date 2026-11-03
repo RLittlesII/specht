@@ -56,8 +56,11 @@ public static class RevisionEvidence
     {
         var environment = ImmutableSortedDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
         foreach (var (name, value) in parent)
+        {
             if (Inherited.Contains(name) || name.StartsWith("DOTNET_ROOT", StringComparison.OrdinalIgnoreCase))
                 environment[name] = value;
+        }
+
         foreach (var name in new[] { "HOME", "USERPROFILE", "DOTNET_CLI_HOME" }) environment[name] = home;
         foreach (var name in new[] { "TMPDIR", "TMP", "TEMP" }) environment[name] = temporary;
         environment["NUGET_PACKAGES"] = packages;
@@ -79,7 +82,10 @@ public static class RevisionEvidence
                 || Required(host, "BenchmarkDotNetVersion") is not { } exporter || Required(host, "OsVersion") is not { } system
                 || Required(host, "RuntimeVersion") is not { } runtime || Required(host, "Architecture") is not { } architecture
                 || Required(host, "DotNetCliVersion") is not { } toolchain)
+            {
                 return null;
+            }
+
             var conditions = ImmutableArray.CreateBuilder<(string, MeasurementConditions)>();
             foreach (var benchmark in benchmarks.EnumerateArray())
             {

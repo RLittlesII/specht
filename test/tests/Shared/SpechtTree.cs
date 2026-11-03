@@ -178,9 +178,9 @@ public sealed class SpechtTree : IDisposable
 
         var body = new StringBuilder();
 
-        body.Append(Frontmatter(epic, id, frontmatter));
-        body.Append($"# Specification: {id}\n\n");
-        body.Append(string.Join('\n', sections ?? Sections));
+        body.Append(Frontmatter(epic, id, frontmatter))
+            .Append($"# Specification: {id}\n\n")
+            .Append(string.Join('\n', sections ?? Sections));
 
         var path = Path.Combine(directory, "spec.md");
 
@@ -208,9 +208,9 @@ public sealed class SpechtTree : IDisposable
 
         var body = new StringBuilder();
 
-        body.Append(Frontmatter(epic, id, frontmatter));
-        body.Append($"# Specification: {id}\n\n");
-        body.Append(string.Join('\n', sections ?? Sections));
+        body.Append(Frontmatter(epic, id, frontmatter))
+            .Append($"# Specification: {id}\n\n")
+            .Append(string.Join('\n', sections ?? Sections));
 
         var path = Path.Combine(directory, "README.md");
 

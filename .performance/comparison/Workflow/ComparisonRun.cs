@@ -82,8 +82,10 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
         var collection = await collector.CollectAsync(plan, cancellationToken);
         var sides = new[] { collection.Previous, collection.Current };
         if (sides.Any(static side => side.Status != CollectionStatus.Collected))
+        {
             return ReportingOutcome.Failed(ReportingStage.Collection, string.Join(' ', sides.Where(static side => side.Status != CollectionStatus.Collected)
                 .Select(static side => $"{Capitalised(side.Side)} revision: {side.Reason}")));
+        }
 
         enter?.Invoke(ReportingStage.Parsing);
         MeasurementInventory previous;

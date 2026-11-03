@@ -23,7 +23,10 @@ public static class BenchmarkEvidenceReader
             if (!IsSupportedProducer(Text(host, "BenchmarkDotNetVersion"))
                 || !string.Equals(Text(host, "Configuration"), "Release", StringComparison.OrdinalIgnoreCase)
                 || !host.TryGetProperty("HasAttachedDebugger", out var debugger) || debugger.ValueKind != JsonValueKind.False)
+            {
                 return Unavailable("Exporter version or Release/debugger evidence is unsupported.");
+            }
+
             var benchmarks = root.GetProperty("Benchmarks");
             if (benchmarks.ValueKind != JsonValueKind.Array) return Unavailable("Exporter inventory is malformed.");
             var index = 0;
@@ -32,7 +35,10 @@ public static class BenchmarkEvidenceReader
                 var name = Text(benchmark, "FullName");
                 if (string.IsNullOrWhiteSpace(name) || !benchmark.TryGetProperty("Measurements", out var measurements)
                     || measurements.ValueKind != JsonValueKind.Array)
+                {
                     return Unavailable("Unsupported full-JSON record shape.");
+                }
+
                 var matching = mappings.Where(mapping => mapping.FullName == name && mapping.ProductCommit == side.ProductCommit
                     && EvidencePaths.IsRelative(mapping.SourceFile) && ComparisonJson.IsHash(mapping.SourceDigest, 64)).ToArray();
                 var known = matching.Length == 1;
@@ -46,8 +52,11 @@ public static class BenchmarkEvidenceReader
                 index++;
             }
             foreach (var expected in side.ExpectedCases)
+            {
                 if (!cases.Any(e => WorkloadIdentity.Key(e.Case) == WorkloadIdentity.Key(expected)))
                     cases.Add(new CaseEvidence(expected, [], true, "Expected native case has no exporter record."));
+            }
+
             return new MeasurementInventory(side.InventoryKnown, cases.ToImmutable(), []);
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or System.Collections.Generic.KeyNotFoundException
