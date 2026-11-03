@@ -30,7 +30,7 @@ namespace Specht.Tool.Features.Init;
 /// <param name="upstreamSchemaFetcher">The fetcher needed when an upstream source selects schemas.</param>
 /// <param name="manifestParser">The in-memory validator shared with manifest loading.</param>
 /// <implements epic="0001" feature="F4" claim="B-019" />
-public sealed class InitWriter(
+public sealed partial class InitWriter(
     IReadOnlyDictionary<string, byte[]> shippingCopy,
     IFileSystem fileSystem,
     SpechtManifestParser manifestParser,
@@ -290,7 +290,7 @@ public sealed class InitWriter(
             ? (members[epic - 1].End, members[epic].End)
             : members.Count > 1 ? (members[0].Start, members[1].Start) : (members[0].Start, members[0].End);
         var task = members.FindIndex(static member => member.Name == "task"
-            && member.Value is { } grammar && new Regex(grammar).GetGroupNames().Contains("epic", StringComparer.Ordinal));
+            && member.Value is { } grammar && EpicGroup().IsMatch(grammar));
         var splices = new List<(int From, int To, byte[] Bytes)> { (from, to, []) };
         if (task >= 0)
         {
@@ -308,47 +308,23 @@ public sealed class InitWriter(
     }
 
     /// <summary>
-    /// The task grammar a manifest written without the epic grammar declares in place of one naming an <c>epic</c> group:
+    /// The task grammar a manifest written without the epic grammar declares in place of one holding an <see cref="EpicGroup"/>:
     /// the shipped grammar with that group's parentheses dropped and its pattern kept (<c>0001-F5</c> OQ-5), so
     /// <c>^(?&lt;epic&gt;[0-9]{4})-(?&lt;sequence&gt;[0-9]{2})$</c> becomes <c>^[0-9]{4}-(?&lt;sequence&gt;[0-9]{2})$</c>.
     /// </summary>
-    /// <param name="shipped">The shipped task grammar, naming an <c>epic</c> group.</param>
-    /// <returns>The grammar with the <c>epic</c> group's opening <c>(?&lt;epic&gt;</c> and its closing parenthesis removed.</returns>
+    /// <param name="shipped">The shipped task grammar, holding an <see cref="EpicGroup"/>.</param>
+    /// <returns>The grammar with each <see cref="EpicGroup"/> match replaced by its <c>pattern</c>.</returns>
     /// <implements epic="0001" feature="F4" claim="B-022" />
-    private static string EpiclessTaskGrammar(string shipped)
-    {
-        var open = shipped.IndexOf(EpicGroup, StringComparison.Ordinal);
-        var (depth, inClass) = (1, false);
+    private static string EpiclessTaskGrammar(string shipped) => EpicGroup().Replace(shipped, "${pattern}");
 
-        for (var index = open + EpicGroup.Length; index < shipped.Length; index++)
-        {
-            switch (shipped[index])
-            {
-                case '\\':
-                    index++;
-                    break;
-                case '[' when !inClass:
-                    inClass = true;
-                    break;
-                case ']' when inClass:
-                    inClass = false;
-                    break;
-                case '(' when !inClass:
-                    depth++;
-                    break;
-                case ')' when !inClass:
-                    if (--depth == 0)
-                    {
-                        var pattern = open + EpicGroup.Length;
-                        return string.Concat(shipped.AsSpan(0, open), shipped.AsSpan(pattern, index - pattern), shipped.AsSpan(index + 1));
-                    }
-
-                    break;
-            }
-        }
-
-        return shipped;
-    }
+    /// <summary>
+    /// Matches the one shape of <c>epic</c> group a shipped task grammar has: <c>(?&lt;epic&gt;</c>, a <c>pattern</c> holding
+    /// no parenthesis, and <c>)</c>.
+    /// </summary>
+    /// <returns>The shared generated expression.</returns>
+    /// <implements epic="0001" feature="F4" claim="B-022" />
+    [GeneratedRegex(@"\(\?<epic>(?<pattern>[^()]*)\)")]
+    private static partial Regex EpicGroup();
 
     /// <implements epic="0001" feature="F4" claim="B-019" />
     /// <implements epic="0001" feature="F4" claim="B-023" />
@@ -369,8 +345,6 @@ public sealed class InitWriter(
     }
 
     private const string EpicSchemaRelative = SpechtManifestStore.FrontmatterSchemaFolder + "/epic.schema.json";
-
-    private const string EpicGroup = "(?<epic>";
 
     private static readonly JsonSerializerOptions GrammarJson = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 }
