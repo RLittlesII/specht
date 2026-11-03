@@ -66,17 +66,17 @@ forms, and id grammars in the manifest, gets messages that name those values,
 and chooses an exact or floating schema pin.
 
 The remaining path is `0166` (the model builder, parsers and reader), then
-`0016` (keys, forms and grammars), then `0018` (diagnostic wording). Rule unit
-coverage `0152` and pin policy `0124` have no outstanding item prerequisites.
-The pin policy stays here under the owner's 2026-11-01 decision. `0016` still
-needs its blocked status and agreement/design holds reconciled before code;
-`0124` and `0018` still need their architecture passes.
+`0016` (keys, forms and grammars, at schema `0.3.0`), then `0018` (diagnostic
+wording) and `0345` (epics opt-in). Rule unit coverage `0152` and pin policy
+`0124` have no outstanding item prerequisites. The pin policy stays here under
+the owner's 2026-11-01 decision. `0124`, `0018` and `0345` still need their
+architecture passes.
 
-| Feature   | Delivers                                                                                         |
-| --------- | ------------------------------------------------------------------------------------------------ |
-| `0001-F5` | Part: frontmatter keys, edge forms and id grammars from the manifest, named in messages          |
-| `0001-F1` | Part: the model builder and reader prerequisite, and unit coverage for the rules already split   |
-| `0001-F7` | Part: a pin policy selecting the exact version, newest permitted patch or newest permitted minor |
+| Feature   | Delivers                                                                                                  |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `0001-F5` | Part: frontmatter keys, edge forms and id grammars from the manifest, named in messages, and epics opt-in |
+| `0001-F1` | Part: the model builder and reader prerequisite, and unit coverage for the rules already split            |
+| `0001-F7` | Part: a pin policy selecting the exact version, newest permitted patch or newest permitted minor          |
 
 The mediator evaluation ended without adoption (ADR-0026). The type rename,
 rule splits, instance evaluator, tree move, release baseline comparison,
@@ -85,12 +85,11 @@ this milestone's history. Each structural stage still carries ADR-0027's
 whole-check benchmark guard; `0166` is the only remaining structural stage
 required by this release slice. Runner removal belongs to 0.6.0.
 
-`0001-F5` still has uncut claims B-024 to B-035 and B-042 and Partial rows
-whose original items are done. Groom the epics-optional and remaining
-identity/path work before closing the whole Feature; these five selected
-items do not absorb those claims.
+`0001-F5` B-024 to B-035 and B-042, the epics opt-in, are item `0345`, built
+after `0016` so that the first package carrying schema `0.3.0` holds both.
+`0001-F5` still has Partial rows whose original items are done.
 
-**Done means:** `0166`, `0016`, `0018`, `0152` and `0124` satisfy their cited
+**Done means:** `0166`, `0016`, `0018`, `0345`, `0152` and `0124` satisfy their cited
 claims, the default manifest reproduces the golden baseline on every moved
 literal, older pins retain their interpretation, and the required tests and
 structural benchmark guard pass.

@@ -19,12 +19,14 @@ claims:
   - B-005
   - B-006
   - B-014
+  - B-019
   - B-049
   - B-050
   - B-051
   - B-052
   - B-053
   - B-054
+  - B-068
 
 created: "2026-10-08"
 updated: "2026-11-02"
@@ -39,18 +41,24 @@ summary: |
   SPEC031 under B-014 (§ 7, the moves); every id grammar must live once
   (C-2), and a renamed key must not be excused from the frontmatter schemas
   (C-8). Key names are ratified in decision 0010, grouped by document kind.
+  The contract first holds at schema 0.3.0 (decision 0016); the epic-less
+  shape is item 0345's (decision 0018).
 
 acceptance_criteria:
-  - "B-049 — Older pins keep their manifest interpretation"
-  - "B-050 — A task grammar requires its sequence group"
-  - "B-051 — An epic task grammar requires its epic group"
-  - "B-052 — A form requires each expected placeholder exactly once"
-  - "B-053 — A sequence gap message follows the captured width"
-  - "B-054 — A malformed dependency edge retains its text"
-  - "B-004 — every frontmatter key a rule reads named in the manifest"
-  - "B-005 — qualified identity and both edge forms declared"
-  - "B-006 — epic and sequence via named groups; three-digit sequence checked"
-  - "B-014 — non-compiling grammar rejected, naming it"
+  - "Every claim below first holds under schema 0.3.0, written in place and relocked (decision 0016); 0.1.0, 0.2.0 and 0.2.1 keep their verdicts, bytes and lock digests."
+  - "B-004 — every frontmatter key a rule reads named in the manifest, Feature `status` among them (decision 0017)"
+  - "B-005 — qualified identity and both edge forms declared; the declared-epic shape (decision 0018)"
+  - "B-006 — epic and sequence via named groups; three-digit sequence checked; the declared-epic shape (decision 0018)"
+  - "B-014 — every grammar compiled at parse, a non-compiling one rejected, naming it"
+  - "B-019 — the omitted form only; the rest of B-019 is 0011's"
+  - "B-049 — 0.1.0, 0.2.0 and 0.2.1 keep their manifest interpretation"
+  - "B-050 — a task grammar requires its sequence group"
+  - "B-051 — an epic task grammar requires its epic group"
+  - "B-052 — a form requires each expected placeholder exactly once, whatever the epic grammar"
+  - "B-053 — a sequence gap message follows the captured width; the declared-epic shape"
+  - "B-054 — a malformed dependency edge retains its text; the declared-epic shape"
+  - "B-068 — schema 0.3.0's default task grammar names its groups; this repository's live copy follows (A-1)"
+  - "A manifest declaring no epic grammar keeps the identity, edges and item sequence it had at d73b7a51 (decision 0018); B-024 to B-035 and B-042 are 0345's."
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -299,8 +307,41 @@ decisions:
     OQ-17's ruling rejected for ADR-0010's stages. (C) Fold them into
     this item: one change above risk 4, against A-2's one move at a
     time.
+  - |
+    2026-11-02, the repository owner, answering the three questions of
+    the entry above, each chosen on its own: question 1 "A 0.3.0 in
+    place (Recommended)"; question 2 "A add key role (Recommended)";
+    question 3 "A cut item after 0016 (Recommended)". Recorded by
+    spec-author.
+    1. The contract - keys, forms, named task groups, grammars checked
+    at parse, a malformed edge's original text, the captured gap width
+    - first holds at schema 0.3.0, changed in place and relocked.
+    0.1.0, 0.2.0 and 0.2.1 keep their verdicts and bytes. ADR-0030
+    narrows ADR-0029 ruling 6 for B-053 and B-054 to 0.3.0 and later.
+    No `v*` tag is pushed before this item merges. Manifest decision
+    0016. Rejected: (B) B-053 and B-054 from 0.2.0; (C) a new schema
+    0.4.0.
+    2. `keys.feature.status`, default `status`, is a key role that
+    SPEC7001 reads under 0.3.0; B-004's list gains it. Manifest
+    decision 0017. Rejected: (B) a literal, with B-004 narrowed;
+    (C) a later version.
+    3. The epics opt-in, B-024 to B-035 and B-042, is item 0345, which
+    depends on this item and sits in milestone 0.4.0. This item builds
+    the forms for the declared-epic shape, keeps today's epic-less
+    behaviour, and checks the forms as declared whatever the epic
+    grammar. Manifest decision 0018; OQ-18 resolved. Rejected: (B) the
+    epics item first; (C) folding it in here.
+    Consequences, spec-author: A-6, B-014 and B-049 to B-054 now read
+    0.3.0. B-068 is added, so that 0.3.0's default task grammar
+    `^(?<epic>[0-9]{4})-(?<sequence>[0-9]{2})$` passes B-050 and
+    B-051. The criteria are rewritten to this scope. They now also cite
+    B-019 for its omitted form, which the entry above found owed and
+    no criterion carried. § 6 to § 9 are left to implementer and
+    test-writer, who bring them true in the change that builds this
+    item.
 
 out_of_scope:
+  - "The epics opt-in, B-024 to B-035 and B-042 — item 0345 (decision 0018)."
   - "Deriving or patching a frontmatter schema from the manifest — C-8."
   - "Moving every literal in one change — § 5 #6."
   - "Claim tags in the companion, SPEC021 — B-007, B-036 to B-038; item 0134."

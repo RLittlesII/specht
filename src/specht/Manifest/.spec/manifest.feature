@@ -40,16 +40,25 @@ Feature: The manifest carries the roles
 
   @B-004
   Scenario: Frontmatter keys are read from the manifest
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     Given the frontmatter schemas are read from the root
     And the manifest's Feature key roles and the root's Feature schema both name the children key "tasks"
     And the root holds a specification whose "tasks" names an item that does not exist
     When the check runs
     Then the unresolved-child rule reports it
 
+  @B-004
+  Scenario: A Feature's delivery status is read by the manifest's key
+    Given the manifest pins schema version "0.3.0"
+    And the frontmatter schemas are read from the root
+    And the manifest's Feature key roles and the root's Feature schema both name the status key "delivery"
+    And the root holds a specification whose "delivery" is done with a "Missing" cell in its traceability table
+    When the check runs
+    Then the approved-with-missing-coverage rule reports that row
+
   @B-005
   Scenario: Identity and edge forms are read from the manifest
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     Given the frontmatter schemas are read from the root
     And the manifest and the root's Feature schema both declare the qualified edge form with a colon between the epic and the Feature id
     And the root holds a specification whose dependency edge is written "0002:F1"
@@ -59,7 +68,7 @@ Feature: The manifest carries the roles
 
   @B-006
   Scenario: Item ids follow the task grammar
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     Given the frontmatter schemas are read from the root
     And the manifest's task grammar and the root's frontmatter schemas all carry a three-digit sequence
     And the root holds items "0001-001" and "0001-002" beside a specification
@@ -156,11 +165,30 @@ Feature: The manifest carries the roles
 
   @B-014
   Scenario: A grammar that does not compile is invalid
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     Given the manifest's claim grammar is not a valid expression
     When the check runs
     Then the manifest is rejected
     And the rejection names the claim grammar
+
+  @B-014 @B-022 @B-023
+  Scenario Outline: Every grammar is compiled before a check
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
+    And the manifest's <grammar> grammar is not a valid expression
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the <grammar> grammar
+    And the run exits with the invalid-manifest code
+    And only the rejection is written to stderr
+
+    Examples:
+      | grammar       |
+      | task          |
+      | feature       |
+      | epic          |
+      | constraint    |
+      | open-question |
 
   @B-015
   Scenario: A role naming an absent section is invalid
@@ -544,7 +572,7 @@ Feature: The manifest carries the roles
 
   @B-004 @boundary
   Scenario: Feature and item key spellings are independent
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And the manifest and on-disk schemas name the Feature id key "feature_id" and the item id key "work_id"
     And the root holds a Feature and an item using those respective keys
     When the check runs
@@ -567,7 +595,7 @@ Feature: The manifest carries the roles
 
   @B-049 @boundary
   Scenario Outline: Older pins keep their manifest interpretation
-    Given the tool ships schema version "0.2.0" alongside "<pin>"
+    Given the tool ships schema version "0.3.0" alongside "<pin>"
     And the manifest pins schema version "<pin>"
     And the root exercises a group-less task grammar, a malformed edge and a custom sequence width
     When the check runs
@@ -576,19 +604,29 @@ Feature: The manifest carries the roles
     Examples:
       | pin   |
       | 0.1.0 |
+      | 0.2.0 |
+      | 0.2.1 |
 
   @B-050 @boundary
   Scenario: A task grammar requires its sequence group
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And its task grammar is a valid expression with no named sequence group
     When the check runs
     Then the manifest rejection names the task grammar and the missing sequence group
     And the run exits with the invalid-manifest code
     And only the rejection is written to stderr
 
+  @B-050 @boundary
+  Scenario: A manifest re-pinned to 0.3.0 keeps its older group-less task grammar and is rejected
+    Given the manifest pins schema version "0.3.0"
+    And its task grammar is "^[0-9]{4}-[0-9]{2}$", the grammar the default manifests of earlier versions declare
+    When the check runs
+    Then the manifest rejection names the task grammar and the missing sequence group
+    And the run exits with the invalid-manifest code
+
   @B-051 @boundary
   Scenario: An epic task grammar requires its epic group
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And the manifest declares the epic grammar
     And its task grammar names the sequence group but not the epic group
     When the check runs
@@ -598,7 +636,7 @@ Feature: The manifest carries the roles
 
   @B-052 @boundary
   Scenario Outline: A form requires each expected placeholder exactly once
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And its "<form>" form is "<value>"
     When the check runs
     Then the manifest rejection names "<form>" and "<value>"
@@ -613,14 +651,14 @@ Feature: The manifest carries the roles
 
   @B-019
   Scenario: An omitted form follows the pinned default
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And the manifest omits the qualified-edge form
     When the manifest is loaded
     Then its qualified-edge form is "{epic}/{id}"
 
   @B-053
   Scenario: A sequence gap message follows the captured width
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And the task grammar and on-disk schemas carry a three-digit sequence
     And the root holds items "0001-001" and "0001-004" beside a specification
     When the check runs
@@ -628,11 +666,19 @@ Feature: The manifest carries the roles
 
   @B-054
   Scenario: A malformed dependency edge retains its text
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And the root holds a specification whose dependency edge is "F2x"
     And that edge matches neither configured edge form
     When the check runs
     Then the unresolved-edge rule reports identifier "F2x"
+
+  @B-068
+  Scenario: The default task grammar names its groups
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar and no task grammar
+    When the check runs
+    Then the manifest is not rejected
+    And its task grammar names the epic and sequence groups
 
 
   @B-048 @boundary

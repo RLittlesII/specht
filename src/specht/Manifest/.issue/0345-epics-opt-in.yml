@@ -1,0 +1,83 @@
+id: "0345"
+type: task
+title: Make epics opt-in by the manifest's epic grammar
+
+status: ready-for-architecture
+
+risk: 4
+
+parent: "0010"
+children: []
+
+depends_on: ["0016"] # the identity, edge and sequence reads it adapts are 0016's
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+  - B-029
+  - B-030
+  - B-031
+  - B-032
+  - B-033
+  - B-034
+  - B-035
+  - B-042
+
+created: "2026-11-02"
+updated: "2026-11-02"
+closed: null
+
+summary: |
+  Makes epics opt-in: whether a tree has an epic tier is read from the
+  manifest's epic grammar alone (decision 0004, C-10). Without the epic
+  grammar, a Feature's identity is its `id`, local edges resolve by `id`,
+  qualified edges name no Feature, items number per Feature, the epic schema
+  and files are not read, and SPEC3001 checks the Feature segment alone. No
+  specification is left out of SPEC3002 or SPEC6001-SPEC6003 for carrying no
+  `epic` (C-11).
+  Depends on 0016: it adapts the identity, edge resolution and item sequence
+  that 0016 first reads from the manifest's forms and task grammar
+  (decision 0018). Risk 4: it changes what SPEC1004, SPEC3001, SPEC3002,
+  SPEC5003, SPEC5004 and SPEC6001-SPEC6003 read for every epic-less tree.
+  In milestone 0.4.0, so the first package carrying schema 0.3.0 holds it
+  (`0001-F7` OQ-72, default (a)).
+  Open questions this item meets, each to be settled before or in it:
+  OQ-4 (identity under the epic grammar for a Feature with no `epic`),
+  OQ-5 (the per-Feature task id form and the grammar init writes without
+  `--epics`) and OQ-13 (whether the shipped default stops declaring the
+  epic grammar).
+
+acceptance_criteria:
+  - "B-024 — with epics, identity is `{epic}-{id}`"
+  - "B-025 — without epics, identity is the `id` alone"
+  - "B-026 — without epics, a repeated `id` is a duplicate"
+  - "B-027 — without epics, no specification left out for carrying no `epic`"
+  - "B-028 — without epics, a local edge resolves by `id`"
+  - "B-029 — without epics, a qualified edge names no Feature"
+  - "B-030 — without epics, `parent` compared with the Feature `id`"
+  - "B-031 — with epics, a bare parent reported"
+  - "B-032 — without epics, items numbered per Feature"
+  - "B-033 — without epics, no epic schema file needed"
+  - "B-034 — without epics, SPEC1004 reports nothing"
+  - "B-035 — with epics, a missing `epic` reported, in either layout"
+  - "B-042 — without epics, SPEC3001 checks the Feature segment alone"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-02, the repository owner, on item 0016's question 3: "A cut
+    item after 0016 (Recommended)". This item carries OQ-18's claims,
+    B-024 to B-035 and B-042, after 0016 and in milestone 0.4.0.
+    Manifest decision 0018. Rejected: building it before 0016, and
+    folding it into 0016. Cut by spec-author.
+
+out_of_scope:
+  - "The identity and edge forms, the named task groups and their rejections for a manifest declaring the epic grammar — item 0016."
+  - "This repository dropping its epics — § 5 row 11."
+  - "A new rule id for an epic-less tree — § 5 row 10."
