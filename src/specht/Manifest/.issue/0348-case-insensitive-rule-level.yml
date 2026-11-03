@@ -25,24 +25,33 @@ summary: |
   case, such as `Warning`, is read as that level. Until this item lands,
   B-045 rejects it. The owner ruled it on OQ-15: "case-insensitive. this
   isn't a breaking change for 0.4.0 so we can add an item to do this later."
-  (Manifest decision 0021 call 6), for a milestone after 0.4.0.
-  No claim is written yet: the schema version that first reads the level
-  this way is OQ-28, which the owner has not answered.
-  Risk 2: it changes how one manifest value is compared, under a pin that
-  OQ-28 decides.
+  (Manifest decision 0021 call 6). It sits under no milestone ("Leave
+  unscheduled (Recommended)"; call 10).
+  It holds from the first schema version after 0.3.0, a 0.minor step;
+  0.3.0 and every older pin keep rejecting `Warning` (OQ-28, "A next
+  0.minor (Recommended)"; call 9). Its claim is written with this item.
+  Risk 2: it changes how one manifest value is compared, under that one
+  new pin.
 
 acceptance_criteria:
-  - "§ 3 gains the claim for the case-insensitive level, at OQ-28's pin, and this item lists it."
+  - "§ 3 gains the claim for the case-insensitive level, from the first schema version after 0.3.0, and this item lists it."
+  - "0.3.0 and every older pin keep rejecting a level that differs only in case (B-045)."
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
     2026-11-03, the repository owner, on OQ-15: "case-insensitive. this
     isn't a breaking change for 0.4.0 so we can add an item to do this
-    later." Cut by spec-author for a milestone after 0.4.0; Manifest
+    later." Cut by spec-author outside milestone 0.4.0; Manifest
     decision 0021 call 6. OQ-15 (b), the non-text value named as the
     manifest's JSON writes it, is B-045 as built and needs no item.
     OQ-28 raised for the pin (decision 0021 call 8).
+  - |
+    2026-11-03, the repository owner, on OQ-28: "A next 0.minor
+    (Recommended)"; and on items 0347 and 0348: "Leave unscheduled
+    (Recommended)". The level holds from the first schema version after
+    0.3.0, and this item sits under no milestone. Manifest decision 0021
+    calls 9 and 10. Recorded by spec-author.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
