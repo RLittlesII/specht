@@ -6,7 +6,7 @@ namespace Specht.Tests.Manifest;
 /// </summary>
 public sealed class UndefinedPinPolicies : TheoryData<string, string>
 {
-    /// <summary>Initializes the scenario's two values, a defined value in other letter case, and two values that are not strings.</summary>
+    /// <summary>Initializes the scenario's two values, a defined value in other letter case, and three values that are not strings, null among them.</summary>
     public UndefinedPinPolicies()
     {
         Add("\"latest-major\"", "latest-major");
@@ -14,5 +14,6 @@ public sealed class UndefinedPinPolicies : TheoryData<string, string>
         Add("\"Latest-Patch\"", "Latest-Patch");
         Add("42", "42");
         Add("true", "true");
+        Add("null", "null");
     }
 }
