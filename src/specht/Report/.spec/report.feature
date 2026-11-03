@@ -184,6 +184,19 @@ Feature: The report contract
       | the same Feature identity in both layouts       | reused identity |
       | an item whose parent disagrees with its Feature | item            |
 
+  @B-012
+  Scenario Outline: Without epics an identity expectation carries the id form
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the root holds <situation>
+    When the check runs with JSON output
+    Then the <expectation> expectation carries the form "{id}"
+
+    Examples:
+      | situation                                       | expectation     |
+      | two specifications declaring the same id        | reused identity |
+      | an item whose parent disagrees with its Feature | item            |
+
   @B-012 @boundary
   Scenario: Below schema 0.3.0 an identity expectation keeps the epic and Feature form
     Given the manifest pins schema version "0.2.1"

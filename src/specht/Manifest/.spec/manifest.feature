@@ -67,6 +67,17 @@ Feature: The manifest carries the roles
     Then the edge resolves to Feature F1 of epic 0002
     And no frontmatter violation is reported
 
+  @B-005
+  Scenario: Without epics, an edge resolves by the declared local form
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the frontmatter schemas are read from the root
+    And the manifest and the root's Feature schema both declare the local edge form with a hash before the Feature id
+    And the root holds a specification whose dependency edge is written "#F1"
+    When the check runs
+    Then the edge resolves to Feature F1
+    And no frontmatter violation is reported
+
   @B-006
   Scenario: Item ids follow the task grammar
     Given the manifest pins schema version "0.3.0"
@@ -77,6 +88,18 @@ Feature: The manifest carries the roles
     When the check runs
     Then both items are read with epic "0001"
     And the per-epic sequence is reported contiguous
+    And no frontmatter violation is reported
+
+  @B-006
+  Scenario: Without epics, item ids follow the task grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the frontmatter schemas are read from the root
+    And the manifest's task grammar and the root's frontmatter schemas all carry a three-digit sequence
+    And the root holds items "0001-001" and "0001-002" beside a specification
+    When the check runs
+    Then both items are read whole
+    And the per-Feature sequence is reported contiguous
     And no frontmatter violation is reported
 
   @B-007
@@ -261,28 +284,48 @@ Feature: The manifest carries the roles
 
   @B-024
   Scenario: With epics, identity is the epic and the id
-    Given the manifest declares the epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
     And the root holds a specification declaring epic "0001" and id "F2"
     When the check runs
     Then the specification is read as "0001-F2"
 
+  @B-069
+  Scenario: With epics, a Feature with no epic keeps its rendered identity
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
+    And the root holds two specifications in different folders, both declaring id "F2" and no epic
+    When the check runs
+    Then the duplicate-identity rule reports "-F2" once on each specification
+
   @B-025
   Scenario: Without epics, identity is the id alone
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds a specification declaring id "F2" and no epic
     When the check runs
     Then the specification is read as "F2"
 
   @B-025 @boundary
   Scenario: Without epics, the folder a specification sits in gives it no epic
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds a specification declaring id "F2" and no epic, in a folder named "0001-epic"
     When the check runs
     Then the specification is read as "F2"
 
+  @B-049 @boundary
+  Scenario: Below schema 0.3.0, a manifest without the epic grammar keeps the epic in an identity
+    Given the manifest pins schema version "0.2.1"
+    And the manifest declares no epic grammar
+    And the root holds a specification declaring epic "0001" and id "F2"
+    When the check runs
+    Then the specification is read as "0001-F2"
+
   @B-026
   Scenario: Without epics, a repeated id is a duplicate identity
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds two specifications in different folders, both declaring id "F2" and no epic
     When the check runs
     Then the duplicate-identity rule reports "F2" once on each specification
@@ -290,7 +333,8 @@ Feature: The manifest carries the roles
 
   @B-027
   Scenario: Without epics, no specification is left out of the identity and edge checks
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds a specification declaring id "F2" and no epic, which depends on "F9"
     And no specification declares id "F9"
     When the check runs
@@ -298,7 +342,8 @@ Feature: The manifest carries the roles
 
   @B-028
   Scenario: Without epics, a local edge resolves by id
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds a specification "F1" that depends on "F2"
     And a specification "F2" that lists "F1" as blocked by it
     When the check runs
@@ -306,7 +351,8 @@ Feature: The manifest carries the roles
 
   @B-029 @boundary
   Scenario: Without epics, a qualified edge names no Feature
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds a specification "F1" that depends on "0002/F2"
     And a specification "F2" that lists "F1" as blocked by it
     When the check runs
@@ -314,25 +360,53 @@ Feature: The manifest carries the roles
 
   @B-030
   Scenario: Without epics, an item's parent is its Feature's id
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds a specification "F2" with an item beside it whose parent is "F2"
     When the check runs
     Then no item-parent violation is reported
 
   @B-031
   Scenario: With epics, a bare parent is reported
-    Given the manifest declares the epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
     And the root holds a specification declaring epic "0001" and id "F2", with an item beside it whose parent is "F2"
     When the check runs
     Then the item-parent rule reports that item
 
   @B-032
   Scenario: Without epics, items are numbered per Feature
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the manifest's task grammar carries no epic part
     And the root holds specifications "F1" and "F2", each with its own items numbered 01 and 02
     When the check runs
     Then no item-sequence violation is reported
+
+  @B-032
+  Scenario: Without epics, items are numbered per Feature even where the task grammar names an epic part
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the manifest's task grammar names an epic part
+    And the root holds specification "F1" with items "0001-01" and "0001-02", and specification "F2" with item "0001-03"
+    When the check runs
+    Then the item-sequence rule reports that Feature F2's items skip 01
+
+  @B-070
+  Scenario: Without epics, an item no Feature holds is not sequenced
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the root holds an item numbered 02 in a folder that holds no specification
+    When the check runs
+    Then no item-sequence violation is reported
+
+  @B-071
+  Scenario: Without epics, a sequence gap names the Feature
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the root holds specification "F1" with items "0001-01" and "0001-03"
+    When the check runs
+    Then the sequence-gap message says Feature "F1"'s item sequence skips 02, and that tasks are numbered per Feature
 
   @B-033
   Scenario: Without epics, no epic schema file is needed
@@ -345,17 +419,41 @@ Feature: The manifest carries the roles
 
   @B-034
   Scenario: Without epics, epic files are not checked
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds an epic file whose frontmatter would fail the epic schema
     When the check runs
     Then the epic-frontmatter rule reports nothing
 
-  @B-035
-  Scenario: With epics, a missing epic is reported
-    Given the manifest declares the epic grammar
-    And the root holds a co-located specification declaring id "F2" and no epic
+  @B-034
+  Scenario: Without epics, an epic file without frontmatter is not reported
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the root holds an epic file with no frontmatter
     When the check runs
-    Then a missing-epic violation is reported on that specification
+    Then the frontmatter-present rule reports nothing on the epic file
+
+  @B-034 @boundary
+  Scenario: Without epics, an epic document named to the frontmatter command is still checked
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the root holds an epic file whose frontmatter would fail the epic schema
+    When the frontmatter command checks that file as an epic
+    Then the epic-frontmatter rule reports it
+
+  @B-035
+  Scenario Outline: With epics, a missing epic is reported
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
+    And the root holds a specification in the <layout> layout declaring id "F2" and no epic
+    When the check runs
+    Then the path-identity rule reports that specification at the line of its id, under identity "-F2"
+    And the message says the frontmatter has no epic while the manifest declares the epic grammar
+
+    Examples:
+      | layout   |
+      | features |
+      | epics    |
 
   @B-036
   Scenario: Claim tags follow the manifest's tag form
@@ -518,7 +616,8 @@ Feature: The manifest carries the roles
 
   @B-042
   Scenario: Without epics, path identity checks the Feature folder alone
-    Given the manifest declares no epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the manifest's epics layout declares which path segments carry the epic and the Feature id
     And the root holds a specification in that layout whose Feature folder matches its id and whose epic folder is named nothing like its frontmatter
     And the root holds a second specification in that layout whose Feature folder does not match its id
@@ -667,10 +766,28 @@ Feature: The manifest carries the roles
     When the check runs
     Then the sequence-gap message names the missing number "002"
 
+  @B-053
+  Scenario: Without epics, a sequence gap message follows the captured width
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
+    And the task grammar and on-disk schemas carry a three-digit sequence
+    And the root holds items "0001-001" and "0001-004" beside a specification
+    When the check runs
+    Then the sequence-gap message names the missing number "002"
+
   @B-054
   Scenario: A malformed dependency edge retains its text
     Given the manifest pins schema version "0.3.0"
     And the manifest declares the epic grammar
+    And the root holds a specification whose dependency edge is "F2x"
+    And that edge matches neither configured edge form
+    When the check runs
+    Then the unresolved-edge rule reports identifier "F2x"
+
+  @B-054
+  Scenario: Without epics, a malformed dependency edge retains its text
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares no epic grammar
     And the root holds a specification whose dependency edge is "F2x"
     And that edge matches neither configured edge form
     When the check runs
