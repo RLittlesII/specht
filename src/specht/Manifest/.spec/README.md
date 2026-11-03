@@ -873,7 +873,7 @@ Before implementation, 9 of the 12 new unit cases, 3 of the 6 bound acceptance s
 
 ### Keys, forms and grammars at schema `0.3.0` (item `0016`)
 
-<!-- last written by: test-writer, 2026-11-02 (item 0016: B-053's padding is the missing number's; init derives its task grammar); test-writer, 2026-11-02 (item 0016: the built contract proved; B-004 to B-006, B-014, B-019, B-049 to B-054 and B-068 `Covered`); test-writer, 2026-11-02 (item 0016: the contract at schema 0.3.0 stated in failing tests; decisions 0016 to 0018) -->
+<!-- last written by: test-writer, 2026-11-02 (item 0016: the edge branches left partial, each with its reason); test-writer, 2026-11-02 (item 0016: B-053's padding is the missing number's; init derives its task grammar); test-writer, 2026-11-02 (item 0016: the built contract proved; B-004 to B-006, B-014, B-019, B-049 to B-054 and B-068 `Covered`); test-writer, 2026-11-02 (item 0016: the contract at schema 0.3.0 stated in failing tests; decisions 0016 to 0018) -->
 
 Item `0016` states the contract at schema `0.3.0` (decision 0016). Every
 fixture that exercises `keys`, `forms` or the named task groups declares the
@@ -938,6 +938,49 @@ and under `0.2.x` only, so a task grammar that does not compile still escapes
 from `SpechtTaskShapes`' constructor as an unhandled regular-expression
 exception. B-014 as amended does not claim those pins and B-049 keeps their
 handling, so it stays a finding, not a claim.
+
+**Edge branches left partial.** The coverage of the item `0016` patch, read
+from every tier's report, leaves seven branches partial on this Feature's side.
+None gets a test: at each, no claim states the behaviour, or no entry point
+reaches it. Each is reported to the role that can close it. `0001-F4` § 8
+records the eighth, in `InitWriter`.
+
+- `ChildItem.FileNameId`, a file name shorter than seven characters with no
+  `{task}` capture. Reachable without `Forms`, under a task file shape such as
+  `{task}.md` over a grammar of two-character ids, where the whole file name
+  becomes the id. No claim says what an item's file-name id is there: it is
+  `0001-F6` OQ-10 and the C-2 residual § 7 records. `spec-author`.
+- `ItemSequenceRule.CheckGrammarSequences`, the task grammar not matching an
+  item id. The line's one jump is at `Match.Success`; whether the `sequence`
+  group participated is returned without a branch, so an optional group would
+  not change the count. The untaken side is an id the task grammar does not
+  match, under a manifest with `Forms`: the item takes no place in its epic's
+  sequence. B-006 says how a matched id's epic and sequence are read; no claim
+  says what an unmatched id does to the sequence. `spec-author`.
+- The same method, a `sequence` capture `int.TryParse` rejects. Reachable with
+  a grammar B-050 accepts, such as `(?<sequence>[a-z]{2})`, or a sequence
+  beyond `int`; the item is left out of its epic's sequence. B-006 and B-053
+  speak of a numbered sequence; no claim says what a capture that is not a
+  number is. `spec-author`.
+- `SpechtDependencyGraph.Resolve`, the null test inside `is { Success: true }`
+  on the qualified and the local edge match, one branch each. `Regex.Match`
+  never returns null, so neither is reachable. `implementer`: reading
+  `Success` from the match leaves no null test.
+- The same method, the `null` side of `feature.Epic ?? string.Empty`.
+  `SpechtModel` builds the graph from `FeaturesWithIdentity`, which holds only
+  Features with an epic and an id, and nothing else constructs it, so the side
+  is unreachable. `implementer`.
+- `SpechtManifestParser.Parse`, the `keysAndForms` gate with a pin at or above
+  `0.3.0` the tool does not ship. Reachable, and measured with the built tool:
+  a `0.4.0` pin carrying `keys` is rejected naming `keys` as a key the engine
+  does not know (B-012), exit `3`, ahead of `0001-F2` B-003's unshipped-pin
+  rejection; a `0.4.0` pin whose task grammar does not compile is rejected as
+  unshipped, naming no grammar. B-014 and B-050 to B-054 say "`0.3.0` or
+  later", and no claim says whether that takes in a version the tool does not
+  ship, or which rejection such a pin gets. `spec-author`. Over the shipped
+  catalog the `shipped is not null` term is also implied by the `keys` and
+  `forms` terms, since an unshipped pin reads `0.1.0`'s defaults; that is the
+  `implementer`'s to weigh.
 
 - **Unbound:** every scenario but B-001, B-002, B-003, B-004, B-005, B-006, B-008, B-010, B-011, B-012, B-013, B-014, B-015, B-016, B-017, B-018, B-019, B-020, B-021, B-022, B-023, B-039, B-040, B-041, B-043, B-044, B-045, B-046, B-049 to B-054, B-055 to B-060 and B-068 reports Skipped until its item binds it.
 
