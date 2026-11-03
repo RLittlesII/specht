@@ -139,14 +139,13 @@ public sealed class ItemSequenceRule : ISpechtRule
                 if (number != expected)
                 {
                     var missing = expected.ToString(CultureInfo.InvariantCulture).PadLeft(sequence.Length, '0');
-                    var first = 1.ToString(CultureInfo.InvariantCulture).PadLeft(sequence.Length, '0');
                     var id = item.Id![..sequence.Index] + missing + item.Id[(sequence.Index + sequence.Length)..];
 
                     yield return new SpechtFinding(
                         item.RelativePath,
                         item.Frontmatter.LineOf(item.Keys.Id),
                         item.Id,
-                        $"epic {group.Key}'s item sequence skips {missing} - tasks are numbered per epic, contiguously from {first}")
+                        $"epic {group.Key}'s item sequence skips {missing} - tasks are numbered per epic, contiguously from 01")
                     {
                         Expected = new JsonObject { ["fileName"] = $"{id}-*.md", ["nextNumber"] = expected },
                     };

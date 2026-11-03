@@ -239,7 +239,7 @@ public sealed class InitWriter(
 
     /// <summary>
     /// Removes the epic grammar from <paramref name="manifest"/>'s bytes and, where its task grammar names an
-    /// <c>epic</c> group, writes <see cref="EpiclessTaskGrammar"/> in its place; every other byte is kept.
+    /// <c>epic</c> group, writes <see cref="EpiclessTaskGrammar"/> of it in its place; every other byte is kept.
     /// </summary>
     /// <param name="manifest">The shipped manifest's bytes.</param>
     /// <returns>The manifest without the epic grammar.</returns>
@@ -294,7 +294,8 @@ public sealed class InitWriter(
         var splices = new List<(int From, int To, byte[] Bytes)> { (from, to, []) };
         if (task >= 0)
         {
-            splices.Add((members[task].ValueStart, members[task].End, Encoding.UTF8.GetBytes($"\"{EpiclessTaskGrammar}\"")));
+            var (valueStart, end) = (members[task].ValueStart, members[task].End);
+            splices.Add((valueStart, end, Encoding.UTF8.GetBytes(EpiclessTaskGrammar(Encoding.UTF8.GetString(manifest, valueStart, end - valueStart)))));
         }
 
         var written = manifest;
@@ -305,6 +306,15 @@ public sealed class InitWriter(
 
         return written;
     }
+
+    /// <summary>
+    /// The task grammar a manifest written without the epic grammar declares in place of one naming an <c>epic</c> group:
+    /// the shipped grammar with its <c>epic</c> group un-named, provisional pending <c>0001-F5</c> OQ-5.
+    /// </summary>
+    /// <param name="shipped">The shipped task grammar's JSON value, as written.</param>
+    /// <returns>The same JSON value with <c>(?&lt;epic&gt;</c> read as <c>(?:</c>.</returns>
+    /// <implements epic="0001" feature="F4" claim="B-022" />
+    private static string EpiclessTaskGrammar(string shipped) => shipped.Replace("(?<epic>", "(?:", StringComparison.Ordinal);
 
     /// <implements epic="0001" feature="F4" claim="B-019" />
     /// <implements epic="0001" feature="F4" claim="B-023" />
@@ -325,10 +335,4 @@ public sealed class InitWriter(
     }
 
     private const string EpicSchemaRelative = SpechtManifestStore.FrontmatterSchemaFolder + "/epic.schema.json";
-
-    /// <summary>
-    /// The task grammar a manifest written without the epic grammar declares in place of one naming an <c>epic</c> group:
-    /// provisional, pending the owner's ruling on <c>0001-F4</c> B-022 and <c>0001-F5</c> OQ-5.
-    /// </summary>
-    private const string EpiclessTaskGrammar = "^[0-9]{4}-(?<sequence>[0-9]{2})$";
 }
