@@ -102,6 +102,11 @@ decisions:
     0.00%; at 1,000 the mean is +1.0% with the intervals overlapping,
     and allocation +0.01%. Only the absence of a flag is claimed; the
     net11.0 runtime was not measured.
+  - |
+    2026-11-03, spec-author: commits `034ed228` to `7d11e998` open
+    `Delivers 0346`, the id this item had before it was renumbered 0347.
+    On `main`, 0346 is pull request #699's Roslynator item; those commits
+    mean this one. Item 0010 records the same.
 
 out_of_scope:
   - "A by-record value in § 9 — item 0348; § 5 row 22."
