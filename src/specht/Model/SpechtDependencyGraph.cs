@@ -10,16 +10,19 @@ public sealed class SpechtDependencyGraph
 {
     /// <summary>
     /// Resolves both edge directions, preserving the existing duplicate-identity overwrite and edge order: through the
-    /// manifest's edge forms when it reads them, and otherwise as the engine at <c>d73b7a51</c> did (decision 0018).
+    /// manifest's edge forms when it reads them, the qualified form only under the epic grammar, and otherwise as the
+    /// engine at <c>d73b7a51</c> did (decisions 0018 and 0020).
     /// </summary>
-    /// <param name="features">Features with both epic and id, in discovery order.</param>
+    /// <param name="features">Features with an identity, in discovery order.</param>
     /// <param name="structure">The manifest's forms and grammars.</param>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-005" />
+    /// <implements epic="0001" feature="F5" claim="B-028" />
+    /// <implements epic="0001" feature="F5" claim="B-029" />
     /// <implements epic="0001" feature="F5" claim="B-054" />
     public SpechtDependencyGraph(IReadOnlyList<FeatureSpec> features, SpechtStructure structure)
     {
-        var forms = structure.Forms is { } declared ? new EdgeForms(declared, structure.Identifiers) : null;
+        var forms = structure.Forms is { } declared ? new EdgeForms(declared, structure.Identifiers, !structure.EpicLess) : null;
         Identities = new ReadOnlySet<string>(features.Select(static feature => feature.Identity).ToHashSet(StringComparer.Ordinal));
         var dependsOn = new Dictionary<string, IReadOnlySet<string>>(StringComparer.Ordinal);
         var blocks = new Dictionary<string, IReadOnlySet<string>>(StringComparer.Ordinal);
@@ -65,7 +68,7 @@ public sealed class SpechtDependencyGraph
             {
                 resolved.Add(raw.Contains('/') ? raw.Replace("/", "-") : $"{feature.Epic}-{raw}");
             }
-            else if (forms.Qualified.Match(raw) is var qualified && qualified.Success)
+            else if (forms.Qualified?.Match(raw) is { Success: true } qualified)
             {
                 resolved.Add(SpechtForms.Render(forms.Forms.Identity, qualified.Groups[EpicGroup].Value, qualified.Groups[IdGroup].Value));
             }
@@ -84,19 +87,22 @@ public sealed class SpechtDependencyGraph
 
     /// <summary>The two edge forms as anchored expressions, each placeholder a named group of its grammar.</summary>
     /// <param name="Forms">The forms.</param>
-    /// <param name="Qualified">The qualified edge form, capturing the epic and the Feature id.</param>
+    /// <param name="Qualified">The qualified edge form, capturing the epic and the Feature id; null without an epic tier.</param>
     /// <param name="Local">The local edge form, capturing the Feature id.</param>
     /// <implements epic="0001" feature="F5" claim="B-005" />
-    private sealed record EdgeForms(SpechtForms Forms, Regex Qualified, Regex Local)
+    /// <implements epic="0001" feature="F5" claim="B-029" />
+    private sealed record EdgeForms(SpechtForms Forms, Regex? Qualified, Regex Local)
     {
         /// <summary>The forms, <c>{epic}</c> read by the epic grammar and <c>{id}</c> by the Feature grammar.</summary>
         /// <param name="forms">The forms.</param>
         /// <param name="grammars">The manifest's grammars.</param>
+        /// <param name="epics">Whether the manifest declares the epic grammar, without which no edge is qualified.</param>
         /// <implements epic="0001" feature="F5" claim="B-005" />
-        public EdgeForms(SpechtForms forms, IReadOnlyDictionary<string, string> grammars)
+        /// <implements epic="0001" feature="F5" claim="B-029" />
+        public EdgeForms(SpechtForms forms, IReadOnlyDictionary<string, string> grammars, bool epics)
             : this(
                 forms,
-                Expression(forms.QualifiedEdge, grammars["epic"], grammars["feature"]),
+                epics ? Expression(forms.QualifiedEdge, grammars["epic"], grammars["feature"]) : null,
                 Expression(forms.LocalEdge, null, grammars["feature"]))
         {
         }

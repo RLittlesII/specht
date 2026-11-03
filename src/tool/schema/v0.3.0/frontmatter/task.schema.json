@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/rlittlesii/specht/schema/v0.3.0/frontmatter/task.schema.json",
   "title": "Task, test or spike frontmatter",
-  "description": "A child item of a Feature. Numbered per EPIC, not per Feature.",
+  "description": "A child item of a Feature. Numbered per epic where the manifest declares the epic grammar, and per Feature where it declares none.",
   "type": "object",
   "additionalProperties": false,
   "required": [

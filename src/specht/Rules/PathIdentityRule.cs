@@ -1,11 +1,14 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Specht.Discovery;
 using Specht.Model;
 
 namespace Specht.Rules;
 
 /// <summary>
-/// SPEC011 - a specification's frontmatter identity agrees with where it sits.
+/// SPEC011 - a specification's frontmatter identity agrees with where it sits: from schema 0.3.0, it carries an epic
+/// where the manifest declares the epic grammar, and only its Feature segment is checked where it declares none
+/// (B-035, B-042, decision 0020).
 /// </summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class PathIdentityRule : ISpechtRule
@@ -17,14 +20,25 @@ public sealed class PathIdentityRule : ISpechtRule
     /// <implements epic="0001" feature="F1" claim="B-001" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-009" />
+    /// <implements epic="0001" feature="F5" claim="B-035" />
+    /// <implements epic="0001" feature="F5" claim="B-042" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
+        var structure = model.Schemas.Structure;
+
         foreach (var feature in model.Features)
         {
             var segments = feature.RelativePath.Split('/');
+            var layoutIdentity = feature.Location.Layout.Identity;
 
-            if (feature.Location.Layout.Identity is not { } identity
-                || feature.Epic is null
+            if (structure.Forms is not null && structure.DeclaresEpicGrammar && feature.Epic is null && feature.Id is not null)
+            {
+                yield return MissingEpic(feature, layoutIdentity, segments, structure.Identifiers["epic"]);
+                continue;
+            }
+
+            if (layoutIdentity is not { } identity
+                || (feature.Epic is null && !structure.EpicLess)
                 || feature.Id is null
                 || identity.Epic >= segments.Length - 1
                 || identity.Feature >= segments.Length - 1)
@@ -32,7 +46,8 @@ public sealed class PathIdentityRule : ISpechtRule
                 continue;
             }
 
-            if (identity.Epic is { } epicSegment
+            if (!structure.EpicLess
+                && identity.Epic is { } epicSegment
                 && segments[epicSegment] is var epicDirectory
                 && !epicDirectory.StartsWith(feature.Epic + "-", StringComparison.Ordinal))
             {
@@ -68,6 +83,25 @@ public sealed class PathIdentityRule : ISpechtRule
                 };
             }
         }
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-035" />
+    private static SpechtFinding MissingEpic(FeatureSpec feature, SpechtPathIdentity? identity, string[] segments, string grammar)
+    {
+        var expected = new JsonObject { ["form"] = grammar };
+        if (identity?.Epic is { } epicSegment && epicSegment < segments.Length - 1)
+        {
+            expected["value"] = DirectoryIdentity(segments[epicSegment], grammar);
+        }
+
+        return new SpechtFinding(
+            feature.RelativePath,
+            feature.Document.Frontmatter.LineOf(feature.Keys.Id),
+            feature.Identity,
+            $"frontmatter has no {feature.Keys.Epic} - the manifest declares the epic grammar")
+        {
+            Expected = expected,
+        };
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />

@@ -555,6 +555,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         return selected;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-025" />
     /// <implements epic="0001" feature="F5" claim="B-048" />
     /// <implements epic="0001" feature="F7" claim="B-145" />
     /// <implements epic="0001" feature="F7" claim="B-153" />
@@ -673,7 +674,10 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
                     feature["dependsOn"],
                     feature["blocks"]),
                 TaskKeys = new SpechtTaskKeys(task["id"], task["parent"], task["type"]),
-                Forms = structure.DeclaresEpicGrammar ? new SpechtForms(forms["identity"], forms["localEdge"], forms["qualifiedEdge"]) : null,
+                Forms = new SpechtForms(
+                    structure.DeclaresEpicGrammar ? forms["identity"] : SpechtForms.IdPlaceholder,
+                    forms["localEdge"],
+                    forms["qualifiedEdge"]),
             };
         }
 

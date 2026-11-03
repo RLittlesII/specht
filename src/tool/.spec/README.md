@@ -1365,7 +1365,7 @@ and `0048`'s. Moving the recorded version is the consumer's (C-10).
 
 ### Schema 0.3.0 (item `0321`)
 
-<!-- last written by: implementer, 2026-11-02 (item `0169`: four-digit page names) -->
+<!-- last written by: implementer, 2026-11-03 (item `0345`: B-035 built, "Epics left out"); implementer, 2026-11-02 (item `0169`: four-digit page names) -->
 
 **The cut.** `./build.sh CutSchemaVersion --cut-version 0.3.0` copied `0.2.1`'s
 four folders, splicing each frontmatter schema's `$id` and each rule page's
@@ -1413,9 +1413,10 @@ under an epic grammar (`0001-F5` B-008, B-033). The `0.3.0` feature and task
 schemas loosen statically, as `0001-F5` decision 0004 designs; JSON Schema
 cannot see the manifest, so the loosening holds under an epic grammar too.
 There the strictness is `SPEC011`'s and `SPEC043`'s to take back (`0001-F5`
-B-031, B-035). `SPEC043` already reports a bare `parent` there, since a
-Feature's identity is `{epic}-{id}`; `SPEC011`'s missing-`epic` check, B-035,
-is not built.
+B-031, B-035). `SPEC043` reports a bare `parent` there, since a Feature's
+identity is `{epic}-{id}`, and `SPEC011` reports a Feature with no `epic`,
+B-035, built by item `0345` from `0.3.0` only, so no package carries `0.3.0`
+without it (OQ-72, reading (a)).
 
 No ADR: the axis change is decision 0015, the cut and the lock are `0189`'s
 and `0188`'s procedures, and the schema loosening is `0001-F5` decision 0004.
