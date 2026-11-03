@@ -940,10 +940,14 @@ exception. B-014 as amended does not claim those pins and B-049 keeps their
 handling, so it stays a finding, not a claim.
 
 **Edge branches left partial.** The coverage of the item `0016` patch, read
-from every tier's report, leaves seven branches partial on this Feature's side.
-None gets a test: at each, no claim states the behaviour, or no entry point
-reaches it. Each is reported to the role that can close it. `0001-F4` § 8
-records the eighth, in `InitWriter`.
+from every tier's report, left seven branches partial on this Feature's side,
+and the review's refactor removed two: `SpechtDependencyGraph.Resolve` reads
+`Success` from the qualified and the local edge match, so the null test
+`is { Success: true }` carried on each, which `Regex.Match` never meets, is
+gone. Five remain. None gets a test: at each, no claim states the behaviour,
+or no entry point reaches it. Each is reported to the role that can close it.
+`0001-F4` § 8 records the sixth, in `InitWriter`, which `implementer` kept:
+init's reader stays tolerant of a non-string member.
 
 - `ChildItem.FileNameId`, a file name shorter than seven characters with no
   `{task}` capture. Reachable without `Forms`, under a task file shape such as
@@ -962,14 +966,11 @@ records the eighth, in `InitWriter`.
   beyond `int`; the item is left out of its epic's sequence. B-006 and B-053
   speak of a numbered sequence; no claim says what a capture that is not a
   number is. `spec-author`.
-- `SpechtDependencyGraph.Resolve`, the null test inside `is { Success: true }`
-  on the qualified and the local edge match, one branch each. `Regex.Match`
-  never returns null, so neither is reachable. `implementer`: reading
-  `Success` from the match leaves no null test.
-- The same method, the `null` side of `feature.Epic ?? string.Empty`.
-  `SpechtModel` builds the graph from `FeaturesWithIdentity`, which holds only
-  Features with an epic and an id, and nothing else constructs it, so the side
-  is unreachable. `implementer`.
+- `SpechtDependencyGraph.Resolve`, the `null` side of
+  `feature.Epic ?? string.Empty`. `SpechtModel` builds the graph from
+  `FeaturesWithIdentity`, which holds only Features with an epic and an id, so
+  no entry point of the tool reaches the side. `implementer` kept it:
+  `FeatureSpec.Epic` is nullable and the graph's constructor is public.
 - `SpechtManifestParser.Parse`, the `keysAndForms` gate with a pin at or above
   `0.3.0` the tool does not ship. Reachable, and measured with the built tool:
   a `0.4.0` pin carrying `keys` is rejected naming `keys` as a key the engine
@@ -979,8 +980,9 @@ records the eighth, in `InitWriter`.
   later", and no claim says whether that takes in a version the tool does not
   ship, or which rejection such a pin gets. `spec-author`. Over the shipped
   catalog the `shipped is not null` term is also implied by the `keys` and
-  `forms` terms, since an unshipped pin reads `0.1.0`'s defaults; that is the
-  `implementer`'s to weigh.
+  `forms` terms, since an unshipped pin reads `0.1.0`'s defaults; `implementer`
+  kept the term, because a test catalog's `0.1.0` entry carries `0.3.0`'s
+  defaults.
 
 - **Unbound:** every scenario but B-001, B-002, B-003, B-004, B-005, B-006, B-008, B-010, B-011, B-012, B-013, B-014, B-015, B-016, B-017, B-018, B-019, B-020, B-021, B-022, B-023, B-039, B-040, B-041, B-043, B-044, B-045, B-046, B-049 to B-054, B-055 to B-060 and B-068 reports Skipped until its item binds it.
 
