@@ -31,7 +31,8 @@ and "Stay on pin, record OQ-73"; recorded by `spec-author`
 
    Amended 2026-11-02, the same day: the owner ruled "Stay on the pin" for
    `specht frontmatter`, which joins the commands above and keeps the pinned
-   version under a floating `pinPolicy`. No claim states it either;
+   version under a floating `pinPolicy`. `0001-F8` B-006, as amended the same
+   day, states it;
    `FrontmatterCommandPinPolicyIntegrationTests.ARootPinnedWithLatestPatchBesideAPatchWhoseSchemaDiffers_WhenADocumentIsChecked_ShouldValidateWithThePinnedVersionsSchema`
    holds it.
 
