@@ -433,7 +433,7 @@ A hashed template the manifest names in `consumerTemplates` keeps today's behavi
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-29 (`--epics` ruling entry; `0001-F7` decision 0018 entry) -->
+<!-- last written by: spec-author, 2026-11-02 (`0001-F5` OQ-18 resolved entry); spec-author, 2026-10-29 (`--epics` ruling entry; `0001-F7` decision 0018 entry) -->
 
 - 2026-10-12, scenario detail only: B-015 and B-016 run with schemas alone and with every part, so their existing "writes nothing" outcome also proves that a refused fetch leaves requested templates absent. No claim or constraint changed. The scenarios cover content that does not match its hash and an unreachable source; a mixed result across fetched files (`0001-F7` OQ-44) and an HTTP refusal (`0001-F7` OQ-45) were unresolved at this point and are decided for `init` below. `init` with every schema file already present was OQ-8, resolved below.
 
@@ -462,6 +462,8 @@ A hashed template the manifest names in `consumerTemplates` keeps today's behavi
 - 2026-10-29, the repository owner resolved the `upgrade` portions of `0001-F7` OQ-44 and OQ-45, and `0001-F7` OQ-51, reading (a) ([`0001-F7` decision 0018](../../../.spec/decisions/0018-upgrade-fetch-failures-write-nothing-and-absent-files-stay-absent.md)): `upgrade` follows decision 0005, and creates no part `init` was not asked for. § 5 row 16 now cites `0001-F7` B-139 to B-141. No claim, constraint or scenario of this Feature changed.
 
 - 2026-10-29, the repository owner ruled that `--epics` is built now, as item `0319`: without `--epics` the manifest `init` writes declares no epic grammar, and beside an existing manifest the epic frontmatter schema follows that manifest's grammar. B-018 and B-020 to B-023 no longer wait on `0001-F5` OQ-18, which stays open and is the engine's; until it is answered the engine still fills the epic grammar from the defaults, and this ruling changes only the files `init` writes. No claim, constraint, scenario or decision record changed; the 2026-10-12 entry's "remains separate (`0001-F5` OQ-18)" no longer holds. Owed to the `implementer`: § 6, and § 7 where it says `--epics` is unbuilt and waits on `0001-F5` OQ-18. Owed to the `test-writer`: the § 9 rows of B-018 and B-020 to B-023, and of B-002 and B-003, whose `Partial` rests on the `--epics` boundary and the manifest exception this item builds.
+
+- 2026-11-02, the repository owner resolved `0001-F5` OQ-18 ([`0001-F5` decision 0018](../../../../specht/Manifest/.spec/decisions/0018-the-epics-opt-in-follows-item-0016-as-its-own-item.md)): the epics opt-in is item `0345`, after item `0016`. The 2026-10-29 entry's "stays open" no longer holds; the engine still fills the epic grammar from the defaults until item `0345`, and how is `0001-F5` OQ-13, open. No claim, constraint, scenario or decision record here changed. Owed to the `implementer`: § 7, where it says `0001-F5` OQ-18 is open.
 
 ## 11. Open Questions
 

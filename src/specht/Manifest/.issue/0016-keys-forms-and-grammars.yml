@@ -339,6 +339,19 @@ decisions:
     no criterion carried. § 6 to § 9 are left to implementer and
     test-writer, who bring them true in the change that builds this
     item.
+  - |
+    2026-11-02, spec-author: the reconciliation entry above read the
+    literal `{epic}-{feature}` that `ItemPlacementRule` writes into
+    `expected.form` as B-005's. That reading is withdrawn. B-005 claims
+    the forms for resolving an identity or an edge; the `expected`
+    member is `0001-F3` B-012's, whose "the identity form" was defined
+    by `0001-F3` § 7 as that literal before any form could be declared,
+    and B-009 (item `0018`) claims messages only. Neither claim says
+    whether the member follows a declared identity form, and either
+    answer changes what the report prints under the default `0.3.0`
+    manifest. It is `0001-F5` OQ-25, open, for the repository owner;
+    until it is answered this item writes `{epic}-{feature}`, as
+    `SPEC3002` and `SPEC5003` do at `d73b7a51`.
 
 out_of_scope:
   - "The epics opt-in, B-024 to B-035 and B-042 — item 0345 (decision 0018)."
