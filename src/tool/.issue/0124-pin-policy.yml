@@ -94,8 +94,14 @@ decisions:
     B-017 join this item. Rejected: a new schema 0.4.0 cut for the key,
     B-017 printing the pin, and the other commands following the version
     in use.
+  - |
+    2026-11-02, the repository owner, the same day, "Stay on the pin":
+    `specht frontmatter` keeps the pinned version under a floating
+    `pinPolicy`, joining the OQ-73 commands (decision 0021 call 3
+    amended; § 5 row 33). No claim added;
+    FrontmatterCommandPinPolicyIntegrationTests holds it.
 
 out_of_scope:
   - "Any range but `latest-patch` and `latest-minor` — § 5 #8."
   - "A pin that floats by default — § 5 #9."
-  - "`rules`, `--explain`, `manifest`, `init` and `schema pin` following the version in use — § 5 #33."
+  - "`rules`, `--explain`, `manifest`, `init`, `schema pin` and `frontmatter` following the version in use — § 5 #33."

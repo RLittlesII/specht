@@ -1,6 +1,6 @@
 ---
 title: "Decision 0021: pinPolicy enters schema 0.3.0, and upgrade names the version in use"
-description: "The owner's rulings of 2026-11-02 on the pin policy: schema 0.3.0, unpublished, is the first version that defines pinPolicy, added in place; upgrade's version line names the version the check uses; every other command keeps the pinned version, as built"
+description: "The owner's rulings of 2026-11-02 on the pin policy: schema 0.3.0, unpublished, is the first version that defines pinPolicy, added in place; upgrade's version line names the version the check uses; every other command, `specht frontmatter` among them, keeps the pinned version, as built"
 type: decision
 ---
 
@@ -23,11 +23,17 @@ and "Stay on pin, record OQ-73"; recorded by `spec-author`
 2. **`upgrade`'s version line (B-017).** Under a `pinPolicy` that has the check
    use a version above the pin, the line names the version in use, the version
    the files are brought to (C-18).
-3. **Every other command (OQ-73).** Under a floating `pinPolicy`, `specht
-   rules`, `specht --explain`, `specht rules set`, `specht manifest`, `specht
-   init` beside an existing manifest and `specht schema pin`'s validation keep
-   the pinned version, as built. No claim states it; § 5 row 33 rules out the
-   version in use for them.
+3. **Every other command (OQ-73).** Under a floating `pinPolicy`,
+   `specht rules`, `specht --explain`, `specht rules set`, `specht manifest`,
+   `specht init` beside an existing manifest and `specht schema pin`'s
+   validation keep the pinned version, as built. No claim states it; § 5 row
+   33 rules out the version in use for them.
+
+   Amended 2026-11-02, the same day: the owner ruled "Stay on the pin" for
+   `specht frontmatter`, which joins the commands above and keeps the pinned
+   version under a floating `pinPolicy`. No claim states it either;
+   `FrontmatterCommandPinPolicyIntegrationTests.ARootPinnedWithLatestPatchBesideAPatchWhoseSchemaDiffers_WhenADocumentIsChecked_ShouldValidateWithThePinnedVersionsSchema`
+   holds it.
 
 ## Why
 
@@ -66,6 +72,8 @@ while the check reports the version in use's.
 - The scenarios of B-053, B-056 and B-146 to B-150 move their example versions
   to `0.3.0` and above; their claims are unchanged.
 - OQ-70 resolved; OQ-73 raised and resolved; § 5 row 33 added.
+- Call 3 amended 2026-11-02: `specht frontmatter` keeps the pin; OQ-73's
+  resolution and § 5 row 33 name it.
 - Item `0124`.
 
 ## Reversal
