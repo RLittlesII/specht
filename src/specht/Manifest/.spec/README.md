@@ -1073,7 +1073,7 @@ Green, item `0321`: with `manifest/v0.3.0` carrying the `done` default, the thre
 
 ### Messages that name the manifest's values (item `0018`)
 
-<!-- last written by: test-writer, 2026-11-03 (item 0018 built: the tests green at commit 8332537e); test-writer, 2026-11-03 (item 0018: B-009 and decision 0019 stated in failing tests) -->
+<!-- last written by: test-writer, 2026-11-03 (item 0018, review: the default texts pinned by the goldens through `SectionReference`, the theory and `ApprovalRuleDoneAxisUnitTests`; the hand-off dropped); test-writer, 2026-11-03 (item 0018 built: the tests green at commit 8332537e); test-writer, 2026-11-03 (item 0018: B-009 and decision 0019 stated in failing tests) -->
 
 B-009 has four mechanisms, each pinned in `RuleMessagesUnitTests` by one rule from the composed set evaluating a model read in memory, the reader over a synthetic `MockFileSystem` tree with repository-relative paths:
 
@@ -1086,7 +1086,7 @@ Each theory asserts the one finding names the manifest's value and not the defau
 
 Red before item `0018`, each test on its assertion and none on a compile error or a fixture: every message cites `§ 3`, `§ 9` or `§ 12`, names the key `id`, `parent` or `epic`, or names the marker `Missing`, `Withdrawn`, `done` or `approved`, whatever the manifest says. Four of the five scenarios fail the same way. The SPEC2001 test and the scenario "Messages name the manifest's values" were green when written: SPEC2001 already names the manifest by its path, so they guard that it keeps doing so. Green since item `0018` was built at commit 8332537e: the four tests pass on both target frameworks, and so do the five scenarios.
 
-Under the default manifest, every message must stay byte for byte the same. `SpechtRunnerBaselineIntegrationTests` and `SpechtManifestBaselineIntegrationTests` hold that for the sites their golden reports carry. Neither golden report has a SPEC4006, SPEC4007 or SPEC4009 finding, or a SPEC7001 finding on the `0.3.0` done axis, so those default texts are held by no golden. That is a gap reported to `implementer`.
+Under the default manifest, every message must stay byte for byte the same. `SpechtRunnerBaselineIntegrationTests` and `SpechtManifestBaselineIntegrationTests` hold that for the sites their golden reports carry. Each site gets the default `§ 9` from the one `SpechtStructure.SectionReference`, and the goldens hold its text through the SPEC4004 and SPEC7001 findings they carry. The `RuleMessagesUnitTests` theory `ASectionTheManifestRetitles_WhenARuleCitingItEvaluatesTheModel_ShouldCiteItByItsTitlesLeadingNumberOrElseByItsTitle` pins each site's use of that reference, SPEC4006, SPEC4007 and SPEC4009 included, none of which has a finding in either golden. `ApprovalRuleDoneAxisUnitTests` pins SPEC7001's `0.3.0` done-axis text exactly, `status is 'done' while § 9 still carries a 'Missing' cell`. No default text is left unpinned.
 
 ## 9. Traceability Matrix
 
