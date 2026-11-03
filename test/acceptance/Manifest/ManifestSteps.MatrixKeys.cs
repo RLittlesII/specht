@@ -49,7 +49,7 @@ public sealed partial class ManifestSteps
     public void GivenTheManifestsDoneMarkerIsEmpty() => Named("markers")["done"] = string.Empty;
 
     [Given("the manifest's {word} marker is {string}")]
-    public void GivenTheManifestsMarkerIs(string marker, string text) => Named("markers")[marker] = text;
+    public void GivenTheManifestsMarkerIs(string marker, string text) => Named("markers")[marker == "missing-test" ? "missing" : marker] = text;
 
     [Given("the manifest names {word} as the owner of {string}")]
     public void GivenTheManifestNamesAsTheOwnerOf(string role, string title) => Named("owners")[title] = new JsonArray(role);
