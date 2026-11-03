@@ -90,6 +90,7 @@ public sealed class SchemaVersions
                 ["SPEC012"] = "SPEC3002",
                 ["SPEC020"] = "SPEC4001",
                 ["SPEC021"] = "SPEC4002",
+                ["SPEC022"] = "SPEC4007",
                 ["SPEC030"] = "SPEC4003",
                 ["SPEC031"] = "SPEC4004",
                 ["SPEC032"] = "SPEC4009",

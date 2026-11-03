@@ -2,7 +2,7 @@ id: "0335"
 type: task
 title: Report a Scenario cell title no tagged scenario carries, SPEC4007, in schema 0.3.0
 
-status: ready
+status: done
 
 risk: 3
 
@@ -18,10 +18,14 @@ claims:
   - B-008
   - B-009
   - B-010
+  - B-022
+  - B-023
+  - B-024
+  - B-025
 
 created: "2026-11-01"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   Under `matrix.scenarioTitles`, SPEC4007 splits a Scenario cell on `;`
@@ -51,6 +55,10 @@ acceptance_criteria:
   - "B-008 — `;`-split titles, each matching a companion title"
   - "B-009 — a named scenario without the row's claim tag"
   - "B-010 — title matching absent or off, SPEC4007 silent"
+  - "B-022 — a claim tag on the `Feature:`, a `Rule:` or an outline's `Examples:` is carried by the scenarios under it"
+  - "B-023 — titles compared with case, after trimming"
+  - "B-024 — the claim tag compared under `claim.tagIgnoreCase`"
+  - "B-025 — no row exempt by its Status"
   - "`0001-F7` B-014 — SPEC4007 joins schema 0.3.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0, 0.2.0 and 0.2.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.3.0; OQ-4's default holds until the owner answers."
   - "The resolver is extended for titles, not duplicated (C-3); no marker literal (C-5)."
@@ -70,6 +78,11 @@ decisions:
     `0001-F12` OQ-5 (ADR-0029, ruling 5): SPEC022 is SPEC4007 in schema 0.3.0,
     and every rule id this item names for 0.3.0 is the four-digit one.
     The id, the file name and the claims are unchanged.
+  - |
+    2026-11-02, spec-author: the three readings § 7 recorded under "Three
+    behaviours no claim states" are kept and claimed as B-022 to B-025, on
+    the owner's call "Keep, spec-author claims them (Recommended)"
+    (decision 0004).
 
 out_of_scope:
   - "Matching a Scenario cell by default: § 5 row 5."
