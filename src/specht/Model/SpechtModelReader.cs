@@ -69,36 +69,18 @@ public sealed class SpechtModelReader(
     /// <param name="selection">This invocation's schema source, or null for the manifest's.</param>
     /// <returns>The compiled schemas.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public SpechtSchemas ReadSchemas(string root, SchemaSourceSelection? selection)
-    {
-        var structure = ReadManifest(root);
-        var selected = parser.PinnedVersion(structure);
-        var source = structure.SpechtSchema;
-        var effective = selection ?? structure.SchemaSource;
-        if (source is null)
-        {
-            return effective == SchemaSourceSelection.Disk
-                ? ReadDisk(root, structure, selected)
-                : compiler.Compile(selected, structure, SpechtSchemaSource.Embedded);
-        }
+    /// <implements epic="0001" feature="F7" claim="B-053" />
+    /// <implements epic="0001" feature="F7" claim="B-054" />
+    public SpechtSchemas ReadSchemas(string root, SchemaSourceSelection? selection) => ReadSchemas(root, selection, parser.VersionInUse);
 
-        if (effective == SchemaSourceSelection.Embedded)
-        {
-            throw new SpechtManifestException(
-                $"{SpechtManifestStore.RelativePath}: schemaSource 'embedded' contradicts the recorded spechtSchema source.");
-        }
-
-        var files = source.Files.ToDictionary(
-            static file => file.Kind, file => store.ReadFrontmatterSchema(root, file.FileName), StringComparer.Ordinal);
-        var texts = copy.Verify(source, files);
-        var version = selected with
-        {
-            FeatureSchema = texts["feature"],
-            ItemSchema = texts["task"],
-            EpicSchema = texts.GetValueOrDefault("epic", selected.EpicSchema),
-        };
-        return compiler.Compile(version, structure, SpechtSchemaSource.Upstream);
-    }
+    /// <summary>
+    /// Reads the manifest and the frontmatter schemas as <see cref="ReadSchemas(string, SchemaSourceSelection?)"/> does with
+    /// the manifest's source, from the pinned version whatever its pin policy (<c>0001-F7</c> OQ-73, decision 0021).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <returns>The compiled schemas of the pinned version.</returns>
+    /// <implements epic="0001" feature="F8" claim="B-006" />
+    public SpechtSchemas ReadPinnedSchemas(string root) => ReadSchemas(root, null, parser.PinnedVersion);
 
     /// <summary>Checks the root, then reads and parses its manifest, keeping the missing-root, missing-file and shape failures.</summary>
     /// <param name="root">The repository root.</param>
@@ -133,6 +115,38 @@ public sealed class SpechtModelReader(
         {
             throw new SpechtManifestUnreadableException(exception);
         }
+    }
+
+    /// <implements epic="0001" feature="F1" claim="B-004" />
+    private SpechtSchemas ReadSchemas(string root, SchemaSourceSelection? selection, Func<SpechtStructure, SchemaVersion> select)
+    {
+        var structure = ReadManifest(root);
+        var selected = select(structure);
+        var source = structure.SpechtSchema;
+        var effective = selection ?? structure.SchemaSource;
+        if (source is null)
+        {
+            return effective == SchemaSourceSelection.Disk
+                ? ReadDisk(root, structure, selected)
+                : compiler.Compile(selected, structure, SpechtSchemaSource.Embedded);
+        }
+
+        if (effective == SchemaSourceSelection.Embedded)
+        {
+            throw new SpechtManifestException(
+                $"{SpechtManifestStore.RelativePath}: schemaSource 'embedded' contradicts the recorded spechtSchema source.");
+        }
+
+        var files = source.Files.ToDictionary(
+            static file => file.Kind, file => store.ReadFrontmatterSchema(root, file.FileName), StringComparer.Ordinal);
+        var texts = copy.Verify(source, files);
+        var version = selected with
+        {
+            FeatureSchema = texts["feature"],
+            ItemSchema = texts["task"],
+            EpicSchema = texts.GetValueOrDefault("epic", selected.EpicSchema),
+        };
+        return compiler.Compile(version, structure, SpechtSchemaSource.Upstream);
     }
 
     /// <implements epic="0001" feature="F1" claim="B-004" />

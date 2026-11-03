@@ -381,7 +381,8 @@ specht schema list [--root <DIR>]
 ```
 
 Prints shipped schema versions in ascending semantic-version order. With a
-manifest, the selected version has the suffix ` (pinned)`; without a manifest,
+manifest, the selected version has the suffix ` (pinned)`, and a later version
+a floating `pinPolicy` has the check use has ` (in use)`; without a manifest,
 the list is unmarked. An omitted `schemaVersion` means `0.1.0`.
 
 | Option         | Value   | Default               | Does                                      |
@@ -447,7 +448,8 @@ specht upgrade [--root <DIR>]
 ```
 
 Brings the frontmatter schemas and templates under `<DIR>/.specht/` to the bytes
-the manifest's pinned version ships. Under `schemaSource` `disk` with no
+the version the check uses ships: the manifest's pinned version, or the later one
+a floating `pinPolicy` selects. Missing manifest keys still come from the pin. Under `schemaSource` `disk` with no
 `spechtSchema` recorded, the schemas are left as they are and listed as
 skipped. A template named in `consumerTemplates` is never read or written,
 whatever source is selected or recorded, and is listed as skipped. A name
@@ -478,8 +480,8 @@ pinned version.
 | `-h, --help`   | none    | none                  | Prints the command's help and writes nothing. |
 
 **Stdout.** When nothing differs and no key is missing,
-`.specht/ is current at schemaVersion <pin>`. After a rewrite,
-`.specht/ rewritten to schemaVersion <pin>`, then `rewritten <path>` for each
+`.specht/ is current at schemaVersion <version>`. After a rewrite,
+`.specht/ rewritten to schemaVersion <version>`, the version the check uses, then `rewritten <path>` for each
 rewritten file; `.specht/manifest.json` is listed only when a key was added, and
 then first. Then `skipped <path>: <reason>` for each file left alone, in path
 order: with `schemaSource` `disk` and no `spechtSchema`, each present frontmatter

@@ -4,7 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
 using Specht.Composition;
 using Specht.Tool;
+using Specht.Tool.Features;
 using Specht.Tool.Features.Upgrade;
+using Specht.Versioning;
 using Spectre.Console;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
@@ -24,6 +26,10 @@ internal sealed class UpgradeAppFixture : AutoFixtureBase<UpgradeAppFixture>
 
     public UpgradeAppFixture WithSource(HttpClient source) => With(ref _source, source);
 
+    public UpgradeAppFixture WithVersions(SchemaVersions versions) => With(ref _versions, versions);
+
+    public UpgradeAppFixture WithShipped(ShippedFiles shipped) => With(ref _shipped, shipped);
+
     public static implicit operator CommandAppTester(UpgradeAppFixture fixture)
     {
         var console = new TestConsole();
@@ -31,6 +37,15 @@ internal sealed class UpgradeAppFixture : AutoFixtureBase<UpgradeAppFixture>
         services.AddSingleton(fixture._fileSystem);
         services.AddSingleton<IAnsiConsole>(console);
         services.AddSingleton(fixture._source);
+        if (fixture._versions is not null)
+        {
+            services.AddSingleton(fixture._versions);
+        }
+
+        if (fixture._shipped is not null)
+        {
+            services.AddSingleton(fixture._shipped);
+        }
         if (fixture._errors is not null)
         {
             services.AddSingleton<TextWriter>(fixture._errors);
@@ -46,4 +61,8 @@ internal sealed class UpgradeAppFixture : AutoFixtureBase<UpgradeAppFixture>
     private TextWriter? _errors;
 
     private HttpClient _source = new(new NoNetworkHandler());
+
+    private SchemaVersions? _versions;
+
+    private ShippedFiles? _shipped;
 }

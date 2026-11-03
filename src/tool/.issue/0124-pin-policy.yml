@@ -2,7 +2,7 @@ id: "0124"
 type: task
 title: Float the pin with a pin policy
 
-status: ready-for-architecture
+status: done
 
 value: 2
 risk: 3
@@ -16,6 +16,7 @@ spikes: []
 spec: src/tool/.spec/README.md
 
 claims:
+  - B-017
   - B-053
   - B-054
   - B-056
@@ -25,10 +26,11 @@ claims:
   - B-148
   - B-149
   - B-150
+  - B-153
 
 created: "2026-10-09"
-updated: "2026-11-01"
-closed: null
+updated: "2026-11-02"
+closed: "2026-11-02"
 
 summary: |
   A Could (decision 0005): a manifest setting that lets the check use the
@@ -51,6 +53,8 @@ acceptance_criteria:
   - "B-148 — the list marks the version in use"
   - "B-149 — no in-use mark when the check uses the pin"
   - "B-150 — `latest-minor` on a 0.y.z pin: exit 3, naming `latest-patch`"
+  - "B-153 — a pin below 0.3.0 declaring `pinPolicy`: rejected as a key that version does not know"
+  - "B-017 — `upgrade` under a floating policy names the version in use"
   - "C-18 holds for every `upgrade` claim the item touches."
   - "§ 9 carries a row naming a test for each id above."
 
@@ -79,7 +83,25 @@ decisions:
     the readings each question recorded, listed in decision 0020 with
     their costs. OQ-70 and OQ-71, raised by spec-author, proceed on
     their defaults and are the owner's to reverse.
+  - |
+    2026-11-02, the repository owner, choosing the recommended option on
+    each question card (decision 0021): schema 0.3.0, unpublished, is the
+    first version that defines `pinPolicy`, added in place and gated in
+    the engine, so no shipped file and no lock entry changes (OQ-70
+    resolved; B-153 added); `upgrade`'s version line names the version in
+    use (B-017 amended, C-18 amended); the other commands keep the pinned
+    version, as built (OQ-73 raised and resolved, § 5 row 33). B-153 and
+    B-017 join this item. Rejected: a new schema 0.4.0 cut for the key,
+    B-017 printing the pin, and the other commands following the version
+    in use.
+  - |
+    2026-11-02, the repository owner, the same day, "Stay on the pin":
+    `specht frontmatter` keeps the pinned version under a floating
+    `pinPolicy`, joining the OQ-73 commands (decision 0021 call 3
+    amended; § 5 row 33). No claim added;
+    FrontmatterCommandPinPolicyIntegrationTests holds it.
 
 out_of_scope:
   - "Any range but `latest-patch` and `latest-minor` — § 5 #8."
   - "A pin that floats by default — § 5 #9."
+  - "`rules`, `--explain`, `manifest`, `init`, `schema pin` and `frontmatter` following the version in use — § 5 #33."

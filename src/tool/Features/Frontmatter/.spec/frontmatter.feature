@@ -49,6 +49,15 @@ Feature: The frontmatter command
     When its frontmatter is checked as a task
     Then a violation is reported
 
+  @B-006
+  Scenario: A floating pin policy keeps the pinned version's schema
+    Given the tool ships schema versions 0.3.0 and 0.3.1
+    And the manifest pins version 0.3.0 with the pin policy latest-patch
+    And a task document version 0.3.0's task schema accepts and version 0.3.1's rejects
+    When its frontmatter is checked as a task
+    Then no violation is reported
+    And the exit code is 0
+
   @B-007 @boundary
   Scenario: A rule that needs the tree does not run
     Given a task document whose valid frontmatter depends on a file that does not exist

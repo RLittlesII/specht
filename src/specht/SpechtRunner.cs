@@ -40,14 +40,15 @@ public sealed class SpechtRunner(
     public FrontmatterKind ParseFrontmatterKind(string kind) => check.ParseKind(kind);
 
     /// <summary>
-    /// Checks only the supplied document's frontmatter against the root's selected schemas: an evaluator over the four
-    /// frontmatter rules selects, stamps, counts and orders them as the tree's does, each rule's findings taken from the
-    /// document.
+    /// Checks only the supplied document's frontmatter against the root's selected schemas of the pinned version, whatever
+    /// the manifest's pin policy (<c>0001-F7</c> OQ-73): an evaluator over the four frontmatter rules selects, stamps, counts
+    /// and orders them as the tree's does, each rule's findings taken from the document.
     /// </summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F8" claim="B-006" />
     public SpechtReport CheckFrontmatter(string root, FrontmatterKind kind, string path, string text)
     {
-        var loaded = reader.ReadSchemas(root, null);
+        var loaded = reader.ReadPinnedSchemas(root);
         var parsed = frontmatter.Parse(text);
 
         return new SpechtEvaluator(FrontmatterRules, order).Evaluate(new SpechtModel([], [], [], loaded, []), rule => rule switch

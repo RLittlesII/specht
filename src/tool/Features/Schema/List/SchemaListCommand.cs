@@ -12,13 +12,18 @@ using Spectre.Console.Cli;
 
 namespace Specht.Tool.Features.Schema.List;
 
-/// <summary>Lists the catalog and marks the pin, keeping failures off stdout (0001-F7 B-109).</summary>
+/// <summary>
+/// Lists the catalog and marks the pin, and the version the check uses where it is not the pin, keeping failures off stdout
+/// (0001-F7 B-109, B-148, B-149).
+/// </summary>
 /// <implements epic="0001" feature="F7" claim="B-001" />
 public sealed class SchemaListCommand(IAnsiConsole console, SchemaVersionManager schemas, SchemaVersions versions, TextWriter? errorWriter = null)
     : AsyncCommand<SchemaListCommand.Settings>
 {
     /// <inheritdoc />
     /// <implements epic="0001" feature="F7" claim="B-001" />
+    /// <implements epic="0001" feature="F7" claim="B-148" />
+    /// <implements epic="0001" feature="F7" claim="B-149" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -26,7 +31,8 @@ public sealed class SchemaListCommand(IAnsiConsole console, SchemaVersionManager
             var result = schemas.List(Path.GetFullPath(settings.Root));
             foreach (var version in result.Versions)
             {
-                console.Profile.Out.Writer.WriteLine($"{version}{(version == result.Pinned ? " (pinned)" : string.Empty)}");
+                var mark = version == result.Pinned ? " (pinned)" : version == result.InUse ? " (in use)" : string.Empty;
+                console.Profile.Out.Writer.WriteLine($"{version}{mark}");
             }
             return ExitCodes.Success;
         }

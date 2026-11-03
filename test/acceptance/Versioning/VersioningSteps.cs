@@ -59,7 +59,11 @@ namespace Specht.Acceptance.Versioning;
 /// beneath it, without its manifest, with a rule set to a level no version defines, or pinned to 0.2.0 with a recorded
 /// source and the embedded source selected - and compares every file under the root with its bytes before the run. Item 0048
 /// binds B-021 the same way, under a pin of 7.0.0 and under the integer 1, and launches the built tool's check over the same
-/// root to compare the upgrade's standard error with the check's, byte for byte. The
+/// root to compare the upgrade's standard error with the check's, byte for byte. Item 0124 binds B-017's floating
+/// scenario, B-053, B-054, B-056, B-145 to B-150 and B-153: a set whose lowest number is 0.3.0 or above is built from the
+/// embedded 0.3.0, with a shipping copy adding each number the tool does not ship, that version's files renumbered or
+/// changed by a line feed; a check over a built set that throws a manifest rejection gives the command's standard error
+/// line and exit code 3, and an upgrade over that copy runs in process. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>
@@ -68,8 +72,14 @@ namespace Specht.Acceptance.Versioning;
 public sealed partial class VersioningSteps
 {
     [Given("the tool ships schema version {word}")]
-    public void GivenTheToolShipsSchemaVersion(string version) =>
-        _embedded = EngineServices.Versions().Find(Version(version))!;
+    public void GivenTheToolShipsSchemaVersion(string version)
+    {
+        _embedded = EngineServices.Versions().Find(Version(version));
+        if (_embedded is null)
+        {
+            GivenTheToolShipsSchemaVersions(version, version);
+        }
+    }
 
     [When("the folders holding its schemas, its templates and its rule pages are read")]
     public void WhenTheFoldersHoldingItsSchemasItsTemplatesAndItsRulePagesAreRead()
@@ -115,10 +125,15 @@ public sealed partial class VersioningSteps
     [Given(@"^the tool ships schema versions (.+) and (\S+)$")]
     public void GivenTheToolShipsSchemaVersions(string earlier, string last)
     {
-        var embedded = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
-        _shipped = earlier.Split(", ").Append(last).Select(Version).ToDictionary(
-            static number => number,
-            number => embedded with { Number = number });
+        var numbers = earlier.Split(", ").Append(last).Select(Version).Distinct().ToList();
+        var floor = new SemanticVersion(0, 3, 0);
+        var fromFloor = numbers.Min().CompareTo(floor) >= 0;
+        var embedded = EngineServices.Versions().Find(fromFloor ? floor : new SemanticVersion(0, 1, 0))!;
+        _shipped = numbers.ToDictionary(static number => number, number => embedded with { Number = number });
+        if (fromFloor)
+        {
+            _shippingCopy = ShippingCopyWith(floor, numbers.Where(static number => EngineServices.Versions().Find(number) is null));
+        }
     }
 
     [Given("a root directory with no manifest")]
@@ -296,7 +311,15 @@ public sealed partial class VersioningSteps
     {
         if (_shipped is not null)
         {
-            _report = EngineServices.Runner(new SchemaVersions(_shipped.Values)).Run(Tree.Root);
+            try
+            {
+                _report = EngineServices.Runner(new SchemaVersions(_shipped.Values)).Run(Tree.Root);
+            }
+            catch (SpechtManifestException exception)
+            {
+                (_stdout, _stderr, _exitCode) = (string.Empty, $"specht: {exception.Message}", Specht.Tool.ExitCodes.InvalidManifest);
+            }
+
             return;
         }
 
@@ -362,7 +385,8 @@ public sealed partial class VersioningSteps
     [Then("the standard error names {word} and the versions the tool ships")]
     public void ThenTheStandardErrorNamesVersionAndTheVersionsTheToolShips(string version)
     {
-        var shipped = EngineServices.Versions().Versions.Select(static shippedVersion => shippedVersion.Number.ToString());
+        var shipped = (_shipped?.Keys ?? EngineServices.Versions().Versions.Select(static shippedVersion => shippedVersion.Number))
+            .Select(static shippedVersion => shippedVersion.ToString());
         foreach (var named in shipped.Prepend(version))
         {
             _stderr.Should().MatchRegex(Naming(named), "the standard error names version {0}", named);
