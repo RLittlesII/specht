@@ -7,7 +7,8 @@ using Specht.Tests.Shared;
 namespace Specht.Acceptance.Init;
 
 /// <summary>
-/// The epic tier of <c>init</c> (0001-F4 B-002, B-018, B-020 to B-023; C-5, C-6). The runs launch the built tool with
+/// The epic tier of <c>init</c> (0001-F4 B-002, B-018, B-020 to B-023; C-5, C-6). Without <c>--epics</c> the task grammar
+/// is the default one with its epic group dropped, compared as text (B-022; <c>0001-F5</c> OQ-5). The runs launch the built tool with
 /// <c>--epics</c> beside the part options. A manifest declaring no epic grammar is the embedded manifest of the newest version
 /// with <c>identifiers.epic</c> removed, written before the run so its bytes can be compared after it.
 /// </summary>
@@ -50,6 +51,10 @@ public sealed partial class InitSteps
         task.Should().NotBeNull($"the manifest written declares a task grammar; {_stdout}{_stderr}");
         new Regex(task!).GetGroupNames().Should().NotContain("epic");
     }
+
+    [Then("its task grammar is {string}, the default task grammar with its epic group dropped")]
+    public void ThenItsTaskGrammarIs(string grammar) =>
+        (WrittenManifest()["identifiers"]?["task"]?.GetValue<string>()).Should().Be(grammar, _stdout + _stderr);
 
     private JsonObject WrittenManifest()
     {

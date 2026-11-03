@@ -10,8 +10,8 @@ namespace Specht.Tests.Init;
 /// <summary>
 /// The init writer's epic tier over an in-memory file system (<c>0001-F4</c> B-018, B-021, B-022, B-023; C-5, C-6): into a
 /// bare root only the epics choice decides the epic frontmatter schema, beside an existing manifest only that manifest's epic
-/// grammar decides it, and a manifest written without epics declares no epic grammar and no named <c>epic</c> group in its
-/// task grammar.
+/// grammar decides it, and a manifest written without epics declares no epic grammar and, as its task grammar, the shipped
+/// one with its epic group dropped (<c>0001-F5</c> OQ-5).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class EpicsInitWriterUnitTests
@@ -96,14 +96,12 @@ public sealed class EpicsInitWriterUnitTests
     }
 
     [Fact]
-    public async Task ABareRootWithoutEpicsAtZeroThreeZero_WhenTheManifestIsWritten_ShouldWriteATaskGrammarItsPinAcceptsMatchingTheShippedIds()
+    public async Task ABareRootWithoutEpicsAtZeroThreeZero_WhenTheManifestIsWritten_ShouldWriteTheShippedTaskGrammarWithItsEpicGroupDropped()
     {
         // Given
         var fileSystem = new MockFileSystem();
         fileSystem.AddDirectory(Root);
         var shipped = InitWriter.ShippingCopy(typeof(InitWriter).Assembly)["manifest/v0.3.0/manifest.json"];
-        var shippedTask = new Regex(JsonNode.Parse(shipped)!["identifiers"]!["task"]!.GetValue<string>());
-        string[] ids = ["0001-01", "0001-99", "0001-001", "001-01", "0001-1", "A001-01"];
 
         InitWriter writer = new InitWriterFixture()
             .WithFileSystem(fileSystem)
@@ -115,9 +113,7 @@ public sealed class EpicsInitWriterUnitTests
         // Then
         var text = fileSystem.File.ReadAllText(Path.Combine(Root, SpechtTree.ManifestPath));
         var parse = () => EngineServices.Parser().Parse(text);
-        var task = new Regex(parse.Should().NotThrow().Subject.Identifiers["task"]);
-        task.GetGroupNames().Should().Contain("sequence");
-        ids.Where(id => task.IsMatch(id)).Should().Equal(ids.Where(id => shippedTask.IsMatch(id)));
+        parse.Should().NotThrow().Subject.Identifiers["task"].Should().Be("^[0-9]{4}-(?<sequence>[0-9]{2})$");
     }
 
     private const string Root = "repo";

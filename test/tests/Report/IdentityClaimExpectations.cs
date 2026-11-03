@@ -1,12 +1,17 @@
 using System.Text.Json.Nodes;
 using Specht.Discovery;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Report;
 
-/// <summary>Synthetic violations of every identity, companion, claim and matrix branch (0001-F3 B-012 to B-015).</summary>
+/// <summary>
+/// Synthetic violations of every identity, companion, claim and matrix branch (0001-F3 B-012 to B-015). A reused identity
+/// and an item parent mismatch carry the effective identity form under a manifest pinned to 0.3.0 declaring the epic
+/// grammar, and <c>{epic}-{feature}</c> below 0.3.0 and without the epic grammar (B-012; <c>0001-F5</c> OQ-25).
+/// </summary>
 public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, ISpechtRule, string, string, JsonObject>
 {
     public IdentityClaimExpectations()
@@ -65,6 +70,54 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                     ["form"] = key == "id" ? "^[0-9]{4}-[0-9]{2}$" : "{epic}-{feature}",
                     ["value"] = key == "id" ? "0001-01" : "0001-F1",
                 });
+        }
+
+        foreach (var (situation, pin, epicGrammar, declared, form) in new (string, string, bool, string?, string)[]
+                 {
+                     ("below schema 0.3.0", "0.2.1", true, null, "{epic}-{feature}"),
+                     ("at schema 0.3.0 without the epic grammar", "0.3.0", false, null, "{epic}-{feature}"),
+                     ("at schema 0.3.0 with the epic grammar", "0.3.0", true, null, "{epic}-{id}"),
+                     ("at schema 0.3.0 with the epic grammar and a declared identity form", "0.3.0", true, "{epic}:{id}", "{epic}:{id}"),
+                 })
+        {
+            var manifest = new JsonObject { ["schemaVersion"] = pin };
+            if (epicGrammar)
+            {
+                manifest["identifiers"] = new JsonObject { ["epic"] = "^[0-9]{4}$" };
+            }
+
+            if (declared is not null)
+            {
+                manifest["forms"] = new JsonObject { ["identity"] = declared };
+            }
+
+            SpechtForms? forms = pin == "0.3.0" && epicGrammar ? new SpechtForms(declared ?? "{epic}-{id}", "{id}", "{epic}/{id}") : null;
+            var identity = declared is null ? "0001-F1" : "0001:F1";
+            var fourDigit = pin == "0.3.0";
+
+            FeatureSpec reusedFirst = new FeatureSpecFixture().WithForms(forms)
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(DocumentParser.Parse("---\nepic: \"0001\"\nid: \"F1\"\n---\n", "src/first/.spec/README.md"));
+            FeatureSpec reusedSecond = new FeatureSpecFixture().WithForms(forms)
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/second/.spec/README.md"))
+                .WithDocument(DocumentParser.Parse("---\nepic: \"0001\"\nid: \"F1\"\n---\n", "src/second/.spec/README.md"));
+            Add("a reused identity " + situation, new SpechtModelFixture().WithManifest(manifest).WithFeatures(reusedFirst, reusedSecond),
+                new DuplicateIdentityRule(), fourDigit ? "SPEC3002" : "SPEC012", identity, new JsonObject
+                {
+                    ["form"] = form,
+                    ["value"] = identity,
+                    ["firstDeclaration"] = "src/first/.spec/README.md",
+                });
+
+            FeatureSpec parent = new FeatureSpecFixture().WithForms(forms)
+                .WithDocument(DocumentParser.Parse("---\nepic: \"0001\"\nid: \"F1\"\n---\n", "src/sample/.spec/README.md"));
+            ChildItem item = new ChildItemFixture().WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject
+            {
+                ["id"] = "0001-01",
+                ["parent"] = "0009-F9",
+            }));
+            Add("an item parent mismatch " + situation, new SpechtModelFixture().WithManifest(manifest).WithFeatures(parent).WithItems(item),
+                new ItemPlacementRule(), fourDigit ? "SPEC5003" : "SPEC043", item.Id!, new JsonObject { ["form"] = form, ["value"] = identity });
         }
 
         foreach (var count in new[] { 0, 2 })
