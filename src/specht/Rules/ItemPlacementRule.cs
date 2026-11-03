@@ -12,6 +12,7 @@ public sealed class ItemPlacementRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F3" claim="B-012" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-005" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
@@ -47,7 +48,7 @@ public sealed class ItemPlacementRule : ISpechtRule
                     item.Id,
                     $"frontmatter parent '{item.Parent}' does not match the Feature it sits in ('{parent.Identity}')")
                 {
-                    Expected = new JsonObject { ["form"] = "{epic}-{feature}", ["value"] = parent.Identity },
+                    Expected = new JsonObject { ["form"] = model.Schemas.Structure.Forms?.Identity ?? "{epic}-{feature}", ["value"] = parent.Identity },
                 };
             }
         }

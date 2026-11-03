@@ -21,6 +21,7 @@ public sealed class DuplicateIdentityRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F3" claim="B-012" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
@@ -43,7 +44,7 @@ public sealed class DuplicateIdentityRule : ISpechtRule
                 {
                     Expected = new JsonObject
                     {
-                        ["form"] = "{epic}-{feature}",
+                        ["form"] = model.Schemas.Structure.Forms?.Identity ?? "{epic}-{feature}",
                         ["value"] = group.Key,
                         ["firstDeclaration"] = group.First().RelativePath,
                     },

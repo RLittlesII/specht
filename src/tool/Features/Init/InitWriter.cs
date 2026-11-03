@@ -4,7 +4,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -295,7 +295,7 @@ public sealed class InitWriter(
         if (task >= 0)
         {
             var (valueStart, end) = (members[task].ValueStart, members[task].End);
-            splices.Add((valueStart, end, Encoding.UTF8.GetBytes(EpiclessTaskGrammar(Encoding.UTF8.GetString(manifest, valueStart, end - valueStart)))));
+            splices.Add((valueStart, end, JsonSerializer.SerializeToUtf8Bytes(EpiclessTaskGrammar(members[task].Value!), GrammarJson)));
         }
 
         var written = manifest;
@@ -309,12 +309,46 @@ public sealed class InitWriter(
 
     /// <summary>
     /// The task grammar a manifest written without the epic grammar declares in place of one naming an <c>epic</c> group:
-    /// the shipped grammar with its <c>epic</c> group un-named, provisional pending <c>0001-F5</c> OQ-5.
+    /// the shipped grammar with that group's parentheses dropped and its pattern kept (<c>0001-F5</c> OQ-5), so
+    /// <c>^(?&lt;epic&gt;[0-9]{4})-(?&lt;sequence&gt;[0-9]{2})$</c> becomes <c>^[0-9]{4}-(?&lt;sequence&gt;[0-9]{2})$</c>.
     /// </summary>
-    /// <param name="shipped">The shipped task grammar's JSON value, as written.</param>
-    /// <returns>The same JSON value with <c>(?&lt;epic&gt;</c> read as <c>(?:</c>.</returns>
+    /// <param name="shipped">The shipped task grammar, naming an <c>epic</c> group.</param>
+    /// <returns>The grammar with the <c>epic</c> group's opening <c>(?&lt;epic&gt;</c> and its closing parenthesis removed.</returns>
     /// <implements epic="0001" feature="F4" claim="B-022" />
-    private static string EpiclessTaskGrammar(string shipped) => shipped.Replace("(?<epic>", "(?:", StringComparison.Ordinal);
+    private static string EpiclessTaskGrammar(string shipped)
+    {
+        var open = shipped.IndexOf(EpicGroup, StringComparison.Ordinal);
+        var (depth, inClass) = (1, false);
+
+        for (var index = open + EpicGroup.Length; index < shipped.Length; index++)
+        {
+            switch (shipped[index])
+            {
+                case '\\':
+                    index++;
+                    break;
+                case '[' when !inClass:
+                    inClass = true;
+                    break;
+                case ']' when inClass:
+                    inClass = false;
+                    break;
+                case '(' when !inClass:
+                    depth++;
+                    break;
+                case ')' when !inClass:
+                    if (--depth == 0)
+                    {
+                        var pattern = open + EpicGroup.Length;
+                        return string.Concat(shipped.AsSpan(0, open), shipped.AsSpan(pattern, index - pattern), shipped.AsSpan(index + 1));
+                    }
+
+                    break;
+            }
+        }
+
+        return shipped;
+    }
 
     /// <implements epic="0001" feature="F4" claim="B-019" />
     /// <implements epic="0001" feature="F4" claim="B-023" />
@@ -335,4 +369,8 @@ public sealed class InitWriter(
     }
 
     private const string EpicSchemaRelative = SpechtManifestStore.FrontmatterSchemaFolder + "/epic.schema.json";
+
+    private const string EpicGroup = "(?<epic>";
+
+    private static readonly JsonSerializerOptions GrammarJson = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 }
