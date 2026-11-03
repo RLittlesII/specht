@@ -32,7 +32,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
             new Dictionary<string, string> { ["spec_status"] = "approved", ["status"] = "done" },
             SpechtTree.SectionsWith("12. Sign-off", SignedOff));
         Tree.WriteFeatureFile(specification, UnresolvedTag);
-        _feature = Path.GetRelativePath(Tree.Root, Path.Combine(Path.GetDirectoryName(specification)!, "feature.feature")).Replace('\\', '/');
+        Feature = Path.GetRelativePath(Tree.Root, Path.Combine(Path.GetDirectoryName(specification)!, "feature.feature")).Replace('\\', '/');
     }
 
     [Given("the root carries this repository's build files and local tool manifest")]
@@ -51,7 +51,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
         Succeed(Tree.Root, "git", "rm", "--cached", "--quiet", Feature);
         Succeed(Tree.Root, "git", [.. Identity, "commit", "--quiet", "--no-verify", "--message", "The root before the staged edit"]);
         Succeed(Tree.Root, "git", "add", Feature);
-        _source = Succeed(Tree.Root, "git", "rev-parse", "--show-toplevel").TrimEnd('\n');
+        Source = Succeed(Tree.Root, "git", "rev-parse", "--show-toplevel").TrimEnd('\n');
         Succeed(Source, "dotnet", "tool", "restore");
         Succeed(Source, "dotnet", "husky", "install");
     }
@@ -60,7 +60,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     public void GivenThisRepositorysOwnTree()
     {
         CopyFromRepository(Listed("--cached", "--others", "--exclude-standard"));
-        _source = Succeed(Tree.Root, "pwd", "-P").TrimEnd('\n');
+        Source = Succeed(Tree.Root, "pwd", "-P").TrimEnd('\n');
     }
 
     [When("the check runs against that root from a shell")]
@@ -120,9 +120,9 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
 
     private static string[] Identity => ["-c", "user.name=specht-acceptance", "-c", "user.email=acceptance@example.invalid", "-c", "commit.gpgsign=false"];
 
-    private string Source => _source ?? throw new InvalidOperationException("The root carries no source.");
+    private string Source { get => field ?? throw new InvalidOperationException("The root carries no source."); set; }
 
-    private string Feature => _feature ?? throw new InvalidOperationException("No specification was prepared.");
+    private string Feature { get => field ?? throw new InvalidOperationException("No specification was prepared."); set; }
 
     private (string Stdout, string Stderr, int ExitCode) Target => _target ?? throw new InvalidOperationException("The build target did not run.");
 
@@ -197,7 +197,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
                 ["NO_COLOR"] = "1",
             },
         };
-        foreach (var argument in (string[])["tool", "run", "specht", "--", "--root", "../.."])
+        foreach (var argument in (string[]) ["tool", "run", "specht", "--", "--root", "../.."])
         {
             start.ArgumentList.Add(argument);
         }
@@ -230,8 +230,6 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n"
             + "  @B-002\n  Scenario: It does a thing no claim states\n    Given another thing\n";
 
-    private string? _source;
-    private string? _feature;
     private (string Stdout, string Stderr, int ExitCode)? _target;
     private (string Stdout, string Stderr, int ExitCode)? _hook;
 }

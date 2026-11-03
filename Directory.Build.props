@@ -31,6 +31,7 @@
     <ItemGroup>
         <PackageReference Include="Rocket.Surgery.Airframe.CodeAnalysis" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.Formatting.Analyzers" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeFixes" PrivateAssets="all"/>
         <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all"/>
     </ItemGroup>

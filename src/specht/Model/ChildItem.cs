@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Specht.Manifest;
 
 namespace Specht.Model;
@@ -29,7 +30,7 @@ public sealed class ChildItem
         Frontmatter = frontmatter;
         ParentDirectory = parentDirectory;
         Keys = keys ?? new SpechtTaskKeys();
-        _task = task;
+        FileNameId = task;
     }
 
     /// <summary>Path relative to the repository root.</summary>
@@ -57,7 +58,6 @@ public sealed class ChildItem
     public string? Type => Frontmatter.Text(Keys.Type);
 
     /// <summary>The task id its file name carries: the captured <c>{task}</c>, or else the <c>&lt;epic&gt;-&lt;nn&gt;</c> prefix.</summary>
-    public string FileNameId => _task ?? (FileName.Length >= 7 ? FileName[..7] : FileName);
-
-    private readonly string? _task;
+    [AllowNull]
+    public string FileNameId => field ?? (FileName.Length >= 7 ? FileName[..7] : FileName);
 }

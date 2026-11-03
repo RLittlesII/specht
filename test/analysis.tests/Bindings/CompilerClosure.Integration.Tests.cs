@@ -109,10 +109,10 @@ public sealed class CompilerClosureIntegrationTests
                 var result = resolve.Invoke(resolver, new[] { reference })!;
                 var target = result.GetType().GetProperty("Target")!.GetValue(result);
                 findings.Add((result.GetType().GetProperty("Status")!.GetValue(result)!.ToString()!,
-                    (bool?)result.GetType().GetProperty("IsEligible")!.GetValue(result),
-                    (string?)target?.GetType().GetProperty("Id")!.GetValue(target),
-                    (string?)target?.GetType().GetProperty("State")!.GetValue(target),
-                    (int?)target?.GetType().GetProperty("Line")!.GetValue(target)));
+                    (bool?) result.GetType().GetProperty("IsEligible")!.GetValue(result),
+                    (string?) target?.GetType().GetProperty("Id")!.GetValue(target),
+                    (string?) target?.GetType().GetProperty("State")!.GetValue(target),
+                    (int?) target?.GetType().GetProperty("Line")!.GetValue(target)));
             }
 
             var directFeature = new BindingFeatureReader().Read(text, "src/sample/.spec/README.md", policy);

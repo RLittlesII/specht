@@ -20,16 +20,16 @@ public sealed class ManifestCommandIntegrationTests
         var defaults = JsonNode.Parse(EngineServices.Versions().Versions[0].Manifest)!.AsObject();
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "manifest");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "manifest");
 
         // Then
-        result.ExitCode.Should().Be(0, result.Stderr);
-        result.Stderr.Should().BeEmpty();
-        var document = JsonNode.Parse(result.Stdout)!.AsObject();
+        ExitCode.Should().Be(0, Stderr);
+        Stderr.Should().BeEmpty();
+        var document = JsonNode.Parse(Stdout)!.AsObject();
         JsonNode.DeepEquals(document, expected).Should().BeTrue();
         document.Select(static entry => entry.Key).Where(defaults.ContainsKey).Should()
             .Equal(defaults.Select(static entry => entry.Key).Where(document.ContainsKey));
-        result.Stdout.Should().Contain("\n  \"");
+        Stdout.Should().Contain("\n  \"");
         document["rules"]!.AsObject().Select(static entry => entry.Key).Should().BeInAscendingOrder(StringComparer.Ordinal);
     }
 
@@ -47,16 +47,17 @@ public sealed class ManifestCommandIntegrationTests
         {
             tree.WriteRaw(SpechtTree.ManifestPath, manifest);
         }
-        var check = AcceptanceTool.Launch(tree.Root, "--root", root);
+
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "--root", root);
 
         // When
         var result = AcceptanceTool.Launch(tree.Root, "manifest", "--root", root);
 
         // Then
-        check.ExitCode.Should().Be(exitCode, check.Stderr);
+        ExitCode.Should().Be(exitCode, Stderr);
         result.ExitCode.Should().Be(exitCode, result.Stderr);
         result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Be(check.Stderr).And.NotContain(tree.Root).And.NotContain("\\");
+        result.Stderr.Should().Be(Stderr).And.NotContain(tree.Root).And.NotContain("\\");
     }
 
     [Fact]

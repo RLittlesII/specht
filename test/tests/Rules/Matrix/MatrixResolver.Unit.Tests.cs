@@ -50,7 +50,7 @@ public sealed class MatrixResolverUnitTests
             ["tests"] = new JsonObject
             {
                 ["files"] = new JsonArray("test/**/*.cs"),
-                ["declarations"] = new JsonArray(declarations.Select(static form => (JsonNode?)JsonValue.Create(form)).ToArray()),
+                ["declarations"] = new JsonArray(declarations.Select(static form => (JsonNode?) JsonValue.Create(form)).ToArray()),
             },
         };
         var structure = EngineServices.Parser().Parse(manifest.ToJsonString());

@@ -255,8 +255,8 @@ public sealed partial class VersioningSteps
         manifest["schemaVersion"] = version;
         File.WriteAllText(path, manifest.ToJsonString());
         Directory.Delete(Path.Combine(tree.Root, SpechtTree.ConfigurationFolder, "schema"), recursive: true);
-        var result = AcceptanceTool.Launch(tree.Root, "init", "--all");
-        result.ExitCode.Should().Be(0, result.Stderr);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "init", "--all");
+        ExitCode.Should().Be(0, Stderr);
         manifest["schemaVersion"] = pinned ?? version;
         File.WriteAllText(path, manifest.ToJsonString());
     }

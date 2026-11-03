@@ -397,7 +397,7 @@ public sealed class UpgradeCommandIntegrationTests
         // Given
         using var tree = new SpechtTree();
         tree.WriteRaw(SpechtTree.ManifestPath, $"{{\"schemaVersion\":{schemaVersion}}}");
-        var check = AcceptanceTool.Launch(tree.Root);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root);
         var before = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path));
 
@@ -405,9 +405,9 @@ public sealed class UpgradeCommandIntegrationTests
         var result = AcceptanceTool.Launch(tree.Root, "upgrade");
 
         // Then
-        check.ExitCode.Should().Be(3, check.Stderr);
+        ExitCode.Should().Be(3, Stderr);
         result.ExitCode.Should().Be(3, result.Stderr);
-        result.Stderr.Should().NotBeEmpty().And.Be(check.Stderr);
+        result.Stderr.Should().NotBeEmpty().And.Be(Stderr);
         Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path))
             .Should().BeEquivalentTo(before);
@@ -444,7 +444,7 @@ public sealed class UpgradeCommandIntegrationTests
                 {
                     "mismatch" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent("{}"u8.ToArray()) },
                     "unreachable" => throw new HttpRequestException("Synthetic source is unreachable."),
-                    _ => new HttpResponseMessage((HttpStatusCode)int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
+                    _ => new HttpResponseMessage((HttpStatusCode) int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
                 };
         }));
         var errors = new StringWriter();

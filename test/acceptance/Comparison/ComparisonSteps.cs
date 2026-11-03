@@ -47,7 +47,8 @@ public sealed class ComparisonSteps : IDisposable
     [When("a release comparison selects its baseline")]
     public void WhenSelectingBaseline()
     {
-        try { _pair = ReleaseSelection.Select(_release, _catalog, "run-1"); }
+        try
+        { _pair = ReleaseSelection.Select(_release, _catalog, "run-1"); }
         catch (InvalidDataException exception) { _selectionFailure = exception; }
     }
 
@@ -390,8 +391,14 @@ public sealed class ComparisonSteps : IDisposable
             _ => throw new ArgumentOutOfRangeException(nameof(invalid), invalid, "Unbound invalid timing example."),
         };
         var json = ExportJson.Replace(ValidStatistics, statistics, StringComparison.Ordinal);
-        if (invalid == "a zero previous mean") _previous = BenchmarkEvidenceReader.Read(json, "previous/full.json", _session.Previous, [_mapping]);
-        else _current = BenchmarkEvidenceReader.Read(json, "current/full.json", _session.Current, [_mapping]);
+        if (invalid == "a zero previous mean")
+        {
+            _previous = BenchmarkEvidenceReader.Read(json, "previous/full.json", _session.Previous, [_mapping]);
+        }
+        else
+        {
+            _current = BenchmarkEvidenceReader.Read(json, "current/full.json", _session.Current, [_mapping]);
+        }
     }
 
     [Given("some comparable metrics need no review")]
@@ -583,6 +590,7 @@ public sealed class ComparisonSteps : IDisposable
             var content = await File.ReadAllBytesAsync(Path.Combine(_extracted, file.Path), CancellationToken.None);
             (content.LongLength, Convert.ToHexStringLower(SHA256.HashData(content))).Should().Be((file.Length, file.Sha256), file.Path);
         }
+
         var json = await File.ReadAllTextAsync(Path.Combine(_extracted, "report.json"), CancellationToken.None);
         var markdown = await File.ReadAllTextAsync(Path.Combine(_extracted, "report.md"), CancellationToken.None);
         var cited = _document!.Cases.SelectMany(static c => new[] { ("previous", c.Evidence.Previous), ("current", c.Evidence.Current) })
@@ -597,7 +605,10 @@ public sealed class ComparisonSteps : IDisposable
             using var raw = JsonDocument.Parse(await File.ReadAllBytesAsync(Path.Combine(_extracted, path), CancellationToken.None));
             var element = raw.RootElement;
             foreach (var segment in observation.Locator.Split('/').Skip(1))
+            {
                 element = element.ValueKind == JsonValueKind.Array ? element[int.Parse(segment, CultureInfo.InvariantCulture)] : element.GetProperty(segment);
+            }
+
             element.ValueKind.Should().Be(JsonValueKind.Object, observation.Locator);
         }
     }
@@ -622,8 +633,15 @@ public sealed class ComparisonSteps : IDisposable
             _bundle = new ReportBundler(new FileSystem(), _directory).Create(_reportPair!, Recorded(action == "validated" ? Placeholder : _recordedValue!),
                 _reportMappings, [new RawExport("previous", PreviousReportExport), new RawExport("current", CurrentReportExport)], ReportWorkspace);
             _bundleZip = File.ReadAllBytes(Path.Combine(_directory, _bundle.Path));
-            if (action == "validated") _bundleZip = Substituted(_bundleZip, _bundle.Manifest);
-            if (action != "built") _validated = ReportBundler.Validate(new MemoryStream(_bundleZip));
+            if (action == "validated")
+            {
+                _bundleZip = Substituted(_bundleZip, _bundle.Manifest);
+            }
+
+            if (action != "built")
+            {
+                _validated = ReportBundler.Validate(new MemoryStream(_bundleZip));
+            }
         }
         catch (InvalidDataException exception)
         {
@@ -637,13 +655,19 @@ public sealed class ComparisonSteps : IDisposable
         _rejection.Should().NotBeNull();
         _validated.Should().BeNull();
         var workspace = Path.Combine(_directory, ReportWorkspace);
-        if (_bundleAction == "built") (Directory.Exists(workspace) ? Directory.GetFiles(workspace) : []).Should().BeEmpty();
+        if (_bundleAction == "built")
+        {
+            (Directory.Exists(workspace) ? Directory.GetFiles(workspace) : []).Should().BeEmpty();
+        }
     }
 
     [Then("no recorded value is rewritten to make it pass")]
     public void ThenNoRecordedValueRewritten()
     {
-        if (_bundleAction == "built") _bundleZip.Should().BeNull();
+        if (_bundleAction == "built")
+        {
+            _bundleZip.Should().BeNull();
+        }
         else
         {
             using var archive = new ZipArchive(new MemoryStream(_bundleZip!));
@@ -949,7 +973,9 @@ public sealed class ComparisonSteps : IDisposable
     {
         Directory.CreateDirectory(_directory);
         foreach (var context in _ordinary)
+        {
             _ordinaryOutcomes.Add(await Comparison().RunAsync(context, "result", CancellationToken.None));
+        }
     }
 
     [Then("no automatic release baseline comparison starts")]
@@ -1059,8 +1085,16 @@ public sealed class ComparisonSteps : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
-        if (Directory.Exists(_extracted)) Directory.Delete(_extracted, true);
+        if (Directory.Exists(_directory))
+        {
+            Directory.Delete(_directory, true);
+        }
+
+        if (Directory.Exists(_extracted))
+        {
+            Directory.Delete(_extracted, true);
+        }
+
         _releaseClient.Dispose();
         _actionsClient.Dispose();
     }
@@ -1162,7 +1196,9 @@ public sealed class ComparisonSteps : IDisposable
         _actions.Catalog["/repos/example/tool/releases?per_page=100&page=1"] = JsonSerializer.Serialize(releases);
         _actions.Catalog["/repos/example/tool/git/ref/tags/v2"] = """{"object":{"type":"commit","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}""";
         if (previousCommit is not null)
+        {
             _actions.Catalog["/repos/example/tool/git/ref/tags/v1"] = $$$"""{"object":{"type":"commit","sha":"{{{previousCommit}}}"}}""";
+        }
     }
 
     private ReleaseReporting Reporting() => new(_actionsClient, new FileSystem(), _time, _directory);
@@ -1190,7 +1226,9 @@ public sealed class ComparisonSteps : IDisposable
         var result = Metric(metric);
         result.Judgment.Should().Be(Enum.Parse<MetricJudgment>(judgment.Replace(" ", "", StringComparison.Ordinal), ignoreCase: true));
         if (result.Judgment is MetricJudgment.ReviewRequired or MetricJudgment.InsufficientEvidence)
+        {
             result.Reason.Should().NotBeNullOrWhiteSpace();
+        }
     }
 
     private MetricComparison Metric(MetricKind metric) => _document!.Cases.Single().Metrics.Single(m => m.Metric == metric);
@@ -1207,12 +1245,14 @@ public sealed class ComparisonSteps : IDisposable
                 Session = document.Session with { Previous = document.Session.Previous with { Invocation = [.. document.Session.Previous.Invocation, value] } },
             };
         }
+
         if (_recordedSource == "raw measurement export")
         {
             File.WriteAllText(Path.Combine(_directory, CurrentReportExport),
                 CurrentReportJson.Replace("\"Title\":\"Invented\"", $"\"Title\":{JsonSerializer.Serialize(value)}", StringComparison.Ordinal));
             return document;
         }
+
         if (_recordedSource == "workload parameter")
         {
             flagged = flagged with
@@ -1226,8 +1266,15 @@ public sealed class ComparisonSteps : IDisposable
                 },
             };
         }
-        else if (_recordedSource == "case reason") flagged = flagged with { Reason = value };
-        else flagged = flagged with { Metrics = [flagged.Metrics[0] with { Unit = value }, .. flagged.Metrics.Skip(1)] };
+        else if (_recordedSource == "case reason")
+        {
+            flagged = flagged with { Reason = value };
+        }
+        else
+        {
+            flagged = flagged with { Metrics = [flagged.Metrics[0] with { Unit = value }, .. flagged.Metrics.Skip(1)] };
+        }
+
         return document with { Cases = [flagged, .. document.Cases.Skip(1)] };
     }
 
@@ -1243,6 +1290,7 @@ public sealed class ComparisonSteps : IDisposable
                 entries.Add(entry.FullName, Encoding.UTF8.GetBytes(reader.ReadToEnd().Replace(Placeholder, replacement, StringComparison.Ordinal)));
             }
         }
+
         manifest = manifest with
         {
             Files = [.. manifest.Files.Select(file => file with
@@ -1260,6 +1308,7 @@ public sealed class ComparisonSteps : IDisposable
                 stream.Write(content);
             }
         }
+
         return buffer.ToArray();
     }
 
@@ -1348,10 +1397,12 @@ public sealed class ComparisonSteps : IDisposable
     private readonly string _extracted = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
     private readonly HttpClient _releaseClient = new(new ReleaseAssets());
     private readonly List<string> _checkouts = [];
+
     private readonly ReleaseRecord _release = JsonSerializer.Deserialize<ReleaseRecord>("""
         {"Repository":"example/tool","Id":20,"Tag":"v2","PublishedAt":"2026-01-04T00:00:00Z","Draft":false,
          "Prerelease":false,"Commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","ResolutionFailure":null}
         """)!;
+
     private readonly IdentityMapping _mapping;
     private readonly ActionsRun _actions = new();
     private readonly HttpClient _actionsClient;

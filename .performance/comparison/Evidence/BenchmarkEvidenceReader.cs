@@ -12,8 +12,16 @@ public static class BenchmarkEvidenceReader
     public static MeasurementInventory Read(string json, string sourceFile, SessionSide side, ImmutableArray<IdentityMapping> mappings)
     {
         var cases = ImmutableArray.CreateBuilder<CaseEvidence>();
-        if (!EvidencePaths.IsRelative(sourceFile)) return Unavailable("Exporter source path is not repository-relative.");
-        if (side.ExporterVersion != "0.15.8") return Unavailable("Unsupported BenchmarkDotNet producer version.");
+        if (!EvidencePaths.IsRelative(sourceFile))
+        {
+            return Unavailable("Exporter source path is not repository-relative.");
+        }
+
+        if (side.ExporterVersion != "0.15.8")
+        {
+            return Unavailable("Unsupported BenchmarkDotNet producer version.");
+        }
+
         try
         {
             using var document = JsonDocument.Parse(json);
@@ -28,7 +36,11 @@ public static class BenchmarkEvidenceReader
             }
 
             var benchmarks = root.GetProperty("Benchmarks");
-            if (benchmarks.ValueKind != JsonValueKind.Array) return Unavailable("Exporter inventory is malformed.");
+            if (benchmarks.ValueKind != JsonValueKind.Array)
+            {
+                return Unavailable("Exporter inventory is malformed.");
+            }
+
             var index = 0;
             foreach (var benchmark in benchmarks.EnumerateArray())
             {
@@ -51,10 +63,13 @@ public static class BenchmarkEvidenceReader
                 cases.Add(new CaseEvidence(workload, [time, allocation], known, known ? null : "Audited workload identity is unavailable."));
                 index++;
             }
+
             foreach (var expected in side.ExpectedCases)
             {
                 if (!cases.Any(e => WorkloadIdentity.Key(e.Case) == WorkloadIdentity.Key(expected)))
+                {
                     cases.Add(new CaseEvidence(expected, [], true, "Expected native case has no exporter record."));
+                }
             }
 
             return new MeasurementInventory(side.InventoryKnown, cases.ToImmutable(), []);
@@ -97,12 +112,15 @@ public static class BenchmarkEvidenceReader
                     10 => 0.98m,
                     11 => 0.99m,
                     12 => 0.999m,
-                    _ => (decimal?)null,
+                    _ => (decimal?) null,
                 };
                 if (lower is not null && upper is not null && probability is not null)
+                {
                     interval = new TimingInterval(lower.Value, upper.Value, probability.Value);
+                }
             }
         }
+
         var valid = mean > 0 && interval is not null && interval.Lower <= mean && interval.Upper >= mean;
         return new Observation(MetricKind.Time, mean, "ns", "benchmark-process", interval,
             valid ? null : "Missing or invalid timing value or uncertainty.", source, locator);

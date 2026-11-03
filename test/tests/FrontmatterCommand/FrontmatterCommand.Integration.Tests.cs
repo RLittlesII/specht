@@ -55,6 +55,7 @@ public sealed class FrontmatterCommandIntegrationTests
         {
             errors.ToString().Should().Contain("feature").And.Contain("task").And.Contain("epic");
         }
+
         input.ReadToEnd().Should().Be("unread input");
     }
 
@@ -84,6 +85,7 @@ public sealed class FrontmatterCommandIntegrationTests
         {
             result.Output.Should().Contain($"<stdin>(3): {level} SPEC003:");
         }
+
         errors.ToString().Should().BeEmpty();
         files.AllFiles.ToDictionary(path => path, path => files.File.ReadAllText(path)).Should().BeEquivalentTo(before);
     }
@@ -103,6 +105,7 @@ public sealed class FrontmatterCommandIntegrationTests
         {
             files.File.WriteAllText("repo/.specht/manifest.json", manifest);
         }
+
         using var input = new StringReader("---\ntitle: valid\n---\n");
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var app = EngineServices.FrontmatterApp(files, new TestConsole(), input, errors);

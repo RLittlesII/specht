@@ -17,7 +17,7 @@ public sealed class SpechtManifestStoreUnitTests
     public void AFileInTheRootsFrontmatterSchemaFolder_WhenReadByItsName_ShouldBeItsBytes()
     {
         // Given
-        byte[] bytes = [0xEF, 0xBB, 0xBF, (byte)'{', (byte)'}', (byte)'\r', (byte)'\n'];
+        byte[] bytes = [0xEF, 0xBB, 0xBF, (byte) '{', (byte) '}', (byte) '\r', (byte) '\n'];
         SpechtManifestStore store = new SpechtManifestStoreFixture().WithFileSystem(
             new MockFileSystem(new Dictionary<string, MockFileData> { [Path.Combine(Root, SpechtTree.ItemSchemaPath)] = new(bytes) }));
 

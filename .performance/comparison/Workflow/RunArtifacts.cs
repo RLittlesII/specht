@@ -19,7 +19,10 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
         CancellationToken cancellationToken)
     {
         if (!ComparisonJson.IsRepository(repository) || !EvidencePaths.IsRelative(directory) || runId.Any(static c => !char.IsAsciiDigit(c)))
+        {
             throw new InvalidDataException("Run artifact request is not this repository's run or not a repository-relative directory.");
+        }
+
         using var limit = new CancellationTokenSource(bound, time);
         using var waiting = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, limit.Token);
         try
@@ -68,7 +71,9 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
             foreach (var artifact in document.RootElement.GetProperty("artifacts").EnumerateArray())
             {
                 if (artifact.GetProperty("name").GetString() == name && !artifact.GetProperty("expired").GetBoolean())
+                {
                     found.Add(artifact.GetProperty("id").GetInt64());
+                }
             }
 
             if (!response.Headers.TryGetValues("Link", out var links)
@@ -96,7 +101,11 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
             using var archive = new ZipArchive(new MemoryStream(await response.Content.ReadAsByteArrayAsync(cancellationToken)), ZipArchiveMode.Read);
             foreach (var entry in archive.Entries)
             {
-                if (entry.FullName.EndsWith('/') && entry.Length == 0) continue;
+                if (entry.FullName.EndsWith('/') && entry.Length == 0)
+                {
+                    continue;
+                }
+
                 if (!EvidencePaths.IsRelative(entry.FullName) || ((entry.ExternalAttributes >> 16) & 0xF000) is not (0 or 0x8000)
                     || entries.Any(written => string.Equals(written.Name, entry.FullName, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -104,7 +113,11 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
                 }
 
                 using var content = new MemoryStream();
-                await using (var stream = entry.Open()) await stream.CopyToAsync(content, cancellationToken);
+                await using (var stream = entry.Open())
+                {
+                    await stream.CopyToAsync(content, cancellationToken);
+                }
+
                 entries.Add((entry.FullName, content.ToArray()));
             }
         }

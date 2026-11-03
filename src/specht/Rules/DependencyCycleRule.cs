@@ -75,7 +75,7 @@ public sealed class DependencyCycleRule : ISpechtRule
             {
                 Expected = new JsonObject
                 {
-                    ["cycle"] = new JsonArray(path.Select(static identity => (JsonNode?)JsonValue.Create(identity)).ToArray()),
+                    ["cycle"] = new JsonArray(path.Select(static identity => (JsonNode?) JsonValue.Create(identity)).ToArray()),
                 },
             };
         }

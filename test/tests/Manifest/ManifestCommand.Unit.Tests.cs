@@ -54,6 +54,7 @@ public sealed class ManifestCommandUnitTests
         {
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
+
         var modelReader = EngineServices.Reader(files);
         var reader = new EffectiveManifestReader(
             modelReader, new RuleEntriesReader(modelReader, EngineServices.Parser(), DocumentParser), EngineServices.Versions());
@@ -78,6 +79,7 @@ public sealed class ManifestCommandUnitTests
         {
             errors.ToString().Should().Contain(SpechtTree.ManifestPath).And.NotContain(files.Path.GetFullPath("repo"));
         }
+
         files.AllFiles.ToDictionary(static path => path, path => files.File.ReadAllText(path)).Should().BeEquivalentTo(before);
     }
 

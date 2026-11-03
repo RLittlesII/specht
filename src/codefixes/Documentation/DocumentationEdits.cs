@@ -26,7 +26,7 @@ internal sealed class DocumentationEdits
             }
 
             var updated = text.WithChanges(changes);
-            var options = (CSharpParseOptions?)document.Project.ParseOptions;
+            var options = (CSharpParseOptions?) document.Project.ParseOptions;
             var path = document.FilePath ?? document.Name;
             var root = await CSharpSyntaxTree.ParseText(updated, options, path, cancellationToken).GetRootAsync(cancellationToken).ConfigureAwait(false);
             var order = new DocumentationOrder().Read(updated, root, Written(changes));

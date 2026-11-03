@@ -88,7 +88,7 @@ public sealed class ClaimRowRuleUnitTests
     }
 
     private static SpechtSection Table(string title, params (string Id, int Line)[] rows) =>
-        new(title, 5, ["ID", "Text"], [.. rows.Select(static row => (IReadOnlyList<string>)[row.Id, "It holds."])], [.. rows.Select(static row => row.Line)]);
+        new(title, 5, ["ID", "Text"], [.. rows.Select(static row => (IReadOnlyList<string>) [row.Id, "It holds."])], [.. rows.Select(static row => row.Line)]);
 
     private static FeatureSpec Feature(string path, params SpechtSection[] sections) =>
         new FeatureSpecFixture()

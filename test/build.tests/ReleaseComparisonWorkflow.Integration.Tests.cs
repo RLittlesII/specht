@@ -13,7 +13,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         var jobs = Jobs();
 
         // When
-        var comparison = (YamlMappingNode)jobs["comparison"];
+        var comparison = (YamlMappingNode) jobs["comparison"];
 
         // Then
         Scalars(comparison["needs"]).Should().Equal("build");
@@ -24,10 +24,10 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     public void ComparisonJob_WhenGenerated_ShouldBeGrantedOnlyContentsReadAndActionsRead()
     {
         // Given
-        var comparison = (YamlMappingNode)Jobs()["comparison"];
+        var comparison = (YamlMappingNode) Jobs()["comparison"];
 
         // When
-        var granted = Granted((YamlMappingNode)comparison["permissions"]);
+        var granted = Granted((YamlMappingNode) comparison["permissions"]);
 
         // Then
         granted.Should().BeEquivalentTo(new Dictionary<string, string>
@@ -43,7 +43,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     public void ComparisonJob_WhenGenerated_ShouldRunOnTheSelfHostedPool()
     {
         // Given
-        var comparison = (YamlMappingNode)Jobs()["comparison"];
+        var comparison = (YamlMappingNode) Jobs()["comparison"];
 
         // When
         var runner = Scalars(comparison["runs-on"]);
@@ -62,7 +62,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         var checkout = steps.Single(static step => Uses(step).StartsWith("actions/checkout@", StringComparison.Ordinal));
 
         // Then
-        var with = (YamlMappingNode)checkout["with"];
+        var with = (YamlMappingNode) checkout["with"];
         with["persist-credentials"].ToString().Should().Be("false");
         with["fetch-depth"].ToString().Should().Be("0");
     }
@@ -77,7 +77,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         var checkout = steps.Single(static step => Uses(step).StartsWith("actions/checkout@", StringComparison.Ordinal));
 
         // Then
-        var with = (YamlMappingNode)checkout["with"];
+        var with = (YamlMappingNode) checkout["with"];
         with["persist-credentials"].ToString().Should().Be("false");
         with["fetch-depth"].ToString().Should().Be("0");
     }
@@ -93,7 +93,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
 
         // Then
         steps.Should().NotContain(static step => Uses(step).StartsWith("actions/download-artifact@", StringComparison.Ordinal)
-            && ((YamlMappingNode)step["with"])["name"].ToString() == "nupkg");
+            && ((YamlMappingNode) step["with"])["name"].ToString() == "nupkg");
         publication.Should().BeGreaterThan(-1);
         steps.Take(publication).Select(static step => Uses(step).Split('@')[0])
             .Should().Contain("actions/checkout").And.Contain("actions/setup-dotnet");
@@ -121,8 +121,8 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         var jobs = Jobs();
 
         // When
-        var release = Granted((YamlMappingNode)((YamlMappingNode)jobs["release"])["permissions"]);
-        var publish = Granted((YamlMappingNode)Job("publish")["permissions"]);
+        var release = Granted((YamlMappingNode) ((YamlMappingNode) jobs["release"])["permissions"]);
+        var publish = Granted((YamlMappingNode) Job("publish")["permissions"]);
 
         // Then
         release.Should().BeEquivalentTo(new Dictionary<string, string>
@@ -135,11 +135,11 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
             ["contents"] = "read",
             ["id-token"] = "write",
         });
-        Granted((YamlMappingNode)workflow["permissions"]).Values.Should().NotContain("write");
+        Granted((YamlMappingNode) workflow["permissions"]).Values.Should().NotContain("write");
         jobs.Children.Where(static job => job.Key.ToString() is not "release" and not "publish")
-            .Select(static job => (YamlMappingNode)job.Value)
+            .Select(static job => (YamlMappingNode) job.Value)
             .Where(static job => job.Children.ContainsKey("permissions"))
-            .SelectMany(static job => Granted((YamlMappingNode)job["permissions"]).Values)
+            .SelectMany(static job => Granted((YamlMappingNode) job["permissions"]).Values)
             .Should().NotContain("write");
     }
 
@@ -179,7 +179,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     public void ReleaseWorkflow_WhenGenerated_ShouldNotSignalTheComparisonThroughReleaseJobOutputs()
     {
         // Given
-        var release = (YamlMappingNode)Jobs()["release"];
+        var release = (YamlMappingNode) Jobs()["release"];
 
         // When
         var text = File.ReadAllText(WorkflowPath());
@@ -204,7 +204,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         // Then
         build.Children.ContainsKey("if").Should().BeFalse();
         steps.Should().ContainSingle(static step => Uses(step).StartsWith("actions/upload-artifact@", StringComparison.Ordinal)
-            && ((YamlMappingNode)step["with"])["name"].ToString() == "nupkg");
+            && ((YamlMappingNode) step["with"])["name"].ToString() == "nupkg");
         foreach (var step in steps)
         {
             step.Children.ContainsKey("if").Should().BeFalse(Value(step, "name"));
@@ -225,19 +225,19 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         // When
         var checkout = steps.Single(static step => Uses(step).StartsWith("actions/checkout@", StringComparison.Ordinal));
         var download = Array.FindIndex(steps, static step => Uses(step).StartsWith("actions/download-artifact@", StringComparison.Ordinal)
-            && ((YamlMappingNode)step["with"])["name"].ToString() == "nupkg");
+            && ((YamlMappingNode) step["with"])["name"].ToString() == "nupkg");
         var push = Array.FindIndex(steps, static step => Value(step, "name") == "Push release packages");
 
         // Then
         Scalars(publish["runs-on"]).Should().Equal("ubuntu-latest");
-        ((YamlMappingNode)checkout["with"])["persist-credentials"].ToString().Should().Be("false");
+        ((YamlMappingNode) checkout["with"])["persist-credentials"].ToString().Should().Be("false");
         foreach (var job in new[] { "build", "release" })
         {
             Scalars(Job(job)["runs-on"]).Should().Equal(["self-hosted", "macOS", "ARM64"], job);
         }
 
         download.Should().BeGreaterThan(-1).And.BeLessThan(push);
-        ((YamlMappingNode)steps[download]["with"]).Children.ContainsKey("run-id").Should().BeFalse();
+        ((YamlMappingNode) steps[download]["with"]).Children.ContainsKey("run-id").Should().BeFalse();
         steps.Select(static step => Value(step, "run"))
             .Should().NotContain(static run => run.Contains("--target Pack", StringComparison.Ordinal)
                 || run.Contains("dotnet pack", StringComparison.Ordinal));
@@ -248,7 +248,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     {
         // Given
         var uploads = Steps("build").Where(static step => Uses(step).StartsWith("actions/upload-artifact@", StringComparison.Ordinal))
-            .Select(static step => ((YamlMappingNode)step["with"])["name"].ToString()).ToArray();
+            .Select(static step => ((YamlMappingNode) step["with"])["name"].ToString()).ToArray();
 
         // When
         var comparator = uploads.Except(["nupkg"]).ToArray();
@@ -258,7 +258,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         foreach (var job in new[] { "release", "comparison" })
         {
             Steps(job).Where(static step => Uses(step).StartsWith("actions/download-artifact@", StringComparison.Ordinal))
-                .Select(static step => ((YamlMappingNode)step["with"])["name"].ToString())
+                .Select(static step => ((YamlMappingNode) step["with"])["name"].ToString())
                 .Should().Contain(comparator[0], job);
         }
     }
@@ -270,20 +270,20 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         var stream = new YamlStream();
         using var input = File.OpenText(WorkflowPath());
         stream.Load(input);
-        return (YamlMappingNode)stream.Documents[0].RootNode;
+        return (YamlMappingNode) stream.Documents[0].RootNode;
     }
 
-    private static YamlMappingNode Jobs() => (YamlMappingNode)Workflow()["jobs"];
+    private static YamlMappingNode Jobs() => (YamlMappingNode) Workflow()["jobs"];
 
     private static YamlMappingNode Job(string name)
     {
         var jobs = Jobs();
         jobs.Children.Keys.Select(static key => key.ToString()).Should().Contain(name);
-        return (YamlMappingNode)jobs[name];
+        return (YamlMappingNode) jobs[name];
     }
 
     private static YamlMappingNode[] Steps(string job) =>
-        ((YamlSequenceNode)Job(job)["steps"]).Cast<YamlMappingNode>().ToArray();
+        ((YamlSequenceNode) Job(job)["steps"]).Cast<YamlMappingNode>().ToArray();
 
     private static Dictionary<string, string> Granted(YamlMappingNode permissions) => permissions.Children
         .Where(static permission => permission.Value.ToString() != "none")
@@ -296,7 +296,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
 
     private static string[] Scalars(YamlNode node) => node is YamlScalarNode scalar
         ? [scalar.Value ?? string.Empty]
-        : ((YamlSequenceNode)node).Select(static item => item.ToString()).ToArray();
+        : ((YamlSequenceNode) node).Select(static item => item.ToString()).ToArray();
 
     private static string FindRepositoryRoot()
     {

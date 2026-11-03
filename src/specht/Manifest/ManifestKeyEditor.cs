@@ -40,10 +40,10 @@ public sealed class ManifestKeyEditor(ManifestPinEditor manifest)
         }
 
         var addition = new StringBuilder();
-        foreach (var member in missing)
+        foreach (var (Name, Start, End) in missing)
         {
             addition.Append(addition.Length == 0 && present.Count == 0 ? "\n  " : ",\n  ")
-                .Append(Encoding.UTF8.GetString(shipped.AsSpan(checked((int)member.Start), checked((int)(member.End - member.Start)))));
+                .Append(Encoding.UTF8.GetString(shipped.AsSpan(checked((int) Start), checked((int) (End - Start)))));
         }
 
         var at = manifest.OriginalOffset(insert, utf8, text, encoding, preamble);

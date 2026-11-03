@@ -2,9 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace Specht.Model;
 
-/// <summary>
-/// Parses the YAML frontmatter of a markdown document's text into a <see cref="JsonObject"/>; it reads no file.
-/// </summary>
+/// <summary>Parses the YAML frontmatter of a markdown document's text into a <see cref="JsonObject"/>; it reads no file.</summary>
 /// <remarks>
 /// Reads through YamlDotNet's representation model rather than deserializing,
 /// which is what keeps dates comparable. Both <c>created: 2026-08-27</c> and

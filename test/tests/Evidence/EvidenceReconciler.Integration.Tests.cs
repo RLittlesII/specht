@@ -529,7 +529,7 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
         .Single(row => row!["project"]!.GetValue<string>() == "test/a/a.csproj" && row["caseId"]!.GetValue<string>() == caseId)!;
 
     private static JsonObject Scenario(string scenarioId, params (string CaseId, string State)[] links) => ScenarioRecord(scenarioId,
-        links.Select(static link => (JsonNode?)new JsonObject
+        links.Select(static link => (JsonNode?) new JsonObject
         {
             ["rowId"] = null,
             ["caseId"] = link.CaseId,

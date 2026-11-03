@@ -109,7 +109,7 @@ public sealed partial class SpechtReportDocumentUnitTests
     public void AReportOfACheckOverAnUpstreamCopy_WhenMadeADocument_ShouldSayTheSchemasCameFromTheUpstreamCopy()
     {
         // Given
-        var report = (SpechtReport)new SpechtReportFixture() with { SchemaSource = SpechtSchemaSource.Upstream };
+        var report = (SpechtReport) new SpechtReportFixture() with { SchemaSource = SpechtSchemaSource.Upstream };
 
         // When
         var document = SpechtReportDocument.From(report);

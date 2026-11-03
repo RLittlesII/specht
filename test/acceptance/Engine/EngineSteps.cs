@@ -52,7 +52,7 @@ public sealed partial class EngineSteps
     public void GivenTheBaselineTree() => BaselineTree.Write(Tree);
 
     [Given("the golden report the engine gave on that tree at the commit the copy landed on main")]
-    public void GivenTheGoldenReport() => _golden = GoldenReport.Read();
+    public void GivenTheGoldenReport() => Golden = GoldenReport.Read();
 
     [Given("the baseline tree the tests build, pinned to schema version {word}")]
     public void GivenTheBaselineTreePinnedTo(string version)
@@ -62,7 +62,7 @@ public sealed partial class EngineSteps
     }
 
     [Given("the golden report committed for that tree under version {word}")]
-    public void GivenTheGoldenReportCommittedUnderVersion(string version) => _golden = GoldenReport.Read($"Baseline/engine-v{version}.json");
+    public void GivenTheGoldenReportCommittedUnderVersion(string version) => Golden = GoldenReport.Read($"Baseline/engine-v{version}.json");
 
     [Given("the root holds a specification whose claim {word} has no traceability row")]
     public void GivenTheRootHoldsASpecificationWhoseClaimHasNoTraceabilityRow(string claim) =>
@@ -213,7 +213,7 @@ public sealed partial class EngineSteps
     public void GivenTheBaselineTreeAndTheGoldenReport()
     {
         BaselineTree.Write(Tree);
-        _golden = GoldenReport.Read();
+        Golden = GoldenReport.Read();
     }
 
     [When("the engine runs again at a different root location, under a different locale and with an extra environment variable set")]
@@ -312,7 +312,7 @@ public sealed partial class EngineSteps
 
     private SpechtReport Report => _report ?? throw new InvalidOperationException("The engine has not run.");
 
-    private IReadOnlyList<GoldenReport.Verdict> Golden => _golden ?? throw new InvalidOperationException("No golden report was read.");
+    private IReadOnlyList<GoldenReport.Verdict> Golden { get => field ?? throw new InvalidOperationException("No golden report was read."); set; }
 
     private string Library => _library ?? throw new InvalidOperationException("No library was built.");
 
@@ -330,17 +330,17 @@ public sealed partial class EngineSteps
     {
         var parent = attribute.Constructor.Kind switch
         {
-            HandleKind.MemberReference => metadata.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent,
-            HandleKind.MethodDefinition => metadata.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor).GetDeclaringType(),
-            _ => default(EntityHandle),
+            HandleKind.MemberReference => metadata.GetMemberReference((MemberReferenceHandle) attribute.Constructor).Parent,
+            HandleKind.MethodDefinition => metadata.GetMethodDefinition((MethodDefinitionHandle) attribute.Constructor).GetDeclaringType(),
+            _ => default,
         };
 
         return parent.Kind switch
         {
-            HandleKind.TypeReference => metadata.GetTypeReference((TypeReferenceHandle)parent) is var reference
+            HandleKind.TypeReference => metadata.GetTypeReference((TypeReferenceHandle) parent) is var reference
                 ? $"{metadata.GetString(reference.Namespace)}.{metadata.GetString(reference.Name)}"
                 : null,
-            HandleKind.TypeDefinition => metadata.GetTypeDefinition((TypeDefinitionHandle)parent) is var definition
+            HandleKind.TypeDefinition => metadata.GetTypeDefinition((TypeDefinitionHandle) parent) is var definition
                 ? $"{metadata.GetString(definition.Namespace)}.{metadata.GetString(definition.Name)}"
                 : null,
             _ => null,
@@ -365,9 +365,6 @@ public sealed partial class EngineSteps
     private SpechtTree? _tree;
 
     private SpechtReport? _report;
-
-    private IReadOnlyList<GoldenReport.Verdict>? _golden;
-
     private string? _library;
 
     private string? _assemblyName;

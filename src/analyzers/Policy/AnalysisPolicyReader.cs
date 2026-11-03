@@ -230,5 +230,6 @@ public sealed class AnalysisPolicyReader
         "type", "class", "record", "struct", "interface", "enum", "delegate", "constructor", "method", "testMethod",
         "property", "indexer", "field", "event", "operator", "conversion", "finalizer", "enumMember",
     };
+
     private readonly AnalysisPaths _paths = new();
 }

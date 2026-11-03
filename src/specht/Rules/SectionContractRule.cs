@@ -4,9 +4,7 @@ using Specht.Model;
 
 namespace Specht.Rules;
 
-/// <summary>
-/// SPEC010 - a specification carries the contracted sections, exactly once each and in order.
-/// </summary>
+/// <summary>SPEC010 - a specification carries the contracted sections, exactly once each and in order.</summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class SectionContractRule : ISpechtRule
 {

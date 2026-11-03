@@ -83,5 +83,5 @@ public sealed class DeclaredSpikesRuleUnitTests
                 new SpechtDocumentFixture()
                     .WithRelativePath(path)
                     .WithFrontmatter(new FrontmatterFixture().WithNode(
-                        new JsonObject { ["spikes"] = new JsonArray([.. spikes.Select(static spike => (JsonNode?)spike)]) })));
+                        new JsonObject { ["spikes"] = new JsonArray([.. spikes.Select(static spike => (JsonNode?) spike)]) })));
 }

@@ -265,12 +265,12 @@ public sealed partial class InitWriter(
                 while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                 {
                     var name = reader.GetString()!;
-                    var start = (int)reader.TokenStartIndex;
+                    var start = (int) reader.TokenStartIndex;
                     reader.Read();
-                    var valueStart = (int)reader.TokenStartIndex;
+                    var valueStart = (int) reader.TokenStartIndex;
                     var value = reader.TokenType == JsonTokenType.String ? reader.GetString() : null;
                     reader.Skip();
-                    members.Add((name, start, valueStart, (int)reader.BytesConsumed, value));
+                    members.Add((name, start, valueStart, (int) reader.BytesConsumed, value));
                 }
 
                 break;

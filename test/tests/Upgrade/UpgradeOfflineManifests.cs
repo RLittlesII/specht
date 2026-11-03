@@ -27,7 +27,7 @@ public sealed class UpgradeOfflineManifests : TheoryData<string>
             ["version"] = "2026.10",
             ["hashes"] = new JsonObject(new[] { "feature", "task", "epic" }.Select(kind => KeyValuePair.Create(
                 kind,
-                (JsonNode?)("sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(
+                (JsonNode?) ("sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(
                     shipped.Single(file => file.Relative == $".specht/schema/frontmatter/{kind}.schema.json").Bytes)))))),
         };
         Add(recorded.ToJsonString());
@@ -37,7 +37,7 @@ public sealed class UpgradeOfflineManifests : TheoryData<string>
             .Where(static file => file.Relative.StartsWith(".specht/templates/", StringComparison.Ordinal))
             .Select(static file => KeyValuePair.Create(
                 file.Relative[".specht/templates/".Length..],
-                (JsonNode?)("sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(file.Bytes))))));
+                (JsonNode?) ("sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(file.Bytes))))));
         Add(templates.ToJsonString());
 
         Add(defined.ToJsonString());

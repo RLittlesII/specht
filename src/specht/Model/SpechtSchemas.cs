@@ -4,9 +4,7 @@ using Specht.Versioning;
 
 namespace Specht.Model;
 
-/// <summary>
-/// The compiled schemas that define a specification's shape, as <see cref="SpechtSchemaCompiler"/> builds them.
-/// </summary>
+/// <summary>The compiled schemas that define a specification's shape, as <see cref="SpechtSchemaCompiler"/> builds them.</summary>
 /// <remarks>
 /// The schemas are data, not code, so that whoever is authoring a
 /// specification can read the contract they are being held to. The section

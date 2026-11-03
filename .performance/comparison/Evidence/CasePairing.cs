@@ -17,7 +17,10 @@ public static class CasePairing
             before.TryGetValue(key, out var left);
             after.TryGetValue(key, out var right);
             if (!previous.Known || !current.Known || !session.Previous.InventoryKnown || !session.Current.InventoryKnown)
+            {
                 return new PairedCase(key, PairingStatus.InsufficientEvidence, left, right, [], "Native inventory is unavailable.");
+            }
+
             if (left is null || right is null)
             {
                 var present = left ?? right!;
@@ -31,9 +34,13 @@ public static class CasePairing
                 }
 
                 if (others.Any(entry => !sameSide.ContainsKey(entry.Key) && entry.Value.Case.OperationId == present.Case.OperationId))
+                {
                     return new PairedCase(key, PairingStatus.NotComparable, left, right, [], "Workload input parameters differ.");
+                }
+
                 return new PairedCase(key, left is null ? PairingStatus.Added : PairingStatus.Removed, left, right, [], null);
             }
+
             var reason = Equivalence(left, right, session);
             var required = left.Case.RequiredMetrics.Union(right.Case.RequiredMetrics)
                 .Union(left.Observations.Select(static o => o.Metric)).Union(right.Observations.Select(static o => o.Metric)).Order();
@@ -73,6 +80,7 @@ public static class CasePairing
                 result.Add(key, new CaseEvidence(workload, [], true, "Expected measurement is missing."));
                 continue;
             }
+
             var conflict = ContractMismatch(observed.Case, workload);
             result[key] = observed with
             {
@@ -81,14 +89,23 @@ public static class CasePairing
                 Failure = conflict ?? observed.Failure,
             };
         }
+
         return result;
     }
 
     private static string? Equivalence(CaseEvidence left, CaseEvidence right, SessionManifest session)
     {
-        if (!left.IdentityKnown || !right.IdentityKnown) return left.Failure ?? right.Failure ?? "Unknown identity mapping.";
+        if (!left.IdentityKnown || !right.IdentityKnown)
+        {
+            return left.Failure ?? right.Failure ?? "Unknown identity mapping.";
+        }
+
         var contract = ContractMismatch(left.Case, right.Case);
-        if (contract is not null) return contract;
+        if (contract is not null)
+        {
+            return contract;
+        }
+
         var a = session.Previous.Conditions;
         var b = session.Current.Conditions;
         foreach (var (name, first, second) in new[]
@@ -99,7 +116,9 @@ public static class CasePairing
         })
         {
             if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second) || first != second)
+            {
                 return $"Measurement {name} is unknown or differs.";
+            }
         }
 
         return null;
@@ -108,7 +127,10 @@ public static class CasePairing
     private static string? ContractMismatch(WorkloadCase left, WorkloadCase right)
     {
         if (string.IsNullOrWhiteSpace(left.OperationRevision) || left.OperationRevision != right.OperationRevision)
+        {
             return "Workload operation revision is unknown or differs.";
+        }
+
         if (string.IsNullOrWhiteSpace(left.FixtureId) || string.IsNullOrWhiteSpace(left.FixtureRevision)
             || left.FixtureId != right.FixtureId || left.FixtureRevision != right.FixtureRevision)
         {
@@ -116,7 +138,10 @@ public static class CasePairing
         }
 
         if (string.IsNullOrWhiteSpace(left.Boundary) || left.Boundary != right.Boundary)
+        {
             return "Measurement boundary is unknown or differs.";
+        }
+
         return null;
     }
 
@@ -125,17 +150,33 @@ public static class CasePairing
         var before = left.Observations.Where(o => o.Metric == metric).ToImmutableArray();
         var after = right.Observations.Where(o => o.Metric == metric).ToImmutableArray();
         if (before.Length != 1 || after.Length != 1)
+        {
             return new MetricPair(metric, PairingStatus.InsufficientEvidence, before, after, "Missing or duplicate metric evidence.");
+        }
+
         var first = before[0];
         var second = after[0];
         if (!Valid(first) || !Valid(second))
+        {
             return new MetricPair(metric, PairingStatus.InsufficientEvidence, before, after, "Invalid metric value or timing uncertainty.");
+        }
+
         var mismatch = equivalence;
-        if (string.IsNullOrWhiteSpace(first.Observer) || first.Observer != second.Observer) mismatch = "Metric observer is unknown or differs.";
+        if (string.IsNullOrWhiteSpace(first.Observer) || first.Observer != second.Observer)
+        {
+            mismatch = "Metric observer is unknown or differs.";
+        }
+
         if (metric == MetricKind.Time && first.Interval!.ConfidenceLevel != second.Interval!.ConfidenceLevel)
+        {
             mismatch = "Timing confidence levels differ.";
+        }
+
         if (!MetricUnits.IsRecognised(metric, first.Unit) || !MetricUnits.IsRecognised(metric, second.Unit))
+        {
             mismatch = "Metric units are unknown or incompatible.";
+        }
+
         return new MetricPair(metric, mismatch is null ? PairingStatus.Comparable : PairingStatus.NotComparable, before, after, mismatch);
     }
 

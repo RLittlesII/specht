@@ -22,12 +22,12 @@ public sealed class ExplainIntegrationTests
         var page = EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin).RulePages[id];
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "--root", ".", "--schema-source", "disk", "--explain", id);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "--root", ".", "--schema-source", "disk", "--explain", id);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Stderr);
-        result.Stdout.Should().Be(page);
-        result.Stderr.Should().BeEmpty();
+        ExitCode.Should().Be(0, Stderr);
+        Stdout.Should().Be(page);
+        Stderr.Should().BeEmpty();
     }
 
     [Theory]
@@ -41,12 +41,12 @@ public sealed class ExplainIntegrationTests
         File.WriteAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath), $$"""{"schemaVersion":"{{pin}}"}""");
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", id);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", id);
 
         // Then
-        result.ExitCode.Should().Be(4, result.Stderr);
-        result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Contain(id).And.NotContain(tree.Root);
+        ExitCode.Should().Be(4, Stderr);
+        Stdout.Should().BeEmpty();
+        Stderr.Should().Contain(id).And.NotContain(tree.Root);
     }
 
     [Theory]
@@ -67,11 +67,11 @@ public sealed class ExplainIntegrationTests
         }
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", "SPEC4004");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", "SPEC4004");
 
         // Then
-        result.ExitCode.Should().Be(exit, result.Stderr);
-        result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().NotBeEmpty().And.NotContain(tree.Root);
+        ExitCode.Should().Be(exit, Stderr);
+        Stdout.Should().BeEmpty();
+        Stderr.Should().NotBeEmpty().And.NotContain(tree.Root);
     }
 }

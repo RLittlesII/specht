@@ -67,7 +67,11 @@ public sealed class DeclaredIdentityUnitTests
     {
         // Given
         var sources = new Dictionary<string, byte[]>(StringComparer.Ordinal);
-        if (readable) sources[CheckFile] = Encoding.UTF8.GetBytes(SyntheticBenchmarks.Check);
+        if (readable)
+        {
+            sources[CheckFile] = Encoding.UTF8.GetBytes(SyntheticBenchmarks.Check);
+        }
+
         using var assembly = new MemoryStream(SyntheticBenchmarks.Compile((compiledPath, SyntheticBenchmarks.Check)));
 
         // When

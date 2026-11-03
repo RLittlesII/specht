@@ -11,7 +11,7 @@ public sealed class EvidenceContractsUnitTests
     public void SessionManifest_WhenEncoded_ShouldRoundTripWithoutAmbientCultureOrDictionaryOrder()
     {
         // Given
-        var session = ((SessionManifest)new SessionManifestFixture());
+        var session = ((SessionManifest) new SessionManifestFixture());
         var originalCulture = CultureInfo.CurrentCulture;
         try
         {
@@ -38,7 +38,7 @@ public sealed class EvidenceContractsUnitTests
     public void InvalidSessionContract_WhenRead_ShouldRefuseTheEvidence(string invalid)
     {
         // Given
-        var session = ((SessionManifest)new SessionManifestFixture());
+        var session = ((SessionManifest) new SessionManifestFixture());
         session = invalid switch
         {
             "version" => session with { FormatVersion = 2 },
@@ -60,7 +60,7 @@ public sealed class EvidenceContractsUnitTests
     public void NumericParameters_WhenKeyed_ShouldUseTypedCanonicalValues(string first, string second, bool equal)
     {
         // Given
-        var workload = ((MeasurementInventory)new MeasurementInventoryFixture()).Cases[0].Case;
+        var workload = ((MeasurementInventory) new MeasurementInventoryFixture()).Cases[0].Case;
         var a = workload with { Parameters = ImmutableSortedDictionary<string, ParameterValue>.Empty.Add("size", new ParameterValue("number", first)) };
         var b = workload with { Parameters = ImmutableSortedDictionary<string, ParameterValue>.Empty.Add("size", new ParameterValue("number", second)) };
 

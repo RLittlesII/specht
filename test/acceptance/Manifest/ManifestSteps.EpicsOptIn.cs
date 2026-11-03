@@ -76,7 +76,7 @@ public sealed partial class ManifestSteps
         ReportedBy("SPEC012")
             .Select(static violation => (violation.File, violation.Line, violation.Identifier))
             .Should()
-            .BeEquivalentTo(_specifications.Select(path => (path, 2, (string?)identity)));
+            .BeEquivalentTo(_specifications.Select(path => (path, 2, (string?) identity)));
 
     [Then("each report names both paths")]
     public void ThenEachReportNamesBothPaths() =>

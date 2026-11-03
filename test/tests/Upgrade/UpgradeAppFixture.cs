@@ -46,6 +46,7 @@ internal sealed class UpgradeAppFixture : AutoFixtureBase<UpgradeAppFixture>
         {
             services.AddSingleton(fixture._shipped);
         }
+
         if (fixture._errors is not null)
         {
             services.AddSingleton<TextWriter>(fixture._errors);

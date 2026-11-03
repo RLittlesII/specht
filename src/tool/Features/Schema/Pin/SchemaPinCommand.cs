@@ -33,10 +33,12 @@ public sealed class SchemaPinCommand(IAnsiConsole console, SchemaVersionManager 
                         "specht: selecting a version requires an interactive terminal; use specht schema pin <version>.");
                     return ExitCodes.MissingInput;
                 }
+
                 version = console.Prompt(new SelectionPrompt<SemanticVersion>()
                     .Title("Select schema version")
                     .AddChoices(choices)).ToString();
             }
+
             var selected = await schemas.Pin(root, version, cancellationToken);
             console.Profile.Out.Writer.WriteLine($"pinned schemaVersion {selected} in {SpechtManifestStore.RelativePath}");
             return ExitCodes.Success;

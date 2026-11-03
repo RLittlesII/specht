@@ -240,7 +240,7 @@ public sealed class BindingSteps
     public void WhenResolved()
     {
         var resolver = new BindingResolver(new BindingCatalog(_features, _adrs), _policy);
-        _result = _adr is null ? resolver.Resolve(_claim!) : resolver.Resolve(_adr);
+        Result = _adr is null ? resolver.Resolve(_claim!) : resolver.Resolve(_adr);
     }
 
     [When("the target kind is interpreted")]
@@ -256,10 +256,12 @@ public sealed class BindingSteps
             var feature = _features[index];
             _features[index] = new BindingFeature(feature.Identity, feature.State, feature.Claims, "moved/.spec/README.md");
         }
+
         for (var index = 0; index < _adrs.Count; index++)
         {
             _adrs[index] = _adrs[index] with { RelativePath = "moved/decision.md" };
         }
+
         WhenResolved();
     }
 
@@ -500,7 +502,7 @@ public sealed class BindingSteps
         _provenanceResults.Select(static result => result.Target!.RelativePath).Should().Equal(Enumerable.Repeat(_provenancePath, 3));
     }
 
-    private BindingResult Result => _result ?? throw new InvalidOperationException("No reference was resolved.");
+    private BindingResult Result { get => field ?? throw new InvalidOperationException("No reference was resolved."); set; }
 
     private void SetTierReference(string kind, string? epic)
     {
@@ -527,6 +529,7 @@ public sealed class BindingSteps
     private readonly List<string> _provenanceErrors = new();
     private readonly List<BindingFeature> _features = new();
     private readonly List<BindingAdr> _adrs = new();
+
     private BindingPolicy _policy = new("0.5.0", new Dictionary<string, string>
     {
         ["epic"] = "^[0-9]{4}$",
@@ -534,9 +537,9 @@ public sealed class BindingSteps
         ["claim"] = "^B-[0-9]{3}$",
     }, new Dictionary<string, string> { ["approved"] = "approved", ["withdrawn"] = "Withdrawn", ["superseded"] = "Superseded" },
         true, "3. Acceptance Criteria", new LifecycleOmissions(false, false, false));
+
     private ClaimReference? _claim;
     private AdrReference? _adr;
-    private BindingResult? _result;
     private BindingResult? _before;
     private FeatureIdentity? _authoringDefault;
     private string? _requestedKind;

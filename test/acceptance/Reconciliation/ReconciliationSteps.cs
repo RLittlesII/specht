@@ -637,6 +637,7 @@ public sealed class ReconciliationSteps
 
     private JsonNode Report() => JsonNode.Parse(_result.Stdout)!;
     private JsonNode Claim() => Report()["claims"]![0]!;
+
     private JsonNode Row(string project, string caseId) => Report()["cases"]!.AsArray()
         .Single(row => row!["project"]!.GetValue<string>() == project && row["caseId"]!.GetValue<string>() == caseId)!;
 

@@ -84,7 +84,7 @@ internal sealed class SyntheticSchemaModelFixture : AutoFixtureBase<SyntheticSch
         {
             "feature" => model.WithFeatures(new FeatureSpecFixture().WithDocument(new SpechtDocumentFixture().WithFrontmatter(frontmatter))),
             "task" => model.WithItems(new ChildItemFixture().WithFrontmatter(frontmatter)),
-            "epic" => model.WithList([(EpicFile)new EpicFileFixture().WithFrontmatter(frontmatter)]),
+            "epic" => model.WithList([(EpicFile) new EpicFileFixture().WithFrontmatter(frontmatter)]),
             _ => throw new ArgumentOutOfRangeException(nameof(_kind), _kind, "The kind is feature, task or epic."),
         };
     }

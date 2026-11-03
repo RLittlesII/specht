@@ -134,10 +134,10 @@ public sealed class CodeAnalysisPackageIntegrationTests
                 Path.Combine(consumer, "decisions", "ADR-0002.md"), "# ADR-0002: Declared records\n\n## Status\n\nAccepted.\n",
                 TestContext.Current.CancellationToken);
 
-            var restore = await Run(root, "restore", Path.Combine(consumer, "Consumer.csproj"), "--source", output, "--packages",
+            var (ExitCode, Output) = await Run(root, "restore", Path.Combine(consumer, "Consumer.csproj"), "--source", output, "--packages",
                 Path.Combine(consumer, "packages"), "--source",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages"));
-            restore.ExitCode.Should().Be(0, restore.Output);
+            ExitCode.Should().Be(0, Output);
             var designTime = await Run(root, "msbuild", Path.Combine(consumer, "Consumer.csproj"), "-target:PrintSpechtInputs",
                 "-property:DesignTimeBuild=true");
             designTime.ExitCode.Should().Be(0, designTime.Output);
@@ -281,15 +281,15 @@ public sealed class CodeAnalysisPackageIntegrationTests
 
     private static async Task<string> EvaluateScenarioInputs(string consumer, params string[] properties)
     {
-        var result = await Run(consumer, ["msbuild", Path.Combine(consumer, "Probe.proj"), "-target:PrintSpechtInputs", .. properties]);
-        result.ExitCode.Should().Be(0, result.Output);
-        return result.Output;
+        var (ExitCode, Output) = await Run(consumer, ["msbuild", Path.Combine(consumer, "Probe.proj"), "-target:PrintSpechtInputs", .. properties]);
+        ExitCode.Should().Be(0, Output);
+        return Output;
     }
 
     private static async Task<string> Pack(string root, string project, string output, string packageId)
     {
-        var result = await Run(root, "pack", project, "--configuration", "Debug", "--output", output, "--no-restore");
-        result.ExitCode.Should().Be(0, result.Output);
+        var (ExitCode, Output) = await Run(root, "pack", project, "--configuration", "Debug", "--output", output, "--no-restore");
+        ExitCode.Should().Be(0, Output);
         return Directory.GetFiles(output, packageId + ".*.nupkg").Should().ContainSingle().Subject;
     }
 

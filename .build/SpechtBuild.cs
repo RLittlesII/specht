@@ -24,7 +24,7 @@ internal partial class SpechtBuild : NukeBuild
     protected override void OnBuildInitialized()
     {
         base.OnBuildInitialized();
-        foreach (var variable in (string[])["MSBUILD_EXE_PATH", "MSBuildSDKsPath", "MSBuildExtensionsPath"])
+        foreach (var variable in (string[]) ["MSBUILD_EXE_PATH", "MSBuildSDKsPath", "MSBuildExtensionsPath"])
         {
             Environment.SetEnvironmentVariable(variable, null);
         }

@@ -77,7 +77,7 @@ public sealed class SpechtEvaluatorUnitTests
                 .Concat(Enumerable.Repeat(new SpechtLayout("features", "**/.spec/README.md"), inFeatures))
                 .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithLayout(layout))),
         ];
-        List<ChildItem> children = [.. Enumerable.Range(0, items).Select(static _ => (ChildItem)new ChildItemFixture())];
+        List<ChildItem> children = [.. Enumerable.Range(0, items).Select(static _ => (ChildItem) new ChildItemFixture())];
         SpechtModel model = ModelWithVocabulary().WithFeatures(features).WithItems(children);
 
         // When

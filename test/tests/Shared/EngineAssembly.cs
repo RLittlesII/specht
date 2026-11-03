@@ -154,7 +154,7 @@ public static class EngineAssembly
         while (il.RemainingBytes > 0)
         {
             var value = il.ReadByte();
-            var opCode = OpCodesByValue[value == 0xFE ? (short)(0xFE00 | il.ReadByte()) : value];
+            var opCode = OpCodesByValue[value == 0xFE ? (short) (0xFE00 | il.ReadByte()) : value];
 
             switch (opCode.OperandType)
             {
@@ -163,12 +163,12 @@ public static class EngineAssembly
 
                     if (token.Kind == HandleKind.MethodSpecification)
                     {
-                        token = metadata.GetMethodSpecification((MethodSpecificationHandle)token).Method;
+                        token = metadata.GetMethodSpecification((MethodSpecificationHandle) token).Method;
                     }
 
                     if (token.Kind == HandleKind.MemberReference)
                     {
-                        yield return (MemberReferenceHandle)token;
+                        yield return (MemberReferenceHandle) token;
                     }
 
                     break;
@@ -199,7 +199,7 @@ public static class EngineAssembly
         var accessed = name.StartsWith("get_", StringComparison.Ordinal) || name.StartsWith("set_", StringComparison.Ordinal) ? name[4..] : name;
 
         return member.Parent.Kind == HandleKind.TypeReference
-            ? $"{TypeName(metadata, (TypeReferenceHandle)member.Parent)}.{accessed}"
+            ? $"{TypeName(metadata, (TypeReferenceHandle) member.Parent)}.{accessed}"
             : accessed;
     }
 
@@ -250,6 +250,6 @@ public static class EngineAssembly
 
     private static readonly Dictionary<short, OpCode> OpCodesByValue = typeof(OpCodes)
         .GetFields(BindingFlags.Public | BindingFlags.Static)
-        .Select(static field => (OpCode)field.GetValue(null)!)
+        .Select(static field => (OpCode) field.GetValue(null)!)
         .ToDictionary(static opCode => opCode.Value);
 }

@@ -74,7 +74,7 @@ public static class ComparisonEvaluation
                 MetricKind.ManagedAllocation => percent > policy.AllocationIncreasePercent
                     ? (MetricJudgment.ReviewRequired, Invariant(
                         $"Managed allocation rose more than {policy.AllocationIncreasePercent}% above a positive previous allocation."))
-                    : (MetricJudgment.NoRegressionFlagged, (string?)null),
+                    : (MetricJudgment.NoRegressionFlagged, (string?) null),
                 _ => (MetricJudgment.Informational, null),
             };
             return new MetricComparison(pair.Metric, judgment, pair.Metric == MetricKind.Time ? "ns" : "B", previous, current, change, percent,

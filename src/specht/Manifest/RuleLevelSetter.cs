@@ -23,10 +23,12 @@ public sealed class RuleLevelSetter(SpechtManifestStore store, SpechtManifestPar
         {
             throw new SpechtRootNotFoundException();
         }
+
         if (!store.ManifestExists(root))
         {
             throw new SpechtManifestNotFoundException(store.RetiredManifestExists(root));
         }
+
         byte[] bytes;
         try
         {
@@ -36,6 +38,7 @@ public sealed class RuleLevelSetter(SpechtManifestStore store, SpechtManifestPar
         {
             throw new SpechtManifestUnreadableException(exception);
         }
+
         SpechtStructure structure;
         try
         {
@@ -45,25 +48,30 @@ public sealed class RuleLevelSetter(SpechtManifestStore store, SpechtManifestPar
         {
             throw new SpechtManifestUnreadableException(exception);
         }
+
         var version = parser.PinnedVersion(structure);
         var faults = new List<string>();
         if (!version.RuleIds.Contains(id))
         {
             faults.Add($"Rule '{id}' is not held by schemaVersion {version.Number}.");
         }
+
         if (level is not ("error" or "warning" or "off"))
         {
             faults.Add($"Level '{level}' is not one of error, warning or off.");
         }
+
         if (faults.Count > 0)
         {
             throw new RuleLevelNotFoundException(string.Join(" ", faults));
         }
+
         var changed = editor.Change(bytes, id, level);
         if (bytes.AsSpan().SequenceEqual(changed))
         {
             return;
         }
+
         try
         {
             await store.WriteManifest(root, changed, cancellationToken);

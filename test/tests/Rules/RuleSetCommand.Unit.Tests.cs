@@ -28,10 +28,12 @@ public sealed class RuleSetCommandUnitTests
         {
             files.Directory.CreateDirectory("consumer");
         }
+
         if (manifest is not null)
         {
             files.AddFile("consumer/.specht/manifest.json", new MockFileData(manifest));
         }
+
         var parser = EngineServices.Parser();
         var pinEditor = new ManifestPinEditor(parser, EngineServices.Versions());
         var setter = new RuleLevelSetter(new SpechtManifestStore(files), parser, new ManifestRuleEditor(pinEditor), pinEditor);
@@ -56,10 +58,12 @@ public sealed class RuleSetCommandUnitTests
             {
                 errors.ToString().Should().Contain(id);
             }
+
             if (expected == 4 && level is not ("error" or "warning" or "off"))
             {
                 errors.ToString().Should().Contain(level).And.Contain("error").And.Contain("warning").And.Contain("off");
             }
+
             if (manifest is not null)
             {
                 files.File.ReadAllText("consumer/.specht/manifest.json").Should().Be(manifest);

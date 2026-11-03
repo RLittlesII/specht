@@ -68,6 +68,7 @@ public sealed class EffectiveManifestReader(SpechtModelReader reader, RuleEntrie
                 {
                     orderedLevels[entry.Key] = entry.Value?.DeepClone();
                 }
+
                 ordered[key] = orderedLevels;
             }
             else
@@ -75,6 +76,7 @@ public sealed class EffectiveManifestReader(SpechtModelReader reader, RuleEntrie
                 ordered[key] = document[key]?.DeepClone();
             }
         }
+
         return ordered.ToJsonString(new JsonSerializerOptions { WriteIndented = indented });
     }
 }

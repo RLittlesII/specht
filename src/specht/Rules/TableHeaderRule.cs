@@ -3,9 +3,7 @@ using Specht.Model;
 
 namespace Specht.Rules;
 
-/// <summary>
-/// SPEC013 - the tables that gate coverage have the headers the contract names.
-/// </summary>
+/// <summary>SPEC013 - the tables that gate coverage have the headers the contract names.</summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class TableHeaderRule : ISpechtRule
 {

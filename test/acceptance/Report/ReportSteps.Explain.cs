@@ -29,12 +29,13 @@ public sealed partial class ReportSteps
     [When("the tool is asked to explain {word}")]
     public void WhenTheToolIsAskedToExplain(string id)
     {
-        _explainedId = id;
+        ExplainPage = id;
         if (RuleIds.Named("0.1.0", id) == "SPEC031" && File.Exists(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))
         {
             // A normal check of this tree fails. Explain must still print only the page.
             Tree.WriteFeature("0001", "F1", featureFile: null);
         }
+
         (_stdout, _stderr, _explainExit) = AcceptanceTool.Launch(Tree.Root, "--root", ".", "--explain", id);
     }
 
@@ -75,13 +76,14 @@ public sealed partial class ReportSteps
             var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
             var pin = manifest["schemaVersion"]?.GetValue<string>() ?? "0.1.0";
             var pages = EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin).RulePages;
-            pages.Should().ContainKey(_explainedId, "version {0} names the rule by the id the scenario explains", pin);
-            return pages[_explainedId];
+            pages.Should().ContainKey(field, "version {0} names the rule by the id the scenario explains", pin);
+            return pages[field];
         }
-    }
+
+        set;
+    } = string.Empty;
 
     private void WriteExplainManifest(string text) => File.WriteAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath), text);
 
     private int _explainExit;
-    private string _explainedId = string.Empty;
 }

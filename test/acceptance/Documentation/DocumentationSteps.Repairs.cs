@@ -210,7 +210,7 @@ public sealed partial class DocumentationSteps
         };
         if (_repairAmbiguous)
         {
-            inputs = inputs.Concat(new[] { ("feature", "src/other/.spec/README.md", inputs[1].Item3) }).ToArray();
+            inputs = inputs.Concat(new[] { ("feature", "src/other/.spec/README.md", inputs[1].Text) }).ToArray();
         }
 
         _repairInputs = inputs;

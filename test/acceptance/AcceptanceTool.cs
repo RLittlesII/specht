@@ -49,9 +49,7 @@ internal static class AcceptanceTool
         return Run(start);
     }
 
-    /// <summary>
-    /// Runs the tool with a complete document on its redirected standard input.
-    /// </summary>
+    /// <summary>Runs the tool with a complete document on its redirected standard input.</summary>
     /// <param name="workingDirectory">The process's working directory.</param>
     /// <param name="input">The document text to pipe.</param>
     /// <param name="args">The arguments, each passed as one.</param>
@@ -64,12 +62,11 @@ internal static class AcceptanceTool
         {
             start.ArgumentList.Add(arg);
         }
+
         return Run(start, input);
     }
 
-    /// <summary>
-    /// Runs a process while draining both output streams and supplying its optional standard input before closing it.
-    /// </summary>
+    /// <summary>Runs a process while draining both output streams and supplying its optional standard input before closing it.</summary>
     /// <param name="start">The process to run; its stdout and stderr are redirected here.</param>
     /// <param name="input">The optional text to write to redirected standard input.</param>
     /// <returns>What the process wrote to stdout and to stderr, and its exit code.</returns>
@@ -111,8 +108,8 @@ internal static class AcceptanceTool
         {
             var attribute = reader.GetCustomAttribute(handle);
             if (attribute.Constructor.Kind == HandleKind.MemberReference
-                && reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent is { Kind: HandleKind.TypeReference } type
-                && reader.GetString(reader.GetTypeReference((TypeReferenceHandle)type).Name) == nameof(AssemblyInformationalVersionAttribute))
+                && reader.GetMemberReference((MemberReferenceHandle) attribute.Constructor).Parent is { Kind: HandleKind.TypeReference } type
+                && reader.GetString(reader.GetTypeReference((TypeReferenceHandle) type).Name) == nameof(AssemblyInformationalVersionAttribute))
             {
                 var value = reader.GetBlobReader(attribute.Value);
                 value.ReadUInt16();

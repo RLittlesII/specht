@@ -24,6 +24,7 @@ public sealed class SchemaPinSelectorIntegrationTests
         {
             console.Input.PushKey(ConsoleKey.DownArrow);
         }
+
         console.Input.PushKey(ConsoleKey.Enter);
         var app = EngineServices.CommandApp(new FileSystem(), console);
 
@@ -36,6 +37,7 @@ public sealed class SchemaPinSelectorIntegrationTests
         {
             result.Output.Should().Contain(version.Number.ToString());
         }
+
         File.ReadAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath)).Should().Be("{\"schemaVersion\":\"" + target + "\"}");
         result.Output.Should().Contain("pinned schemaVersion " + target);
     }
@@ -49,12 +51,12 @@ public sealed class SchemaPinSelectorIntegrationTests
         var before = File.ReadAllBytes(path);
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "schema", "pin");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "schema", "pin");
 
         // Then
-        result.ExitCode.Should().Be(2);
-        result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Contain("specht schema pin <version>").And.NotContain(tree.Root);
+        ExitCode.Should().Be(2);
+        Stdout.Should().BeEmpty();
+        Stderr.Should().Contain("specht schema pin <version>").And.NotContain(tree.Root);
         File.ReadAllBytes(path).Should().Equal(before);
     }
 }

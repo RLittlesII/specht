@@ -22,7 +22,11 @@ public static class RevisionEvidence
         var mapped = selected.Select(name => mappings.Where(mapping => (mapping.FullName == name
                 || mapping.FullName.StartsWith(name + "(", StringComparison.Ordinal)) && mapping.ProductCommit == commit
             && EvidencePaths.IsRelative(mapping.SourceFile) && ComparisonJson.IsHash(mapping.SourceDigest, 64)).ToArray()).ToArray();
-        if (mapped.Any(static matching => matching.Length == 0)) return null;
+        if (mapped.Any(static matching => matching.Length == 0))
+        {
+            return null;
+        }
+
         try
         {
             var keyed = mapped.SelectMany(static matching => matching)
@@ -39,13 +43,22 @@ public static class RevisionEvidence
 
     public static ExportReading Read(ImmutableArray<string> exports)
     {
-        if (exports.IsDefaultOrEmpty) return new ExportReading(null, null, NoExport);
+        if (exports.IsDefaultOrEmpty)
+        {
+            return new ExportReading(null, null, NoExport);
+        }
+
         var declared = new List<(string Exporter, MeasurementConditions Conditions)>();
         foreach (var export in exports)
         {
-            if (Declared(export) is not { } conditions) return new ExportReading(null, null, Malformed);
+            if (Declared(export) is not { } conditions)
+            {
+                return new ExportReading(null, null, Malformed);
+            }
+
             declared.AddRange(conditions);
         }
+
         return declared.Distinct().Count() == 1
             ? new ExportReading(declared[0].Exporter, declared[0].Conditions, null)
             : new ExportReading(null, null, Disagreeing);
@@ -58,11 +71,21 @@ public static class RevisionEvidence
         foreach (var (name, value) in parent)
         {
             if (Inherited.Contains(name) || name.StartsWith("DOTNET_ROOT", StringComparison.OrdinalIgnoreCase))
+            {
                 environment[name] = value;
+            }
         }
 
-        foreach (var name in new[] { "HOME", "USERPROFILE", "DOTNET_CLI_HOME" }) environment[name] = home;
-        foreach (var name in new[] { "TMPDIR", "TMP", "TEMP" }) environment[name] = temporary;
+        foreach (var name in new[] { "HOME", "USERPROFILE", "DOTNET_CLI_HOME" })
+        {
+            environment[name] = home;
+        }
+
+        foreach (var name in new[] { "TMPDIR", "TMP", "TEMP" })
+        {
+            environment[name] = temporary;
+        }
+
         environment["NUGET_PACKAGES"] = packages;
         environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         environment["DOTNET_NOLOGO"] = "1";
@@ -89,9 +112,14 @@ public static class RevisionEvidence
             var conditions = ImmutableArray.CreateBuilder<(string, MeasurementConditions)>();
             foreach (var benchmark in benchmarks.EnumerateArray())
             {
-                if (benchmark.ValueKind != JsonValueKind.Object || Job(Required(benchmark, "DisplayInfo")) is not { } job) return null;
+                if (benchmark.ValueKind != JsonValueKind.Object || Job(Required(benchmark, "DisplayInfo")) is not { } job)
+                {
+                    return null;
+                }
+
                 conditions.Add((exporter, new MeasurementConditions(system, runtime, architecture, toolchain, GarbageCollection(job), job)));
             }
+
             return conditions.ToImmutable();
         }
         catch (JsonException)
@@ -103,17 +131,29 @@ public static class RevisionEvidence
     private static string? Job(string? displayInfo)
     {
         var separator = displayInfo?.IndexOf(": ", StringComparison.Ordinal) ?? -1;
-        if (separator < 0) return null;
+        if (separator < 0)
+        {
+            return null;
+        }
+
         var segment = displayInfo![(separator + 2)..];
         var parameters = segment.EndsWith(']') ? segment.LastIndexOf(" [", StringComparison.Ordinal) : -1;
-        if (parameters >= 0) segment = segment[..parameters];
+        if (parameters >= 0)
+        {
+            segment = segment[..parameters];
+        }
+
         return string.IsNullOrWhiteSpace(segment) ? null : segment;
     }
 
     private static string GarbageCollection(string job)
     {
         var open = job.IndexOf('(', StringComparison.Ordinal);
-        if (open < 0 || !job.EndsWith(')')) return JobDefault;
+        if (open < 0 || !job.EndsWith(')'))
+        {
+            return JobDefault;
+        }
+
         var declared = job[(open + 1)..^1].Split(", ")
             .Where(static characteristic => GarbageCollectionCharacteristics.Contains(characteristic.Split('=')[0])).ToArray();
         return declared.Length == 0 ? JobDefault : string.Join(", ", declared);

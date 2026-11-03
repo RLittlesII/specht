@@ -33,7 +33,7 @@ public sealed class CollectionPlanUnitTests
         // Given
         ReleasePair pair = new ReleasePairFixture()
             .WithPrevious(hasPredecessor
-                ? (ReleaseRecord)new ReleaseRecordFixture().WithId(10).WithCommit(previous).WithResolutionFailure(previous is null ? "Tag unavailable" : null)
+                ? (ReleaseRecord) new ReleaseRecordFixture().WithId(10).WithCommit(previous).WithResolutionFailure(previous is null ? "Tag unavailable" : null)
                 : null)
             .WithCurrent(new ReleaseRecordFixture().WithId(20).WithCommit(current).WithResolutionFailure(current is null ? "Tag unavailable" : null));
 

@@ -52,7 +52,7 @@ public sealed class ClaimIdRuleUnitTests
             "3. Acceptance Criteria",
             5,
             ["ID", "Claim"],
-            [.. rows.Select(static row => (IReadOnlyList<string>)[row.Id, "It holds."])],
+            [.. rows.Select(static row => (IReadOnlyList<string>) [row.Id, "It holds."])],
             [.. rows.Select(static row => row.Line)]);
 
     private static FeatureSpec Feature(string path, SpechtSection claims) =>

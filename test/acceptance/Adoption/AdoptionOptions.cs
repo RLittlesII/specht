@@ -8,6 +8,7 @@ internal sealed class AdoptionOptions : AnalyzerConfigOptionsProvider
 {
     public override AnalyzerConfigOptions GlobalOptions => _empty;
     public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _empty;
+
     public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => textFile is AdoptionFile file
         ? new AdoptionFileOptions(new Dictionary<string, string>
         {

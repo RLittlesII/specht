@@ -20,7 +20,11 @@ public sealed class ReleasePairAssetStore(HttpClient client)
         try
         {
             var existing = await FindAsync(current, cancellationToken);
-            if (existing is not null) return await ReadAsync(current, existing.Value, cancellationToken);
+            if (existing is not null)
+            {
+                return await ReadAsync(current, existing.Value, cancellationToken);
+            }
+
             var proposed = await create(cancellationToken);
             ComparisonJson.ValidatePair(proposed, current);
             using var request = new HttpRequestMessage(HttpMethod.Post,
@@ -30,12 +34,18 @@ public sealed class ReleasePairAssetStore(HttpClient client)
             };
             using var response = await client.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode && response.StatusCode is not (HttpStatusCode.Conflict or HttpStatusCode.UnprocessableEntity))
+            {
                 throw new InvalidDataException("Pair asset could not be persisted; collection must not start.");
+            }
+
             var retained = await FindAsync(current, cancellationToken)
                 ?? throw new InvalidDataException("Pair asset was not confirmed in durable release storage.");
             var winner = await ReadAsync(current, retained, cancellationToken);
             if (response.IsSuccessStatusCode && ComparisonJson.Digest(winner) != ComparisonJson.Digest(proposed))
+            {
                 throw new InvalidDataException("Uploaded pair asset does not match the selected evidence.");
+            }
+
             return winner;
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException
@@ -54,17 +64,36 @@ public sealed class ReleasePairAssetStore(HttpClient client)
                 $"https://api.github.com/repos/{current.Repository}/releases/{current.Id}/assets?per_page=100&page={page}", cancellationToken);
             response.EnsureSuccessStatusCode();
             using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-            if (document.RootElement.ValueKind != JsonValueKind.Array) throw new JsonException();
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new JsonException();
+            }
+
             foreach (var asset in document.RootElement.EnumerateArray())
             {
-                if (asset.GetProperty("name").GetString() != "comparison-pair-v1.json") continue;
+                if (asset.GetProperty("name").GetString() != "comparison-pair-v1.json")
+                {
+                    continue;
+                }
+
                 if (found is not null || asset.GetProperty("state").GetString() != "uploaded")
+                {
                     throw new InvalidDataException("Saved pair asset is duplicated or its upload is incomplete.");
+                }
+
                 found = asset.GetProperty("id").GetInt64();
-                if (found <= 0) throw new JsonException();
+                if (found <= 0)
+                {
+                    throw new JsonException();
+                }
             }
-            if (document.RootElement.GetArrayLength() < 100) return found;
+
+            if (document.RootElement.GetArrayLength() < 100)
+            {
+                return found;
+            }
         }
+
         throw new InvalidDataException("Pair asset catalog pagination is incomplete.");
     }
 

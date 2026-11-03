@@ -57,6 +57,7 @@ public sealed class ManifestRuleEditorUnitTests
         {
             after.Remove("rules");
         }
+
         JsonNode.DeepEquals(before, after).Should().BeTrue();
     }
 

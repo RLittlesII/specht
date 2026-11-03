@@ -2,9 +2,7 @@ using Specht.Model;
 
 namespace Specht.Rules;
 
-/// <summary>
-/// SPEC003 - every item file's frontmatter satisfies the item schema in <c>.specht/schema/frontmatter/</c>.
-/// </summary>
+/// <summary>SPEC003 - every item file's frontmatter satisfies the item schema in <c>.specht/schema/frontmatter/</c>.</summary>
 /// <param name="check">The frontmatter schema evaluation the three schema rules share.</param>
 /// <implements epic="0001" feature="F5" claim="B-008" />
 public sealed class ItemFrontmatterRule(FrontmatterSchemaCheck check) : ISpechtRule

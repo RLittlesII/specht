@@ -229,7 +229,7 @@ public sealed class UpstreamInitWriterUnitTests
             {
                 "hash" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) },
                 "unreachable" => throw new HttpRequestException("Synthetic source is unreachable."),
-                _ => new HttpResponseMessage((HttpStatusCode)int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
+                _ => new HttpResponseMessage((HttpStatusCode) int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
             };
         }));
         InitWriter writer = new InitWriterFixture()
@@ -350,6 +350,7 @@ public sealed class UpstreamInitWriterUnitTests
 
     private static readonly byte[] Content = [0xEF, 0xBB, 0xBF, 0x7B, 0x0D, 0x0A, 0x7D];
     private static readonly byte[] TemplateContent = [0xEF, 0xBB, 0xBF, 0x23, 0x20, 0x46, 0x0D, 0x0A];
+
     private static readonly Dictionary<string, byte[]> ShippingCopy = new()
     {
         ["manifest/v0.1.0/manifest.json"] = "{}"u8.ToArray(),

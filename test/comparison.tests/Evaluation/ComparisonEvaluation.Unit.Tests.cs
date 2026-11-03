@@ -354,7 +354,7 @@ public sealed class ComparisonEvaluationUnitTests
         comparison.Metrics.Should().HaveCount(2).And.OnlyContain(static m => m.Judgment == MetricJudgment.NotComparable);
         comparison.Metrics.Select(static m => m.Reason).Should().Equal(pairs.Single().Metrics.Select(static m => m.Reason));
         document.Gaps.Select(static gap => (gap.CaseKey, gap.Metric)).Should().BeEquivalentTo(
-            new[] { (comparison.Key, (MetricKind?)MetricKind.Time), (comparison.Key, (MetricKind?)MetricKind.ManagedAllocation) });
+            new[] { (comparison.Key, (MetricKind?) MetricKind.Time), (comparison.Key, (MetricKind?) MetricKind.ManagedAllocation) });
         document.Judgment.Should().Be(ComparisonJudgment.Incomplete);
     }
 
@@ -419,7 +419,10 @@ public sealed class ComparisonEvaluationUnitTests
             .WithObserver("tool-process").WithInterval(null);
         MeasurementInventory previous = new MeasurementInventoryFixture();
         if (previousPeak is { } value)
+        {
             previous = previous with { Cases = [previous.Cases[0] with { Observations = previous.Cases[0].Observations.Add(peak with { Value = value }) }] };
+        }
+
         MeasurementInventory current = new MeasurementInventoryFixture();
         current = current with { Cases = [current.Cases[0] with { Observations = current.Cases[0].Observations.Add(peak) }] };
         SessionManifest session = new SessionManifestFixture();
@@ -467,7 +470,7 @@ public sealed class ComparisonEvaluationUnitTests
         Observation timing = new ObservationFixture();
         Observation allocation = new ObservationFixture().WithMetric(MetricKind.ManagedAllocation).WithValue(32).WithUnit("B").WithInterval(null);
         Observation changed = new ObservationFixture().WithMetric(metric).WithUnit(unit).WithInterval(metric == MetricKind.Time
-            ? new TimingIntervalFixture().WithLower(300 - halfWidth).WithUpper(300 + halfWidth) : (TimingInterval?)null).WithValue(300);
+            ? new TimingIntervalFixture().WithLower(300 - halfWidth).WithUpper(300 + halfWidth) : (TimingInterval?) null).WithValue(300);
         MeasurementInventory previous = new MeasurementInventoryFixture().WithCases([new CaseEvidenceFixture().WithObservations(
             metric == MetricKind.Time ? [changed, allocation] : [timing, changed])]);
         changed = changed with
@@ -516,6 +519,7 @@ public sealed class ComparisonEvaluationUnitTests
             current = previous;
             session = session with { Current = session.Current with { Conditions = session.Current.Conditions with { Runtime = "other" } } };
         }
+
         var pairs = CasePairing.Pair(previous, current, session);
 
         // When
@@ -537,7 +541,11 @@ public sealed class ComparisonEvaluationUnitTests
         // Given
         MeasurementInventory previous = new MeasurementInventoryFixture().WithKnown(inventoryKnown).WithCases([]);
         CaseEvidence evidence = new CaseEvidenceFixture();
-        if (!identityKnown) evidence = evidence with { IdentityKnown = false, Failure = "Audited workload identity is unavailable." };
+        if (!identityKnown)
+        {
+            evidence = evidence with { IdentityKnown = false, Failure = "Audited workload identity is unavailable." };
+        }
+
         MeasurementInventory current = new MeasurementInventoryFixture().WithCases([evidence]);
         SessionManifest session = new SessionManifestFixture();
         var pairs = CasePairing.Pair(previous, current, session);
@@ -649,7 +657,7 @@ public sealed class ComparisonEvaluationUnitTests
         public PeakMemoryRows()
         {
             Add(1000m);
-            Add((decimal?)null);
+            Add((decimal?) null);
         }
     }
 
