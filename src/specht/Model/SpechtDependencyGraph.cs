@@ -65,11 +65,11 @@ public sealed class SpechtDependencyGraph
             {
                 resolved.Add(raw.Contains('/') ? raw.Replace("/", "-") : $"{feature.Epic}-{raw}");
             }
-            else if (forms.Qualified.Match(raw) is { Success: true } qualified)
+            else if (forms.Qualified.Match(raw) is var qualified && qualified.Success)
             {
                 resolved.Add(SpechtForms.Render(forms.Forms.Identity, qualified.Groups[EpicGroup].Value, qualified.Groups[IdGroup].Value));
             }
-            else if (forms.Local.Match(raw) is { Success: true } local)
+            else if (forms.Local.Match(raw) is var local && local.Success)
             {
                 resolved.Add(SpechtForms.Render(forms.Forms.Identity, feature.Epic ?? string.Empty, local.Groups[IdGroup].Value));
             }
