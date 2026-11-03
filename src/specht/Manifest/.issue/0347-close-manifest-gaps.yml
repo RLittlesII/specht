@@ -57,7 +57,7 @@ decisions:
     (Recommended)" - OQ-10, B-072; "A rejected (Recommended)" - OQ-11,
     B-073; "A accept $-keys (Recommended)" - OQ-14, B-074, B-043 amended;
     "A rejected (Recommended)" - OQ-22, B-075; "A later item
-    (Recommended)" - OQ-12, item 0348; "case-insensitive. this isn't a
+    (Recommended)" - OQ-12, item 0350; "case-insensitive. this isn't a
     breaking change for 0.4.0 so we can add an item to do this later." -
     OQ-15, item 0349. That B-073 to B-075 first hold at schema 0.3.0 is
     spec-author's reading of decision 0016 and `0001-F7` C-1 and C-4, not
@@ -109,6 +109,6 @@ decisions:
     mean this one. Item 0010 records the same.
 
 out_of_scope:
-  - "A by-record value in § 9 — item 0348; § 5 row 22."
+  - "A by-record value in § 9 — item 0350; § 5 row 22."
   - "A rule level read ignoring letter case — item 0349; § 5 row 23."
   - "B-073 to B-075 under a pin below schema 0.3.0 — § 5 row 21."

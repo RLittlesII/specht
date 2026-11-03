@@ -1,4 +1,4 @@
-id: "0348"
+id: "0350"
 type: task
 title: Accept a by-record value in the traceability matrix
 
@@ -42,10 +42,16 @@ decisions:
     (Recommended)". Cut by spec-author outside milestone 0.4.0;
     Manifest decision 0021 call 5.
   - |
-    2026-11-03, the repository owner, on items 0348 and 0349: "Leave
+    2026-11-03, the repository owner, on items 0349 and 0350: "Leave
     unscheduled (Recommended)". Removed from milestone 0.5.0; it sits
     under no milestone. Manifest decision 0021 call 10. Recorded by
     spec-author.
+  - |
+    2026-11-03, spec-author: cut as 0348 and renumbered 0350 before merge,
+    because open pull request #702 claimed 0348 first. The repository
+    owner ruled: "Renumber mine to 0350". Items 0347 and 0349 keep their
+    numbers, `.issue/.sequence` reads 0350, and no commit cites 0348 for
+    this item.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

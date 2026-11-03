@@ -48,7 +48,7 @@ decisions:
     OQ-28 raised for the pin (decision 0021 call 8).
   - |
     2026-11-03, the repository owner, on OQ-28: "A next 0.minor
-    (Recommended)"; and on items 0348 and 0349: "Leave unscheduled
+    (Recommended)"; and on items 0349 and 0350: "Leave unscheduled
     (Recommended)". The level holds from the first schema version after
     0.3.0, and this item sits under no milestone. Manifest decision 0021
     calls 9 and 10. Recorded by spec-author.
