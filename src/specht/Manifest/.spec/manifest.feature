@@ -150,6 +150,36 @@ Feature: The manifest carries the roles
     Then the missing-section message names "3. Claims"
     And it names the manifest by its path under the root
 
+  @B-009
+  Scenario: A message numbers a section by its title's leading number
+    Given the manifest renames the matrix section to "7. Matrix" in its section list and its matrix role
+    And the root holds a specification with a claim that has no row in "7. Matrix"
+    When the check runs
+    Then the missing-row message names "§ 7"
+
+  @B-009
+  Scenario: A message names an unnumbered section by its title
+    Given the manifest renames the claims section to "Claims" in its section list and its claims role
+    And the root holds a specification whose scenario tag names no claim under "Claims"
+    When the check runs
+    Then the unresolved-tag message names "## Claims"
+
+  @B-009
+  Scenario: A message names a frontmatter key by the manifest's name
+    Given the manifest pins schema version "0.3.0"
+    And the frontmatter schemas are read from the root
+    And the manifest and on-disk schemas name the item id key "work_id"
+    And the root holds an item whose "work_id" does not match its file name
+    When the check runs
+    Then the item-placement message names "work_id"
+
+  @B-009
+  Scenario: A message names a marker by the manifest's text
+    Given the manifest's missing-test marker is "Untested"
+    And the root holds a specification with a claim that has no row in its traceability table
+    When the check runs
+    Then the missing-row message names "Untested"
+
   @B-010
   Scenario: A rule's severity is lowered from the manifest
     Given the manifest sets the out-of-order-section rule to warning severity

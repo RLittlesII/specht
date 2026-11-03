@@ -85,4 +85,19 @@ public sealed record SpechtStructure(
     /// the reading of the engine at <c>d73b7a51</c> (B-005, B-006, B-049, decision 0018).
     /// </summary>
     public SpechtForms? Forms { get; init; }
+
+    /// <summary>
+    /// How a message cites the section a role names: <c>§ N</c> by the leading number of the role's title, or
+    /// <c>## &lt;title&gt;</c> when the title has none, at every pin (B-009, decision 0019).
+    /// </summary>
+    /// <param name="role">The role whose section is cited.</param>
+    /// <returns>The section reference.</returns>
+    /// <implements epic="0001" feature="F5" claim="B-009" />
+    public string SectionReference(string role)
+    {
+        var title = Roles[role];
+        var digits = title.TakeWhile(char.IsAsciiDigit).Count();
+
+        return digits > 0 ? $"§ {title[..digits]}" : $"## {title}";
+    }
 }

@@ -12,6 +12,7 @@ public sealed class UnresolvedTestRule(MatrixResolver resolver) : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F12" claim="B-002" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var structure = model.Schemas.Structure;
@@ -21,6 +22,7 @@ public sealed class UnresolvedTestRule(MatrixResolver resolver) : ISpechtRule
         }
 
         var markers = structure.Markers;
+        var matrixReference = structure.SectionReference("matrix");
         string[] exempt = [markers["waived"], markers["withdrawn"], markers["superseded"]];
         foreach (var feature in model.Features)
         {
@@ -34,7 +36,8 @@ public sealed class UnresolvedTestRule(MatrixResolver resolver) : ISpechtRule
 
                 if (row.Tests.Count == 0)
                 {
-                    yield return new SpechtFinding(feature.RelativePath, row.Line, row.Claim.Trim(), "§ 9 Test cell names no test in inline code");
+                    yield return new SpechtFinding(
+                        feature.RelativePath, row.Line, row.Claim.Trim(), $"{matrixReference} Test cell names no test in inline code");
                     continue;
                 }
 
@@ -44,7 +47,7 @@ public sealed class UnresolvedTestRule(MatrixResolver resolver) : ISpechtRule
                     .Distinct(StringComparer.Ordinal))
                 {
                     yield return new SpechtFinding(
-                        feature.RelativePath, row.Line, row.Claim.Trim(), $"§ 9 names test '{name}', which no declared test file holds");
+                        feature.RelativePath, row.Line, row.Claim.Trim(), $"{matrixReference} names test '{name}', which no declared test file holds");
                 }
             }
         }

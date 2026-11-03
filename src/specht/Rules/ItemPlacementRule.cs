@@ -15,6 +15,7 @@ public sealed class ItemPlacementRule : ISpechtRule
     /// <implements epic="0001" feature="F3" claim="B-012" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-005" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var item in model.Items)
@@ -30,7 +31,7 @@ public sealed class ItemPlacementRule : ISpechtRule
                     item.RelativePath,
                     item.Frontmatter.LineOf(item.Keys.Id),
                     item.Id,
-                    $"frontmatter id '{item.Id}' does not match the file name prefix '{item.FileNameId}'")
+                    $"frontmatter {item.Keys.Id} '{item.Id}' does not match the file name prefix '{item.FileNameId}'")
                 {
                     Expected = new JsonObject { ["form"] = model.Schemas.Structure.Identifiers["task"], ["value"] = item.FileNameId },
                 };
@@ -46,7 +47,7 @@ public sealed class ItemPlacementRule : ISpechtRule
                     item.RelativePath,
                     item.Frontmatter.LineOf(item.Keys.Parent),
                     item.Id,
-                    $"frontmatter parent '{item.Parent}' does not match the Feature it sits in ('{parent.Identity}')")
+                    $"frontmatter {item.Keys.Parent} '{item.Parent}' does not match the Feature it sits in ('{parent.Identity}')")
                 {
                     Expected = new JsonObject { ["form"] = model.Schemas.Structure.Forms?.Identity ?? "{epic}-{feature}", ["value"] = parent.Identity },
                 };
