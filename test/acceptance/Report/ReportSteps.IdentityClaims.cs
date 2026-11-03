@@ -65,6 +65,27 @@ public sealed partial class ReportSteps
     public void GivenTheManifestDeclaresTheEpicGrammar() =>
         EditManifest(static manifest => (manifest["identifiers"] ??= new JsonObject())["epic"] = "^[0-9]{4}$");
 
+    [Given("the manifest declares no epic grammar")]
+    public void GivenTheManifestDeclaresNoEpicGrammar() =>
+        EditManifest(static manifest => (manifest["identifiers"] as JsonObject)?.Remove("epic"));
+
+    [Given("the root holds two specifications declaring the same id")]
+    public void GivenTwoSpecificationsDeclareTheSameId()
+    {
+        Tree.WriteCoLocatedFeature("src/first", "0001", "F1");
+        Tree.WriteCoLocatedFeature("src/second", "0002", "F1");
+    }
+
+    [Then(@"^the (reused identity|item) expectation carries the form ""(.*)""$")]
+    public void ThenTheIdentityExpectationCarriesTheForm(string expectation, string form)
+    {
+        var ruleId = RuleIds.Under(Tree, expectation == "item" ? "SPEC043" : "SPEC012");
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == ruleId
+                && (expectation == "item" || violation["identifier"]?.GetValue<string>() == "F1"))
+            .Should().HaveCount(expectation == "item" ? 1 : 2, Json)
+            .And.AllSatisfy(violation => violation["expected"]!["form"]!.GetValue<string>().Should().Be(form, Json));
+    }
+
     [Given("the manifest declares an identity form with a colon between the epic and the Feature id")]
     public void GivenTheManifestDeclaresAColonIdentityForm() =>
         EditManifest(static manifest => (manifest["forms"] ??= new JsonObject())["identity"] = "{epic}:{id}");
