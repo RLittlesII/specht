@@ -38,6 +38,14 @@ public sealed class RenamedKeyMessages : TheoryData<string, string, string, stri
             "frontmatter epic ");
         Add(
             "SPEC011",
+            """{"feature":{"epic":"initiative"}}""",
+            "---\ninitiative: '0001'\nid: F1\n---\n",
+            "epics/0001-epic/F2-feature/spec.md",
+            "---\nid: F2\n---\n",
+            "frontmatter has no initiative - the manifest declares the epic grammar",
+            "frontmatter has no epic ");
+        Add(
+            "SPEC011",
             """{"feature":{"id":"feature_id"}}""",
             "---\nepic: '0001'\nid: F1\n---\n",
             "epics/0001-epic/F1-feature/spec.md",
