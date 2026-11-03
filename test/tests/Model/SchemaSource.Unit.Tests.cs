@@ -10,7 +10,11 @@ using Specht.Versioning;
 
 namespace Specht.Tests.Model;
 
-/// <summary>Explicit local loading, the versioned selection key and controlled schema failures (0001-F7 B-009, B-102, B-104 to B-107).</summary>
+/// <summary>
+/// Explicit local loading, the versioned selection key and controlled schema failures (0001-F7 B-009, B-102, B-104 to
+/// B-107): a required file that is absent, that exists and cannot be read, or that cannot compile is rejected naming its
+/// path under the root.
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SchemaSourceUnitTests
 {
@@ -72,6 +76,26 @@ public sealed class SchemaSourceUnitTests
         // Then
         load.Should().Throw<SpechtManifestException>().Which.Message
             .Should().Contain(relative).And.NotContain(root);
+    }
+
+    [Fact]
+    public void ARequiredDiskSchemaThatExistsButCannotBeRead_WhenLoaded_ShouldRejectItWithARelativeFileDiagnostic()
+    {
+        // Given
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/" + SpechtTree.ManifestPath] = new("{}"),
+            ["repo/" + SpechtTree.FeatureSchemaPath] = new("{}") { AllowedFileShare = FileShare.None },
+            ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
+        });
+        var root = files.Path.GetFullPath("repo");
+
+        // When
+        var load = () => EngineServices.Reader(files).ReadSchemas(root, SchemaSourceSelection.Disk);
+
+        // Then
+        load.Should().Throw<SpechtManifestException>().Which.Message
+            .Should().Contain(SpechtTree.FeatureSchemaPath).And.NotContain(root);
     }
 
     [Theory]
