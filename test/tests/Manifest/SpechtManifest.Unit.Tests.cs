@@ -721,6 +721,26 @@ public sealed class SpechtManifestUnitTests
             .Should().ContainSingle().Which.Identity.Should().Be(new SpechtPathIdentity(epic, feature));
     }
 
+    [Fact]
+    public void AZeroThreeZeroManifestWhoseLayoutDeclaresAPathIdentityHoldingOnlyDollarPrefixedMembers_WhenLoaded_ShouldRejectItAsItRejectsTheEmptyIdentity()
+    {
+        // Given
+        JsonObject Declaring(JsonObject identity) => new()
+        {
+            ["schemaVersion"] = "0.3.0",
+            ["layouts"] = new JsonArray(new JsonObject { ["name"] = "old-tree", ["glob"] = "epics/**/spec.md", ["identity"] = identity }),
+        };
+        var empty = Record.Exception(() => Parse(Holding(Declaring(new JsonObject())), Root));
+        var fileSystem = Holding(Declaring(new JsonObject { ["$comment"] = "the Feature folder", ["$id"] = 7 }));
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        empty.Should().BeOfType<SpechtManifestException>();
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Be(empty!.Message).And.Contain("'old-tree'");
+    }
+
     [Theory]
     [ClassData(typeof(PinsBelowZeroThreeZero))]
     public void AManifestPinnedBelowZeroThreeZeroWithADollarPrefixedPathIdentityMember_WhenLoaded_ShouldRejectItNamingTheLayoutAndTheMember(
