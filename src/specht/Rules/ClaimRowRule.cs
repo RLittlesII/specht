@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Specht.Manifest;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -18,9 +19,11 @@ public sealed class ClaimRowRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
+        var structure = model.Schemas.Structure;
 
         foreach (var feature in model.Features)
         {
@@ -32,7 +35,7 @@ public sealed class ClaimRowRule : ISpechtRule
                 continue;
             }
 
-            foreach (var finding in CheckMatrix(feature, claims.Ids, matrix))
+            foreach (var finding in CheckMatrix(feature, claims.Ids, matrix, structure))
             {
                 yield return finding;
             }
@@ -40,11 +43,16 @@ public sealed class ClaimRowRule : ISpechtRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     private static IEnumerable<SpechtFinding> CheckMatrix(
         FeatureSpec feature,
         IReadOnlyDictionary<string, int> claims,
-        SpechtSection matrix)
+        SpechtSection matrix,
+        SpechtStructure structure)
     {
+        var claimsReference = structure.SectionReference("claims");
+        var matrixReference = structure.SectionReference("matrix");
+        var withdrawn = structure.Markers.GetValueOrDefault("withdrawn", "Withdrawn");
         var rows = new Dictionary<string, List<int>>(StringComparer.Ordinal);
 
         for (var index = 0; index < matrix.Rows.Count; index++)
@@ -73,8 +81,8 @@ public sealed class ClaimRowRule : ISpechtRule
                     feature.RelativePath,
                     line,
                     id,
-                    $"claim '{id}' has no row in § 9 - every § 3 claim appears there exactly once, "
-                        + "with 'Missing' as its test until one exists")
+                    $"claim '{id}' has no row in {matrixReference} - every {claimsReference} claim appears there exactly once, "
+                        + $"with '{structure.Markers["missing"]}' as its test until one exists")
                 {
                     Expected = MatrixExpected(claims, rows),
                 };
@@ -85,7 +93,7 @@ public sealed class ClaimRowRule : ISpechtRule
                     feature.RelativePath,
                     rows[id][1],
                     id,
-                    $"claim '{id}' has {rows[id].Count} rows in § 9 - expected exactly one")
+                    $"claim '{id}' has {rows[id].Count} rows in {matrixReference} - expected exactly one")
                 {
                     Expected = MatrixExpected(claims, rows),
                 };
@@ -98,7 +106,7 @@ public sealed class ClaimRowRule : ISpechtRule
                 feature.RelativePath,
                 lines[0],
                 id,
-                $"§ 9 cites '{id}', which is not a claim in § 3 - a withdrawn claim is marked Withdrawn, not deleted")
+                $"{matrixReference} cites '{id}', which is not a claim in {claimsReference} - a withdrawn claim is marked {withdrawn}, not deleted")
             {
                 Expected = MatrixExpected(claims, rows),
             };

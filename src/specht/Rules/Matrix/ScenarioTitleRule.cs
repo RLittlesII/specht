@@ -12,6 +12,7 @@ public sealed class ScenarioTitleRule(MatrixResolver resolver) : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F12" claim="B-010" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var structure = model.Schemas.Structure;
@@ -20,6 +21,7 @@ public sealed class ScenarioTitleRule(MatrixResolver resolver) : ISpechtRule
             yield break;
         }
 
+        var matrixReference = structure.SectionReference("matrix");
         foreach (var feature in model.Features)
         {
             foreach (var row in resolver.Resolve(feature, structure, []))
@@ -31,8 +33,8 @@ public sealed class ScenarioTitleRule(MatrixResolver resolver) : ISpechtRule
                     var claim = row.Claim.Trim();
                     yield return new SpechtFinding(
                         feature.RelativePath, row.Line, claim, title.Status == MatrixScenarioStatus.NoSuchTitle
-                            ? $"§ 9 names scenario '{title.Title}', which no Scenario or Scenario Outline in the companion has"
-                            : $"§ 9 names scenario '{title.Title}', which does not carry the tag of {claim}");
+                            ? $"{matrixReference} names scenario '{title.Title}', which no Scenario or Scenario Outline in the companion has"
+                            : $"{matrixReference} names scenario '{title.Title}', which does not carry the tag of {claim}");
                 }
             }
         }

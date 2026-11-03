@@ -15,9 +15,11 @@ public sealed class ClaimTagRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
+        var claimsReference = model.Schemas.Structure.SectionReference("claims");
         foreach (var feature in model.Features)
         {
             if (feature.FeatureFiles.Count != 1)
@@ -36,7 +38,7 @@ public sealed class ClaimTagRule : ISpechtRule
                         companion.RelativePath,
                         tag.Line,
                         tag.Id,
-                        $"scenario tag '{tag.Text ?? "@" + tag.Id}' does not resolve to a claim in § 3 of {feature.RelativePath}")
+                        $"scenario tag '{tag.Text ?? "@" + tag.Id}' does not resolve to a claim in {claimsReference} of {feature.RelativePath}")
                     {
                         Expected = new JsonObject
                         {
