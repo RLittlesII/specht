@@ -137,7 +137,7 @@ The rule engine exists only inside a consumer repository, as a project reference
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-02 (item `0166`: the model reader); implementer, 2026-11-02 (item `0169`: a rule's id per pinned version) -->
+<!-- last written by: implementer, 2026-11-02 (item `0152`: the per-rule unit-test classes leave the not-built list); implementer, 2026-11-02 (item `0166`: the model reader); implementer, 2026-11-02 (item `0169`: a rule's id per pinned version) -->
 
 Delivered so far by items 0021, 0104, 0103, 0024, 0105, 0106, 0107, 0156 to 0163, 0164 and 0166. A bullet dated before item `0107` says what its item built; where stage D changed that, the stage D bullet is the current shape, where ADR-0010 stage 3 split a rule, the subsection "ADR-0010 stage 3: one rule per id" is, where ADR-0010 stage 4 replaced the static evaluation, the subsection "ADR-0010 stage 4: the evaluator" is, and where ADR-0010 stage 6 replaced a loader, a static parse or an absolute path, the subsection "ADR-0010 stage 6: the model reader" is.
 
@@ -210,7 +210,7 @@ Items `0156` to `0163`, built 2026-11-01, split each of the eight classes that r
 - **What runs changes, not what a clean run reports.** A rule whose id is `off` is not evaluated, so its check no longer executes for a sibling id's sake.
 - **A rule fault stays with its id.** [`FaultIsolatedRule`](../Rules/FaultIsolatedRule.cs) decorates each new rule, so a rule that throws discards only its own id's violations and is reported under its own id, where the old class's fault was reported under its `Id`, its first id (`SPEC001`, `SPEC010`, `SPEC011`, `SPEC020`, `SPEC030`, `SPEC040`, `SPEC050`, `SPEC060`), and discarded every id's violations. The rule-failure diagnostic is `FaultIsolatedRule`'s (B-012 to B-016), and no split changes it.
 - **Proof.** The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged and its comparison green unedited; the composition tests hold the registrations, their ordinal order and the twenty-one ids. Those tests are the test-writer's (§ 8, § 9).
-- **Not built**: a folder per rule group (item `0342`), a unit-test class per new rule (item `0152`).
+- **Not built**: a folder per rule group (item `0342`).
 
 Each split, in item order:
 
