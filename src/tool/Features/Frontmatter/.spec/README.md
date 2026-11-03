@@ -203,7 +203,7 @@ The command's lowest test tier is Integration: `ExecuteAsync` checks usage/input
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-02 (item 0124, `0001-F7` decision 0021 call 3: B-006 keeps the pinned version, B-009 narrowed); spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0124: a second B-006 scenario for the floating pin policy); spec-author, 2026-11-02 (item 0124, `0001-F7` decision 0021 call 3: B-006 keeps the pinned version, B-009 narrowed); spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 - 2026-10-09, B-010 amended in place: it restated the line form `0001-F2` B-001 held, which now carries the violation's identifier (`0001-F2` decision 0006). B-010 cites `0001-F2` B-001 and B-016 for the form and no longer copies it.
 - 2026-10-11, § 5 row 3 amended in place: its list of writers gains the set command (`0001-F11` decision 0001; brief § 9). No claim, constraint or scenario changed.
@@ -217,6 +217,7 @@ The command's lowest test tier is Integration: `ExecuteAsync` checks usage/input
 
 - 2026-11-02, item `0124` ([`0001-F7` decision 0021](../../../.spec/decisions/0021-pinpolicy-enters-schema-0-3-0-and-upgrade-names-the-version-in-use.md) call 3, amended): the owner ruled "Stay on the pin". B-006 amended in place: the schema's version is the one the manifest pins, whatever its `pinPolicy`, and its source is still the one the check selects; it read the version the check selects, which under a floating `pinPolicy` is the version in use. Its scenario pins no floating policy, so its wording stands. No claim added.
 - 2026-11-02, item `0124`, the same ruling's consequences: B-009 narrowed in place to a root whose `pinPolicy`, if any, has the check use the pinned version, since under a floating one the command and the check validate with different versions; C-2 amended in place the same way, and now rules out the version in use. § 1 and the frontmatter `description` name the version the manifest pins. B-009's scenario pins no floating policy, so its wording stands. No claim added.
+- 2026-11-02, item `0124`, on test-writer's finding that no scenario exercised B-006's floating half: a second `@B-006` scenario pins `0.3.0` with the pin policy `latest-patch` beside a shipped `0.3.1` whose task schema rejects a document `0.3.0`'s accepts, and expects no violation and exit `0`. Its first two steps are `0001-F7`'s `versioning.feature` texts; the document step is new. No claim added.
 
 ## 11. Open Questions
 
