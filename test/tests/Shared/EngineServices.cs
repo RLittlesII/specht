@@ -20,11 +20,17 @@ namespace Specht.Tests.Shared;
 /// <summary>Composes the real engine graph with optional in-memory file system and catalog substitutions.</summary>
 public static class EngineServices
 {
-    /// <summary>Exercises the standalone frontmatter command over substituted input and file-system seams.</summary>
-    public static CommandAppTester FrontmatterApp(IFileSystem fileSystem, TestConsole console, TextReader input, TextWriter errors)
+    /// <summary>Exercises the standalone frontmatter command over substituted input, file-system and, when given, catalog seams.</summary>
+    public static CommandAppTester FrontmatterApp(
+        IFileSystem fileSystem, TestConsole console, TextReader input, TextWriter errors, SchemaVersions? versions = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(fileSystem);
+        if (versions is not null)
+        {
+            services.AddSingleton(versions);
+        }
+
         services.AddSingleton<IAnsiConsole>(console);
         services.AddSingleton(input);
         services.AddSingleton(errors);
@@ -44,11 +50,16 @@ public static class EngineServices
         return app;
     }
 
-    /// <summary>Exercises the schema slice's production registrations with simulated terminal input.</summary>
-    public static CommandAppTester CommandApp(IFileSystem fileSystem, TestConsole console)
+    /// <summary>Exercises the schema slice's production registrations with simulated terminal input and, when given, a synthetic catalog.</summary>
+    public static CommandAppTester CommandApp(IFileSystem fileSystem, TestConsole console, SchemaVersions? versions = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(fileSystem);
+        if (versions is not null)
+        {
+            services.AddSingleton(versions);
+        }
+
         services.AddSingleton<IAnsiConsole>(console);
         var app = new CommandAppTester(new TypeRegistrar(services.AddSpechtEngine()), console: console);
         app.Configure(static configuration => configuration.AddSchema());

@@ -4,7 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
 using Specht.Composition;
 using Specht.Tool;
+using Specht.Tool.Features;
 using Specht.Tool.Features.Upgrade;
+using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
 
@@ -19,11 +21,25 @@ internal sealed class UpgradeWriterFixture : AutoFixtureBase<UpgradeWriterFixtur
 
     public UpgradeWriterFixture WithSource(HttpClient source) => With(ref _source, source);
 
+    public UpgradeWriterFixture WithVersions(SchemaVersions versions) => With(ref _versions, versions);
+
+    public UpgradeWriterFixture WithShipped(ShippedFiles shipped) => With(ref _shipped, shipped);
+
     public static implicit operator UpgradeWriter(UpgradeWriterFixture fixture)
     {
         var services = new ServiceCollection();
         services.AddSingleton(fixture._fileSystem);
         services.AddSingleton(fixture._source);
+        if (fixture._versions is not null)
+        {
+            services.AddSingleton(fixture._versions);
+        }
+
+        if (fixture._shipped is not null)
+        {
+            services.AddSingleton(fixture._shipped);
+        }
+
         return new TypeRegistrar(services.AddSpechtEngine().AddUpgrade()).Build().Resolve(typeof(UpgradeWriter)) as UpgradeWriter
             ?? throw new InvalidOperationException("AddUpgrade() registers no UpgradeWriter.");
     }
@@ -31,4 +47,8 @@ internal sealed class UpgradeWriterFixture : AutoFixtureBase<UpgradeWriterFixtur
     private IFileSystem _fileSystem = new MockFileSystem();
 
     private HttpClient _source = new(new NoNetworkHandler());
+
+    private SchemaVersions? _versions;
+
+    private ShippedFiles? _shipped;
 }

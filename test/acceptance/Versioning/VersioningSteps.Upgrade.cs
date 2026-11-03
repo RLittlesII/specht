@@ -86,6 +86,12 @@ public sealed partial class VersioningSteps
     public void WhenUpgradeRunsAgainstIt()
     {
         _filesBefore = SnapshotFiles();
+        if (_shippingCopy is not null)
+        {
+            WhenUpgradeRuns();
+            return;
+        }
+
         (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, "upgrade");
     }
 
@@ -121,6 +127,12 @@ public sealed partial class VersioningSteps
     [Then("the frontmatter schemas and the templates are version {word}'s")]
     public void ThenTheFilesAreVersion(string version)
     {
+        if (_shippingCopy is not null && EngineServices.Versions().Find(Version(version)) is null)
+        {
+            ThenTheFilesAreTheSyntheticVersion(version);
+            return;
+        }
+
         using var expected = new SpechtTree();
         WriteShippedFiles(expected, version);
         var after = SnapshotFiles();

@@ -39,6 +39,12 @@ public sealed record SpechtStructure(
     /// <summary>The explicit frontmatter schema source, null when the manifest leaves selection automatic.</summary>
     public SchemaSourceSelection? SchemaSource { get; init; }
 
+    /// <summary>
+    /// How the pin selects the version the check uses; <see cref="Versioning.PinPolicy.Exact"/> when the manifest sets none
+    /// (<c>0001-F7</c> B-055).
+    /// </summary>
+    public PinPolicy PinPolicy { get; init; } = PinPolicy.Exact;
+
     /// <summary>Whether the original manifest declares an epic grammar before omitted identifiers are filled.</summary>
     public bool DeclaresEpicGrammar { get; init; }
 

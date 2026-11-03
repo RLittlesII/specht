@@ -47,6 +47,19 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         return version;
     }
 
+    /// <summary>
+    /// Resolves the pin as <see cref="PinnedVersion"/> does, then the version the check uses under the manifest's pin policy
+    /// (<c>0001-F7</c> B-053, B-054, B-147; OQ-71 (a)).
+    /// </summary>
+    /// <param name="structure">The parsed and shape-validated manifest.</param>
+    /// <returns>The version in use, the pin itself under <see cref="PinPolicy.Exact"/>.</returns>
+    /// <exception cref="SpechtManifestException">The pin is not shipped or a rule id is outside its vocabulary.</exception>
+    /// <implements epic="0001" feature="F7" claim="B-053" />
+    /// <implements epic="0001" feature="F7" claim="B-054" />
+    /// <implements epic="0001" feature="F7" claim="B-147" />
+    public SchemaVersion VersionInUse(SpechtStructure structure) =>
+        versions.InUse(PinnedVersion(structure).Number, structure.PinPolicy);
+
     /// <implements epic="0001" feature="F5" claim="B-048" />
     private static IEnumerable<string> ClaimTagFaults(SpechtStructure structure)
     {
@@ -202,6 +215,35 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             default:
                 faults.Add("schemaSource must be 'embedded' or 'disk'");
                 return null;
+        }
+    }
+
+    /// <implements epic="0001" feature="F7" claim="B-056" />
+    /// <implements epic="0001" feature="F7" claim="B-150" />
+    private static PinPolicy Policy(JsonObject manifest, SemanticVersion pin, List<string> faults)
+    {
+        if (!manifest.TryGetPropertyValue("pinPolicy", out var node))
+        {
+            return PinPolicy.Exact;
+        }
+
+        switch (Text(node))
+        {
+            case "exact":
+                return PinPolicy.Exact;
+            case "latest-patch":
+                return PinPolicy.LatestPatch;
+            case "latest-minor" when pin.Major == 0:
+                faults.Add($"pinPolicy 'latest-minor' needs a pin of 1.0.0 or later; schemaVersion {pin} floats with 'latest-patch'");
+                return PinPolicy.Exact;
+            case "latest-minor":
+                return PinPolicy.LatestMinor;
+            case { } text:
+                faults.Add($"pinPolicy '{text}' must be 'exact', 'latest-patch' or 'latest-minor'");
+                return PinPolicy.Exact;
+            default:
+                faults.Add($"pinPolicy {node?.ToJsonString() ?? "null"} must be 'exact', 'latest-patch' or 'latest-minor'");
+                return PinPolicy.Exact;
         }
     }
 
@@ -514,12 +556,14 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     }
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
+    /// <implements epic="0001" feature="F7" claim="B-145" />
+    /// <implements epic="0001" feature="F7" claim="B-153" />
     private SpechtStructure Parse(string text, bool includeDocument, out JsonObject? document)
     {
         var manifest = Present(JsonNode.Parse(text)).AsObject();
         document = includeDocument ? manifest.DeepClone().AsObject() : null;
         var number = ReadVersion(manifest["schemaVersion"]) ?? OriginalVersion;
-        if (manifest.ContainsKey("schemaSource") && versions.Find(number) is null)
+        if ((manifest.ContainsKey("schemaSource") || manifest.ContainsKey("pinPolicy")) && versions.Find(number) is null)
         {
             _ = Version(number);
         }
@@ -527,6 +571,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
         var selection = number.CompareTo(SchemaSourceVersion) >= 0 && versions.Find(number) is not null;
         var matrix = number.CompareTo(MatrixKeyVersion) >= 0 && versions.Find(number) is not null;
+        var policy = number.CompareTo(PinPolicyVersion) >= 0 && versions.Find(number) is not null;
         var shipped = versions.Find(number);
         var selected = shipped ?? versions.Find(OriginalVersion) ?? Version(number);
         var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
@@ -536,6 +581,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             .Select(static entry => entry.Key)
             .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
                 && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key))
+                && !(policy && key == "pinPolicy")
                 && !(keysAndForms && key is "keys" or "forms"))
             .Select(static key => $"'{key}'")
             .ToList();
@@ -594,6 +640,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             ClaimTagForm = tags ? Selected(claim, claimDefaults!, "tag", claimDocument).GetValue<string>() : null,
             ClaimTagIgnoreCase = tags && Selected(claim, claimDefaults!, "tagIgnoreCase", claimDocument).GetValue<bool>(),
             SchemaSource = SourceSelection(manifest, sourceFaults),
+            PinPolicy = Policy(manifest, number, sourceFaults),
             DeclaresEpicGrammar = manifest["identifiers"]?["epic"] is not null,
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, versions.Find(number), sourceFaults),
             Tests = matrix ? TestSettings(manifest["tests"]) : null,
@@ -679,6 +726,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static readonly SemanticVersion SchemaSourceVersion = new(0, 2, 0);
 
     private static readonly SemanticVersion MatrixKeyVersion = new(0, 2, 0);
+
+    private static readonly SemanticVersion PinPolicyVersion = new(0, 3, 0);
 
     private static readonly HashSet<string> MatrixKeys = new(StringComparer.Ordinal) { "tests", "matrix", "owners", "requiredSpecifications" };
 

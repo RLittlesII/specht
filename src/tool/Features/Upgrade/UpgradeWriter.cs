@@ -13,19 +13,20 @@ using Specht.Versioning;
 namespace Specht.Tool.Features.Upgrade;
 
 /// <summary>
-/// Brings the frontmatter schemas and templates present under a root to the bytes the pinned version ships (<c>0001-F7</c>
-/// B-005), or each present schema and each present template a recorded upstream source hashes to the content its hash names
-/// (B-026, B-033, B-130, B-134, B-136), adds the keys the pinned version defines and the manifest lacks (B-016), leaves a
-/// root that already holds them as it was (B-006) and writes only through the store's replace once every read, comparison
-/// and fetch has succeeded (B-007, B-027, B-035, B-132, B-133, C-2). Under the on-disk source it plans no frontmatter
-/// schema (B-029, B-031) and, with no upstream source recorded, lists each one the pinned version ships that the root holds
-/// as skipped (B-030, B-143). A template the pinned version ships whose bare file name the manifest names, ordinally, in
-/// <c>consumerTemplates</c> is never read, compared, fetched or written, whatever source is selected or recorded, and is
-/// listed as skipped whether the root holds it or not (B-060, B-061, B-135), while every other template is still brought to
-/// its source (B-005, B-062); a name the pinned version does not ship changes nothing (B-063, B-144).
+/// Brings the frontmatter schemas and templates present under a root to the bytes the version the check uses ships, the
+/// pinned version unless a floating pin policy selects a later one (<c>0001-F7</c> B-005, B-146, C-18), or each present
+/// schema and each present template a recorded upstream source hashes to the content its hash names (B-026, B-033, B-130,
+/// B-134, B-136), adds the keys the pinned version defines and the manifest lacks (B-016), leaves a root that already holds
+/// them as it was (B-006) and writes only through the store's replace once every read, comparison and fetch has succeeded
+/// (B-007, B-027, B-035, B-132, B-133, C-2). Under the on-disk source it plans no frontmatter schema (B-029, B-031) and,
+/// with no upstream source recorded, lists each one the version in use ships that the root holds as skipped (B-030, B-143).
+/// A template the version in use ships whose bare file name the manifest names, ordinally, in <c>consumerTemplates</c> is
+/// never read, compared, fetched or written, whatever source is selected or recorded, and is listed as skipped whether the
+/// root holds it or not (B-060, B-061, B-135), while every other template is still brought to its source (B-005, B-062); a
+/// name the version in use does not ship changes nothing (B-063, B-144).
 /// </summary>
 /// <param name="reader">Reads and validates the manifest as the check does.</param>
-/// <param name="parser">Selects the pinned version.</param>
+/// <param name="parser">Selects the pinned version and the version in use.</param>
 /// <param name="shipped">The embedded files.</param>
 /// <param name="store">Reads and replaces the configuration files.</param>
 /// <param name="keys">Adds the pinned version's missing keys to the manifest's bytes.</param>
@@ -37,6 +38,7 @@ namespace Specht.Tool.Features.Upgrade;
 /// <implements epic="0001" feature="F7" claim="B-030" />
 /// <implements epic="0001" feature="F7" claim="B-060" />
 /// <implements epic="0001" feature="F7" claim="B-061" />
+/// <implements epic="0001" feature="F7" claim="B-146" />
 public sealed class UpgradeWriter(
     SpechtModelReader reader,
     SpechtManifestParser parser,
@@ -54,7 +56,7 @@ public sealed class UpgradeWriter(
     /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="cancellationToken">Cancels the run between files.</param>
-    /// <returns>The pin, the rewritten files and the skipped files.</returns>
+    /// <returns>The pin, the version in use, the rewritten files and the skipped files.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">The root holds no manifest.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest cannot be parsed.</exception>
@@ -92,14 +94,16 @@ public sealed class UpgradeWriter(
     /// <implements epic="0001" feature="F7" claim="B-063" />
     /// <implements epic="0001" feature="F7" claim="B-135" />
     /// <implements epic="0001" feature="F7" claim="B-144" />
+    /// <implements epic="0001" feature="F7" claim="B-146" />
     public async Task<UpgradeResult> Upgrade(string root, CancellationToken cancellationToken)
     {
         var structure = reader.ReadManifest(root);
-        var pinned = parser.PinnedVersion(structure).Number;
+        var inUse = parser.VersionInUse(structure).Number;
+        var pinned = structure.SchemaVersion;
         var frontmatterFromRoot = structure.SchemaSource == SchemaSourceSelection.Disk || structure.SpechtSchema is not null;
         var schemasSkipped = structure.SchemaSource == SchemaSourceSelection.Disk && structure.SpechtSchema is null;
         var consumerTemplates = structure.ConsumerTemplates.ToHashSet(StringComparer.Ordinal);
-        var namedTemplates = shipped.At(pinned)
+        var namedTemplates = shipped.At(inUse)
             .Where(file => file.Relative.StartsWith(SpechtManifestStore.TemplateFolder + "/", StringComparison.Ordinal)
                            && consumerTemplates.Contains(file.Relative[(SpechtManifestStore.TemplateFolder.Length + 1)..]))
             .Select(static file => file.Relative)
@@ -107,7 +111,7 @@ public sealed class UpgradeWriter(
         var hashedTemplates = (structure.SpechtSchema?.Templates ?? [])
             .Select(static file => (File: file, Relative: SpechtManifestStore.TemplateFolder + "/" + file.FileName))
             .ToList();
-        var skipped = shipped.At(pinned)
+        var skipped = shipped.At(inUse)
             .Where(file => schemasSkipped
                            && file.Relative.StartsWith(SpechtManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
                            && store.ReadConfigurationFile(root, file.Relative) is not null)
@@ -115,7 +119,7 @@ public sealed class UpgradeWriter(
             .Concat(namedTemplates.Select(static relative => new UpgradeSkip(relative, "named in consumerTemplates")))
             .OrderBy(static skip => skip.Relative, StringComparer.Ordinal)
             .ToList();
-        var plan = shipped.At(pinned)
+        var plan = shipped.At(inUse)
             .Where(file => !frontmatterFromRoot
                            || !file.Relative.StartsWith(SpechtManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
             .Where(file => !namedTemplates.Contains(file.Relative, StringComparer.Ordinal))
@@ -124,7 +128,7 @@ public sealed class UpgradeWriter(
             .Where(static entry => entry.Present is not null)
             .Select(entry => (entry.Present, Planned: new ShippedFile(
                 entry.File.Relative,
-                entry.File.Relative == SpechtManifestStore.RelativePath ? keys.AddMissing(entry.Present!, entry.File.Bytes) : entry.File.Bytes)))
+                entry.File.Relative == SpechtManifestStore.RelativePath ? keys.AddMissing(entry.Present!, ShippedManifest(pinned)) : entry.File.Bytes)))
             .Where(static entry => !entry.Present.AsSpan().SequenceEqual(entry.Planned.Bytes))
             .Select(static entry => entry.Planned)
             .ToList();
@@ -162,6 +166,11 @@ public sealed class UpgradeWriter(
             }
         }
 
-        return new UpgradeResult(pinned, plan.Select(static file => file.Relative).ToList(), skipped);
+        return new UpgradeResult(pinned, inUse, plan.Select(static file => file.Relative).ToList(), skipped);
     }
+
+    /// <implements epic="0001" feature="F7" claim="B-016" />
+    /// <implements epic="0001" feature="F7" claim="B-146" />
+    private byte[] ShippedManifest(SemanticVersion version) =>
+        shipped.At(version).First(static file => file.Relative == SpechtManifestStore.RelativePath).Bytes;
 }

@@ -199,7 +199,8 @@ exits `0`; it needs no manifest and writes nothing (`0001-F2` B-040 to B-043).
 Beside another argument it is not decided (`0001-F2` OQ-8).
 
 `specht schema list` lists the shipped versions in semantic-version order and
-marks the root's selected version with ` (pinned)`. Without a manifest the list is
+marks the root's selected version with ` (pinned)`, and a later version a floating
+`pinPolicy` has the check use with ` (in use)`. Without a manifest the list is
 unmarked. `specht schema pin <version>` changes only the manifest's exact pin,
 up or down. With no version, an interactive Spectre.Console selector uses arrow
 keys and Enter; without a terminal the command prints an explicit-version hint
