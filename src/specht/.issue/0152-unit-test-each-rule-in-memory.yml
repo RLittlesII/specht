@@ -2,7 +2,7 @@ id: "0152"
 type: test
 title: Unit-test each rule's decision over a model built in memory
 
-status: ready-for-implementation
+status: done
 
 value: 2
 risk: 2
@@ -19,8 +19,8 @@ claims:
   - B-004
 
 created: "2026-10-11"
-updated: "2026-11-01"
-closed: null
+updated: "2026-11-02"
+closed: "2026-11-02"
 
 summary: |
   Item 0107 re-tiered the rule-level tests that write a SpechtTree to disk to
