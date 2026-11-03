@@ -37,9 +37,13 @@ claims:
   - B-019
   - B-020
   - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
 
 created: "2026-10-15"
-updated: "2026-11-01"
+updated: "2026-11-02"
 closed: null
 
 summary: |
@@ -106,6 +110,10 @@ acceptance_criteria:
   - "B-019 — retired claim still carried, SPEC035 (0227)"
   - "B-020 — SPEC034 and SPEC035 off unless raised (0227, after 0223)"
   - "B-021 — below 0.3.0 the four rules do not run (0338)"
+  - "B-022 — Feature, Rule and Examples tags carried, SPEC022 (0335)"
+  - "B-023 — titles compared trimmed and case-sensitive, SPEC022 (0335)"
+  - "B-024 — claim tag case under claim.tagIgnoreCase, SPEC022 (0335)"
+  - "B-025 — no row exempt by Status, SPEC022 (0335)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

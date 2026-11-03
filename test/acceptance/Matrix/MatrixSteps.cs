@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-007, B-018 to B-020).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-010, B-018 to B-020, B-022 to B-025).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -203,6 +203,64 @@ public sealed class MatrixSteps
     [Given("a test file holding the method {string} and the words {string} alone")]
     public void GivenMethodAndWord(string method, string word) => WriteTest("Qualified", $"void {method}() {{}}\n// {word}\n");
 
+    [Given("the manifest turns scenario title matching on")]
+    public void GivenTitlesOn() => Manifest["matrix"] = new JsonObject { ["scenarioTitles"] = true };
+
+    [Given("the manifest turns scenario title matching off")]
+    public void GivenTitlesOff() => Manifest["matrix"] = new JsonObject { ["scenarioTitles"] = false };
+
+    [Given("the manifest does not mention title matching")]
+    public void GivenTitlesUnmentioned() => Manifest.Remove("matrix");
+
+    [Given("a matrix row whose Scenario cell is {string}")]
+    public void GivenScenarioCell(string cell) => _scenario = cell;
+
+    [Given("the matrix row for claim {word} whose Scenario cell is {string}")]
+    public void GivenClaimScenarioCell(string claim, string cell)
+    {
+        _claimId = claim;
+        _scenario = cell;
+    }
+
+    [Given("scenarios titled {string} and {string}, both tagged with the row's claim")]
+    public void GivenTaggedTitles(string first, string second)
+    {
+        GivenTitledScenario(first, _claimId);
+        GivenTitledScenario(second, _claimId);
+    }
+
+    [Given("a scenario titled {string} tagged @{word}")]
+    public void GivenTitledScenario(string title, string claim) => _scenarios += $"@{claim}\nScenario: {title}\n  Given a thing\n";
+
+    [Given("a scenario titled {string} tagged with the row's claim")]
+    public void GivenClaimTaggedScenario(string title) => GivenTitledScenario(title, _claimId);
+
+    [Given("^a scenario titled \"([^\"]*)\" whose only @(\\S+) tag is on the (.+)$")]
+    public void GivenInheritedTag(string title, string claim, string where)
+    {
+        _scenarios += where switch
+        {
+            "companion's Feature" => $"Scenario: {title}\n  Given a thing\n",
+            "Rule the scenario sits under" => $"@{claim}\nRule: A rule\nScenario: {title}\n  Given a thing\n",
+            "Examples of the outline the scenario is" => $"Scenario Outline: {title}\n  Given <thing>\n@{claim}\nExamples:\n  | thing |\n  | one |\n",
+            _ => throw new ArgumentOutOfRangeException(nameof(where), where, "No such place for a claim tag."),
+        };
+        _featureTags = where == "companion's Feature" ? $"@{claim}\n" : _featureTags;
+    }
+
+    [Given("a matrix row whose Status is {string} and whose Scenario cell is {string}")]
+    public void GivenStatusAndScenarioCell(string status, string cell)
+    {
+        _status = status;
+        _scenario = cell;
+    }
+
+    [Given("the manifest reads claim tags ignoring letter case")]
+    public void GivenTagIgnoreCase() => Claim["tagIgnoreCase"] = true;
+
+    [Given("the manifest does not mention the claim tag's case")]
+    public void GivenTagCaseUnmentioned() => Claim.Remove("tagIgnoreCase");
+
     [Given("the specification's matrix has a covered row no scenario carries and a status that is no known marker")]
     public void GivenUnresolvedOriginalRow()
     {
@@ -236,14 +294,14 @@ public sealed class MatrixSteps
             "## 3. Acceptance Criteria" => "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n"
                 + $"| {_claimId} | Behavior | Decision | {_claim} |\n",
             "## 9. Traceability Matrix" => $"## 9. Traceability Matrix\n\n| {_matrix} |\n| --- | --- | --- | --- |\n"
-                + $"| {_claimId} | A scenario | {_test} | {_status} |\n",
+                + $"| {_claimId} | {_scenario} | {_test} | {_status} |\n",
             "## 12. Sign-off" => $"## 12. Sign-off\n\n| {_headers} |\n| --- | --- | --- | --- |\n| 1-5 | {_signOff} | {_reviewer} | Decision |\n",
             _ => section,
         }).ToArray();
         var path = Tree.WriteFeature("0001", "F1", sections: sections);
-        Tree.WriteFeatureFile(path, $"Feature: Sample\n{_tags}Scenario: A scenario\n  Given a thing\n");
+        Tree.WriteFeatureFile(path, $"{_featureTags}Feature: Sample\n{_tags}Scenario: A scenario\n  Given a thing\n{_scenarios}");
         Tree.WriteRaw(SpechtTree.ManifestPath, Manifest.ToJsonString());
-        _row = Array.FindIndex(File.ReadAllLines(path), line => line.StartsWith($"| {_claimId} | A scenario |", StringComparison.Ordinal)) + 1;
+        _row = Array.FindIndex(File.ReadAllLines(path), line => line.StartsWith($"| {_claimId} | {_scenario} |", StringComparison.Ordinal)) + 1;
         _report = EngineServices.Runner().Run(Tree.Root);
     }
 
@@ -281,6 +339,25 @@ public sealed class MatrixSteps
     [Then("the unresolved-test rule reports nothing")]
     public void ThenNoUnresolved() => Findings(RuleIds.Under(Manifest, "SPEC032")).Should().BeEmpty();
 
+    [Then("the scenario-title rule reports that row")]
+    public void ThenTitleRow() => Findings(RuleIds.Under(Manifest, "SPEC022")).Should().ContainSingle().Which.Line.Should().Be(_row);
+
+    [Then("^the scenario-title rule reports (nothing|one finding) for that row$")]
+    public void ThenTitleCount(string findings)
+    {
+        if (findings == "nothing")
+        {
+            Findings(RuleIds.Under(Manifest, "SPEC022")).Should().BeEmpty();
+        }
+        else
+        {
+            ThenTitleRow();
+        }
+    }
+
+    [Then("the scenario-title rule reports nothing")]
+    public void ThenNoTitle() => Findings(RuleIds.Under(Manifest, "SPEC022")).Should().BeEmpty();
+
     [Then("the waiver rule reports nothing")]
     public void ThenNoWaiver() => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().BeEmpty();
 
@@ -314,6 +391,7 @@ public sealed class MatrixSteps
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No tree was prepared.");
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
     private JsonObject Rules => Manifest["rules"] as JsonObject ?? (JsonObject)(Manifest["rules"] = new JsonObject());
+    private JsonObject Claim => Manifest["claim"] as JsonObject ?? (JsonObject)(Manifest["claim"] = new JsonObject());
 
     private SpechtViolation UnresolvedRow()
     {
@@ -339,6 +417,9 @@ public sealed class MatrixSteps
     private string _status = "Missing";
     private string _test = "Missing";
     private string _tags = string.Empty;
+    private string _scenario = "A scenario";
+    private string _scenarios = string.Empty;
+    private string _featureTags = string.Empty;
     private string _reviewer = "spec-reviewer";
     private string _signOff = "approved";
     private string _headers = "Section | Status | Reviewer | Note";
