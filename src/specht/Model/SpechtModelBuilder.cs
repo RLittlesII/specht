@@ -32,7 +32,7 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
                 location,
                 documents.Parse(texts[location.RelativePath], location.RelativePath),
                 listing.Companions[index]
-                    .Select(path => new FeatureFile(path, tags.Parse(texts[path], structure)))
+                    .Select(path => tags.Read(path, texts[path], structure))
                     .ToList(),
                 structure.FeatureKeys,
                 structure.Forms));

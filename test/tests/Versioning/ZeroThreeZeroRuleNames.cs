@@ -2,7 +2,7 @@ namespace Specht.Tests.Versioning;
 
 /// <summary>
 /// Each rule key schema 0.3.0 holds, and the four-digit id ADR-0029's map gives it there (<c>0001-F7</c> B-151): the
-/// 23 ids of ruling 3 and <c>SPEC032</c>, which ruling 5 gives <c>SPEC4009</c>.
+/// 23 ids of ruling 3, and <c>SPEC022</c> and <c>SPEC032</c>, which ruling 5 gives <c>SPEC4007</c> and <c>SPEC4009</c>.
 /// </summary>
 public sealed class ZeroThreeZeroRuleNames : TheoryData<string, string>
 {
@@ -19,6 +19,7 @@ public sealed class ZeroThreeZeroRuleNames : TheoryData<string, string>
         Add("SPEC012", "SPEC3002");
         Add("SPEC020", "SPEC4001");
         Add("SPEC021", "SPEC4002");
+        Add("SPEC022", "SPEC4007");
         Add("SPEC030", "SPEC4003");
         Add("SPEC031", "SPEC4004");
         Add("SPEC032", "SPEC4009");

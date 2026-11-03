@@ -436,3 +436,67 @@ Feature: Matrix resolution
     And a waived row names an approver with a completed sign-off
     When the check runs with the waiver rule raised
     Then the waiver rule reports nothing
+
+  @B-022
+  Scenario Outline: A claim tag on the Feature, a Rule or an Examples block is carried by the scenarios under it
+    Given the manifest pins schema version 0.3.0 instead
+    And the manifest turns scenario title matching on
+    And a scenario titled "Setting a level succeeds" whose only @B-001 tag is <where>
+    And the matrix row for claim B-001 whose Scenario cell is "Setting a level succeeds"
+    When the check runs
+    Then the scenario-title rule reports nothing for that row
+
+    Examples:
+      | where                                          |
+      | on the companion's Feature                     |
+      | on the Rule the scenario sits under            |
+      | on the Examples of the outline the scenario is |
+
+  @B-023 @boundary
+  Scenario: A Scenario cell title differing only in letter case is reported
+    Given the manifest pins schema version 0.3.0 instead
+    And the manifest turns scenario title matching on
+    And the manifest reads claim tags ignoring letter case
+    And a scenario titled "Setting a level succeeds" tagged with the row's claim
+    And a matrix row whose Scenario cell is "setting a level succeeds"
+    When the check runs
+    Then the scenario-title rule reports that row
+
+  @B-023
+  Scenario: Spaces around a title do not stop it matching
+    Given the manifest pins schema version 0.3.0 instead
+    And the manifest turns scenario title matching on
+    And scenarios titled "First case" and "Second case", both tagged with the row's claim
+    And a matrix row whose Scenario cell is "First case ;  Second case"
+    When the check runs
+    Then the scenario-title rule reports nothing for that row
+
+  @B-024
+  Scenario Outline: The row's claim tag ignores letter case only when the manifest says so
+    Given the manifest pins schema version 0.3.0 instead
+    And the manifest turns scenario title matching on
+    And the manifest <setting>
+    And a scenario titled "Setting a level succeeds" tagged @b-001
+    And the matrix row for claim B-001 whose Scenario cell is "Setting a level succeeds"
+    When the check runs
+    Then the scenario-title rule reports <findings> for that row
+
+    Examples:
+      | setting                                 | findings    |
+      | reads claim tags ignoring letter case   | nothing     |
+      | does not mention the claim tag's case   | one finding |
+
+  @B-025
+  Scenario Outline: A row's Status exempts it from no title check
+    Given the manifest pins schema version 0.3.0 instead
+    And the manifest turns scenario title matching on
+    And a matrix row whose Status is "<status>" and whose Scenario cell is "A title no scenario has"
+    When the check runs
+    Then the scenario-title rule reports that row
+
+    Examples:
+      | status     |
+      | Missing    |
+      | Waived     |
+      | Withdrawn  |
+      | Superseded |
