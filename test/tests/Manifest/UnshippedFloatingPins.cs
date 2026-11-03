@@ -9,7 +9,7 @@ public sealed class UnshippedFloatingPins : TheoryData<string, string, string>
     /// <summary>Initializes the scenario's two rows.</summary>
     public UnshippedFloatingPins()
     {
-        Add("0.1.5", "0.1.9", "latest-patch");
+        Add("0.3.5", "0.3.9", "latest-patch");
         Add("1.2.0", "1.0.9", "latest-minor");
     }
 }

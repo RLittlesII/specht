@@ -2056,7 +2056,7 @@ They guard what the build must keep, and none was made to fail by hand.
 **Hard to test, item `0124`.** These are reported to `implementer`:
 
 - `CheckCommand` writes standard error through `Console.Error`, so an in-process check cannot see it. The acceptance step therefore reproduces the command's catch. An injected error writer, as `UpgradeCommand` and `SchemaListCommand` take, would let the step run the command itself.
-- B-145's first Example floats `latest-patch` from `0.1.9` over a held `0.1.5`, below the pin, and § 7 says `InUse` never goes below the pin. The pin is unshipped, so B-003's guard fires before any selection, and the row tests the guard alone.
+- B-145's first Example floated `latest-patch` from `0.1.9`, below `0.3.0`, over a held `0.1.5`, below the pin. The spec-author has since moved it to a pin of `0.3.9` over a held `0.3.5`, and the unit row `UnshippedFloatingPins` follows it. The pin is unshipped, so B-003's guard fires before any selection, and both rows test the guard alone.
 - The synthetic-copy derivation is written twice: in `ShippedFilesFixture.WithVersionCopied` and in the acceptance steps. Test fixtures stay internal to each test project, so neither copy can call the other.
 
 ## 9. Traceability Matrix
