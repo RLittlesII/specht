@@ -259,6 +259,8 @@ Feature: Work-item mirror
       | a work item                    |
       | an epic                        |
       | the mirror's script            |
+      | the reusable action            |
+      | the shared reader source       |
       | the mirror's generated workflow |
 
   @B-037
@@ -447,3 +449,32 @@ Feature: Work-item mirror
     Given an epic whose issue is in milestone 0.3.0
     When the mirror runs
     Then its issue is still in milestone 0.3.0
+
+  @B-066
+  Scenario: Another repository uses the mirror action without the specht build
+    Given a consumer checkout with work items and a release plan
+    And the action is downloaded separately from that checkout
+    When the consumer calls the mirror action with its workflow token
+    Then its issues and milestones are reconciled from the consumer checkout
+    And no build or skill installation in the consumer is needed
+
+  @B-067
+  Scenario: Action inputs select the checkout and the pushed range
+    Given a consumer checkout at a caller-supplied root and repository
+    When the action receives before and after commits and backfill enabled
+    Then it passes that root, repository, commit range and backfill to the mirror
+    And it appends the mirror counts to the workflow step summary
+
+  @B-068 @boundary
+  Scenario: A dry run through the action writes no GitHub state
+    Given a consumer checkout with a work item that has no mirrored issue
+    When the consumer calls the action with dry-run enabled
+    Then the action prints the planned issue creation
+    And it writes nothing to GitHub
+
+  @B-069
+  Scenario: This repository consumes its reusable action
+    When the mirror workflow is generated
+    Then it runs the mirror tests with Python
+    And it invokes the local reusable mirror action
+    And it installs no .NET SDK for that job

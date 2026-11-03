@@ -1,0 +1,26 @@
+id: "0344"
+type: feature
+title: Expose the work-item mirror as a reusable GitHub action
+status: done
+value: 4
+risk: 2
+parent: "0293"
+children: []
+depends_on: []
+spikes: []
+spec: .github/mirror/.spec/README.md
+claims: ["B-066", "B-067", "B-068", "B-069"]
+created: "2026-11-02"
+updated: "2026-11-02"
+closed: "2026-11-02"
+summary: |
+  Package the existing mirror for callers in other repositories and consume
+  that action from this repository’s generated mirror workflow.
+acceptance_criteria:
+  - "0055-F9 B-066 to B-069 are covered."
+decisions:
+  - "2026-11-02: owner selected hosting in specht; decision 0013 records the action boundary."
+  - "2026-11-02: main and open pull request 690 were checked; neither reserves 0344 or mirror claims B-066 to B-069."
+  - "2026-11-02: 76 Python mirror/action tests and 10 focused net11.0 workflow tests pass. The full build passes Specht, Restore, Format, Compile, CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest across its configured frameworks."
+out_of_scope:
+  - "Project boards, new reconciliation rules, B-064 implementation and release tags."
