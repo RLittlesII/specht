@@ -112,6 +112,33 @@ max_line_length = 160
 dotnet_diagnostic.RSA2014.severity = warning
 dotnet_diagnostic.RSA2015.severity = warning
 
+# Roslynator baseline adapted from RocketSurgeonsGuild/Airframe/analyzers.ruleset.
+# Opt in explicitly so package defaults do not add unrelated cleanup policies.
+dotnet_analyzer_diagnostic.category-roslynator.severity = none
+dotnet_diagnostic.RCS1001.severity = error
+dotnet_diagnostic.RCS1037.severity = error
+dotnet_diagnostic.RCS1055.severity = error
+dotnet_diagnostic.RCS1069.severity = error
+dotnet_diagnostic.RCS1071.severity = error
+dotnet_diagnostic.RCS1074.severity = error
+dotnet_diagnostic.RCS1138.severity = error
+# Traceability-only <implements> comments do not need empty summary scaffolding.
+dotnet_diagnostic.RCS1139.severity = none
+dotnet_diagnostic.RCS1163.severity = suggestion
+dotnet_diagnostic.RCS1168.severity = suggestion
+dotnet_diagnostic.RCS1188.severity = error
+dotnet_diagnostic.RCS1201.severity = error
+dotnet_diagnostic.RCS1211.severity = error
+# RCS1259 replaces Airframe's obsolete RCS1066 (empty finally clauses).
+dotnet_diagnostic.RCS1259.severity = error
+# RCS1018 duplicates the existing accessibility policy, including interface exceptions.
+dotnet_diagnostic.RCS1018.severity = none
+# Await-context changes require a behavioral decision, not a formatting pass.
+dotnet_diagnostic.RCS1090.severity = none
+# Preserve existing static lambdas; method-group conversion is not required cleanup.
+dotnet_diagnostic.RCS1207.severity = none
+# RCS1062 is disabled upstream; RCS1507 is not a Roslynator diagnostic.
+
 [*.{xml,csproj,props,targets,slnx}]
 indent_size = 2
 

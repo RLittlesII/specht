@@ -46,3 +46,36 @@ published-consumer pin remains unchanged.
 
 The root `dotnet tool run specht` command still selects that published consumer
 pin. Use `./build.sh Specht` to validate the working checkout.
+
+## C# cleanup
+
+Roslynator analyzers and compiler-diagnostic code fixes are private development
+packages, pinned in [`Directory.Packages.props`](../Directory.Packages.props)
+and referenced through [`Directory.Build.props`](../Directory.Build.props).
+Their severities live in [`.editorconfig`](../.editorconfig). The Roslynator
+selection starts from [Airframe's ruleset](https://github.com/RocketSurgeonsGuild/Airframe/blob/2095ebe044c1a7af2d384f024868922c2f09ba8b/analyzers.ruleset),
+with unrelated analyzer families excluded. RCS1259 replaces obsolete RCS1066;
+upstream-disabled RCS1062 and nonexistent RCS1507 are omitted. Existing
+accessibility and static-lambda conventions remain authoritative, and cleanup
+makes no await-context changes. RCS1139 is disabled because traceability-only
+`<implements>` comments are intentional and need no empty summary scaffolding.
+
+```sh
+dotnet restore specht.slnx
+dotnet format specht.slnx --no-restore                     # apply cleanup
+dotnet format specht.slnx --no-restore --include src/tool  # limit the files
+./build.sh Format                                        # verify without writing
+```
+
+`dotnet format` applies enabled warning/error analyzer diagnostics that provide
+batch fixes. Airframe's informational RCS1163 (unused parameters, no code fix)
+and RCS1168 (parameter names) remain suggestions, outside the default format
+gate. Review an individual suggestion in the IDE; a targeted explicit pass can
+apply RCS1168 with `dotnet format analyzers specht.slnx --no-restore --severity info --diagnostics RCS1168`.
+
+The separate `Roslynator.CodeFixes` package supplies IDE actions for compiler
+diagnostics. It does not turn every compiler error or interactive refactoring
+into an unattended `dotnet format` fix. Diagnostics without a batch fixer still
+require a code change; successful formatting does not replace compilation.
+The build, CI and staged-file hook continue to verify formatting without
+rewriting files (`0055-F1` C-2).

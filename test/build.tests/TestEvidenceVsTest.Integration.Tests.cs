@@ -409,8 +409,8 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             var stdout = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
             var stderr = process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
             await process.WaitForExitAsync(TestContext.Current.CancellationToken);
-            log.AppendLine($"== dotnet {string.Join(' ', arguments.Take(2))} exited {process.ExitCode}");
-            log.AppendLine(await stdout + await stderr);
+            log.AppendLine($"== dotnet {string.Join(' ', arguments.Take(2))} exited {process.ExitCode}")
+                .AppendLine(await stdout + await stderr);
             return process.ExitCode;
         }
 
@@ -473,8 +473,8 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             builds["A-stale"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore");
             foreach (var (name, result) in reconciliations)
             {
-                log.AppendLine($"== reconciliation {name}: exit {result.ExitCode}, {result.Report["inputState"]!["state"]}");
-                log.AppendLine(result.Report["findings"]!.ToJsonString());
+                log.AppendLine($"== reconciliation {name}: exit {result.ExitCode}, {result.Report["inputState"]!["state"]}")
+                    .AppendLine(result.Report["findings"]!.ToJsonString());
             }
 
             return await Finish(log, artifacts, builds, reconciliations);

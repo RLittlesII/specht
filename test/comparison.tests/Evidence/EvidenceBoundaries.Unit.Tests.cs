@@ -160,17 +160,24 @@ public sealed class EvidenceBoundariesUnitTests
         MeasurementInventory inventory = new MeasurementInventoryFixture();
         SessionManifest session = new SessionManifestFixture();
         var current = inventory;
-        if (gap == "missing confidence") current = inventory with
+        if (gap == "missing confidence")
         {
-            Cases = [inventory.Cases[0] with
+            current = inventory with
+            {
+                Cases = [inventory.Cases[0] with
             { Observations = [inventory.Cases[0].Observations[0] with { Interval = null }, inventory.Cases[0].Observations[1]] }]
-        };
+            };
+        }
+
         if (gap == "unknown mapping") current = inventory with { Cases = [inventory.Cases[0] with { IdentityKnown = false }] };
-        if (gap == "missing runtime") session = session with
+        if (gap == "missing runtime")
         {
-            Current = session.Current with
-            { Conditions = session.Current.Conditions with { Runtime = null } }
-        };
+            session = session with
+            {
+                Current = session.Current with
+                { Conditions = session.Current.Conditions with { Runtime = null } }
+            };
+        }
 
         // When
         var pair = CasePairing.Pair(inventory, current, session).Single();

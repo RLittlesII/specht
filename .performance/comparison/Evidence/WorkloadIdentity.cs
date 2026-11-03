@@ -12,7 +12,10 @@ public static class WorkloadIdentity
     {
         if (workload is null || string.IsNullOrWhiteSpace(workload.OperationId) || workload.Parameters is null
             || workload.RequiredMetrics.IsDefault || workload.RequiredMetrics.Distinct().Count() != workload.RequiredMetrics.Length)
+        {
             throw new InvalidDataException("Workload contract or parameters are invalid.");
+        }
+
         return ComparisonJson.Write(new
         {
             operation = workload.OperationId,

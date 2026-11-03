@@ -73,7 +73,9 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
 
             if (!response.Headers.TryGetValues("Link", out var links)
                 || !links.Any(static link => link.Contains("rel=\"next\"", StringComparison.Ordinal)))
+            {
                 break;
+            }
         }
 
         return found.Count switch
@@ -97,7 +99,10 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
                 if (entry.FullName.EndsWith('/') && entry.Length == 0) continue;
                 if (!EvidencePaths.IsRelative(entry.FullName) || ((entry.ExternalAttributes >> 16) & 0xF000) is not (0 or 0x8000)
                     || entries.Any(written => string.Equals(written.Name, entry.FullName, StringComparison.OrdinalIgnoreCase)))
+                {
                     throw new InvalidDataException("Run artifact has an unsafe or duplicated entry.");
+                }
+
                 using var content = new MemoryStream();
                 await using (var stream = entry.Open()) await stream.CopyToAsync(content, cancellationToken);
                 entries.Add((entry.FullName, content.ToArray()));

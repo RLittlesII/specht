@@ -198,8 +198,11 @@ public sealed class ComparisonRunIntegrationTests : IDisposable
     {
         // Given
         foreach (var side in sides)
+        {
             _processes.Exports[side] = [.. _processes.Exports[side].Select(static export =>
                 (export.Name, export.Json.Replace("\"Configuration\": \"RELEASE\"", "\"Configuration\": \"DEBUG\"", StringComparison.Ordinal)))];
+        }
+
         Request(new ComparisonReceiptFixture(), ReportFixtures.Pair());
 
         // When
