@@ -16,18 +16,21 @@ public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManife
     {
         var bytes = ReadManifest(root, required: false);
         SemanticVersion? pin = null;
+        SemanticVersion? inUse = null;
         if (bytes is not null)
         {
             try
             {
-                pin = parser.PinnedVersion(parser.Parse(editor.Decode(bytes))).Number;
+                var structure = parser.Parse(editor.Decode(bytes));
+                inUse = parser.VersionInUse(structure).Number;
+                pin = structure.SchemaVersion;
             }
             catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException or ArgumentException)
             {
                 throw new SpechtManifestUnreadableException(exception);
             }
         }
-        return (Shipped(), pin, null);
+        return (Shipped(), pin, inUse);
     }
 
     /// <summary>Validates the pin input before returning choices for the host's selector.</summary>

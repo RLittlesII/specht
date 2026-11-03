@@ -12,8 +12,8 @@ namespace Specht.Tool.Features.Upgrade;
 
 /// <summary>
 /// <c>specht upgrade</c> (<c>0001-F7</c>): brings the root's present frontmatter schemas and templates, other than those the
-/// manifest names as the consumer's, to the pinned version, adds the manifest keys that version defines, and names the
-/// version and each rewritten file, or says the root is already current, then names each skipped file and its reason. It
+/// manifest names as the consumer's, to the version the check uses, adds the manifest keys the pinned version defines, and
+/// names the version in use and each rewritten file, or says the root is already current, then names each skipped file and its reason. It
 /// parses, calls the writer, prints, and folds - nothing else.
 /// </summary>
 /// <param name="console">Where the current notice, the listing and the skip lines go.</param>
@@ -45,11 +45,11 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
 
             if (result.Rewritten.Count == 0)
             {
-                console.Profile.Out.Writer.WriteLine($"{SpechtManifestStore.ConfigurationFolder}/ is current at schemaVersion {result.Pinned}");
+                console.Profile.Out.Writer.WriteLine($"{SpechtManifestStore.ConfigurationFolder}/ is current at schemaVersion {result.InUse}");
             }
             else
             {
-                console.Profile.Out.Writer.WriteLine($"{SpechtManifestStore.ConfigurationFolder}/ rewritten to schemaVersion {result.Pinned}");
+                console.Profile.Out.Writer.WriteLine($"{SpechtManifestStore.ConfigurationFolder}/ rewritten to schemaVersion {result.InUse}");
                 foreach (var path in result.Rewritten)
                 {
                     console.Profile.Out.Writer.WriteLine($"rewritten {path}");

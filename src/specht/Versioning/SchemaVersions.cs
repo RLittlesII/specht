@@ -31,7 +31,13 @@ public sealed class SchemaVersions
     /// <implements epic="0001" feature="F7" claim="B-053" />
     /// <implements epic="0001" feature="F7" claim="B-054" />
     /// <implements epic="0001" feature="F7" claim="B-147" />
-    public SchemaVersion InUse(SemanticVersion pin, PinPolicy policy) => throw new NotImplementedException();
+    public SchemaVersion InUse(SemanticVersion pin, PinPolicy policy) =>
+        Versions.Last(version => version.Number.CompareTo(pin) >= 0 && policy switch
+        {
+            PinPolicy.LatestPatch => version.Number.Major == pin.Major && version.Number.Minor == pin.Minor,
+            PinPolicy.LatestMinor => version.Number.Major == pin.Major,
+            _ => version.Number == pin,
+        });
 
     /// <implements epic="0001" feature="F7" claim="B-001" />
     private static IEnumerable<SchemaVersion> ReadVersions(IReadOnlyDictionary<string, string> resources)

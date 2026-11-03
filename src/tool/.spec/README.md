@@ -468,7 +468,7 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | With no epic grammar, a Feature without `epic` and an item whose `parent` is a bare Feature id pass the frontmatter schemas (B-037, B-038)                      | Business       | The `0.3.0` feature schema drops `epic` from `required`; the `0.3.0` task schema's `parent` pattern is `^([0-9]{4}-)?F[0-9]+[a-z]?$` (`0001-F5` decision 0004) |
 | The `0.3.0` feature template's § 9 guidance (B-124)                                                                                                             | Business       | `src/tool/templates/v0.3.0/feature.md`                                                                                                                         |
 
-<!-- last written by: implementer, 2026-11-02 (item `0124`: designed, not built) -->
+<!-- last written by: implementer, 2026-11-02 (item `0124`: built) -->
 
 | Concern                                                                                                                                                                                                                  | Classification | Where                                                                                                                                                                                          |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -479,12 +479,13 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | `latest-minor` on a `0.y.z` pin is a rejected manifest naming `latest-patch` (B-150; C-11)                                                                                                                               | Business       | `SpechtManifestParser.Parse`, the same fault list, on the major of `SpechtStructure.SchemaVersion`                                                                                             |
 | Which shipped version the check uses: the pin under `exact`; the highest held with the pin's major and minor under `latest-patch`, with its major under `latest-minor`; never below the pin (B-053, B-054, B-147; B-055) | Business       | `SchemaVersions.InUse(SemanticVersion, PinPolicy)`, over `Versions`                                                                                                                            |
 | The pin is judged before it floats: B-003 and the `rules` ids, both against the pin (OQ-71 (a))                                                                                                                          | Business       | `SpechtManifestParser.VersionInUse(SpechtStructure)`, calling `PinnedVersion` and then `SchemaVersions.InUse`                                                                                  |
-| The check, and `frontmatter`, validate with, evaluate and report the version in use (B-053, B-054)                                                                                                                       | Business       | `SpechtSchemasLoader.Load` through `VersionInUse`; `SpechtSchemas.Version` carries it to `SpechtEvaluator` and `SpechtReport.SchemaVersion`                                                    |
+| The check validates with, evaluates and reports the version in use (B-053, B-054)                                                                                                                                        | Business       | `SpechtModelReader.ReadSchemas` through `VersionInUse`; `SpechtSchemas.Version` carries it to `SpechtEvaluator` and `SpechtReport.SchemaVersion`                                               |
 | `upgrade`'s frontmatter schemas, templates, consumer-template matches and skips are the version in use's (B-146; C-18 over B-005, B-029 to B-031, B-060 to B-063, B-144)                                                 | Business       | `UpgradeWriter.Upgrade`, over `ShippedFiles.At` of the version in use                                                                                                                          |
 | `upgrade`'s missing manifest keys are those the pin defines (B-016, OQ-71 (a)); the pin is never written (B-052, C-13)                                                                                                   | Business       | `UpgradeWriter.Upgrade` gives `ManifestKeyEditor.AddMissing` the `.specht/manifest.json` entry of `ShippedFiles.At` of the pin                                                                 |
 | `upgrade` prints the version in use (B-017 as amended, C-18); supersedes `0047`'s row "prints the pinned version"                                                                                                        | Business       | `UpgradeResult.InUse`, beside the unchanged `Pinned`; `UpgradeCommand`'s current and rewritten lines                                                                                           |
 | The list marks the pin ` (pinned)`, and the version in use ` (in use)` only when it is not the pin (B-084, B-148, B-149)                                                                                                 | Business       | `SchemaVersionManager.List` returns both; `SchemaListCommand` writes the marks                                                                                                                 |
 | `rules`, `rules set`, `--explain`, `manifest`, `init` and `schema pin` keep the pin (OQ-73; § 5 row 33)                                                                                                                  | Business       | `RuleEntriesReader`, `RuleExplanationReader`, `RuleLevelSetter`, `EffectiveManifestReader`, `InitWriter`, `ManifestPinEditor`, `SchemaVersionManager.Pin` and `SpechtTreeGenerator`, unchanged |
+| `frontmatter` validates with the pinned version's schemas under any `pinPolicy` (decision 0021 call 3 as amended; § 5 row 33)                                                                                            | Business       | `SpechtRunner.CheckFrontmatter` through `SpechtModelReader.ReadPinnedSchemas`, which selects with `PinnedVersion`                                                                              |
 | `pinPolicy` is in no shipped default manifest, so `upgrade` never adds it and no shipped file or lock entry changes (decision 0021; C-1, C-17)                                                                           | Business       | `src/tool/manifest/v0.3.0/manifest.json` and `src/tool/schema/versions.lock.json`, unchanged                                                                                                   |
 | A policy is one of a closed set of three values                                                                                                                                                                          | Technical      | The `PinPolicy` enum in `src/specht/Versioning/`, one switch in `InUse`; no interface and no type per policy                                                                                   |
 
@@ -660,7 +661,7 @@ a shipped manifest nor a version-lock digest changes here.
 
 **A version is data (item `0042`).** [`SchemaVersion`](../../specht/Versioning/SchemaVersion.cs) is one shipped version: its `Number`, a `SemanticVersion` from item `0120`; the text of its three frontmatter schemas; and the rule ids its vocabulary holds. [`SchemaVersions`](../../specht/Versioning/SchemaVersions.cs) is a set of them, ascending by `Number`. `Select(version)` returns the member whose number equals `version` or throws [`SpechtManifestException`](../../specht/Manifest/SpechtManifestException.cs) with the manifest's repository-relative path, the pinned version and every shipped version, each as `major.minor.patch` (B-003) - the same exception a rejected manifest key throws, so `CheckCommand`'s existing catch already writes it to stderr, leaves stdout empty and exits `3`; no command changed. The set takes its versions by constructor, so a test builds `0.2.0` or `1.0.0` in memory from the embedded `0.1.0` rather than shipping a second schema file. The rule vocabulary is known for `0.1.0` and `0.2.0` only; an embedded folder of any other version is refused at composition, so `0.1.1`'s arm left with its folders ([decision 0013](decisions/0013-schema-0-1-1-stops-shipping.md)).
 
-**A pin is exact (B-055).** `Select` compares for equality and nothing else: over `0.1.0`, `0.2.0` and `1.0.0`, a pin of `0.1.0` is `0.1.0`. No range, no "newest patch", no fallback is read anywhere; a pin policy is item `0124`'s, and it will be a second input to the selection, not a change to what equality means. Amended 2026-11-02 (item `0124`, designed, not built): the policy is now that second input. `Select` is today `SchemaVersions.Find`, with `SpechtManifestParser.Version` throwing B-003's message, and equality is still the only comparison it makes. `SchemaVersions.InUse` takes the pin and `SpechtStructure.PinPolicy`; under `exact`, or with no key, it returns the pin, so B-055 holds unchanged ("Pin policy (item `0124`)" below).
+**A pin is exact (B-055).** `Select` compares for equality and nothing else: over `0.1.0`, `0.2.0` and `1.0.0`, a pin of `0.1.0` is `0.1.0`. No range, no "newest patch", no fallback is read anywhere; a pin policy is item `0124`'s, and it will be a second input to the selection, not a change to what equality means. Amended 2026-11-02 (item `0124`, built): the policy is now that second input. `Select` is today `SchemaVersions.Find`, with `SpechtManifestParser.Version` throwing B-003's message, and equality is still the only comparison it makes. `SchemaVersions.InUse` takes the pin and `SpechtStructure.PinPolicy`; under `exact`, or with no key, it returns the pin, so B-055 holds unchanged ("Pin policy (item `0124`)" below).
 
 **The embedded set (B-004).** `SchemaVersions.Embedded` reads the engine's manifest resources named `schema/v<major.minor.patch>/frontmatter/<file>`, one version per distinct version segment, and fills each version's slots from `feature.schema.json`, `task.schema.json` and `epic.schema.json`. The resources come from the tool's shipping copy (`0001-F4` C-2, item `0051`): `src/specht/specht.csproj` includes `..\tool\schema\v*\frontmatter\*.schema.json` as `EmbeddedResource` under the logical name `schema/v<major.minor.patch>/frontmatter/<file>`, the scheme `src/tool/tool.csproj` already uses. Owner decision, 2026-10-09: the engine **links** those files. Moving them into the engine would move `0051`'s shipping copy out from under `init`; copying them would be a second copy to drift; having the tool inject them into the engine would put a seam with one caller in front of the check. The manifest under `src/tool/manifest/v0.1.0/` is not linked: the check reads only the on-disk manifest (C-4).
 
@@ -1436,17 +1437,16 @@ unchanged (C-1).
 
 ### Pin policy (item `0124`)
 
-<!-- last written by: implementer, 2026-11-02 (item `0124`: designed, not built) -->
+<!-- last written by: implementer, 2026-11-02 (item `0124`: built) -->
 
-Designed, not built: the enum and the two methods named here do not exist
-yet. The build step adds them under the claims' tests, and this subsection
-then points at their declarations instead of naming them.
+Built. Each type and member named here is declared where its link points, and
+the declaration owns its signature.
 
-**The value.** `PinPolicy`, an enum in `src/specht/Versioning/` beside
-[`SemanticVersion`](../../specht/Versioning/SemanticVersion.cs): `Exact`,
+**The value.** [`PinPolicy`](../../specht/Versioning/PinPolicy.cs), an enum
+beside [`SemanticVersion`](../../specht/Versioning/SemanticVersion.cs): `Exact`,
 `LatestPatch`, `LatestMinor`.
-[`SpechtStructure`](../../specht/Manifest/SpechtStructure.cs) gains
-`PinPolicy`, an init property defaulting to `Exact`, so a manifest with no key,
+[`SpechtStructure.PinPolicy`](../../specht/Manifest/SpechtStructure.cs) is an
+init property defaulting to `Exact`, so a manifest with no key,
 and every structure a test builds, keeps B-055's pin. Three values are a closed
 set and the selection is one switch, so there is no interface and no type per
 policy.
@@ -1461,12 +1461,11 @@ constant and shipped.
   rejection (B-153; `0001-F5` B-012), as B-102 rejects `schemaSource` below
   `0.2.0`.
 - An unshipped pin that holds the key meets the `_ = Version(number)` guard
-  first. Today it fires only for `schemaSource`; its condition widens to either
-  key, so B-145 gets B-003's message, the pin and the shipped set, and not the
-  unknown-key one.
-- `exact`, `latest-patch` and `latest-minor` map to the three members. Any other
-  string, or a value that is not a string, adds a fault naming the value as the
-  manifest wrote it (B-056).
+  first. Its condition names either key, so B-145 gets B-003's message, the pin
+  and the shipped set, and not the unknown-key one.
+- `exact`, `latest-patch` and `latest-minor` map to the three members, in the
+  parser's private `Policy`. Any other string, or a value that is not a string,
+  adds a fault naming the value as the manifest wrote it (B-056).
 - `latest-minor` with a pin whose major is `0` adds a fault naming
   `latest-patch` (B-150): below `1.0.0` a `0.minor` step may fail a tree that
   passed (C-11), so only a patch floats there. The check reads the pin's major,
@@ -1476,31 +1475,28 @@ Both faults join the list `Check` already throws as one
 `SpechtManifestException`, so every command's existing catch writes it to
 stderr, leaves stdout empty and exits `3`; no command changes for them.
 
-**The selection.** `SchemaVersions.InUse(SemanticVersion pin, PinPolicy policy)`
-returns a `SchemaVersion`: under `Exact`, the pin; under `LatestPatch`, the
+**The selection.** [`SchemaVersions.InUse`](../../specht/Versioning/SchemaVersions.cs)
+returns, under `Exact`, the pin; under `LatestPatch`, the
 highest held version with the pin's major and minor; under `LatestMinor`, the
 highest with the pin's major; never one below the pin (B-053, B-054, B-147).
 Its callers have already rejected an unshipped pin, so the pin is always a
 candidate and the result is never null.
 
-**The pin first, then the float.** `SpechtManifestParser.VersionInUse(SpechtStructure)`
+**The pin first, then the float.** [`SpechtManifestParser.VersionInUse`](../../specht/Manifest/SpechtManifestParser.cs)
 calls `PinnedVersion` - B-003, and the `rules` ids against the pin's
-vocabulary - and then returns `versions.InUse(structure.SchemaVersion, structure.PinPolicy)`.
+vocabulary - and then selects with `SchemaVersions.InUse` under the
+structure's `PinPolicy`.
 The manifest is judged as the consumer pinned it: the parser's key gates and
 its filled defaults stay on the pin. That is OQ-71's proposed default (a),
 which the design proceeds on and the owner may reverse.
 
 **Who follows the version in use.**
 
-- The check. [`SpechtSchemasLoader.Load`](../../specht/Model/SpechtSchemasLoader.cs)
-  replaces `parser.PinnedVersion(structure)` with
-  `parser.VersionInUse(structure)`. `SpechtSchemas.Version` then carries the
+- The check. [`SpechtModelReader.ReadSchemas`](../../specht/Model/SpechtModelReader.cs)
+  selects with `parser.VersionInUse`. `SpechtSchemas.Version` then carries the
   version in use to the evaluator's vocabulary and to
   `SpechtReport.SchemaVersion`, which `SpechtEvaluator` takes from
-  `version.Number`, so the report names it (B-053, B-054). `specht frontmatter`
-  calls the same `Load` through `SpechtRunner.CheckFrontmatter` and follows too.
-  Item `0166` moves this call into `SpechtModelReader`; whichever of the two
-  merges second rebases the one line.
+  `version.Number`, so the report names it (B-053, B-054).
 - `upgrade`. [`UpgradeWriter.Upgrade`](../Features/Upgrade/UpgradeWriter.cs)
   reads the version in use from `parser.VersionInUse(structure)` and the pin
   from `structure.SchemaVersion`. The frontmatter schemas, the templates, the
@@ -1510,8 +1506,8 @@ which the design proceeds on and the owner may reverse.
   is given the `.specht/manifest.json` bytes of `shipped.At` of the pin, so the
   keys added are those the pin defines (B-016, OQ-71 (a)), and `schemaVersion`
   is never written (B-052, C-13). [`UpgradeResult`](../Features/Upgrade/UpgradeResult.cs)
-  gains `InUse` beside `Pinned`, which keeps its reader; `UpgradeCommand`'s
-  current and rewritten lines name `InUse` (B-017 as amended, C-18).
+  carries `InUse` beside `Pinned`; `UpgradeCommand`'s current and rewritten
+  lines name `InUse` (B-017 as amended, C-18).
 - `schema list`. [`SchemaVersionManager.List`](../../specht/Manifest/SchemaVersionManager.cs)
   returns the pin and the version in use, both null without a manifest;
   [`SchemaListCommand`](../Features/Schema/List/SchemaListCommand.cs) writes
@@ -1522,6 +1518,23 @@ which the design proceeds on and the owner may reverse.
 `RuleExplanationReader`, `RuleLevelSetter`, `EffectiveManifestReader`,
 `InitWriter`, `ManifestPinEditor` with `SchemaVersionManager.Pin`, and
 `SpechtTreeGenerator` keep `PinnedVersion` or the pin, unchanged.
+
+`specht frontmatter` keeps the pin too (decision 0021 call 3 as amended).
+`SpechtRunner.CheckFrontmatter` calls
+[`SpechtModelReader.ReadPinnedSchemas`](../../specht/Model/SpechtModelReader.cs),
+which reads the manifest's source as `ReadSchemas` does with no command-line
+selection and selects with `PinnedVersion` in place of `VersionInUse`. Both
+public members pass their selector to one private `ReadSchemas`, so the
+embedded, disk and verified-upstream paths stay written once. Rejected: a
+Boolean parameter on the public `ReadSchemas`, which every existing caller
+would gain and which reads as a flag at each call site.
+
+**Known gap: the check's standard error.** `CheckCommand` writes standard
+error through `Console.Error` and takes no error writer, so the acceptance
+step for a check over a built set reproduces the command's catch (§ 8). No
+claim of this item needs the command changed, so it is not. An injected writer,
+as `UpgradeCommand` and `SchemaListCommand` take, removes the copy when a test
+needs it.
 
 **Pin-keyed reads under a float.** The parser fills markers, roles and tables
 from the pin's shipped manifest, and `ApprovalCoverageRule` compares
@@ -1535,12 +1548,12 @@ the first case where they differ; nothing ships one.
 `schemaSource` is not, so `ManifestKeyEditor.AddMissing` never adds it and
 `init` never writes it; `src/tool/manifest/v0.3.0/manifest.json` and
 `src/tool/schema/versions.lock.json` are unchanged (decision 0021; C-1, C-17).
-`docs/configuration.md` gains a `pinPolicy` row beside `schemaSource`'s in the
-build step: the three values, `exact` the default, from schema `0.3.0`,
-`latest-minor` from `1.0.0`, and which commands follow the version in use.
+`docs/configuration.md` carries a `pinPolicy` row beside `schemaSource`'s: the
+three values, `exact` the default, from schema `0.3.0`, `latest-minor` from
+`1.0.0`, and which commands follow the version in use.
 
 No ADR: the key, its first version and the selection are decisions 0020 and
-0021, and the enum and the two methods add no seam. No ADR-0010 structural
+0021, and the enum and the members add no seam. No ADR-0010 structural
 stage is touched, so ADR-0014 and ADR-0027 are not engaged.
 
 ## 8. Testing Strategy
