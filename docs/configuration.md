@@ -45,8 +45,8 @@ that the next check rejects; edit those settings after pinning.
 
 Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `withdrawn` and `superseded`, default `Covered`, `Partial`, `Waived`, `Withdrawn` and `Superseded`. Four more keys are accepted; none is filled from a default, and older pins reject them:
 
-- `tests`: `{ "files": [<glob>], "declarations": [<form>] }`, `declarations` optional; each form holds `{test}` exactly once. From schema `0.3.0`, `SPEC4009` resolves each § 9 test name against these files; no rule reads the other three keys yet.
-- `matrix`: `{ "scenarioTitles": <bool> }`, `false` when left out.
+- `tests`: `{ "files": [<glob>], "declarations": [<form>] }`, `declarations` optional; each form holds `{test}` exactly once. From schema `0.3.0`, `SPEC4009` resolves each § 9 test name against these files.
+- `matrix`: `{ "scenarioTitles": <bool> }`, `false` when left out. From schema `0.3.0`, `true` has `SPEC4007` match each § 9 Scenario cell title to a companion scenario; no rule reads `owners` or `requiredSpecifications` yet.
 - `owners`: a `sections` title mapped to a non-empty list of roles.
 - `requiredSpecifications`: a list of directory globs, empty when left out.
 

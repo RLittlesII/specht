@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.IO.Abstractions.TestingHelpers;
 using System.Text;
 using AwesomeAssertions;
@@ -10,7 +11,8 @@ namespace Specht.Tests.Tree;
 /// The store that persists and loads a tree, over an in-memory file system (<c>0109-F1</c> B-016; C-9; decision 0005; item
 /// <c>0166</c>): saving a tree under a root writes each of the tree's files at its relative path under that root, holding
 /// the tree's bytes, and writes no other file; loading reads exactly the root-relative paths it is given, in that order,
-/// and a loaded file's text is decoded as <see cref="File.ReadAllText(string)"/> decodes it.
+/// and a file's text is decoded as <see cref="File.ReadAllText(string)"/> decodes it, whether its bytes are backed by an
+/// array or by memory that is not one (<c>0001-F1</c> B-004).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtTreeStoreUnitTests
@@ -79,6 +81,37 @@ public sealed class SpechtTreeStoreUnitTests
 
         // Then
         text.Should().Be(expected, because);
+    }
+
+    [Theory]
+    [ClassData(typeof(EncodedTexts))]
+    public void AFileWhoseBytesAreNotBackedByAnArray_WhenItsTextTaken_ShouldDecodeAsReadAllTextDecodes(
+        string because, byte[] bytes, string expected)
+    {
+        // Given
+        using var memory = new MemoryWithoutAnArray(bytes);
+        var file = new SpechtTreeFile("README.md", memory.Memory);
+
+        // When
+        var text = file.Text();
+
+        // Then
+        text.Should().Be(expected, because);
+    }
+
+    private sealed class MemoryWithoutAnArray(byte[] bytes) : MemoryManager<byte>
+    {
+        public override Span<byte> GetSpan() => bytes;
+
+        public override MemoryHandle Pin(int elementIndex = 0) => throw new NotSupportedException();
+
+        public override void Unpin()
+        {
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+        }
     }
 
     private const string Root = "tree";
