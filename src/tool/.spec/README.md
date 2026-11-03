@@ -357,17 +357,17 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | Printed paths are root-relative with `/` (C-7)                                                                      | Technical      | `UpgradeResult` carries the relative paths; `UpgradeCommand` prints them                                                                                              |
 | A missing root or manifest exits `2`, a rejected manifest or pin `3`                                                | Both           | The check's existing exceptions, caught in `UpgradeCommand` as `CheckCommand` catches them; proven by `0046` and `0048`                                               |
 
-<!-- last written by: implementer, 2026-10-28 (item `0047`, built) -->
+<!-- last written by: implementer, 2026-11-02 (item `0124`: upgrade's version line names the version in use) -->
 
-| Concern                                                                                                                                                   | Classification | Where                                                                                                                     |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Which keys a version defines: its shipped manifest's top-level keys, less `schemaVersion`, `identifiers` and `$`-prefixed keys (B-016, OQ-68)             | Business       | `ManifestKeyEditor.AddMissing`, over the `.specht/manifest.json` entry of `ShippedFiles.At(SemanticVersion)`              |
-| Upgrade never opts a manifest into the epic grammar (B-138; `0001-F5` decision 0004)                                                                      | Business       | `ManifestKeyEditor.AddMissing` never adds `identifiers`                                                                   |
-| A missing key is added in shipped order; a present key keeps its value and every existing byte, BOM included (B-016)                                      | Business       | `ManifestKeyEditor.AddMissing`, a byte splice after the root object's last member                                         |
-| The added text is the shipped manifest's own member text, not a re-serialisation                                                                          | Technical      | `ManifestKeyEditor.AddMissing`, through `ManifestPinEditor.Format` and `OriginalOffset`                                   |
-| The pin and a recorded source are never written, though the manifest now may be (B-052, C-13, B-034, C-10); supersedes `0045`'s "writes no manifest byte" | Business       | `ManifestKeyEditor.AddMissing` never adds `schemaVersion` and never touches a present member                              |
-| A root is current only when no file differs and no key is missing (B-006 under OQ-64 (a), B-059)                                                          | Business       | `UpgradeWriter.Upgrade` plans the manifest like any file; `UpgradeCommand` prints "current" only for an empty `Rewritten` |
-| Upgrade prints the pinned version and each rewritten file, the manifest among them, and no diff (B-017, OQ-24; provisional on OQ-21)                      | Business       | `UpgradeCommand`, from `UpgradeResult.Pinned` and `UpgradeResult.Rewritten`                                               |
+| Concern                                                                                                                                                                                                                                                                                                                             | Classification | Where                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Which keys a version defines: its shipped manifest's top-level keys, less `schemaVersion`, `identifiers` and `$`-prefixed keys (B-016, OQ-68)                                                                                                                                                                                       | Business       | `ManifestKeyEditor.AddMissing`, over the `.specht/manifest.json` entry of `ShippedFiles.At(SemanticVersion)`              |
+| Upgrade never opts a manifest into the epic grammar (B-138; `0001-F5` decision 0004)                                                                                                                                                                                                                                                | Business       | `ManifestKeyEditor.AddMissing` never adds `identifiers`                                                                   |
+| A missing key is added in shipped order; a present key keeps its value and every existing byte, BOM included (B-016)                                                                                                                                                                                                                | Business       | `ManifestKeyEditor.AddMissing`, a byte splice after the root object's last member                                         |
+| The added text is the shipped manifest's own member text, not a re-serialisation                                                                                                                                                                                                                                                    | Technical      | `ManifestKeyEditor.AddMissing`, through `ManifestPinEditor.Format` and `OriginalOffset`                                   |
+| The pin and a recorded source are never written, though the manifest now may be (B-052, C-13, B-034, C-10); supersedes `0045`'s "writes no manifest byte"                                                                                                                                                                           | Business       | `ManifestKeyEditor.AddMissing` never adds `schemaVersion` and never touches a present member                              |
+| A root is current only when no file differs and no key is missing (B-006 under OQ-64 (a), B-059)                                                                                                                                                                                                                                    | Business       | `UpgradeWriter.Upgrade` plans the manifest like any file; `UpgradeCommand` prints "current" only for an empty `Rewritten` |
+| Upgrade prints the pinned version and each rewritten file, the manifest among them, and no diff (B-017, OQ-24; provisional on OQ-21). Amended 2026-11-02 (item `0124`, built): the version line, current or rewritten, names the version in use, the pin unless a floating `pinPolicy` selects a later one (B-017 as amended, C-18) | Business       | `UpgradeCommand`, from `UpgradeResult.InUse` (was `UpgradeResult.Pinned`) and `UpgradeResult.Rewritten`                   |
 
 <!-- last written by: implementer, 2026-10-29 (item `0093`, built) -->
 
@@ -792,7 +792,7 @@ For B-088 each file of both versions is read as text, split on `\n`, and the lin
 
 ### Upgrade to the pin
 
-<!-- last written by: implementer, 2026-11-02 (item `0166`: the manifest read through `SpechtModelReader`); implementer, 2026-10-29 (item `0131`, built) -->
+<!-- last written by: implementer, 2026-11-02 (item `0124`: upgrade's version line names the version in use) -->
 
 **Designed 2026-10-24 and built for item `0045`; item `0047`'s extension
 designed and built 2026-10-28.** `specht upgrade` makes the
@@ -889,7 +889,10 @@ nothing rewritten, `UpgradeCommand` prints
 `.specht/ is current at schemaVersion <pin>` and exits `0` (B-006). After a
 rewrite it exits `0` (B-005) and prints nothing in item `0045`. Item `0047`
 adds the missing manifest keys to the plan (B-016) and the listing to standard
-output (B-017); "Manifest keys and the listing" below states both.
+output (B-017); "Manifest keys and the listing" below states both. Amended
+2026-11-02 (item `0124`, built): the current line names `UpgradeResult.InUse`,
+the version in use, which is the pin unless a floating `pinPolicy` selects a
+later one (B-017 as amended, C-18).
 
 **Manifest keys and the listing (item `0047`).** Designed and built 2026-10-28. B-016
 names the keys, B-138 keeps the epic grammar out of them, B-017 and OQ-24 the
@@ -1007,7 +1010,10 @@ rewritten <root-relative path>
 ```
 
 `<pin>` is `SemanticVersion.ToString()`, and each path is root-relative with
-`/` (C-7). "Rewritten" fits a move up or down and is `init`'s
+`/` (C-7). Amended 2026-11-02 (item `0124`, built): in both the current line
+and the rewritten line, `<pin>` is `UpgradeResult.InUse`, the version in use;
+it differs from the pin only under a floating `pinPolicy` (B-017 as amended,
+C-18). "Rewritten" fits a move up or down and is `init`'s
 `written`/`skipped` form. No diff, no key name and no previous version is
 printed (B-017, OQ-24). If OQ-21 adds the previous version, only the version
 line changes. Skip lines follow these lines; "Skips under the on-disk source"
