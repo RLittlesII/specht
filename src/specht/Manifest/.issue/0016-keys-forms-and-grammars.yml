@@ -2,7 +2,7 @@ id: "0016"
 type: task
 title: Read frontmatter keys, edge forms and id grammars from the manifest
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -30,7 +30,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   Moves the frontmatter key names, the identity and edge forms and the task
@@ -352,6 +352,15 @@ decisions:
     manifest. It is `0001-F5` OQ-25, open, for the repository owner;
     until it is answered this item writes `{epic}-{feature}`, as
     `SPEC3002` and `SPEC5003` do at `d73b7a51`.
+  - |
+    2026-11-02, spec-author, closing the item: the pull request delivers
+    the scope the owner ruled that day (Manifest decisions 0016 to 0018),
+    signed off in `0001-F5` § 12, row "6-9 (item `0016`)". Two questions
+    for the repository owner stay open in `0001-F5` § 11: OQ-5, on which
+    the `init` task grammar without `--epics` is built provisionally, and
+    OQ-25. B-054 for a manifest declaring no epic grammar follows
+    decision 0018, which leaves that manifest's edge resolution to item
+    0345; no § 11 question records it.
 
 out_of_scope:
   - "The epics opt-in, B-024 to B-035 and B-042 — item 0345 (decision 0018)."
