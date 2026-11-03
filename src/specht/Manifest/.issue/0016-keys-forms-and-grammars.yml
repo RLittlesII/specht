@@ -59,6 +59,8 @@ acceptance_criteria:
   - "B-054 — a malformed dependency edge retains its text; the declared-epic shape"
   - "B-068 — schema 0.3.0's default task grammar names its groups; this repository's live copy follows (A-1)"
   - "A manifest declaring no epic grammar keeps the identity, edges and item sequence it had at d73b7a51 (decision 0018); B-024 to B-035 and B-042 are 0345's."
+  - "`0001-F3` B-012 (`0001-F5` OQ-25) — under a manifest pinned to schema 0.3.0 or later declaring the epic grammar, `expected.form` for SPEC3002, and for SPEC5003 on a parent mismatch, is the effective `forms.identity` as written, `{epic}-{id}` by default; below 0.3.0, and without the epic grammar, it stays `{epic}-{feature}`. Built before this item merges."
+  - "`0001-F4` B-022 (`0001-F5` OQ-5) — `specht init` without `--epics` writes the task grammar `^[0-9]{4}-(?<sequence>[0-9]{2})$`, schema 0.3.0's default with its `epic` group dropped, in place of the un-named group `^(?:[0-9]{4})-(?<sequence>[0-9]{2})$`."
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -361,6 +363,39 @@ decisions:
     OQ-25. B-054 for a manifest declaring no epic grammar follows
     decision 0018, which leaves that manifest's edge resolution to item
     0345; no § 11 question records it.
+
+  - |
+    2026-11-02, the repository owner, answering the three questions the
+    closing entry above left open, each chosen on its own, relayed by the
+    coordinating session. Recorded by spec-author.
+    1. The init grammar without `--epics`, `0001-F5` OQ-5: "A drop epic
+    group (Recommended)". `specht init` without `--epics` writes schema
+    0.3.0's default task grammar minus its `epic` group:
+    `^[0-9]{4}-(?<sequence>[0-9]{2})$`. It is no longer provisional.
+    OQ-5 resolved; `0001-F4` B-022 amended to the text.
+    2. The scope of B-005, B-006, B-053 and B-054: "A qualify claims
+    (Recommended)". The same ruling was first relayed as "A confirm
+    (Recommended)", on the closing entry's reading of decision 0018; the
+    coordinating session then relayed the owner's exact choice, and both
+    quotes are this one ruling. This item builds the four claims only for
+    manifests that declare the epic grammar, and they are qualified to
+    say so; trees without it wait for item 0345, whose criteria widen
+    each. No decision record is added; decision 0018 gains a dated note.
+    3. `0001-F5` OQ-25: "A effective form (Recommended)". From 0.3.0 with
+    the epic grammar declared, a violation's `expected.form` (SPEC3002,
+    and SPEC5003 on a parent mismatch) holds the effective
+    `forms.identity` as written, `{epic}-{id}` by default. Below 0.3.0,
+    and without the epic grammar until item 0345, it stays
+    `{epic}-{feature}`. `0001-F3` B-012 amended; the scenario "An item
+    identity violation says the value implied" keeps its words. This
+    item builds it before it merges, so the item stays `done`: the pull
+    request that delivers it carries the build.
+    Consequences, spec-author: the criteria gain `0001-F3` B-012 and
+    `0001-F4` B-022. The decision entry of 2026-11-02 that withdrew the
+    `expected.form` reading, and the closing entry's "OQ-5" and "OQ-25"
+    open, no longer hold. `0001-F5` OQ-26 is raised for the form without
+    the epic grammar once item 0345 lands. § 6 to § 9 of `0001-F3`,
+    `0001-F4` and `0001-F5` are owed to implementer and test-writer.
 
 out_of_scope:
   - "The epics opt-in, B-024 to B-035 and B-042 — item 0345 (decision 0018)."

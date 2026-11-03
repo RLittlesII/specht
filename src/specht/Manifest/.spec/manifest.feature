@@ -59,7 +59,8 @@ Feature: The manifest carries the roles
   @B-005
   Scenario: Identity and edge forms are read from the manifest
     Given the manifest pins schema version "0.3.0"
-    Given the frontmatter schemas are read from the root
+    And the manifest declares the epic grammar
+    And the frontmatter schemas are read from the root
     And the manifest and the root's Feature schema both declare the qualified edge form with a colon between the epic and the Feature id
     And the root holds a specification whose dependency edge is written "0002:F1"
     When the check runs
@@ -69,7 +70,8 @@ Feature: The manifest carries the roles
   @B-006
   Scenario: Item ids follow the task grammar
     Given the manifest pins schema version "0.3.0"
-    Given the frontmatter schemas are read from the root
+    And the manifest declares the epic grammar
+    And the frontmatter schemas are read from the root
     And the manifest's task grammar and the root's frontmatter schemas all carry a three-digit sequence
     And the root holds items "0001-001" and "0001-002" beside a specification
     When the check runs
@@ -659,6 +661,7 @@ Feature: The manifest carries the roles
   @B-053
   Scenario: A sequence gap message follows the captured width
     Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
     And the task grammar and on-disk schemas carry a three-digit sequence
     And the root holds items "0001-001" and "0001-004" beside a specification
     When the check runs
@@ -667,6 +670,7 @@ Feature: The manifest carries the roles
   @B-054
   Scenario: A malformed dependency edge retains its text
     Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
     And the root holds a specification whose dependency edge is "F2x"
     And that edge matches neither configured edge form
     When the check runs

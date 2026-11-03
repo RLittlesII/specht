@@ -45,6 +45,10 @@ type: decision
 - `0001-F5` OQ-18, resolved.
 - Items `0016`, `0345` and `0010`; `.issue/.goal`.
 - OQ-4, OQ-5 and OQ-13 stay open and are item `0345`'s to settle.
+- 2026-11-02, later the same day: OQ-5 is resolved by the owner on item
+  `0016`, not by item `0345`. The owner also chose to qualify B-005, B-006,
+  B-053 and B-054 to a manifest declaring the epic grammar; item `0345`
+  widens them. The call above is unchanged.
 
 ## Reversal
 

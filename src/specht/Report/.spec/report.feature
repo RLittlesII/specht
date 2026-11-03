@@ -170,6 +170,27 @@ Feature: The report contract
       | id     | file name   | task      | 0001-01 |
       | parent | Feature     | qualified | 0001-F1 |
 
+  @B-012
+  Scenario Outline: An identity expectation follows the identity form the manifest declares
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
+    And the manifest declares an identity form with a colon between the epic and the Feature id
+    And the root holds <situation>
+    When the check runs with JSON output
+    Then the <expectation> expectation carries the identity form the manifest declares
+
+    Examples:
+      | situation                                       | expectation     |
+      | the same Feature identity in both layouts       | reused identity |
+      | an item whose parent disagrees with its Feature | item            |
+
+  @B-012 @boundary
+  Scenario: Below schema 0.3.0 an identity expectation keeps the epic and Feature form
+    Given the manifest pins schema version "0.2.1"
+    And the root holds the same Feature identity in both layouts
+    When the check runs with JSON output
+    Then each reused identity expectation carries the form "{epic}-{feature}"
+
   @B-013
   Scenario Outline: A companion count violation says the required count
     Given the root holds a specification with <count> companions

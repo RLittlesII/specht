@@ -71,6 +71,7 @@ Feature: init
     Given a root directory with no configuration folder
     When init runs against it
     Then the manifest written has a task grammar with no epic part
+    And its task grammar is "^[0-9]{4}-(?<sequence>[0-9]{2})$", the default task grammar with its epic group dropped
 
   @B-024
   Scenario: Init writes a level for every rule of the version it pins

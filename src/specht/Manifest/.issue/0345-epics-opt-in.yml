@@ -15,6 +15,8 @@ spikes: []
 spec: src/specht/Manifest/.spec/README.md
 
 claims:
+  - B-005
+  - B-006
   - B-024
   - B-025
   - B-026
@@ -28,6 +30,8 @@ claims:
   - B-034
   - B-035
   - B-042
+  - B-053
+  - B-054
 
 created: "2026-11-02"
 updated: "2026-11-02"
@@ -49,9 +53,9 @@ summary: |
   (`0001-F7` OQ-72, default (a)).
   Open questions this item meets, each to be settled before or in it:
   OQ-4 (identity under the epic grammar for a Feature with no `epic`),
-  OQ-5 (the per-Feature task id form and the grammar init writes without
-  `--epics`) and OQ-13 (whether the shipped default stops declaring the
-  epic grammar).
+  OQ-13 (whether the shipped default stops declaring the epic grammar)
+  and OQ-26 (`expected.form` without the epic grammar). OQ-5 was resolved
+  on item 0016.
 
 acceptance_criteria:
   - "B-024 — with epics, identity is `{epic}-{id}`"
@@ -67,6 +71,10 @@ acceptance_criteria:
   - "B-034 — without epics, SPEC1004 reports nothing"
   - "B-035 — with epics, a missing `epic` reported, in either layout"
   - "B-042 — without epics, SPEC3001 checks the Feature segment alone"
+  - "B-005 widened to a manifest declaring no epic grammar: SPEC6001-SPEC6003 and SPEC5003 resolve an edge by the declared forms there too (owner, 2026-11-02, on item 0016)."
+  - "B-006 widened to a manifest declaring no epic grammar: SPEC5003 and SPEC5004 read an item's sequence through the task grammar's named `sequence` group, so a three-digit sequence is read and checked for contiguity (owner, 2026-11-02, on item 0016)."
+  - "B-053 widened to a manifest pinned to 0.3.0 or later declaring no epic grammar: the SPEC5004 gap message pads to the captured sequence width (owner, 2026-11-02, on item 0016)."
+  - "B-054 widened to a manifest pinned to 0.3.0 or later declaring no epic grammar: an edge matching neither declared edge form is reported by SPEC6001 with its original text (owner, 2026-11-02, on item 0016)."
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -76,6 +84,15 @@ decisions:
     B-024 to B-035 and B-042, after 0016 and in milestone 0.4.0.
     Manifest decision 0018. Rejected: building it before 0016, and
     folding it into 0016. Cut by spec-author.
+  - |
+    2026-11-02, the repository owner, on item 0016: "A qualify claims
+    (Recommended)". B-005, B-006, B-053 and B-054 are qualified to a
+    manifest declaring the epic grammar, which item 0016 builds; this
+    item widens each to a manifest declaring none, amending the claim in
+    place. Its criteria and claims gain the four. OQ-5 is resolved on
+    item 0016 ("A drop epic group (Recommended)"), and OQ-26 is raised
+    for `expected.form` without the epic grammar (`0001-F3` B-012).
+    Recorded by spec-author.
 
 out_of_scope:
   - "The identity and edge forms, the named task groups and their rejections for a manifest declaring the epic grammar — item 0016."
