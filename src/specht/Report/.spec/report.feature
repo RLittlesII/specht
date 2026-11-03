@@ -197,6 +197,19 @@ Feature: The report contract
       | two specifications declaring the same id        | reused identity |
       | an item whose parent disagrees with its Feature | item            |
 
+  @B-012
+  Scenario Outline: With epics a missing epic expectation carries the epic grammar
+    Given the manifest pins schema version "0.3.0"
+    And the manifest declares the epic grammar
+    And the root holds a specification in the <layout> layout declaring id "F2" and no epic
+    When the check runs with JSON output
+    Then the missing-epic expectation carries the epic grammar and <implied>
+
+    Examples:
+      | layout   | implied                        |
+      | features | no implied value               |
+      | epics    | the epic the directory implies |
+
   @B-012 @boundary
   Scenario: Below schema 0.3.0 an identity expectation keeps the epic and Feature form
     Given the manifest pins schema version "0.2.1"

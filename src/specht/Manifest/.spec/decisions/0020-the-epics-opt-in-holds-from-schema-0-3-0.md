@@ -1,6 +1,6 @@
 ---
 title: "Decision 0020: the epics opt-in holds from schema 0.3.0"
-description: "The owner's nine rulings of November 3 2026 on item 0345: the epic-less reading first holds at schema 0.3.0, the default manifest keeps the epic grammar, items number per the Feature that holds them, no epic file is read without the grammar, and a Feature with no epic under the grammar keeps its rendered identity and is reported by SPEC3001"
+description: "The owner's nine rulings of November 3 2026 on item 0345: the epic-less reading first holds at schema 0.3.0, the default manifest keeps the epic grammar, items number per the Feature that holds them, no epic file is read without the grammar, and a Feature with no epic under the grammar keeps its rendered identity and is reported by SPEC3001, whose expectation is the epic grammar and the path's epic; and the owner's confirmation that C-11 first holds at schema 0.3.0"
 type: decision
 ---
 
@@ -94,3 +94,27 @@ written into those claims in the same change.
 ## Reversal
 
 None.
+
+## Further calls - 2026-11-03
+
+The owner answered two more questions on item `0345` the same day, each
+on its own; recorded by spec-author. The sections above stand as written,
+except that OQ-27, raised under Affects, is now resolved.
+
+10. **OQ-27, "A grammar + path epic (Recommended)".** B-035's `SPEC3001`
+    finding carries `expected.form`, the epic grammar, and
+    `expected.value`, the path's epic segment in the epics layout; in the
+    features layout `value` is absent. `0001-F3` B-012 is amended. Rejected:
+    `form` the identity form with no `value` in either layout; no
+    `expected`.
+11. **C-11 in A-6, "A confirm (Recommended)".** A-6 lists C-11 as first
+    holding at schema `0.3.0`, as spec-author read call 1. The reading is
+    now the owner's.
+
+Why call 10: the finding names a missing epic, so its expectation is the
+form an epic takes; the epics layout implies an epic from the path, and
+the features layout implies none.
+
+Affects: `0001-F5` OQ-27 resolved, A-6 (confirmation recorded), B-035's
+provenance; `0001-F3` B-012 amended and a `@B-012` outline added; item
+`0345`.
