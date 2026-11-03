@@ -30,7 +30,7 @@ public sealed class WaiverRule(MatrixResolver resolver) : ISpechtRule
                 .Select(static row => row.ElementAtOrDefault(2)?.Trim() ?? string.Empty)
                 .Where(static name => name.Length > 0)
                 .ToHashSet(StringComparer.Ordinal);
-            foreach (var row in resolver.Resolve(feature.Document, structure, []))
+            foreach (var row in resolver.Resolve(feature, structure, []))
             {
                 if (!string.Equals(row.Status.Trim(), markers["waived"], StringComparison.Ordinal))
                 {

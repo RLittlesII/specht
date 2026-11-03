@@ -36,7 +36,7 @@ public sealed class MatrixResolverIntegrationTests
         var files = TestFiles(fileSystem, tree.Root, structure);
 
         // When
-        var rows = new MatrixResolver().Resolve(document, structure, files);
+        var rows = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, files);
 
         // Then
         files.Should().ContainSingle();
@@ -65,7 +65,7 @@ public sealed class MatrixResolverIntegrationTests
         var files = TestFiles(new FileSystem(), tree.Root, structure);
 
         // When
-        var test = new MatrixResolver().Resolve(document, structure, files).Single().Tests.Single();
+        var test = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, files).Single().Tests.Single();
 
         // Then
         test.Status.Should().Be(MatrixTestStatus.Unresolved);

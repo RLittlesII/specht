@@ -21,7 +21,7 @@ public sealed class ShippedVocabularies : TheoryData<string, string[]>
             "0.3.0",
             [
                 "SPEC1001", "SPEC1002", "SPEC1003", "SPEC1004", "SPEC2001", "SPEC2002", "SPEC3001", "SPEC3002", "SPEC4001",
-                "SPEC4002", "SPEC4003", "SPEC4004", "SPEC4005", "SPEC4006", "SPEC4009", "SPEC5001", "SPEC5002", "SPEC5003", "SPEC5004",
+                "SPEC4002", "SPEC4003", "SPEC4004", "SPEC4005", "SPEC4006", "SPEC4007", "SPEC4009", "SPEC5001", "SPEC5002", "SPEC5003", "SPEC5004",
                 "SPEC6001", "SPEC6002", "SPEC6003", "SPEC7001", "SPEC7002",
             ]);
     }
