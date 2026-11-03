@@ -1,0 +1,28 @@
+id: "0346"
+type: task
+title: Configure Roslynator cleanup through dotnet format
+status: done
+value: 3
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: "2026-11-03"
+summary: |
+  Add private, centrally pinned Roslynator analyzers and code fixes, using the
+  supported Roslynator entries in Airframe's analyzers.ruleset as the baseline.
+acceptance_criteria:
+  - "dotnet format discovers and applies configured Roslynator analyzer fixes."
+  - "The existing Format gate verifies without writing; explicit cleanup applies fixes."
+  - "No .feature change needed: formatting and dependency configuration preserve 0055-F1 C-1, C-2, C-3 and 0001-F1 C-9 and 0109-F5 C-1, C-4, C-5."
+decisions:
+  - "2026-11-03: Use .editorconfig as the existing severity authority; do not import unrelated analyzer families or obsolete rule IDs."
+  - "2026-11-03: RCS1139 conflicts with intentional traceability-only implements comments; disable it instead of generating empty summaries."
+  - "2026-11-03: Full build passed: self-check, Format, Compile, CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest. No Roslynator assemblies or dependencies enter either published package."
+out_of_scope:
+  - "Product behavior, new build targets, and automatic repair of compiler errors."

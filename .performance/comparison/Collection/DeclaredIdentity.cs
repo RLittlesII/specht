@@ -107,7 +107,10 @@ public static class DeclaredIdentity
                 if (AttributeName(reader, attribute) != ParamsAttribute) continue;
                 if (Decode(attribute, names)?.FixedArguments is not [{ Value: ImmutableArray<CustomAttributeTypedArgument<string>> values }]
                     || values.IsEmpty || values.Any(static value => !IsWholeNumber(value.Type) || value.Value is null))
+                {
                     return null;
+                }
+
                 parameters.Add((name, [.. values.Select(static value => Convert.ToString(value.Value, CultureInfo.InvariantCulture)!)]));
             }
         }

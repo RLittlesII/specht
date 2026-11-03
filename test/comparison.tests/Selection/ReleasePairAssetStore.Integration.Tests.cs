@@ -70,11 +70,14 @@ public sealed class ReleasePairAssetStoreIntegrationTests
                 return new HttpResponseMessage(HttpStatusCode.Created);
             }
             if (request.RequestUri!.AbsolutePath.EndsWith("/assets", StringComparison.Ordinal))
+            {
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(uploaded
                     ? """[{"id":50,"name":"comparison-pair-v1.json","state":"uploaded"}]""" : "[]")
                 };
+            }
+
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ComparisonJson.Write(pair)) };
         });
         using var client = new HttpClient(handler);

@@ -29,7 +29,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             || manifest.Files.Any(static file => file.Role != Roles.GetValueOrDefault(file.Path, RawExportRole)
                 || file.Role == RawExportRole && (file.Side is not ("previous" or "current")
                     || !file.Path.StartsWith($"raw/{file.Side}/", StringComparison.Ordinal) || file.Path.Count(static c => c == '/') != 2)))
+        {
             throw new InvalidDataException("Report bundle entries do not match its evidence manifest.");
+        }
+
         var session = ComparisonJson.ReadSession(Encoding.UTF8.GetString(entries["session.json"]));
         if (Sha256(entries["pair.json"]) != session.PairDigest)
             throw new InvalidDataException("Report bundle session does not identify its release pair.");
@@ -48,12 +51,17 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 || SourceFiles(comparison).Any(path => !listed.TryGetValue(path, out var file) || file.Role != RawExportRole)
                 || Locators(root).Any(cited => cited.SourceFile is null || !listed.TryGetValue(cited.SourceFile, out var file)
                     || file.Role != RawExportRole || !ResolvesParent(documents[cited.SourceFile].RootElement, cited.Locator)))
+            {
                 throw new InvalidDataException("Report evidence references are not files and records of this bundle.");
+            }
+
             if (documents.Any(static document => HoldsAbsolutePath(document.Value.RootElement, document.Key == "report.json")))
                 throw new InvalidDataException("Report bundle holds an absolute path.");
             if (Encoding.UTF8.GetString(entries["report.md"]) != ComparisonReport.Markdown(ComparisonJson.ReadPair(root.GetProperty("pair").GetRawText()),
                     ComparisonJson.ReadDocument(comparison.GetRawText())))
+            {
                 throw new InvalidDataException("Report bundle Markdown is not the rendering of its JSON report.");
+            }
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or KeyNotFoundException or FormatException
             or NullReferenceException)
@@ -121,7 +129,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             if (rest.StartsWith(@"\\") || rest.StartsWith("~/") || rest.StartsWith(@"~\")
                 || rest.Length >= 3 && char.IsAsciiLetter(rest[0]) && rest[1] == ':' && rest[2] is '\\' or '/'
                 || rest.Length >= 6 && rest[..5].Equals("file:", StringComparison.OrdinalIgnoreCase) && rest[5] == '/')
+            {
                 return true;
+            }
+
             if (rest.Length < 3 || rest[0] != '/') continue;
             var end = 1;
             while (end < rest.Length && rest[end] != '/' && rest[end] != '\\' && !IsBoundary(rest[end])) end++;
@@ -141,7 +152,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             {
                 if (!EvidencePaths.IsRelative(entry.FullName) || ((entry.ExternalAttributes >> 16) & 0xF000) is not (0 or 0x8000)
                     || !names.Add(entry.FullName))
+                {
                     throw new InvalidDataException("Report bundle has an unsafe or duplicated entry.");
+                }
+
                 using var content = new MemoryStream();
                 using (var stream = entry.Open()) stream.CopyTo(content);
                 entries.Add(entry.FullName, content.ToArray());
@@ -169,8 +183,11 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
         if (element.ValueKind == JsonValueKind.Object)
         {
             if (element.TryGetProperty("locator", out var locator))
+            {
                 yield return (element.TryGetProperty("sourceFile", out var source) && source.ValueKind == JsonValueKind.String
                     ? source.GetString() : null, locator);
+            }
+
             foreach (var property in element.EnumerateObject())
                 foreach (var cited in Locators(property.Value)) yield return cited;
         }
@@ -222,7 +239,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("HostEnvironmentInfo", out var host)
                 || host.ValueKind != JsonValueKind.Object || !host.TryGetProperty("BenchmarkDotNetVersion", out var version)
                 || version.ValueKind != JsonValueKind.String || !BenchmarkEvidenceReader.IsSupportedProducer(version.GetString()))
+            {
                 throw new InvalidDataException("Raw export is not a BenchmarkDotNet 0.15.8 full JSON export.");
+            }
+
             var removed = false;
             using var buffer = new MemoryStream();
             using (var writer = new Utf8JsonWriter(buffer)) Sanitise(root, writer, ref removed);
@@ -286,7 +306,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
     {
         if (export is null || export.Side is not ("previous" or "current") || !EvidencePaths.IsRelative(export.SourcePath)
             || !export.SourcePath.EndsWith("-report-full.json", StringComparison.Ordinal))
+        {
             throw new InvalidDataException("Raw export is not a repository-relative BenchmarkDotNet full JSON export.");
+        }
+
         byte[] original;
         try
         {

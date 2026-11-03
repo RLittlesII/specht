@@ -24,9 +24,12 @@ public static class CasePairing
                 var others = left is null ? before : after;
                 var sameSide = left is null ? after : before;
                 if (!present.IdentityKnown || others.Values.Any(static evidence => !evidence.IdentityKnown))
+                {
                     return new PairedCase(key, PairingStatus.NotComparable, left, right, [],
                         present.IdentityKnown ? "Unknown workload identity prevents establishing one-sided coverage."
                             : present.Failure ?? "Unknown workload identity prevents establishing one-sided coverage.");
+                }
+
                 if (others.Any(entry => !sameSide.ContainsKey(entry.Key) && entry.Value.Case.OperationId == present.Case.OperationId))
                     return new PairedCase(key, PairingStatus.NotComparable, left, right, [], "Workload input parameters differ.");
                 return new PairedCase(key, left is null ? PairingStatus.Added : PairingStatus.Removed, left, right, [], null);
@@ -94,8 +97,11 @@ public static class CasePairing
             ("architecture", a.Architecture, b.Architecture), ("toolchain", a.Toolchain, b.Toolchain),
             ("garbage collection", a.GarbageCollection, b.GarbageCollection), ("job", a.Job, b.Job),
         })
+        {
             if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second) || first != second)
                 return $"Measurement {name} is unknown or differs.";
+        }
+
         return null;
     }
 
@@ -105,7 +111,10 @@ public static class CasePairing
             return "Workload operation revision is unknown or differs.";
         if (string.IsNullOrWhiteSpace(left.FixtureId) || string.IsNullOrWhiteSpace(left.FixtureRevision)
             || left.FixtureId != right.FixtureId || left.FixtureRevision != right.FixtureRevision)
+        {
             return "Workload fixture is unknown or differs.";
+        }
+
         if (string.IsNullOrWhiteSpace(left.Boundary) || left.Boundary != right.Boundary)
             return "Measurement boundary is unknown or differs.";
         return null;

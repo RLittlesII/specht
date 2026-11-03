@@ -44,7 +44,10 @@ public static class ComparisonJson
         var receipt = Read<ComparisonReceipt>(json);
         if (receipt.FormatVersion != 1 || !IsRepository(receipt.Repository) || string.IsNullOrWhiteSpace(receipt.RunId) || receipt.Attempt < 1
             || !IsCommit(receipt.Commit) || receipt.ReleaseId <= 0 || !IsHash(receipt.PairDigest, 64))
+        {
             throw new InvalidDataException("Comparison request has an unsupported version or invalid identity.");
+        }
+
         return receipt;
     }
 
@@ -57,7 +60,10 @@ public static class ComparisonJson
             || outcome.State == ReportingState.Incomplete && string.IsNullOrWhiteSpace(outcome.Reason)
             || new[] { outcome.Reason }.Concat(outcome.Flags.Select(static flag => flag.Reason)).Any(static text => text is not null
                 && (ReportBundler.IsRooted(text) || ReportBundler.EmbedsPath(text))))
+        {
             throw new InvalidDataException("Reporting outcome is malformed or holds an absolute path.");
+        }
+
         return outcome;
     }
 
@@ -67,7 +73,10 @@ public static class ComparisonJson
         if (session.FormatVersion != 1 || !IsHash(session.PairDigest, 64) || !IsCommit(session.ComparatorCommit)
             || string.IsNullOrWhiteSpace(session.ComparatorVersion) || string.IsNullOrWhiteSpace(session.RunId)
             || session.Attempt < 1 || string.IsNullOrWhiteSpace(session.SessionId) || string.IsNullOrWhiteSpace(session.RunnerIdentity))
+        {
             throw new InvalidDataException("Session manifest identity or version is invalid.");
+        }
+
         ValidateSide(session.Previous);
         ValidateSide(session.Current);
         return session;
@@ -82,7 +91,10 @@ public static class ComparisonJson
                 || file.SourceSha256 is not null && !IsHash(file.SourceSha256, 64)
                 || file.Transformation is not ("none" or "absolute-paths-removed") || file.MediaType is not ("application/json" or "text/markdown"))
             || manifest.Files.GroupBy(static file => file.Path, StringComparer.OrdinalIgnoreCase).Any(static group => group.Count() > 1))
+        {
             throw new InvalidDataException("Evidence manifest has an unsupported version or invalid file entries.");
+        }
+
         return manifest;
     }
 
@@ -90,17 +102,25 @@ public static class ComparisonJson
     {
         if (pair.FormatVersion != 1 || pair.SelectionPolicy != "publication-order-v1"
             || !IsHash(pair.CatalogDigest, 64) || string.IsNullOrWhiteSpace(pair.SelectingRunId))
+        {
             throw new InvalidDataException("Saved release pair has an unsupported version or invalid selection evidence.");
+        }
+
         ValidateRelease(pair.Current);
         if (pair.Current.Draft || pair.Current.PublishedAt is null
             || pair.Current.Repository != current.Repository || pair.Current.Id != current.Id)
+        {
             throw new InvalidDataException("Saved release pair does not identify this published release.");
+        }
+
         if (pair.Previous is not { } previous) return;
         ValidateRelease(previous);
         if (previous.Id == pair.Current.Id || previous.Draft || previous.PublishedAt is null || previous.Repository != pair.Current.Repository
             || previous.PublishedAt > pair.Current.PublishedAt
             || previous.PublishedAt == pair.Current.PublishedAt && previous.Id >= pair.Current.Id)
+        {
             throw new InvalidDataException("Saved predecessor does not precede the current publication.");
+        }
     }
 
     public static bool IsCommit(string? value) => IsHash(value, 40) || IsHash(value, 64);
@@ -112,7 +132,9 @@ public static class ComparisonJson
         if (release is null || !IsRepository(release.Repository) || release.Id <= 0 || string.IsNullOrWhiteSpace(release.Tag)
             || release.Commit is not null && !IsCommit(release.Commit)
             || release.Commit is null && string.IsNullOrWhiteSpace(release.ResolutionFailure))
+        {
             throw new InvalidDataException("Release record identity or commit resolution evidence is invalid.");
+        }
     }
 
     public static bool IsRepository(string? repository) => repository is not null && repository.Split('/') is { Length: 2 } parts
@@ -180,11 +202,16 @@ public static class ComparisonJson
         if (side is null || !IsCommit(side.ProductCommit) || string.IsNullOrWhiteSpace(side.HarnessVersion)
             || string.IsNullOrWhiteSpace(side.ExporterVersion) || side.Invocation.IsDefault || side.ExpectedCases.IsDefault
             || side.Conditions is null)
+        {
             throw new InvalidDataException("Session side is missing native harness, inventory or environment evidence.");
+        }
+
         foreach (var workload in side.ExpectedCases) _ = WorkloadIdentity.Key(workload);
         if (side.ExpectedCases.GroupBy(static workload => WorkloadIdentity.Key(workload), StringComparer.Ordinal)
             .Any(static group => group.Count() > 1))
+        {
             throw new InvalidDataException("Session side has duplicated expected case identities.");
+        }
     }
 
     private static readonly JsonSerializerOptions Options = new()

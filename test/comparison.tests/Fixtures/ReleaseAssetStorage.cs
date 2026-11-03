@@ -52,9 +52,12 @@ internal sealed class ReleaseAssetStorage
         var stored = Assets.FirstOrDefault(asset => uri.AbsolutePath == $"/repos/example/tool/releases/assets/{asset.Id}");
         if (request.Method == HttpMethod.Get && uri.Host == "api.github.com" && stored is not null
             && request.Headers.Accept.Any(static accept => accept.MediaType == "application/octet-stream"))
+        {
             return DownloadStatus == HttpStatusCode.OK
                 ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(stored.Content) }
                 : new HttpResponseMessage(DownloadStatus);
+        }
+
         return new HttpResponseMessage(HttpStatusCode.NotFound);
     }
 }

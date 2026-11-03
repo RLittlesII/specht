@@ -14,14 +14,14 @@ public static class ComparisonReport
     {
         var session = document.Session;
         var text = new StringBuilder();
-        text.Append("# Release comparison\n\n");
-        text.Append("Overall judgment: ").Append(Display(document.Judgment)).Append("\n\n");
-        text.Append("## Release pair\n\n");
+        text.Append("# Release comparison\n\n")
+            .Append("Overall judgment: ").Append(Display(document.Judgment)).Append("\n\n")
+            .Append("## Release pair\n\n");
         Table(text, ["Release", "Id", "Tag", "Commit"],
             new[] { ("Current", pair.Current), ("Previous", pair.Previous) }.Where(static r => r.Item2 is not null)
                 .Select(static r => new[] { r.Item1, Number(r.Item2!.Id), r.Item2.Tag, r.Item2.Commit ?? $"Unresolved: {r.Item2.ResolutionFailure}" }));
-        text.Append("Pair digest: ").Append(Escape(ComparisonJson.Digest(pair))).Append("\n\n");
-        text.Append("## Session\n\n");
+        text.Append("Pair digest: ").Append(Escape(ComparisonJson.Digest(pair))).Append("\n\n")
+            .Append("## Session\n\n");
         Table(text, ["Comparator commit", "Comparator version", "Run id", "Attempt", "Session id", "Runner"],
             [[session.ComparatorCommit, session.ComparatorVersion, session.RunId, Number(session.Attempt), session.SessionId, session.RunnerIdentity]]);
         text.Append("## Measurement conditions\n\n");
