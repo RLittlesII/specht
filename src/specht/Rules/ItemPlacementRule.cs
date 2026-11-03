@@ -12,6 +12,8 @@ public sealed class ItemPlacementRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-005" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var item in model.Items)
@@ -25,7 +27,7 @@ public sealed class ItemPlacementRule : ISpechtRule
             {
                 yield return new SpechtFinding(
                     item.RelativePath,
-                    item.Frontmatter.LineOf("id"),
+                    item.Frontmatter.LineOf(item.Keys.Id),
                     item.Id,
                     $"frontmatter id '{item.Id}' does not match the file name prefix '{item.FileNameId}'")
                 {
@@ -41,7 +43,7 @@ public sealed class ItemPlacementRule : ISpechtRule
             {
                 yield return new SpechtFinding(
                     item.RelativePath,
-                    item.Frontmatter.LineOf("parent"),
+                    item.Frontmatter.LineOf(item.Keys.Parent),
                     item.Id,
                     $"frontmatter parent '{item.Parent}' does not match the Feature it sits in ('{parent.Identity}')")
                 {

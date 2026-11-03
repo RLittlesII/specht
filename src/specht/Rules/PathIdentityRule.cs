@@ -15,6 +15,7 @@ public sealed class PathIdentityRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
@@ -36,7 +37,7 @@ public sealed class PathIdentityRule : ISpechtRule
             {
                 yield return new SpechtFinding(
                     feature.RelativePath,
-                    feature.Document.Frontmatter.LineOf("epic"),
+                    feature.Document.Frontmatter.LineOf(feature.Keys.Epic),
                     feature.Identity,
                     $"frontmatter epic '{feature.Epic}' does not match the containing directory '{epicDirectory}'")
                 {
@@ -54,7 +55,7 @@ public sealed class PathIdentityRule : ISpechtRule
             {
                 yield return new SpechtFinding(
                     feature.RelativePath,
-                    feature.Document.Frontmatter.LineOf("id"),
+                    feature.Document.Frontmatter.LineOf(feature.Keys.Id),
                     feature.Identity,
                     $"frontmatter id '{feature.Id}' does not match the containing directory '{featureDirectory}'")
                 {

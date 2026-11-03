@@ -77,6 +77,96 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         }
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-014" />
+    /// <implements epic="0001" feature="F5" claim="B-050" />
+    /// <implements epic="0001" feature="F5" claim="B-051" />
+    private static IEnumerable<string> GrammarFaults(SpechtStructure structure)
+    {
+        foreach (var (name, grammar) in structure.Identifiers)
+        {
+            if (name == "claim")
+            {
+                continue;
+            }
+
+            if (Compiled(grammar) is not { } expression)
+            {
+                yield return $"the {name} grammar '{grammar}' does not compile";
+                continue;
+            }
+
+            if (name != "task")
+            {
+                continue;
+            }
+
+            var groups = expression.GetGroupNames();
+            if (!groups.Contains("sequence", StringComparer.Ordinal))
+            {
+                yield return $"the task grammar '{grammar}' has no named 'sequence' group";
+            }
+
+            if (structure.DeclaresEpicGrammar && !groups.Contains("epic", StringComparer.Ordinal))
+            {
+                yield return $"the task grammar '{grammar}' has no named 'epic' group";
+            }
+        }
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-014" />
+    private static Regex? Compiled(string grammar)
+    {
+        try
+        {
+            return new Regex(grammar, RegexOptions.CultureInvariant);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-052" />
+    private static IEnumerable<string> FormFaults(Dictionary<string, string> forms)
+    {
+        foreach (var name in new[] { "identity", "qualifiedEdge" })
+        {
+            var form = forms[name];
+            if (Count(form, SpechtForms.EpicPlaceholder) != 1 || Count(form, SpechtForms.IdPlaceholder) != 1)
+            {
+                yield return $"the {name} form '{form}' must hold '{SpechtForms.EpicPlaceholder}' and '{SpechtForms.IdPlaceholder}' exactly once each";
+            }
+        }
+
+        var local = forms["localEdge"];
+        if (Count(local, SpechtForms.IdPlaceholder) != 1)
+        {
+            yield return $"the localEdge form '{local}' must hold '{SpechtForms.IdPlaceholder}' exactly once";
+        }
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-052" />
+    private static int Count(string form, string placeholder) => form.Split(placeholder, StringSplitOptions.None).Length - 1;
+
+    /// <implements epic="0001" feature="F5" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-019" />
+    private static Dictionary<string, string> KeysOf(JsonObject manifest, JsonObject defaults, string kind, JsonObject? document)
+    {
+        JsonObject? projected = null;
+        if (document is not null && (!manifest.ContainsKey("keys") || manifest["keys"] is not null))
+        {
+            if (document["keys"] is not JsonObject keys)
+            {
+                keys = [];
+                document["keys"] = keys;
+            }
+
+            projected = keys;
+        }
+
+        return Filled(manifest["keys"]?.AsObject() ?? [], Present(defaults["keys"]).AsObject(), kind, projected);
+    }
+
     /// <implements epic="0001" feature="F5" claim="B-048" />
     private static SpechtTestSettings? TestSettings(JsonNode? node) =>
         node is null ? null : new SpechtTestSettings(Strings(Present(node["files"])), node["declarations"] is { } forms ? Strings(forms) : []);
@@ -437,10 +527,16 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
         var selection = number.CompareTo(SchemaSourceVersion) >= 0 && versions.Find(number) is not null;
         var matrix = number.CompareTo(MatrixKeyVersion) >= 0 && versions.Find(number) is not null;
+        var shipped = versions.Find(number);
+        var selected = shipped ?? versions.Find(OriginalVersion) ?? Version(number);
+        var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
+        var keysAndForms = number.CompareTo(KeysAndFormsVersion) >= 0 && shipped is not null
+            && defaults.ContainsKey("keys") && defaults.ContainsKey("forms");
         var unknown = manifest
             .Select(static entry => entry.Key)
             .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
-                && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key)))
+                && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key))
+                && !(keysAndForms && key is "keys" or "forms"))
             .Select(static key => $"'{key}'")
             .ToList();
 
@@ -450,8 +546,6 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
                 $"{SpechtManifestStore.RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 
-        var selected = versions.Find(number) ?? versions.Find(OriginalVersion) ?? Version(number);
-        var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
         var tables = Tables(Selected(manifest, defaults, "tables", document));
         if (matrix)
         {
@@ -514,7 +608,37 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             sourceFaults.Add("schemaSource 'embedded' contradicts the recorded spechtSchema source");
         }
 
-        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)).Concat(MatrixKeyFaults(structure)), levels);
+        Dictionary<string, string> forms = [];
+        if (keysAndForms)
+        {
+            var feature = KeysOf(manifest, defaults, "feature", document);
+            var task = KeysOf(manifest, defaults, "task", document);
+            forms = Filled(manifest, defaults, "forms", document);
+            structure = structure with
+            {
+                FeatureKeys = new SpechtFeatureKeys(
+                    feature["id"],
+                    feature["epic"],
+                    feature["specStatus"],
+                    feature["status"],
+                    feature["children"],
+                    feature["spikes"],
+                    feature["dependsOn"],
+                    feature["blocks"]),
+                TaskKeys = new SpechtTaskKeys(task["id"], task["parent"], task["type"]),
+                Forms = structure.DeclaresEpicGrammar ? new SpechtForms(forms["identity"], forms["localEdge"], forms["qualifiedEdge"]) : null,
+            };
+        }
+
+        Check(
+            structure,
+            defaults,
+            IdentityFaults(manifest)
+                .Concat(sourceFaults)
+                .Concat(ClaimTagFaults(structure))
+                .Concat(MatrixKeyFaults(structure))
+                .Concat(keysAndForms ? GrammarFaults(structure).Concat(FormFaults(forms)) : []),
+            levels);
 
         if (document is not null && !manifest.ContainsKey("schemaVersion"))
         {
@@ -559,4 +683,6 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static readonly HashSet<string> MatrixKeys = new(StringComparer.Ordinal) { "tests", "matrix", "owners", "requiredSpecifications" };
 
     private static readonly SemanticVersion OriginalVersion = new(0, 1, 0);
+
+    private static readonly SemanticVersion KeysAndFormsVersion = new(0, 3, 0);
 }

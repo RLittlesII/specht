@@ -12,11 +12,12 @@ public sealed class DeclaredSpikesRule(DeclaredItemCheck check) : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
-            foreach (var finding in check.Evaluate(feature, model.Items, "spikes", "spike"))
+            foreach (var finding in check.Evaluate(feature, model.Items, feature.Keys.Spikes, "spike"))
             {
                 yield return finding;
             }

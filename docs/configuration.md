@@ -51,6 +51,15 @@ Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `with
 
 Under schema `0.3.0`, `markers` also names `done`, default `done`: the delivery `status` at which `SPEC7001` reports a `Missing` cell. An empty one exits `3`.
 
+Under schema `0.3.0`, two more keys are filled name by name from the pinned default manifest, and older pins reject them:
+
+- `keys`: the frontmatter key each rule reads, by kind. `feature` names `id`, `epic`, `specStatus`, `status`, `children`, `spikes`, `dependsOn` and `blocks`, default `id`, `epic`, `spec_status`, `status`, `children`, `spikes`, `depends_on` and `blocks`; `task` names `id`, `parent` and `type`, each its own default. Rename a key in the frontmatter schemas too.
+- `forms`: `identity`, default `{epic}-{id}`, a Feature's identity and an item's `parent`; `localEdge`, default `{id}`, an edge to a Feature of the same epic; `qualifiedEdge`, default `{epic}/{id}`, an edge to another epic's Feature. `identity` and `qualifiedEdge` hold `{epic}` and `{id}` once each, and `localEdge` holds `{id}` once, or the run exits `3`.
+
+Under schema `0.3.0` every grammar must compile, and `identifiers.task` must name a `sequence` group, and an `epic` group when the manifest declares `identifiers.epic`; otherwise the run exits `3`. The default is `^(?<epic>[0-9]{4})-(?<sequence>[0-9]{2})$`. A manifest moved from `0.2.x` that kept `^[0-9]{4}-[0-9]{2}$` exits `3` until the groups are named.
+
+With `identifiers.epic` declared, edges resolve through the forms, each part read by the `epic` and `feature` grammars; an edge fitting neither form is reported by `SPEC6001` as written. Items are sequenced per captured epic, and a gap is written at the captured sequence's width. Without `identifiers.epic`, identities, edges and item sequences are read as under `0.2.1`.
+
 Under schema `0.2.0`, `claim.tag` is literal text around exactly one `{claim}` placeholder, default `@{claim}`. `claim.tagIgnoreCase` is Boolean, default `false`; when true it covers the entire tag and resolution uses ordinal comparison. Missing values come from the pinned version's shipped manifest. Older pins reject `claim`; flat tag keys are rejected at every pin. Each missing member of `claim` uses the pinned default, including a partially declared object.
 
 A key left out takes its value from the default manifest, except `rules`, which
@@ -99,7 +108,7 @@ into the root.
 
 Under schema `0.2.0`, companion claim tags follow `identifiers.claim` inside the literal tag form. For example, `@req:{claim}` recognizes `@req:B-001`; punctuation in the form is literal. SPEC4002 (SPEC021 below `0.3.0`) quotes an unresolved tag exactly as written and carries the claim id alone as its identifier. Claim and matrix ids remain case-sensitive even when tags ignore case. Full-line comments are skipped.
 
-Pin `0.1.0` retains the original `@B-nnn` scanner with an optional lowercase suffix. The frontmatter keys remain literals pending the separate frontmatter contract.
+Pin `0.1.0` retains the original `@B-nnn` scanner with an optional lowercase suffix. Pins below `0.3.0` read the frontmatter keys by their default names.
 
 ## Default manifest
 

@@ -1,17 +1,35 @@
+using Specht.Manifest;
+
 namespace Specht.Model;
 
 /// <summary>A task, test, bug or spike file beside a specification.</summary>
 /// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class ChildItem
 {
-    /// <summary>An item from its parts.</summary>
+    /// <summary>An item from its parts, read through the manifest's keys.</summary>
+    /// <param name="relativePath">Path relative to the repository root.</param>
+    /// <param name="fileName">The file's own name.</param>
+    /// <param name="frontmatter">Its frontmatter.</param>
+    /// <param name="parentDirectory">The root-relative directory holding it.</param>
+    /// <param name="keys">The frontmatter key each role is read from, or null for the names every older pin reads.</param>
+    /// <param name="task">The text the task file shape's <c>{task}</c> captured, or null for the file name's first seven characters.</param>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public ChildItem(string relativePath, string fileName, Frontmatter frontmatter, string parentDirectory)
+    /// <implements epic="0001" feature="F5" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-006" />
+    public ChildItem(
+        string relativePath,
+        string fileName,
+        Frontmatter frontmatter,
+        string parentDirectory,
+        SpechtTaskKeys? keys = null,
+        string? task = null)
     {
         RelativePath = relativePath;
         FileName = fileName;
         Frontmatter = frontmatter;
         ParentDirectory = parentDirectory;
+        Keys = keys ?? new SpechtTaskKeys();
+        _task = task;
     }
 
     /// <summary>Path relative to the repository root.</summary>
@@ -26,15 +44,20 @@ public sealed class ChildItem
     /// <summary>The root-relative directory holding it, empty at the root.</summary>
     public string ParentDirectory { get; }
 
-    /// <summary>The <c>id</c> frontmatter value, or <c>null</c>.</summary>
-    public string? Id => Frontmatter.Text("id");
+    /// <summary>The frontmatter key each role is read from.</summary>
+    public SpechtTaskKeys Keys { get; }
 
-    /// <summary>The <c>parent</c> frontmatter value, or <c>null</c>.</summary>
-    public string? Parent => Frontmatter.Text("parent");
+    /// <summary>The id frontmatter value, or <c>null</c>.</summary>
+    public string? Id => Frontmatter.Text(Keys.Id);
 
-    /// <summary>The <c>type</c> frontmatter value, or <c>null</c>.</summary>
-    public string? Type => Frontmatter.Text("type");
+    /// <summary>The parent frontmatter value, or <c>null</c>.</summary>
+    public string? Parent => Frontmatter.Text(Keys.Parent);
 
-    /// <summary>The <c>&lt;epic&gt;-&lt;nn&gt;</c> prefix of the file name.</summary>
-    public string FileNameId => FileName.Length >= 7 ? FileName[..7] : FileName;
+    /// <summary>The type frontmatter value, or <c>null</c>.</summary>
+    public string? Type => Frontmatter.Text(Keys.Type);
+
+    /// <summary>The task id its file name carries: the captured <c>{task}</c>, or else the <c>&lt;epic&gt;-&lt;nn&gt;</c> prefix.</summary>
+    public string FileNameId => _task ?? (FileName.Length >= 7 ? FileName[..7] : FileName);
+
+    private readonly string? _task;
 }

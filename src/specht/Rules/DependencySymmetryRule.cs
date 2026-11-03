@@ -17,16 +17,17 @@ public sealed class DependencySymmetryRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var graph = model.DependencyGraph;
 
         foreach (var feature in model.FeaturesWithIdentity)
         {
-            foreach (var (key, edges, reverse) in new[]
+            foreach (var (key, opposite, edges, reverse) in new[]
             {
-                ("depends_on", graph.DependsOn[feature.Identity], graph.Blocks),
-                ("blocks", graph.Blocks[feature.Identity], graph.DependsOn),
+                (feature.Keys.DependsOn, feature.Keys.Blocks, graph.DependsOn[feature.Identity], graph.Blocks),
+                (feature.Keys.Blocks, feature.Keys.DependsOn, graph.Blocks[feature.Identity], graph.DependsOn),
             })
             {
                 foreach (var edge in edges)
@@ -36,8 +37,6 @@ public sealed class DependencySymmetryRule : ISpechtRule
                     {
                         continue;
                     }
-
-                    var opposite = key == "depends_on" ? "blocks" : "depends_on";
 
                     yield return new SpechtFinding(
                         feature.RelativePath,

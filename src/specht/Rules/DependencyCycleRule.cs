@@ -12,6 +12,7 @@ public sealed class DependencyCycleRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var features = model.FeaturesWithIdentity;
@@ -19,7 +20,11 @@ public sealed class DependencyCycleRule : ISpechtRule
 
         foreach (var feature in features)
         {
-            foreach (var (key, edges) in new[] { ("depends_on", graph.DependsOn[feature.Identity]), ("blocks", graph.Blocks[feature.Identity]) })
+            foreach (var (key, edges) in new[]
+            {
+                (feature.Keys.DependsOn, graph.DependsOn[feature.Identity]),
+                (feature.Keys.Blocks, graph.Blocks[feature.Identity]),
+            })
             {
                 foreach (var edge in edges)
                 {
@@ -64,7 +69,7 @@ public sealed class DependencyCycleRule : ISpechtRule
 
             yield return new SpechtFinding(
                 feature.RelativePath,
-                feature.Document.Frontmatter.LineOf("depends_on"),
+                feature.Document.Frontmatter.LineOf(feature.Keys.DependsOn),
                 feature.Identity,
                 $"dependency cycle: {string.Join(" -> ", path)}")
             {

@@ -12,21 +12,22 @@ public sealed class DependencyTargetRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-054" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var graph = model.DependencyGraph;
 
         foreach (var feature in model.FeaturesWithIdentity)
         {
-            foreach (var (key, edges) in new[] { ("depends_on", graph.DependsOn[feature.Identity]), ("blocks", graph.Blocks[feature.Identity]) })
+            foreach (var (key, edges, unresolved) in new[]
             {
-                foreach (var edge in edges)
+                (feature.Keys.DependsOn, graph.DependsOn[feature.Identity], graph.UnresolvedDependsOn[feature.Identity]),
+                (feature.Keys.Blocks, graph.Blocks[feature.Identity], graph.UnresolvedBlocks[feature.Identity]),
+            })
+            {
+                foreach (var edge in edges.Where(edge => !graph.Identities.Contains(edge)).Concat(unresolved))
                 {
-                    if (graph.Identities.Contains(edge))
-                    {
-                        continue;
-                    }
-
                     yield return new SpechtFinding(
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),

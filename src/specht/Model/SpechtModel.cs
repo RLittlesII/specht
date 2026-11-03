@@ -38,7 +38,7 @@ public sealed class SpechtModel
         MatrixSections = new ReadOnlyDictionary<FeatureSpec, SpechtSection?>(Features.ToDictionary(
             static feature => feature, feature => feature.Document.Section(schemas.Structure.Roles["matrix"])));
         FeaturesWithIdentity = Array.AsReadOnly(Features.Where(static feature => feature.Epic is not null && feature.Id is not null).ToArray());
-        DependencyGraph = new SpechtDependencyGraph(FeaturesWithIdentity);
+        DependencyGraph = new SpechtDependencyGraph(FeaturesWithIdentity, schemas.Structure);
     }
 
     /// <summary>Every discovered Feature specification, in every layout.</summary>

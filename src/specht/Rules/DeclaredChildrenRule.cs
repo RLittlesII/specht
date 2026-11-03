@@ -12,6 +12,7 @@ public sealed class DeclaredChildrenRule(DeclaredItemCheck check) : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var byDirectory = model.Items
@@ -22,7 +23,7 @@ public sealed class DeclaredChildrenRule(DeclaredItemCheck check) : ISpechtRule
         {
             var siblings = byDirectory.TryGetValue(feature.Location.Directory, out var items) ? items : [];
 
-            foreach (var finding in check.Evaluate(feature, siblings, "children", null))
+            foreach (var finding in check.Evaluate(feature, siblings, feature.Keys.Children, null))
             {
                 yield return finding;
             }
