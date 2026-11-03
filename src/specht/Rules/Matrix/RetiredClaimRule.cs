@@ -16,10 +16,12 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F12" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var structure = model.Schemas.Structure;
         var markers = structure.Markers;
+        var matrixReference = structure.SectionReference("matrix");
         foreach (var feature in model.Features)
         {
             foreach (var claim in resolver.ResolveClaims(feature, structure, model.Claims[feature]))
@@ -34,7 +36,7 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
                 {
                     yield return new SpechtFinding(
                         feature.RelativePath, claim.Claim.Line, claim.Claim.Id,
-                        $"retired claim must have no companion tag and its § 9 status must be '{claim.Status}'");
+                        $"retired claim must have no companion tag and its {matrixReference} status must be '{claim.Status}'");
                 }
             }
         }

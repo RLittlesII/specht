@@ -12,10 +12,12 @@ public sealed class ClaimIdRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-009" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
         var grammar = model.Schemas.Structure.Identifiers["claim"];
+        var claimsReference = model.Schemas.Structure.SectionReference("claims");
 
         foreach (var feature in model.Features)
         {
@@ -56,7 +58,7 @@ public sealed class ClaimIdRule : ISpechtRule
                         feature.RelativePath,
                         line,
                         id,
-                        $"claim '{id}' is declared twice in § 3 (also at line {firstDeclarationLine})")
+                        $"claim '{id}' is declared twice in {claimsReference} (also at line {firstDeclarationLine})")
                     {
                         Expected = new JsonObject { ["grammar"] = grammar, ["firstDeclarationLine"] = firstDeclarationLine },
                     };
