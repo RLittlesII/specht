@@ -2,7 +2,7 @@ id: "0124"
 type: task
 title: Float the pin with a pin policy
 
-status: in-progress
+status: done
 
 value: 2
 risk: 3
@@ -30,7 +30,7 @@ claims:
 
 created: "2026-10-09"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   A Could (decision 0005): a manifest setting that lets the check use the
