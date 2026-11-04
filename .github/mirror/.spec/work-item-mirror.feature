@@ -478,3 +478,24 @@ Feature: Work-item mirror
     Then it runs the mirror tests with Python
     And it invokes the local reusable mirror action
     And it installs no .NET SDK for that job
+
+  @B-070
+  Scenario: A consumer runs its own process script
+    Given an executable script in a consumer checkout with a path containing spaces
+    When the action receives that script path and mirror inputs
+    Then it runs only that script from the consumer root
+    And the script receives separate mirror arguments and the workflow environment
+
+  @B-071 @boundary
+  Scenario: A failing script returns its exit code
+    Given a consumer script that exits with code 17
+    When the action runs that script
+    Then the action exits with code 17
+    And it does not run the bundled mirror
+
+  @B-071 @boundary
+  Scenario: An unstartable script fails
+    Given a script path that is missing or not executable
+    When the action runs that script
+    Then the action exits with code 2 and a script startup error
+    And it does not run the bundled mirror

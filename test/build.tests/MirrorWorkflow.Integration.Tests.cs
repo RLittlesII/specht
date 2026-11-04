@@ -111,17 +111,18 @@ public sealed class MirrorWorkflowIntegrationTests
         var stream = new YamlStream();
         using var input = File.OpenText(Path.Combine(FindRepositoryRoot(), ".github", "actions", "mirror", "action.yml"));
         stream.Load(input);
-        var action = (YamlMappingNode)stream.Documents[0].RootNode;
-        var inputs = (YamlMappingNode)action["inputs"];
-        var runs = (YamlMappingNode)action["runs"];
-        var step = (YamlMappingNode)((YamlSequenceNode)runs["steps"]).Single();
-        var environment = (YamlMappingNode)step["env"];
+        var action = (YamlMappingNode) stream.Documents[0].RootNode;
+        var inputs = (YamlMappingNode) action["inputs"];
+        var runs = (YamlMappingNode) action["runs"];
+        var step = (YamlMappingNode) ((YamlSequenceNode) runs["steps"]).Single();
+        var environment = (YamlMappingNode) step["env"];
 
         runs["using"].ToString().Should().Be("composite");
-        ((YamlMappingNode)inputs["root"])["default"].ToString().Should().Be("${{ github.workspace }}");
-        ((YamlMappingNode)inputs["repository"])["default"].ToString().Should().Be("${{ github.repository }}");
-        ((YamlMappingNode)inputs["token"])["default"].ToString().Should().Be("${{ github.token }}");
-        foreach (var name in new[] { "root", "repository", "before", "after", "backfill", "dry-run" })
+        ((YamlMappingNode) inputs["script"])["default"].ToString().Should().BeEmpty();
+        ((YamlMappingNode) inputs["root"])["default"].ToString().Should().Be("${{ github.workspace }}");
+        ((YamlMappingNode) inputs["repository"])["default"].ToString().Should().Be("${{ github.repository }}");
+        ((YamlMappingNode) inputs["token"])["default"].ToString().Should().Be("${{ github.token }}");
+        foreach (var name in new[] { "root", "repository", "before", "after", "backfill", "dry-run", "script" })
         {
             environment["MIRROR_" + name.Replace('-', '_').ToUpperInvariant()].ToString()
                 .Should().Be("${{ inputs." + name + " }}");

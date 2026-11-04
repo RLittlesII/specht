@@ -31,8 +31,18 @@ def main():
     except ValueError as error:
         print(str(error), file=sys.stderr)
         return 2
-    script = Path(__file__).resolve().parents[2] / 'mirror' / 'mirror_items.py'
-    return subprocess.run([sys.executable, '-B', str(script), *args]).returncode
+    try:
+        selected = os.environ.get('MIRROR_SCRIPT')
+        if selected:
+            root = Path(os.environ['MIRROR_ROOT']).resolve()
+            args[args.index('--root') + 1] = str(root)
+            command = [str((root / selected).resolve()), *args]
+            return subprocess.run(command, cwd=root).returncode
+        script = Path(__file__).resolve().parents[2] / 'mirror' / 'mirror_items.py'
+        return subprocess.run([sys.executable, '-B', str(script), *args]).returncode
+    except OSError:
+        print('script could not be started; check root, script path, executable permission and interpreter', file=sys.stderr)
+        return 2
 
 
 if __name__ == '__main__':

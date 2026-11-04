@@ -29,3 +29,22 @@ continues to own workflow generation.
 Project boards, new item formats, other GitHub hosts, configurable branch names,
 new reconciliation behavior and action release tags are outside this change.
 The existing B-064 gap remains a separate item.
+
+## Addendum: consumer process scripts
+
+**Date:** 2026-11-04
+**Decided by:** repository owner, requesting configuration for a consumer’s own process script in pull request #691.
+
+The optional `script` input selects an executable path relative to `root` and
+replaces the bundled mirror. Its interpreter comes from its shebang; no shell
+command string is evaluated. The action starts it in the consumer root with the
+same separate mirror CLI arguments and inherited environment, including `GH_TOKEN`
+and `GITHUB_STEP_SUMMARY`. The `--root` argument is resolved before changing
+directories. The script owns reconciliation, dry-run behavior and
+summary output. The bundled mirror remains the default and its claims apply to
+that default; custom-script behavior belongs to the consumer. No plugin API,
+additional item parser or automatic fallback is introduced. A script’s exit code
+is returned; a failure to start exits 2 with a script startup error.
+
+This extends the packaging-only scope above for consumer-owned scripts; it does
+not add new formats or reconciliation rules to the bundled mirror.

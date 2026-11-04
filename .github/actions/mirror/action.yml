@@ -7,6 +7,9 @@ inputs:
   root:
     description: Consumer checkout containing the work items and full git history.
     default: ${{ github.workspace }}
+  script:
+    description: Optional executable script path relative to root; replaces the bundled mirror and receives its CLI arguments.
+    default: ''
   repository:
     description: GitHub owner/repository receiving the mirror.
     default: ${{ github.repository }}
@@ -31,6 +34,7 @@ runs:
         MIRROR_ACTION_PATH: ${{ github.action_path }}
         GH_TOKEN: ${{ inputs.token }}
         MIRROR_ROOT: ${{ inputs.root }}
+        MIRROR_SCRIPT: ${{ inputs.script }}
         MIRROR_REPOSITORY: ${{ inputs.repository }}
         MIRROR_BEFORE: ${{ inputs.before }}
         MIRROR_AFTER: ${{ inputs.after }}

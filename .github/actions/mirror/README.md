@@ -15,9 +15,10 @@ GitHub edits are overwritten and never imported.
 Use an Ubuntu runner with Python 3, git and the GitHub CLI (`gh`) available.
 GitHub-hosted `ubuntu-latest` supplies these. The action ships its mirror and
 shared reader from specht; the consumer needs no .NET build, Python packages
-or skill installation. Its work-item format follows
+or skill installation. The bundled script’s work-item format follows
 [the item schema](../../../.spec/templates/item.yml). Project boards and
-alternative item formats are outside its scope.
+alternative item formats are outside the bundled script’s scope. Select a
+consumer script to run your own process.
 
 ## Consumer workflow
 
@@ -72,16 +73,55 @@ missing delivery comments after that happens.
 | ------------ | -------------------------- | ----------------------------------------------------------------------------------- |
 | `token`      | `${{ github.token }}`      | Workflow token for the receiving repository, with the permissions above.            |
 | `root`       | `${{ github.workspace }}`  | Consumer checkout root; pass its path for a checkout in a subdirectory.             |
+| `script`     | empty                      | Executable path relative to `root`; replaces the bundled mirror.                    |
 | `repository` | `${{ github.repository }}` | Receiving `owner/repository`; ordinarily leave this at the caller’s repository.     |
 | `before`     | empty                      | Commit before the push; a zero SHA is accepted for a new branch.                    |
 | `after`      | empty                      | Commit after the push; empty means no pushed commits and no push delivery comments. |
 | `backfill`   | `false`                    | Post every missing delivery comment; accepts `true` or `false`.                     |
 | `dry-run`    | `false`                    | Read GitHub and print planned writes without applying them.                         |
 
-For a first inspection, add `dry-run: 'true'`. Dry-run still needs GitHub read
-access. Both modes append the mirror’s counts and warnings to the job summary.
+For a first inspection of the bundled mirror, add `dry-run: 'true'`. Dry-run still needs GitHub read
+access. Both bundled modes append the mirror’s counts and warnings to the job summary.
 Failures from git or `gh` fail the step; rerunning reconciles partial progress.
-The action writes no files in the consumer checkout.
+The bundled mirror writes no files in the consumer checkout.
+
+## Consumer process script
+
+Set `script` to an executable file in your checkout. The path is relative to
+`root`, and the script runs from that root. A shebang selects its interpreter,
+so shell, Python and other executables work. Pass a file path, including any
+spaces, rather than a shell command or inline script.
+
+```yaml
+- uses: RLittlesII/specht/.github/actions/mirror@<commit-sha>
+  with:
+    script: .github/scripts/mirror.sh
+    before: ${{ github.event.before }}
+    after: ${{ github.event.after }}
+    backfill: ${{ inputs.backfill || false }}
+```
+
+For example, a wrapper can delegate to your existing process:
+
+```sh
+#!/bin/sh
+exec python3 .github/scripts/our_mirror.py "$@"
+```
+
+Commit the executable bit with `git update-index --chmod=+x .github/scripts/mirror.sh`.
+The script receives `--apply` or `--dry-run`, `--root <root>`,
+`--repo <owner/repository>`, optional `--before <commit>` and `--after <commit>`,
+and `--backfill` when enabled, as separate arguments. For a custom script,
+`--root` is resolved before changing directories, so a relative root input
+still identifies the checkout. The workflow environment
+is inherited, including `GH_TOKEN`, the `MIRROR_*` inputs and
+`GITHUB_STEP_SUMMARY`. Install any additional runtime your script needs before
+calling the action.
+
+The selected script owns its reconciliation, dry-run handling and summary;
+the bundled mirror does not run alongside it or after a failure. Its exit code
+becomes the action’s exit code. A missing or unstartable script fails with code 2.
+Include your script’s path in the caller’s push filter so changes trigger a run.
 
 When calling the action from this repository, use `./.github/actions/mirror`
 after checkout. The generated mirror workflow uses that same entry point.
