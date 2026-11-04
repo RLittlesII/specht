@@ -1,0 +1,27 @@
+id: "0351"
+type: bug
+title: Isolate the release integration fixtures from the host tag and concurrent packs
+status: done
+value: 5
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: "2026-11-03"
+summary: |
+  Release run 41750106065 failed in the synthetic prerelease guard and VSTest
+  package fixture. Main CI passed on the same commit. The synthetic main
+  branch inherited the tag workflow's ref, changing its computed version.
+  Both analyzer package fixtures also built into shared intermediates.
+  The original pack diagnostic was only written to the runner's probe.
+acceptance_criteria:
+  - The synthetic repository computes its own version under a tag workflow.
+  - The package and VSTest integration fixtures can run together from a clean build.
+  - A failed evidence setup reports the failing pack output.
+out_of_scope:
+  - Production release policy, package contents and publishing a release.

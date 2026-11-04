@@ -53,6 +53,8 @@ internal sealed class ReleaseRepository : IDisposable
             RedirectStandardError = true,
             UseShellExecute = false,
         };
+        // Let NBGV read the synthetic checkout even when the parent is building a release tag.
+        process.StartInfo.Environment.Remove("GITHUB_ACTIONS");
         process.StartInfo.Environment["NUKE_TELEMETRY_OPTOUT"] = "1";
         foreach (var argument in arguments)
         {

@@ -8,6 +8,7 @@ using Specht.Tool.Features.Evidence;
 
 namespace Specht.Build.Tests;
 
+[Collection("Repository package builds")]
 [Trait("Tier", "Integration")]
 public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTestIntegrationTests.VsTestRun run)
     : IClassFixture<TestEvidenceVsTestIntegrationTests.VsTestRun>
@@ -437,11 +438,8 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             Directory.CreateDirectory(_feed);
             var pack = await Run(log, _root, "pack", "src/codeanalysis/codeanalysis.csproj", "--configuration", "Debug", "--output", _feed,
                 "--no-restore");
-            var package = Directory.GetFiles(_feed, "Specht.CodeAnalysis.*.nupkg").SingleOrDefault();
-            if (pack != 0 || package is null)
-            {
-                return await Finish(log, artifacts, new Dictionary<string, BuildStep>(), new Dictionary<string, EvidenceResult>());
-            }
+            pack.Should().Be(0, "the analyzer package must build before collecting test evidence. {0}", Relativized(log.ToString()));
+            var package = Directory.GetFiles(_feed, "Specht.CodeAnalysis.*.nupkg").Should().ContainSingle().Subject;
 
             await Arrange(log, Path.GetFileNameWithoutExtension(package)["Specht.CodeAnalysis.".Length..]);
             var builds = new Dictionary<string, BuildStep>(StringComparer.Ordinal);

@@ -5,6 +5,7 @@ using AwesomeAssertions;
 
 namespace Specht.Build.Tests;
 
+[Collection("Repository package builds")]
 [Trait("Tier", "Integration")]
 public sealed class CodeAnalysisPackageIntegrationTests
 {
