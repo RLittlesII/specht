@@ -13,6 +13,13 @@ Feature: Reading through MCP
     When the verdict is asked for
     Then the answer is exactly what the check writes as its JSON report for the same repository
 
+  @B-001 @boundary
+  Scenario: The verdict is unchanged when the answer is reported as unpinned
+    Given the repository's local tool manifest no longer lists the tool
+    And a global tool is installed
+    When the verdict is asked for
+    Then the part of the result holding the verdict is exactly what the check writes as its JSON report for the same repository
+
   @B-002 @boundary
   Scenario: The verdict is for the whole tree only
     When the server lists what the verdict can be asked for with

@@ -10,7 +10,7 @@ risk: 1
 parent: "0132"
 children: []
 
-depends_on: ["0331"]
+depends_on: ["0331", "0359"]
 spikes: []
 
 spec: src/tool/Features/Mcp/.spec/README.md
@@ -18,19 +18,21 @@ spec: src/tool/Features/Mcp/.spec/README.md
 claims:
   - B-015
   - B-016
+  - B-031
 
 created: "2026-11-01"
-updated: "2026-11-01"
+updated: "2026-11-04"
 closed: null
 
 summary: |
-  As a maintainer configuring an MCP client I want one page with the configuration entry and the tools the host offers, so that I set up the server without reading the source.
+  As a maintainer configuring an MCP client I want one page with the configuration entries, the tools the host offers and how to restore, pin and update the tool, so that I set up the server and fix what its messages report without reading the source.
 
-  The page names each tool once and is held to the tools the host registers (C-8). Waits on 0331: the first release's tools are all registered there.
+  The page names each tool once and is held to the tools the host registers (C-8), and has one entry for each thing the host's messages point to (B-031). Waits on 0331: the first release's tools are all registered there.
 
 acceptance_criteria:
-  - "B-015 — the entry runs `dotnet specht mcp --root <dir>`"
+  - "B-015 — the entries run `dotnet specht-mcp` and `specht-mcp`, each naming the root"
   - "B-016 — exactly the tools the host offers, one entry each"
+  - "B-031 — an entry for restoring, pinning and updating the tool"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -38,6 +40,6 @@ decisions:
     2026-11-01, spec-author's cut for the owner's ruling that the MCP page ships in the first release.
 
 out_of_scope:
-  - "The command's options — C-7, C-8; `docs/cli.md`, 0329."
+  - "The program's options — C-8; its help, 0329."
   - "The shape of each answer — § 5 row 10."
   - "Writing a client's configuration file — § 5 row 6."

@@ -35,7 +35,7 @@ blocks:
   ]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-31"
+updated: "2026-11-04"
 github_issue: null
 synced_at: null
 ---
@@ -127,7 +127,7 @@ The gate runs only as the consumer's Nuke target, so a pre-commit hook, a CI ste
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-10-17 (working-package self-check, decision 0014, item 0237) -->
+<!-- last written by: spec-author, 2026-10-17 (working-package self-check, decision 0014, item 0237), 2026-11-04 (C-5 amended, ADR-0031) -->
 
 | ID   | Constraint                                                                                                                                                                                                                                                                                          | Rules Out                                                                                                                                                                                                       |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -135,7 +135,7 @@ The gate runs only as the consumer's Nuke target, so a pre-commit hook, a CI ste
 | C-2  | Exit codes are named constants in one static class and are returned, never thrown: `0`, `1`, `2`, `3`, `4` as brief § 5 defines them (`4`: decision 0003); a failure the engine raises for a missing or unreadable input is caught at the command and returned as its constant.                     | A magic number at a return site; an exception crossing the command boundary to Spectre's `-1`.                                                                                                                  |
 | C-3  | stdout carries the product only, as plain text an MSBuild log parser reads; everything about the tool itself goes to stderr.                                                                                                                                                                        | A banner, a progress line, colour markup or a tool error on stdout; a violation line on stderr.                                                                                                                 |
 | C-4  | A command parses, calls the runner and folds the report into an exit code; nothing else lives in a command.                                                                                                                                                                                         | A rule, a reader or a path helper inside `Features/`.                                                                                                                                                           |
-| C-5  | Only `src/tool` packs: `PackAsTool`, `ToolCommandName` `specht`, `PackageId` `specht.tool`; `IsPackable=false` everywhere else; versions central.                                                                                                                                                   | Flipping `IsPackable` repo-wide; a `Version=` on a `PackageReference`; a second packable project.                                                                                                               |
+| C-5  | `src/tool` is the only project that packs the tool: `PackAsTool`, `ToolCommandName` `specht`, `PackageId` `specht.tool`; `src/mcp` packs `specht.mcp` (`0132-F3` C-9; ADR-0031); `IsPackable=false` on every other project; versions central.                                                       | Flipping `IsPackable` repo-wide; a `Version=` on a `PackageReference`; a second project that packs the tool.                                                                                                    |
 | C-6  | A consumer's build calls the tool through a committed local tool manifest, never the engine; this repository's self-check installs its working package through an isolated local manifest (decision 0014), and a global install remains a second documented path for a shell (decision 0009).       | A build, hook or CI run that depends on a globally installed tool; a project reference from a consumer's `.build/` to `src/specht`.                                                                             |
 | C-7  | The command is tested through Spectre's command tester against synthetic trees under a temporary root; the one test that reads this repository's real tree is the self-check (B-011, B-014).                                                                                                        | A unit test over the repository's real specifications; a unit-tier test that shells out to an installed tool.                                                                                                   |
 | C-8  | `Specht` and the pre-commit hook exit with the command's code only from `0001-F5`'s arrival; before it the hook does not run the check and `Specht` reports and never fails, as `0055-F1` C-7, B-013 and B-025 decide - a dependency on `0001-F5` and `0055-F1` (owner, 2026-10-08; decision 0004). | A test of B-010 or B-011 that expects the command's code from the target or the hook before `0001-F5` lands; a hook that runs the check before then; a `Specht` or hook failure on this repository before then. |
@@ -455,6 +455,7 @@ The consumer pin and earlier failed-check history remain unchanged.
 - 2026-10-27, the owner permits the B-012 command-level read-only test through the existing setup, without starting the deferred command-factory migration (decision 0005 reversal). B-012, its scenario and its report-path boundary are unchanged. The existing B-015 scenario is made executable with the agreed engine fault isolation; no new behavior is inferred.
 
 - 2026-10-27, B-015 and its scenario title distinguish a rule fault (`0001-F1` A-4) from typed input rejection. Existing input exits, including `0001-F7` B-105 for a reference rejected during schema use, are preserved; the engine product lesson records the integration regression.
+- 2026-11-04, C-5 amended in place on the owner's decision that the MCP is a program and a package of its own (`0132-F3` C-9; [ADR-0031](../../../../../.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md)): `src/tool` is the only project that packs the tool, and `src/mcp` packs `specht.mcp`. No claim changes; B-017 and the tool's package are unchanged.
 
 ## 11. Open Questions
 

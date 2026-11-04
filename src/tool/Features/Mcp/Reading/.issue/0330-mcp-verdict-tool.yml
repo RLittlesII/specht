@@ -10,7 +10,7 @@ risk: 3
 parent: "0132"
 children: []
 
-depends_on: ["0329"]
+depends_on: ["0329", "0359"]
 spikes: []
 
 spec: src/tool/Features/Mcp/Reading/.spec/README.md
@@ -25,7 +25,7 @@ claims:
   - B-017
 
 created: "2026-11-01"
-updated: "2026-11-01"
+updated: "2026-11-04"
 closed: null
 
 summary: |
@@ -33,7 +33,9 @@ summary: |
 
   The first tool, and the answer rules every later tool inherits: the pin, a fresh read at each call, no write, and only answers the command line gives. Tool names are working names (§ 11 OQ-7); the answers are tools only (§ 11 OQ-4).
 
-  Waits on 0329, the host. 0329 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B).
+  Waits on 0329, the host, and on 0359, which finds the pinned tool each answer runs. 0329, 0359 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B).
+
+  The host is a program of its own that relays the pinned `specht`'s output (ADR-0031); the answers stay byte for byte the command's, and the host's unpinned report is a separate part of the result (`0132-F3` B-024; this Feature's A-4).
 
 acceptance_criteria:
   - "B-001 — the verdict is `specht --json`'s stdout"

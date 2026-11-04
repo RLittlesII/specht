@@ -1,6 +1,6 @@
 id: "0329"
 type: task
-title: The `specht mcp` host over standard input and output
+title: The `specht-mcp` host program over standard input and output
 
 status: in-progress
 
@@ -22,7 +22,6 @@ claims:
   - B-004
   - B-005
   - B-006
-  - B-007
   - B-008
   - B-009
   - B-010
@@ -30,40 +29,48 @@ claims:
   - B-012
   - B-013
   - B-014
+  - B-019
+  - B-032
+  - B-033
 
 created: "2026-11-01"
 updated: "2026-11-04"
 closed: null
 
 summary: |
-  As a maintainer configuring an MCP client I want one entry that runs `dotnet specht mcp`, so that every agent in the repository reaches the tool version the repository pinned, with no terminal session.
+  As a maintainer configuring an MCP client I want one entry that runs `specht-mcp`, a program of its own, so that every agent in the repository reaches the answers with no terminal session.
 
-  The command is inside `specht.tool` (OQ-1, OQ-2), composed by the one factory (C-4), and gets its `docs/cli.md` section (C-7). It serves no answer of its own (C-5): it delivers in one pull request with 0330, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B).
+  The host is the program `src/mcp` and the package `specht.mcp` (ADR-0031; OQ-2), composed by the one factory (OQ-10) and holding no engine (C-9). It serves no answer of its own (C-5): 0329, 0359 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B). Order: 0329 first, then 0359, which finds the pinned tool, then 0330.
 
 acceptance_criteria:
-  - "B-001 — one configuration entry completes the handshake"
+  - "B-001 — a discovery request gets the server's identity"
   - "B-002 — standard input and output only"
   - "B-003 — no listening port"
   - "B-004 — no outbound call"
   - "B-005 — stdout carries only protocol messages"
-  - "B-006 — the stated version is `--version`'s"
-  - "B-007 — no package beyond `specht.tool`"
+  - "B-006 — the stated version is the MCP's own package version"
   - "B-008 — a session writes nothing"
   - "B-009 — the root from `--root` or the working directory"
   - "B-010 — a root that is not a directory exits `2`"
   - "B-011 — a missing or rejected manifest still starts"
   - "B-012 — closed input exits `0`"
   - "B-013 — help names the options"
-  - "B-014 — protocol revision negotiation"
-  - "C-7 — the command's section in `docs/cli.md`, held to the help"
+  - "B-014 — a request naming a supported revision is served"
+  - "B-019 — an unsupported revision gets the unsupported-version error"
+  - "B-033 — the error lists the supported revisions"
+  - "B-032 — a legacy initialize gets an error naming the supported revision"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
     2026-11-01, spec-author's cut of the agreed Feature for the owner's first-release ruling: the host in one item, delivered with 0330. Rejected: one item per claim group, since none of them is done while the host serves nothing.
+  - |
+    2026-11-04, spec-author's re-cut for ADR-0031: the MCP is a program of its own. B-007 is withdrawn; B-017, B-018 and B-020 to B-030 and B-034 go to 0359; B-015, B-016 and B-031 are 0332's; B-019, B-032 and B-033 are the host's. The spec stays under `src/tool/Features/Mcp/` until `src/mcp` exists and moves there with this item's code (OQ-2).
+  - |
+    2026-11-04, review: B-009's scenarios need an answer only 0330's tool gives, so they bind in the shared pull request with 0359 and 0330, not in this item alone.
 
 out_of_scope:
   - "Every answer served — § 5 row 1; 0330 and 0331."
-  - "`docs/mcp.md` — B-015, B-016; 0332."
-  - "A package of its own — § 5 row 5."
-  - "The workspace roots a client sends — § 11 OQ-3."
+  - "`docs/mcp.md` — B-015, B-016, B-031; 0332."
+  - "Finding, version-checking and running the pinned tool — B-017, B-018, B-020 to B-030, B-034; 0359."
+  - "The workspace roots a client sends — § 5 row 19."
