@@ -2,7 +2,7 @@ id: "0010"
 type: feature
 title: The manifest carries the roles the engine hardcodes
 
-status: ready-for-architecture
+status: done
 
 value: 4
 risk: 4
@@ -27,6 +27,9 @@ children:
     "0223",
     "0235",
     "0345",
+    "0347",
+    "0349",
+    "0350",
   ]
 
 depends_on: []
@@ -100,10 +103,14 @@ claims:
   - B-066
   - B-067
   - B-068
+  - B-072
+  - B-073
+  - B-074
+  - B-075
 
 created: "2026-10-08"
-updated: "2026-11-02"
-closed: null
+updated: "2026-11-03"
+closed: "2026-11-03"
 
 summary: |
   As the maintainer of a sibling repository, I want every literal the engine
@@ -161,9 +168,46 @@ acceptance_criteria:
   - "B-062 — an off-level rule not raised is not run or counted (0223)"
   - "B-024 to B-035, B-042 — epics opt-in by the epic grammar (0345)"
   - "B-068 — schema 0.3.0's default task grammar names its groups (0016)"
+  - "B-072 — an unread name in `roles` or `markers` kept, unread (0347)"
+  - "B-073 — from 0.3.0, a white-space marker rejected (0347)"
+  - "B-074 — from 0.3.0, a `$`-prefixed path identity member ignored (0347)"
+  - "B-075 — from 0.3.0, an empty or `.` schema file name rejected (0347)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-11-03, spec-author: item 0348, the by-record value (OQ-12), is
+    0350, renumbered before merge because open pull request #702 claimed
+    0348 first. The repository owner ruled: "Renumber mine to 0350". Items
+    0347 and 0349 keep their numbers, and `.issue/.sequence` reads 0350.
+    The entries below and the lists carry the new number; no commit cites
+    0348 for this item.
+  - |
+    2026-11-03, spec-author: the agreement is complete as of item 0347.
+    Every § 9 row reads `Covered`, one per § 3 claim, B-001 to B-075, and
+    OQ-1 to OQ-28 are resolved. Items 0349 and 0350 remain as children,
+    not yet built and under no milestone; both are outside the agreement,
+    since neither carries a claim (§ 5 rows 22 and 23). Closed here;
+    `spec_status` stays with the spec-reviewer's sign-off.
+  - |
+    2026-11-03, spec-author: the items cut as 0346 to 0348 are 0347 to
+    0349, renumbered before merge because pull request #699 claimed 0346
+    first. The entries below and the lists carry the new numbers; commits
+    `034ed228` to `7d11e998` cite the old ones. 0348 later 0350, after
+    pull request #702, as the entry above records.
+  - |
+    2026-11-03, the repository owner, six rulings each chosen on its own
+    (Manifest decision 0021): OQ-10, OQ-11, OQ-14 and OQ-22 are item 0347,
+    in milestone 0.4.0, with B-022 and B-023 reaching every rejection they
+    list; OQ-12 is item 0350 and OQ-15 is item 0349, both outside 0.4.0.
+    `children` gains 0347, 0349 and 0350, and `claims` gains B-072 to B-075.
+    Recorded by spec-author.
+  - |
+    2026-11-03, the repository owner, on OQ-28: "A next 0.minor
+    (Recommended)" - item 0349's case-insensitive rule level holds from
+    the first schema version after 0.3.0; and on items 0349 and 0350:
+    "Leave unscheduled (Recommended)" - both sit under no milestone.
+    Manifest decision 0021 calls 9 and 10. Recorded by spec-author.
   - |
     2026-11-02, the repository owner, on item 0016's three questions
     (item 0016's decisions; Manifest decisions 0016 to 0018): 0016's

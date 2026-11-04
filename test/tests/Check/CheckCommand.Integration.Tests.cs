@@ -25,7 +25,9 @@ namespace Specht.Tests.Check;
 /// B-016; C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003, B-032, B-039, B-069 to B-073, B-077, B-080, B-126, B-127): over a runner returning a report
 /// built in memory, and over the real runner and a synthetic tree on disk. The runner is the seam: the engine emits no
 /// warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is reachable only in memory. The tester
-/// captures stdout alone, so an input failure's stderr message is the acceptance tier's to pin.
+/// captures stdout alone; the command writes a rejection through <see cref="Console.Error"/>, so a rejected manifest's stderr
+/// is read by swapping that writer for the run. Other test classes write to the same process-wide writer, so the read holds
+/// the rejection rather than equals it; that it is the run's only stderr is the launched tool's to pin.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class CheckCommandIntegrationTests
@@ -77,6 +79,12 @@ public sealed class CheckCommandIntegrationTests
             { [], Directory.GetCurrentDirectory() },
             { ["--root", "some/where"], Path.GetFullPath("some/where") },
         };
+
+    /// <summary>Gets the input failures whose claimed code is the invalid-manifest code, each a manifest the engine rejects.</summary>
+    public static TheoryData<string, Func<SpechtTree, string>> InvalidManifests =>
+        new(InputFailures
+            .Where(static row => row.Data.Item3 == ExitCodes.InvalidManifest)
+            .Select(static row => (row.Data.Item1, row.Data.Item2)));
 
     /// <summary>Gets input failures, each arranged on an otherwise clean tree, returning the root to name, and the claimed code.</summary>
     public static TheoryData<string, Func<SpechtTree, string>, int> InputFailures =>
@@ -266,6 +274,42 @@ public sealed class CheckCommandIntegrationTests
                     tree.WriteRaw(
                         SpechtTree.ManifestPath,
                         """{ "layouts": [{ "name": "epics", "glob": "epics/**/spec.md", "identity": { "epic": "second", "feature": 2 } }] }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning schema 0.3.0 whose done marker is empty (0001-F5 B-064, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.3.0", "markers": { "done": "" } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning schema 0.3.0 whose draft marker is white space alone (0001-F5 B-073, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.3.0", "markers": { "draft": " " } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning schema 0.3.0 whose Feature schema file name is empty (0001-F5 B-075, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.3.0", "frontmatterSchemas": { "feature": "" } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning schema 0.3.0 whose claim grammar does not compile (0001-F5 B-014, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.3.0", "identifiers": { "claim": "[" } }""");
                     return tree.Root;
                 },
                 3
@@ -514,6 +558,34 @@ public sealed class CheckCommandIntegrationTests
         // Then
         result.Output.Should().BeEmpty(because);
         result.ExitCode.Should().Be(expected, because);
+    }
+
+    [Theory]
+    [MemberData(nameof(InvalidManifests))]
+    public void AnInvalidManifest_WhenChecked_ShouldWriteTheEnginesRejectionOnStderr(string because, Func<SpechtTree, string> arrange)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteFeature("0001", "F1");
+        var root = arrange(tree);
+        var rejection = Record.Exception(() => EngineServices.Runner().Run(root));
+        var stderr = new StringWriter();
+        var original = Console.Error;
+
+        // When
+        Console.SetError(stderr);
+        try
+        {
+            Check(EngineServices.Runner().Run, "--root", root);
+        }
+        finally
+        {
+            Console.SetError(original);
+        }
+
+        // Then
+        rejection.Should().NotBeNull(because);
+        stderr.ToString().Should().Contain($"specht: {rejection!.Message}{Environment.NewLine}", because);
     }
 
     [Fact]

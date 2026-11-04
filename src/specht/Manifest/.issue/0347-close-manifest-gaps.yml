@@ -1,0 +1,114 @@
+id: "0347"
+type: task
+title: Close the manifest's remaining gaps
+
+status: done
+
+risk: 2
+
+parent: "0010"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-022
+  - B-023
+  - B-043
+  - B-072
+  - B-073
+  - B-074
+  - B-075
+
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: "2026-11-03"
+
+summary: |
+  Closes Feature 0001-F5's open gaps so milestone 0.4.0 can be released.
+  B-022 and B-023 reach every rejection they list, the done marker's
+  included. A name inside `roles` or `markers` that the engine does not read
+  is kept and never read (OQ-10). From schema 0.3.0, a marker of white
+  space alone and an empty or `.` schema file name are rejected (OQ-11,
+  OQ-22), and a `$`-prefixed member of a path identity is ignored (OQ-14).
+  Older pins keep today's behaviour (B-049).
+  Risk 2: the rejections and the annotation change only how a manifest is
+  read, and they change no shipped file. They must merge before a package
+  carries schema 0.3.0 (Manifest decision 0021, reversal).
+
+acceptance_criteria:
+  - "B-022 — every listed rejection exits 3, the done marker's included"
+  - "B-023 — every listed rejection is the only output, on stderr"
+  - "B-043 — from 0.3.0, a `$`-prefixed identity member is not rejected"
+  - "B-072 — an unread name in `roles` or `markers` is kept, unread, at every pin"
+  - "B-073 — from 0.3.0, a white-space marker is rejected"
+  - "B-074 — from 0.3.0, a `$`-prefixed identity member is ignored"
+  - "B-075 — from 0.3.0, an empty or `.` schema file name is rejected"
+  - "B-073 to B-075 hold from schema 0.3.0 only; older pins keep their verdicts (B-049, A-6)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-03, the repository owner, six rulings each chosen on its own,
+    recorded by spec-author in Manifest decision 0021: "A kept, unread
+    (Recommended)" - OQ-10, B-072; "A rejected (Recommended)" - OQ-11,
+    B-073; "A accept $-keys (Recommended)" - OQ-14, B-074, B-043 amended;
+    "A rejected (Recommended)" - OQ-22, B-075; "A later item
+    (Recommended)" - OQ-12, item 0350; "case-insensitive. this isn't a
+    breaking change for 0.4.0 so we can add an item to do this later." -
+    OQ-15, item 0349. That B-073 to B-075 first hold at schema 0.3.0 is
+    spec-author's reading of decision 0016 and `0001-F7` C-1 and C-4, not
+    the owner's (decision 0021 call 7). Cut by spec-author.
+  - |
+    2026-11-03, the guard of ADR-0027 for this item, measured by
+    benchmarker and recorded by spec-author. Base `10ddbd9d` (`main`), head
+    `24816933`, run back to back on one host with `CheckBenchmarks.Check`,
+    BenchmarkDotNet v0.15.8 default job, interleaved: base 100, head 100,
+    base 1000, head 1000, in two passes. Host: Apple M1 Max, 10 cores,
+    macOS Tahoe 26.4 (25E246), .NET SDK 11.0.100-rc.2.26504.105, runtime
+    .NET 10.0.14 Arm64 RyuJIT.
+    Pass 1. Load averages (1/5/15 min) at each run's start: base-100
+    162.47/151.39/128.97, head-100 129.88/147.32/130.16, base-1000
+    93.11/136.12/128.28, head-1000 26.68/93.61/112.37; at the end
+    17.64/79.17/105.70.
+    base-100: Mean 184.6 ms, Error 25.19 ms (CI 159.43 to 209.82 ms),
+    37.07 MB. head-100: 123.5 ms, Error 5.85 ms (CI 117.70 to 129.39 ms),
+    37.09 MB.
+    base-1000: 683.6 ms, Error 38.56 ms (CI 645.06 to 722.18 ms),
+    365.71 MB. head-1000: 560.0 ms, Error 10.85 ms (CI 549.11 to
+    570.80 ms), 365.68 MB.
+    Pass 2. Load averages at each run's start: base-100
+    15.60/75.70/104.00, head-100 44.57/71.80/100.27, base-1000
+    27.96/61.90/94.33, head-1000 20.24/54.57/89.61; at the end
+    10.50/42.49/81.44.
+    base-100: Mean 86.91 ms, Error 6.815 ms (CI 80.10 to 93.73 ms),
+    37.09 MB. head-100: 56.84 ms, Error 1.101 ms (CI 55.74 to 57.95 ms),
+    37.09 MB.
+    base-1000: 564.6 ms, Error 10.17 ms (CI 554.42 to 574.76 ms),
+    365.68 MB. head-1000: 570.4 ms, Error 10.93 ms (CI 559.49 to
+    581.35 ms), 365.71 MB.
+    The host was heavily loaded (desktop applications, other builds and
+    an acceptance run) and the load fell through pass 1, so each base
+    run met more load than the head run after it; the timing deltas at
+    100 in both passes, and at 1,000 in pass 1, reflect that load, not
+    the change. Pass 2 at 1,000 is the fairest pair.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    metric flagged in either pass. Pass 1: at 100 the head's mean is
+    -33.1% and allocation +0.05%; at 1,000 the mean is -18.1% and
+    allocation -0.01%. Pass 2: at 100 the mean is -34.6% and allocation
+    0.00%; at 1,000 the mean is +1.0% with the intervals overlapping,
+    and allocation +0.01%. Only the absence of a flag is claimed; the
+    net11.0 runtime was not measured.
+  - |
+    2026-11-03, spec-author: commits `034ed228` to `7d11e998` open
+    `Delivers 0346`, the id this item had before it was renumbered 0347.
+    On `main`, 0346 is pull request #699's Roslynator item; those commits
+    mean this one. Item 0010 records the same.
+
+out_of_scope:
+  - "A by-record value in § 9 — item 0350; § 5 row 22."
+  - "A rule level read ignoring letter case — item 0349; § 5 row 23."
+  - "B-073 to B-075 under a pin below schema 0.3.0 — § 5 row 21."

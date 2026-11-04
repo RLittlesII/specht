@@ -367,7 +367,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         node is JsonValue value && value.TryGetValue<int>(out var index) && index >= 0 ? index : null;
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
-    private static IEnumerable<string> IdentityFaults(JsonObject manifest)
+    /// <implements epic="0001" feature="F5" claim="B-074" />
+    private static IEnumerable<string> IdentityFaults(JsonObject manifest, bool annotations)
     {
         foreach (var layout in manifest["layouts"]?.AsArray() ?? [])
         {
@@ -381,6 +382,11 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
 
             foreach (var (member, value) in identity)
             {
+                if (annotations && member.StartsWith('$'))
+                {
+                    continue;
+                }
+
                 if (member is not ("epic" or "feature"))
                 {
                     yield return $"the layout '{name}' declares the identity member '{member}', which is neither 'epic' nor 'feature'";
@@ -455,8 +461,14 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         node ?? throw new InvalidOperationException("A JSON null stands where the manifest's shape requires a value.");
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
+    /// <implements epic="0001" feature="F5" claim="B-073" />
+    /// <implements epic="0001" feature="F5" claim="B-075" />
     private static void Check(
-        SpechtStructure structure, JsonObject defaults, IEnumerable<string> identityFaults, IReadOnlyDictionary<string, string> levels)
+        SpechtStructure structure,
+        JsonObject defaults,
+        IEnumerable<string> identityFaults,
+        IReadOnlyDictionary<string, string> levels,
+        bool blanks)
     {
         var roles = defaults["roles"]!.AsObject();
         var faults = roles
@@ -467,8 +479,10 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             .Concat(
                 defaults["markers"]!.AsObject()
                     .Select(static entry => entry.Key)
-                    .Where(marker => structure.Markers[marker].Length == 0)
-                    .Select(static marker => $"the marker '{marker}' in markers is empty"))
+                    .Where(marker => blanks ? string.IsNullOrWhiteSpace(structure.Markers[marker]) : structure.Markers[marker].Length == 0)
+                    .Select(marker => structure.Markers[marker].Length == 0
+                        ? $"the marker '{marker}' in markers is empty"
+                        : $"the marker '{marker}' in markers is white space alone"))
             .Concat(
                 new (string Key, IReadOnlyList<string> Entries)[]
                     {
@@ -485,8 +499,9 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             .Concat(identityFaults)
             .Concat(
                 structure.FrontmatterSchemas
-                    .Where(static schema => schema.Value.Contains("..", StringComparison.Ordinal)
-                        || schema.Value.Contains('/') || schema.Value.Contains('\\'))
+                    .Where(schema => schema.Value.Contains("..", StringComparison.Ordinal)
+                        || schema.Value.Contains('/') || schema.Value.Contains('\\')
+                        || (blanks && schema.Value is "" or "."))
                     .Select(static schema =>
                         $"the frontmatterSchemas kind '{schema.Key}' names '{schema.Value}', which is not a plain file name"))
             .Concat(
@@ -578,6 +593,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
         var keysAndForms = number.CompareTo(KeysAndFormsVersion) >= 0 && shipped is not null
             && defaults.ContainsKey("keys") && defaults.ContainsKey("forms");
+        var blanks = number.CompareTo(BlankValuesVersion) >= 0 && shipped is not null;
         var unknown = manifest
             .Select(static entry => entry.Key)
             .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
@@ -684,12 +700,13 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         Check(
             structure,
             defaults,
-            IdentityFaults(manifest)
+            IdentityFaults(manifest, blanks)
                 .Concat(sourceFaults)
                 .Concat(ClaimTagFaults(structure))
                 .Concat(MatrixKeyFaults(structure))
                 .Concat(keysAndForms ? GrammarFaults(structure).Concat(FormFaults(forms)) : []),
-            levels);
+            levels,
+            blanks);
 
         if (document is not null && !manifest.ContainsKey("schemaVersion"))
         {
@@ -738,4 +755,6 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static readonly SemanticVersion OriginalVersion = new(0, 1, 0);
 
     private static readonly SemanticVersion KeysAndFormsVersion = new(0, 3, 0);
+
+    private static readonly SemanticVersion BlankValuesVersion = new(0, 3, 0);
 }

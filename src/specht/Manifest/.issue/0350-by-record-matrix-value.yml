@@ -1,0 +1,57 @@
+id: "0350"
+type: task
+title: Accept a by-record value in the traceability matrix
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims: []
+
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: null
+
+summary: |
+  A claim proven by a record and not by a test keeps a § 9 row that reads
+  `Missing`, so the not-covered rule reports it in an approved specification
+  (OQ-12). This item gives § 9 a by-record value that the not-covered rule
+  accepts. The owner ruled it a later item ("A later item (Recommended)";
+  Manifest decision 0021 call 5), and left it under no milestone ("Leave
+  unscheduled (Recommended)"; call 10).
+  No claim is written yet. The value's marker name, its default and the
+  schema version it first enters are settled when its claims are written.
+  Risk 3: it adds a value to the manifest's markers and changes what the
+  not-covered rule reports.
+
+acceptance_criteria:
+  - "§ 3 gains the claims for the by-record value, and this item lists them."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-03, the repository owner, on OQ-12: "A later item
+    (Recommended)". Cut by spec-author outside milestone 0.4.0;
+    Manifest decision 0021 call 5.
+  - |
+    2026-11-03, the repository owner, on items 0349 and 0350: "Leave
+    unscheduled (Recommended)". Removed from milestone 0.5.0; it sits
+    under no milestone. Manifest decision 0021 call 10. Recorded by
+    spec-author.
+  - |
+    2026-11-03, spec-author: cut as 0348 and renumbered 0350 before merge,
+    because open pull request #702 claimed 0348 first. The repository
+    owner ruled: "Renumber mine to 0350". Items 0347 and 0349 keep their
+    numbers, `.issue/.sequence` reads 0350, and no commit cites 0348 for
+    this item.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

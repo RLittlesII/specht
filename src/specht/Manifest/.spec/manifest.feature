@@ -142,6 +142,20 @@ Feature: The manifest carries the roles
       | \\feature.json        |
       | \\\\host\\feature.json |
 
+  @B-075 @B-022 @B-023
+  Scenario Outline: An empty or dot schema file name is rejected
+    Given the manifest pins schema version "0.3.0"
+    And the manifest names the Feature schema file "<value>"
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard error carries only the schema file name rejection for "feature" and "<value>"
+    And the standard output is empty
+
+    Examples:
+      | value |
+      |       |
+      | .     |
+
   @B-009
   Scenario: Messages name the manifest's values
     Given the manifest renames the claims section to "3. Claims" in its section list and its claims role
@@ -637,6 +651,57 @@ Feature: The manifest carries the roles
     Then the manifest is rejected
     And the rejection names the draft marker
 
+  @B-073 @B-022 @B-023
+  Scenario Outline: A marker of white space alone is invalid
+    Given the manifest pins schema version "0.3.0"
+    And the manifest's <marker> marker is white space alone
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the <marker> marker
+    And the run exits with the invalid-manifest code
+    And only the rejection is written to stderr
+
+    Examples:
+      | marker  |
+      | draft   |
+      | missing |
+      | covered |
+      | done    |
+
+  @B-049 @boundary
+  Scenario: Below schema 0.3.0, a marker of white space alone is not rejected
+    Given the manifest pins schema version "0.2.1"
+    And the manifest's draft marker is white space alone
+    When the check runs
+    Then the manifest is accepted
+
+  @B-072
+  Scenario Outline: A name the engine does not read inside roles or markers is kept, unread
+    Given the manifest pins schema version "<pin>"
+    And the manifest's <key> carry the name "<name>", which no rule reads
+    And the root holds a specification with no violations
+    When the check runs
+    Then the manifest is accepted
+    And no violation is reported
+
+    Examples:
+      | pin   | key     | name        |
+      | 0.1.0 | roles   | constraints |
+      | 0.2.0 | roles   | constraints |
+      | 0.2.1 | roles   | constraints |
+      | 0.3.0 | roles   | constraints |
+      | 0.1.0 | markers | pending     |
+      | 0.2.0 | markers | pending     |
+      | 0.2.1 | markers | pending     |
+      | 0.3.0 | markers | pending     |
+
+  @B-072 @boundary
+  Scenario: An unread marker name is kept even when its text is empty
+    Given the manifest pins schema version "0.3.0"
+    And the manifest's markers carry the name "pending" with an empty text
+    When the check runs
+    Then the manifest is accepted
+
   @B-041
   Scenario: An empty file-shape list is invalid
     Given the manifest's companion file list is empty
@@ -668,6 +733,22 @@ Feature: The manifest carries the roles
     When the check runs
     Then the manifest is rejected
     And the rejection names the epics layout and "team"
+
+  @B-074
+  Scenario: From schema 0.3.0, an annotation inside a path identity is ignored
+    Given the manifest pins schema version "0.3.0"
+    And the manifest's epics layout declares its epic and Feature segments and an annotation "$comment"
+    When the check runs
+    Then the manifest is accepted
+    And the epics layout's path identity is read as it is without the annotation
+
+  @B-043 @B-049 @boundary
+  Scenario: Below schema 0.3.0, an annotation inside a path identity is invalid
+    Given the manifest pins schema version "0.2.1"
+    And the manifest's epics layout declares its epic and Feature segments and an annotation "$comment"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the epics layout and "$comment"
 
   @B-045
   Scenario: A rule level outside the three is invalid
@@ -1005,13 +1086,15 @@ Feature: The manifest carries the roles
     When the manifest is loaded
     Then the done marker is "delivered"
 
-  @B-064
+  @B-064 @B-022 @B-023
   Scenario: An empty done marker is invalid
     Given the manifest pins schema version "0.3.0"
     And the manifest's done marker is empty
     When the check runs
     Then the manifest is rejected
     And the rejection names the done marker
+    And the run exits with the invalid-manifest code
+    And only the rejection is written to stderr
 
 
   @B-065 @B-002
