@@ -7,39 +7,6 @@
 # Open finish lines name child items explicitly; Feature containers remain
 # delivery summaries so newly cut children do not silently enlarge a release.
 
-0.4.0
-# Manifest configuration: owner-approved split, 2026-11-02.
-# Completed work stays here as release history.
-0216
-0100
-0153
-0156
-0157
-0158
-0159
-0160
-0161
-0162
-0163
-0164
-0169
-0208
-# Schema 0.3.0: SPEC060 by delivery status, the done marker, epics optional: owner 2026-10-30
-0321
-# Remaining model prerequisite, manifest keys/grammars and diagnostic wording.
-0166
-0016
-0018
-# Epics opt-in, OQ-18: after 0016, so the first package carrying schema
-# 0.3.0 holds both (owner, 2026-11-02; 0001-F5 decision 0018).
-0345
-# Rule unit coverage and the pin policy retained by the owner 2026-11-01.
-0152
-0124
-# Manifest gaps, OQ-10, OQ-11, OQ-14 and OQ-22: owner 2026-11-03
-# (0001-F5 decision 0021).
-0347
-
 0.5.0
 # MCP first release: the owner, 2026-11-01. The host 0132-F3, the four
 # 0132-F4 answers whose commands are built, and docs/mcp.md.

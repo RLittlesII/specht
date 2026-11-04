@@ -20,15 +20,18 @@ Open finish lines select child items explicitly. Feature containers `0010`,
 newly cut children do not silently enlarge a release. A completed release
 slice does not close its whole Feature; that requires checking every claim.
 
-## Today: 0.2.x
+## Today: 0.4.x preview available, 0.5.0 in development
 
 A consumer pins a schema version, its build calls `specht`, and no repository
 carries the engine. `init`, `schema list` and `schema pin`, `upgrade` of the
 schema and template files, `frontmatter`, `evidence`, `--explain` and
-`--json` are built. The repository publishes itself from a tag, restores its own
-package and checks its own specification tree.
+`--json` are built. Manifest configuration and pin policy are delivered in
+the completed 0.4.0 slice, available in `v0.4.2-preview`. The repository
+publishes itself from a tag, restores its own package and checks its own
+specification tree. Development now targets 0.5.0, the MCP first release;
+`version.json` carries `0.5-preview`.
 
-## 0.3.0 - Complete the tool contract
+## 0.3.0 - Complete the tool contract (completed)
 
 **Better for:** a consumer who adopts the tool and never has to read the source
 to learn what it accepts.
@@ -59,18 +62,18 @@ cut and lands here.
 pinned to the newest schema upgrades to the next one without touching a
 document.
 
-## 0.4.0 - Manifest configuration
+## 0.4.0 - Manifest configuration (completed)
 
 **Better for:** a consumer who declares frontmatter keys, identity and edge
 forms, and id grammars in the manifest, gets messages that name those values,
 and chooses an exact or floating schema pin.
 
-The remaining path is `0166` (the model builder, parsers and reader), then
-`0016` (keys, forms and grammars, at schema `0.3.0`), then `0018` (diagnostic
-wording) and `0345` (epics opt-in). Rule unit coverage `0152` and pin policy
-`0124` have no outstanding item prerequisites. The pin policy stays here under
-the owner's 2026-11-01 decision. `0124`, `0018` and `0345` still need their
-architecture passes.
+All 22 selected work items are done. The model builder, parsers and reader
+(`0166`), manifest keys, forms and grammars (`0016`), diagnostic wording
+(`0018`), epics opt-in (`0345`), rule unit coverage (`0152`), pin policy
+(`0124`) and the remaining manifest gaps (`0347`) are delivered. The goal
+file now starts at 0.5.0; the mirror closes the 0.4.0 milestone when this
+closeout reaches `main`.
 
 | Feature   | Delivers                                                                                                  |
 | --------- | --------------------------------------------------------------------------------------------------------- |
@@ -80,21 +83,20 @@ architecture passes.
 
 The mediator evaluation ended without adoption (ADR-0026). The type rename,
 rule splits, instance evaluator, tree move, release baseline comparison,
-schema `0.3.0` cut and rule-id migration are already delivered and remain in
-this milestone's history. Each structural stage still carries ADR-0027's
-whole-check benchmark guard; `0166` is the only remaining structural stage
-required by this release slice. Runner removal belongs to 0.6.0.
+schema `0.3.0` cut and rule-id migration are also delivered. The structural
+stages retain ADR-0027's whole-check benchmark guard. Runner removal belongs
+to 0.6.0.
 
-`0001-F5` B-024 to B-035 and B-042, the epics opt-in, are item `0345`, built
-after `0016` so that the first package carrying schema `0.3.0` holds both.
-`0001-F5` still has Partial rows whose original items are done.
+`0001-F5` B-024 to B-035 and B-042, the epics opt-in, landed through `0345`
+after `0016`. This closes the selected release slice; the Feature containers
+and claims outside it retain their own delivery and coverage states.
 
-**Done means:** `0166`, `0016`, `0018`, `0345`, `0152` and `0124` satisfy their cited
-claims, the default manifest reproduces the golden baseline on every moved
-literal, older pins retain their interpretation, and the required tests and
-structural benchmark guard pass.
+**Delivered:** the selected manifest configuration, model and rule coverage,
+and pin-policy work. The default-manifest baseline, older-pin compatibility,
+tests and structural benchmark guard remain the validation contracts for
+these capabilities.
 
-## 0.5.0 - MCP first release
+## 0.5.0 - MCP first release (current)
 
 **Better for:** an agent that asks the tool instead of parsing its output.
 
