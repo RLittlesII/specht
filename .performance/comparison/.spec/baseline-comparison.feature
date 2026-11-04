@@ -9,6 +9,19 @@ Feature: Release baseline comparison
     When its release run reaches performance reporting
     Then a baseline comparison is started automatically for that release
 
+  @B-001 @B-018 @boundary
+  Scenario Outline: Each consuming job builds its comparator from the tagged source
+    Given the generated release workflow
+    When its "<job>" comparator steps are inspected
+    Then the job builds the comparator directly from its checkout before invoking it
+    And comparator build failures leave invocation skipped and an advisory incomplete summary
+    And the workflow transfers no comparator binary artifact
+
+    Examples:
+      | job        |
+      | release    |
+      | comparison |
+
   @B-002
   Scenario: The previous eligible release is selected
     Given earlier published stable releases, published prereleases, draft releases and unpublished tags exist

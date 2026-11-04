@@ -99,20 +99,6 @@ jobs:
         id: build
         run: |
           ./build.cmd --target Build --skip Test
-      - name: 🚀 Publish Comparator
-        id: publishComparator
-        continue-on-error: true
-        run: |
-          ./build.cmd --target PublishComparator --skip Build
-      - name: 🏺 Upload the comparator
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          include-hidden-files: 'true'
-          if-no-files-found: 'error'
-          name: 'comparator'
-          path: '.artifacts/comparator'
-          retention-days: '1'
       - name: 📦 Pack
         id: pack
         run: |
@@ -128,7 +114,7 @@ jobs:
       - name: Release
         id: release
         run: |
-          ./build.cmd --target Release --skip VerifyTag Pack PublishComparator
+          ./build.cmd --target Release --skip VerifyTag Pack
   publish:
     needs:
       - build
@@ -211,16 +197,16 @@ jobs:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         run: |
           ./build.cmd --target CreateGitHubRelease
-      - name: 🚀 Download the comparator
+      - name: ⚙️ Build the comparator from source
+        id: comparatorBuild
         continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          name: 'comparator'
-          path: '.artifacts/comparator'
+        run: |
+          dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o .artifacts/comparator
       - name: Request the release comparison
         id: comparisonRequest
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        if: ${{ steps.comparatorBuild.outcome == 'success' }}
         continue-on-error: true
         run: |
           dotnet .artifacts/comparator/specht.comparison.dll request .artifacts/benchmarks/comparison/request
@@ -237,6 +223,7 @@ jobs:
         id: comparisonAttach
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        if: ${{ steps.comparatorBuild.outcome == 'success' }}
         continue-on-error: true
         run: |
           dotnet .artifacts/comparator/specht.comparison.dll attach .artifacts/benchmarks/comparison/request
@@ -279,16 +266,16 @@ jobs:
         with:
           global-json-file: 'global.json'
           dotnet-version: '10.0.401'
-      - name: 🚀 Download the comparator
+      - name: ⚙️ Build the comparator from source
+        id: comparatorBuild
         continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          name: 'comparator'
-          path: '.artifacts/comparator'
+        run: |
+          dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o .artifacts/comparator
       - name: Compare against the previous release
         id: comparisonCompare
         env:
           GITHUB_TOKEN: '${{ github.token }}'
+        if: ${{ steps.comparatorBuild.outcome == 'success' }}
         continue-on-error: true
         run: |
           dotnet .artifacts/comparator/specht.comparison.dll compare .artifacts/benchmarks/comparison/result

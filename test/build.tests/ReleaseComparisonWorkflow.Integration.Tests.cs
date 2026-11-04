@@ -243,23 +243,77 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
                 || run.Contains("dotnet pack", StringComparison.Ordinal));
     }
 
-    [Fact]
-    public void BuildJob_WhenGenerated_ShouldPublishTheComparatorApartFromThePackageForBothLaterJobs()
+    [Theory]
+    [InlineData("release", "comparisonRequest")]
+    [InlineData("comparison", "comparisonCompare")]
+    public void ConsumingJob_WhenGenerated_ShouldBuildItsComparatorFromSourceBeforeInvocation(string job, string invocationId)
     {
         // Given
-        var uploads = Steps("build").Where(static step => Uses(step).StartsWith("actions/upload-artifact@", StringComparison.Ordinal))
-            .Select(static step => ((YamlMappingNode) step["with"])["name"].ToString()).ToArray();
+        var steps = Steps(job);
 
         // When
-        var comparator = uploads.Except(["nupkg"]).ToArray();
+        var build = Array.FindIndex(steps, static step => Value(step, "id") == "comparatorBuild");
+        var invocation = Array.FindIndex(steps, step => Value(step, "id") == invocationId);
 
         // Then
-        comparator.Should().ContainSingle();
+        build.Should().BeGreaterThan(-1).And.BeLessThan(invocation);
+        Value(steps[build], "run").Trim().Should().Be(
+            "dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o .artifacts/comparator");
+        steps[build].Children.ContainsKey("env").Should().BeFalse();
+        steps.Take(build).Should().Contain(static step => Uses(step).StartsWith("actions/checkout@", StringComparison.Ordinal));
+        steps.Take(build).Should().Contain(static step => Uses(step).StartsWith("actions/setup-dotnet@", StringComparison.Ordinal));
+        if (job == "release")
+        {
+            Array.FindIndex(steps, static step => Value(step, "name") == "Create GitHub Release").Should().BeLessThan(build);
+        }
+    }
+
+    [Theory]
+    [InlineData("release", "comparisonRequest", "comparisonAttach")]
+    [InlineData("comparison", "comparisonCompare", "comparisonCompare")]
+    public void ComparatorBuildFailure_WhenGenerated_ShouldSkipInvocationAndLeaveAnAdvisorySummary(string job, string firstId, string lastId)
+    {
+        // Given
+        var steps = Steps(job);
+
+        // When
+        var build = steps.Single(static step => Value(step, "id") == "comparatorBuild");
+        var invocations = steps.Where(step => Value(step, "id") == firstId || Value(step, "id") == lastId).ToArray();
+
+        // Then
+        Value(build, "continue-on-error").Should().Be("true");
+        invocations.Select(static step => Value(step, "id")).Should().BeEquivalentTo(new[] { firstId, lastId }.Distinct());
+        foreach (var invocation in invocations)
+        {
+            Value(invocation, "if").Should().Be("${{ steps.comparatorBuild.outcome == 'success' }}");
+            Value(invocation, "continue-on-error").Should().Be("true");
+        }
+
+        Value(steps[^1], "if").Should().Contain($"steps.{lastId}.outcome != 'success'");
+        Value(steps[^1], "run").Should().Contain("Incomplete").And.Contain("Re-run all jobs");
+        Value(steps[^1], "continue-on-error").Should().Be("true");
+    }
+
+    [Fact]
+    public void ReleaseWorkflow_WhenGenerated_ShouldTransferOnlyPackagesAndComparisonData()
+    {
+        // Given
+        var build = Steps("build");
+
+        // When
+        var uploads = build.Where(static step => Uses(step).StartsWith("actions/upload-artifact@", StringComparison.Ordinal))
+            .Select(static step => ((YamlMappingNode) step["with"])["name"].ToString()).ToArray();
+
+        // Then
+        uploads.Should().Equal("nupkg");
+        File.ReadAllText(WorkflowPath()).Should().NotContain("PublishComparator");
         foreach (var job in new[] { "release", "comparison" })
         {
-            Steps(job).Where(static step => Uses(step).StartsWith("actions/download-artifact@", StringComparison.Ordinal))
-                .Select(static step => ((YamlMappingNode) step["with"])["name"].ToString())
-                .Should().Contain(comparator[0], job);
+            Steps(job).Should().NotContain(static step => Uses(step).StartsWith("actions/download-artifact@", StringComparison.Ordinal));
+            var upload = Steps(job).Single(static step => Uses(step).StartsWith("actions/upload-artifact@", StringComparison.Ordinal));
+            ((YamlMappingNode) upload["with"])["name"].ToString().Should().Be(
+                job == "release" ? "comparison-request-${{ github.run_id }}-${{ github.run_attempt }}"
+                    : "comparison-result-${{ github.run_id }}-${{ github.run_attempt }}");
         }
     }
 

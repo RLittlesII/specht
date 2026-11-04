@@ -8,7 +8,7 @@ value: 3
 risk: 1
 
 parent: "0109"
-children: ["0209", "0210", "0211", "0212", "0213", "0214"]
+children: ["0209", "0210", "0211", "0212", "0213", "0214", "0353"]
 depends_on: []
 spikes: []
 
@@ -43,7 +43,7 @@ claims:
   ]
 
 created: "2026-10-13"
-updated: "2026-11-01"
+updated: "2026-11-03"
 closed: "2026-11-01"
 
 summary: |

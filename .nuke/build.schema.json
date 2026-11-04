@@ -38,7 +38,6 @@
         "Mirror",
         "MirrorTest",
         "Pack",
-        "PublishComparator",
         "PushReleasePackages",
         "Release",
         "Restore",

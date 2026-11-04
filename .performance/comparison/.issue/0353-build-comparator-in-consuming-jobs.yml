@@ -1,0 +1,27 @@
+id: "0353"
+type: task
+title: Build the comparator from source in its consuming jobs
+status: done
+risk: 2
+parent: "0208"
+children: []
+depends_on: []
+spikes: []
+spec: .performance/comparison/.spec/README.md
+claims: ["B-001", "B-018"]
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: "2026-11-03"
+summary: |
+  Build the comparator from the tagged checkout in release and comparison,
+  using direct dotnet publish. Remove the comparator binary artifact and
+  its build-job target. Preserve the request and result handoffs.
+acceptance_criteria:
+  - "Both consuming jobs publish net10.0 into .artifacts/comparator before invoking it."
+  - "Comparator build failures stay advisory and preserve the incomplete summary."
+  - "No comparator binary is uploaded or downloaded."
+  - "The specification, scenarios and generated-workflow tests describe the source builds."
+decisions:
+  - "2026-11-03: owner requested source builds in both jobs and removal of the comparator artifact."
+out_of_scope:
+  - "Changes to measurement, report evaluation, publication gates, or request/result transport."
