@@ -1,0 +1,35 @@
+id: "0352"
+type: task
+title: Enforce Feature claim prefixes
+
+status: ready
+
+risk: 3
+
+parent: "0010"
+children: []
+depends_on: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+claims: [B-076, B-077, B-078, B-079, B-080]
+
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: null
+
+summary: |
+  Implement the Feature grammar selected by Manifest decision 0022.
+  Risk 3 reflects the shared interpretation needed by the shipped Feature
+  schema, claim declarations, traceability rows and companion tags.
+
+acceptance_criteria:
+  - "Bind the prefix scenarios and cover B-076 through B-080 in § 9, including the conflicting custom-regex case."
+  - "Verify the renamed frontmatter key (B-004), tag comparison (B-007, B-036, B-037), and earlier pins (B-049)."
+  - "Follow A-7 for the eligible schema version and document the frontmatter field and its precedence."
+
+decisions:
+  - "2026-11-03: Manifest decision 0022 resolves OQ-29 and OQ-30."
+
+out_of_scope:
+  - "Standalone Gherkin declarations (0001-F5 § 5)."
