@@ -54,8 +54,7 @@ public sealed class McpHostSteps
     public void GivenASessionInProgress()
     {
         _session = AcceptanceTool.McpSession.Start(Tree.Root);
-        _session.Send(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision));
-        _session.ReadLine().Should().NotBeNull();
+        _session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)).Should().NotBeNull();
     }
 
     [Given("a client asking for the protocol revision the server supports")]
@@ -85,17 +84,16 @@ public sealed class McpHostSteps
     {
         _before = AcceptanceTool.Snapshot(Tree.Root);
         using var session = AcceptanceTool.McpSession.Start(Tree.Root);
-        session.Send(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision));
-        session.ReadLine().Should().NotBeNull();
+        session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)).Should().NotBeNull();
         if (!OperatingSystem.IsWindows())
         {
             _listening = session.Sockets("-iTCP", "-sTCP:LISTEN");
             _open = session.Sockets("-i", "-sTCP:^LISTEN");
         }
 
-        session.Send(AcceptanceTool.McpRequest(2, "tools/list", UnsupportedRevision));
-        session.Send(AcceptanceTool.McpLegacyInitialize(3));
-        session.Send("this is not a protocol message");
+        session.Exchange("this is not a protocol message");
+        session.Exchange(AcceptanceTool.McpRequest(2, "tools/list", UnsupportedRevision)).Should().NotBeNull();
+        session.Exchange(AcceptanceTool.McpLegacyInitialize(3)).Should().NotBeNull();
         _result = session.Close();
     }
 

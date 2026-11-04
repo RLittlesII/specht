@@ -104,7 +104,8 @@ internal static class AcceptanceTool
 
     /// <summary>
     /// Runs the MCP in <paramref name="workingDirectory"/> with <paramref name="args"/>, writes each of <paramref name="input"/> to its
-    /// standard input as one line, closes the input and waits for it to exit.
+    /// standard input as one line and, after each line that is a request, reads its answer before the next line is sent, then
+    /// closes the input and waits for it to exit. A line that is no request, such as noise, is written and awaits no answer.
     /// </summary>
     /// <param name="workingDirectory">The directory the process starts in.</param>
     /// <param name="input">The lines the client sends, in order.</param>
@@ -115,7 +116,7 @@ internal static class AcceptanceTool
         using var session = McpSession.Start(workingDirectory, args);
         foreach (var line in input)
         {
-            session.Send(line);
+            session.Exchange(line);
         }
 
         return session.Close();
@@ -262,8 +263,35 @@ internal static class AcceptanceTool
             }
         }
 
+        /// <summary>
+        /// Writes one line to the process's standard input and, when the line is a request, reads what the process writes until its
+        /// answer arrives, as a client that waits for an answer before it sends the next line or closes its input.
+        /// </summary>
+        /// <param name="line">The line.</param>
+        /// <returns>The answer's line; <see langword="null"/> when the line is no request or the process closed its output first.</returns>
+        /// <exception cref="TimeoutException">The process wrote nothing within the limit.</exception>
+        public string? Exchange(string line)
+        {
+            Send(line);
+            if (RequestId(line) is not { } id)
+            {
+                return null;
+            }
+
+            while (ReadLine() is { } answer)
+            {
+                if (IsAnswerTo(answer, id))
+                {
+                    return answer;
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>Reads the next line the process wrote to its standard output.</summary>
-        /// <returns>The line, or <see langword="null"/> when the process closed its output or wrote none within the limit.</returns>
+        /// <returns>The line, or <see langword="null"/> when the process closed its output.</returns>
+        /// <exception cref="TimeoutException">The process wrote nothing within the limit; the process is ended.</exception>
         public string? ReadLine()
         {
             string? line;
@@ -273,7 +301,8 @@ internal static class AcceptanceTool
             }
             catch (TimeoutException)
             {
-                return null;
+                _process.Kill(entireProcessTree: true);
+                throw new TimeoutException("The MCP wrote nothing within the limit.");
             }
 
             if (line is not null)
@@ -333,6 +362,33 @@ internal static class AcceptanceTool
             }
 
             _process.Dispose();
+        }
+
+        private static int? RequestId(string line) =>
+            Parse(line) is { } message
+            && message.ContainsKey("method")
+            && message["id"] is JsonValue id
+            && id.TryGetValue<int>(out var value)
+                ? value
+                : null;
+
+        private static bool IsAnswerTo(string line, int id) =>
+            Parse(line) is { } message
+            && !message.ContainsKey("method")
+            && message["id"] is JsonValue value
+            && value.TryGetValue<int>(out var found)
+            && found == id;
+
+        private static JsonObject? Parse(string line)
+        {
+            try
+            {
+                return JsonNode.Parse(line) as JsonObject;
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return null;
+            }
         }
 
         private static readonly TimeSpan Limit = TimeSpan.FromSeconds(30);

@@ -64,8 +64,8 @@ public sealed class McpHostNetworkIntegrationTests
         var session = AcceptanceTool.McpSession.Start(tree.Root);
         try
         {
-            session.Send(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision));
-            session.ReadLine().Should().NotBeNull("the session must have served before its sockets are read");
+            session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision))
+                .Should().NotBeNull("the session must have served before its sockets are read");
 
             return session;
         }

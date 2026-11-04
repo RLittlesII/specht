@@ -38,9 +38,9 @@ public sealed class McpHostSessionIntegrationTests
         string[] input =
         [
             AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision),
+            "this is not a protocol message",
             AcceptanceTool.McpRequest(2, "tools/list", "1900-01-01"),
             AcceptanceTool.McpLegacyInitialize(3),
-            "this is not a protocol message",
         ];
 
         // When
@@ -104,8 +104,7 @@ public sealed class McpHostSessionIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using var session = AcceptanceTool.McpSession.Start(tree.Root);
-        session.Send(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision));
-        session.ReadLine().Should().NotBeNull();
+        session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)).Should().NotBeNull();
 
         // When
         var (_, stderr, exitCode) = session.Close();
