@@ -1,0 +1,24 @@
+id: "0354"
+type: bug
+title: Pass distinct arguments to gh when creating a prerelease
+status: done
+value: 4
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: .build/Releasing/.spec/README.md
+claims: [B-004, B-015]
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: "2026-11-03"
+summary: |
+  Release run 41769510688 pushed both packages, then gh rejected the combined
+  prerelease and repository flags. The release fixture joined the arguments
+  with spaces and accepted the malformed invocation.
+acceptance_criteria:
+  - The release target passes each gh argument separately for stable and preview tags.
+  - The integration test observes the argument boundaries seen by the child process.
+out_of_scope:
+  - Package publication, release comparison and the generated workflow.
