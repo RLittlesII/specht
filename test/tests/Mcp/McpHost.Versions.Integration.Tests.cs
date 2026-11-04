@@ -35,15 +35,16 @@ public sealed class McpHostVersionsIntegrationTests
         using var tree = new SpechtTree();
 
         // When
-        var (stdout, stderr, _) = AcceptanceTool.LaunchMcp(
+        var (refusedStdout, refusedStderr, _) = AcceptanceTool.LaunchMcp(tree.Root, [AcceptanceTool.McpRequest(1, "tools/list", "1900-01-01")]);
+        var (discoveredStdout, discoveredStderr, _) = AcceptanceTool.LaunchMcp(
             tree.Root,
-            [AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision), AcceptanceTool.McpRequest(2, "tools/list", "1900-01-01")]);
+            [AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)]);
 
         // Then
-        var discovered = AcceptanceTool.McpAnswer(stdout, 1);
-        var refused = AcceptanceTool.McpAnswer(stdout, 2);
-        discovered.Should().NotBeNull(stderr);
-        refused.Should().NotBeNull(stderr);
+        var refused = AcceptanceTool.McpAnswer(refusedStdout, 1);
+        var discovered = AcceptanceTool.McpAnswer(discoveredStdout, 1);
+        refused.Should().NotBeNull(refusedStderr);
+        discovered.Should().NotBeNull(discoveredStderr);
         var supported = discovered!["result"]!["supportedVersions"]!.AsArray().Select(static version => version!.GetValue<string>()).ToList();
         supported.Should().NotBeEmpty();
         refused!["error"]!["data"]!["supported"]!.AsArray().Select(static version => version!.GetValue<string>()).Should().Equal(supported);

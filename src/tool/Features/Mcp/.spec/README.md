@@ -154,7 +154,7 @@ Pending: owned by `implementer`, written after agreement.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-04 (item 0329; launcher reads each answer before closing input) -->
+<!-- last written by: test-writer, 2026-11-04 (item 0329; launcher reads each answer before closing input; B-033 refusal is a session's first request) -->
 
 Scope: the claims of item `0329` (B-001 to B-006, B-008 to B-014, B-019, B-032, B-033). B-017, B-018, B-020 to B-030 and B-034 are `0359`'s, B-015, B-016 and B-031 are `0332`'s, and their scenarios have no binding and their rows stay `Missing`.
 
@@ -179,7 +179,7 @@ Every test is red until the host is built. Today `src/mcp` is the scaffold item 
 | B-014 | A request naming 2026-07-28 is not answered with the unsupported-version error. The request is `tools/list`, which `0330` and `0331` define; the claim states only that no version error answers it, and the test asserts only that.                                                                                                                                                                                                                                                   |
 | B-019 | The version decision: a request naming a revision outside the supported set is answered with code `-32022`, for the method that discovers and one that does not, and for a revision no one defined and one that has an initialize handshake.                                                                                                                                                                                                                                           |
 | B-032 | A legacy `initialize` is answered with an error, not a result, and the error names 2026-07-28.                                                                                                                                                                                                                                                                                                                                                                                         |
-| B-033 | The refusal's `data.supported` equals the `supportedVersions` the same session's discovery answer gives, and is not empty.                                                                                                                                                                                                                                                                                                                                                             |
+| B-033 | The refusal's `data.supported`, from a session whose first request is the refused one, equals the `supportedVersions` a separate session's discovery answer gives, and is not empty.                                                                                                                                                                                                                                                                                                   |
 
 What the design makes hard to test, for the implementer, none worked around here:
 
