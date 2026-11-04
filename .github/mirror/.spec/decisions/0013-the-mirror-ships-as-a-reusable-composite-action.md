@@ -48,3 +48,19 @@ is returned; a failure to start exits 2 with a script startup error.
 
 This extends the packaging-only scope above for consumer-owned scripts; it does
 not add new formats or reconciliation rules to the bundled mirror.
+
+## Review addendum: explicit script and C# action tests
+
+**Date:** 2026-11-04
+**Decided by:** repository owner in review 5776968566 and its follow-up: new coverage belongs in C# tests or an F# script; a Python test gate is not required to consume the action.
+
+The generated mirror workflow passes `script: .github/mirror/mirror_items.py`
+explicitly. The existing script becomes executable and keeps `-B` in its
+shebang, preserving its existing process and avoiding bytecode writes.
+The job invokes the action without running a test suite. Reusable-action tests
+live in the existing C# integration test project and run in ordinary CI;
+`test_action.py` is replaced. The legacy mirror plan and adapter tests and their
+manual `MirrorTest` target stay; this change does not rewrite that engine or
+add a Python test runner to CI. This supersedes the direct Python test step
+chosen above and amends B-069 and C-13. Omitting `script` still selects the
+bundled mirror for consumers.

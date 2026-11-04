@@ -61,15 +61,12 @@ jobs:
         with:
           clean: 'false'
           fetch-depth: '0'
-      - name: 💨 Mirror Test
-        id: mirrorTest
-        run: |
-          python3 -B -m unittest discover -s .github/mirror/tests -v
       - name: Mirror
         id: mirror
         uses: ./.github/actions/mirror
         with:
           token: '${{ github.token }}'
+          script: '.github/mirror/mirror_items.py'
           before: '${{ github.event.before }}'
           after: '${{ github.event.after }}'
           backfill: '${{ inputs.backfill || false }}'

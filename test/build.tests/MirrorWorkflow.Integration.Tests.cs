@@ -100,9 +100,8 @@ public sealed class MirrorWorkflowIntegrationTests
         MirrorStep()["uses"].ToString().Should().Be("./.github/actions/mirror");
         steps.Where(static step => step.Children.ContainsKey("uses"))
             .Should().NotContain(static step => step["uses"].ToString().StartsWith("actions/setup-dotnet@", StringComparison.Ordinal));
-        var tests = steps.Single(static step => step.Children.ContainsKey("id") && step["id"].ToString() == "mirrorTest");
-        tests["run"].ToString().Trim().Should().Be("python3 -B -m unittest discover -s .github/mirror/tests -v");
-        Array.IndexOf(steps, tests).Should().BeLessThan(Array.IndexOf(steps, MirrorStep()));
+        MirrorInputs()["script"].ToString().Should().Be(".github/mirror/mirror_items.py");
+        steps.Should().NotContain(static step => step.Children.ContainsKey("id") && step["id"].ToString() == "mirrorTest");
     }
 
     [Fact]

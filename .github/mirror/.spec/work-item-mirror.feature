@@ -475,8 +475,9 @@ Feature: Work-item mirror
   @B-069
   Scenario: This repository consumes its reusable action
     When the mirror workflow is generated
-    Then it runs the mirror tests with Python
-    And it invokes the local reusable mirror action
+    Then it invokes the local reusable mirror action
+    And it passes the repository mirror script explicitly
+    And it runs no mirror test suite in that job
     And it installs no .NET SDK for that job
 
   @B-070

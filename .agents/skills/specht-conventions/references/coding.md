@@ -154,7 +154,7 @@ path anywhere is a defect (brief § 9), and the review looks for it.
   `Enhancements` middleware only adds what the attribute cannot express
   (inputs, concurrency, permissions, step environment) and never replaces the
   job's steps. The exceptions are `renovate`, which runs a third-party action,
-  and `mirror`, which runs Python tests and the reusable mirror action
+  and `mirror`, which invokes the reusable mirror action
   ([mirror decision 0013](../../../../.github/mirror/.spec/decisions/0013-the-mirror-ships-as-a-reusable-composite-action.md)).
   [Lesson 0013](../../../../.spec/lessons/0013-a-generated-workflow-invokes-a-target.md)
   records why target invocation remains the default.

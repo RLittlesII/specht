@@ -24,5 +24,6 @@ decisions:
   - "2026-11-02: main and open pull request 690 were checked; neither reserves 0344 or mirror claims B-066 to B-069."
   - "2026-11-02: 76 Python mirror/action tests and 10 focused net11.0 workflow tests pass. The full build passes Specht, Restore, Format, Compile, CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest across its configured frameworks."
   - "2026-11-04: 81 Python tests and 10 focused net11.0 workflow tests pass. The full build passes Specht, Restore, Format, Compile, CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest across the configured frameworks."
+  - "2026-11-04: review 5776968566 removes the runtime Python test gate and selects the repository script explicitly. New action coverage moves to C# integration tests; 22 focused net11.0 cases and the full configured build pass. Decision 0013 and C-13 record the correction."
 out_of_scope:
   - "Project boards, new reconciliation rules, B-064 implementation and release tags."

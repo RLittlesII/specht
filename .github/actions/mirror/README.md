@@ -124,7 +124,11 @@ becomes the action’s exit code. A missing or unstartable script fails with cod
 Include your script’s path in the caller’s push filter so changes trigger a run.
 
 When calling the action from this repository, use `./.github/actions/mirror`
-after checkout. The generated mirror workflow uses that same entry point.
+after checkout. The generated mirror workflow passes
+`script: .github/mirror/mirror_items.py` explicitly, selecting this repository’s
+existing executable mirror. Its shebang preserves Python’s `-B` option.
+The action and mirror job run no test suite; action coverage runs as C#
+integration tests in the ordinary build.
 
 The action follows GitHub’s
 [composite action metadata contract](https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax).

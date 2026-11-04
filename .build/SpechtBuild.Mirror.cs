@@ -29,7 +29,6 @@ using Serilog;
 internal sealed partial class SpechtBuild
 {
     private Target Mirror => definition => definition
-        .DependsOn(MirrorTest)
         .Executes(() =>
         {
             var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
@@ -80,9 +79,6 @@ internal sealed partial class SpechtBuild
         RunThroughEntryScript(job);
 
         job.Steps.OfType<CheckoutStep>().Single().FetchDepth = 0;
-        job.Steps.OfType<RunStep>().Single(static step => step.Id == "mirrorTest").Run =
-            "python3 -B -m unittest discover -s .github/mirror/tests -v";
-
         var mirror = job.Steps.OfType<RunStep>().Single(static step => step.Id == "mirror");
         job.Steps[job.Steps.IndexOf(mirror)] = new UsingStep("Mirror")
         {
@@ -91,6 +87,7 @@ internal sealed partial class SpechtBuild
             With = new Dictionary<string, string>
             {
                 ["token"] = "${{ github.token }}",
+                ["script"] = ".github/mirror/mirror_items.py",
                 ["before"] = "${{ github.event.before }}",
                 ["after"] = "${{ github.event.after }}",
                 ["backfill"] = "${{ inputs.backfill || false }}",
