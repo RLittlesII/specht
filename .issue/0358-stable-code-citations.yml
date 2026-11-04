@@ -1,0 +1,37 @@
+id: "0358"
+type: spike
+title: Specify stable code citations without line numbers or commit SHAs
+status: ready
+value: 3
+risk: 2
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-04"
+updated: "2026-11-04"
+closed: null
+summary: |
+  Define a future Markdown analysis guard against authored code citations
+  that depend on line numbers, line ranges or commit SHAs. Stable claim and
+  ADR identities remain the traceability anchors; code declares its bindings
+  back to those records, and reconciliation derives the reverse view rather
+  than requiring a manually maintained web of Markdown-to-code locations.
+  Existing binding identity and evidence reconciliation provide the basis
+  in 0201-F1 and 0201-F5. The new Markdown guard is not implemented today.
+  Time box: one session, at most two hours; return an agreement handoff.
+acceptance_criteria:
+  - "Define detectable Markdown code-citation forms, including local path-and-line references, hosted line anchors and commit-SHA references; short and full SHAs are both in scope."
+  - "Specify stable alternatives using claim or ADR IDs and current declaring-file references without line numbers or commit SHAs."
+  - "Preserve explicit code-to-record bindings and derived reconciliation; do not require manually authored reverse links in Markdown."
+  - "Distinguish authored traceability from generated diagnostic locations, fenced examples and historical records, and record the treatment of each without requiring commit SHAs."
+  - "Provide report/accept examples, including a code line move that leaves an ID-based binding unchanged, and define deterministic offline root-relative diagnostics."
+  - "Identify the owning Feature, manifest policy and schema-version impact; author claims and companion scenarios before cutting implementation items."
+decisions:
+  - "2026-11-04, repository owner: record the missing Markdown-to-code citation guard for future coverage; no commit SHAs."
+  - "2026-11-04: Intake is a spike because detection scope and policy need an agreement before implementation; no current rule or coverage is claimed."
+out_of_scope:
+  - "Implementing or enabling a checker rule, assigning a diagnostic ID, or rewriting existing citations."
+  - "Git-history lookup, network resolution, behavioral proof from a binding, or replacing the existing binding and reconciliation contracts."
