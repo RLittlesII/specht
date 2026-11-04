@@ -1,0 +1,31 @@
+id: "0357"
+type: chore
+title: Document the maintainer release checklist
+status: done
+value: 3
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-04"
+updated: "2026-11-04"
+closed: "2026-11-04"
+summary: |
+  The release procedure is scattered across the delivery skill, build source
+  and release decisions. Add one concise maintainer guide under docs and
+  link it from the README, including the version, goal and roadmap edits
+  and the checks that establish publication and milestone closure.
+acceptance_criteria:
+  - "docs/releasing.md covers preparing the release line, the dry run, computed tagging, publication verification and milestone closeout."
+  - "The closeout names version.json, .issue/.goal and docs/roadmap.md in one PR and verifies the mirror closes the milestone after merge."
+  - "The guide distinguishes a package release from advancing the next development minor; a patch release does not close an unfinished milestone."
+  - "README.md links the guide; documented commands and gates match the current release workflow."
+  - "Formatting, the working-checker self-check, the full build and PR checks pass."
+decisions:
+  - "2026-11-04, the repository owner: open a PR for one concise document explaining how the maintainer releases a version."
+out_of_scope:
+  - "No workflow, implementation, version, schema, goal or roadmap changes; no release dispatch, tag or publication is performed by this item."
+  - "No scenario delta: document the existing 0055-F6 release and 0055-F9 B-060 closure. Constraints preserved: 0055-F6 C-1, C-2 and C-10; 0055-F9 C-1, C-2 and C-3."
