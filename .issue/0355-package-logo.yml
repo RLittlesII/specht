@@ -1,0 +1,21 @@
+id: "0355"
+type: chore
+title: Use the Specht avatar on the analyzer package
+status: done
+value: 1
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: "2026-11-03"
+summary: |
+  The NuGet listing for Specht.CodeAnalysis lacks the avatar used by specht.tool.
+acceptance_criteria:
+  - The analyzer package declares the shared Specht avatar as its icon and embeds the image at that path.
+out_of_scope:
+  - Changes to the logo artwork or release version.
