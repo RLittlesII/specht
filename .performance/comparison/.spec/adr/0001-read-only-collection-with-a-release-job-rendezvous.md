@@ -122,3 +122,10 @@ item `0333`. The body above is unedited.
   `comparison`; collection is read-only; and only the receipt `release`
   uploads after the Release is created starts measurement, which is after
   `publish` has finished.
+
+## Amendment 2026-11-03
+
+[Decision 0006](../decisions/0006-build-the-comparator-in-each-consuming-job.md)
+replaces the comparator binary artifact with a direct source build in each
+consuming job. Both use the tagged checkout. The request and result artifacts
+continue to provide the release-job rendezvous.

@@ -32,18 +32,7 @@ internal sealed partial class SpechtBuild
 {
     private Target Release => definition => definition
         .DependsOn(VerifyTag)
-        .DependsOn(Pack)
-        .DependsOn(PublishComparator);
-
-    private Target PublishComparator => definition => definition
-        .DependsOn(Build)
-        .Produces(ComparatorDirectory / "*")
-        .Executes(() => DotNetPublish(settings => settings
-            .SetProject(RootDirectory / ".performance" / "comparison" / "comparison.csproj")
-            .SetFramework("net10.0")
-            .SetConfiguration(Configuration)
-            .SetOutput(ComparatorDirectory)
-            .EnableNoRestore()));
+        .DependsOn(Pack);
 
     private Target VerifyTag => definition => definition
         .DependsOn(Restore)
@@ -68,8 +57,6 @@ internal sealed partial class SpechtBuild
 
             await new SchemaVersionLock(new FileSystem(), RootDirectory).RequireAllLockedAsync();
         });
-
-    private AbsolutePath ComparatorDirectory => RootDirectory / ComparatorPath;
 
     private Target PushReleasePackages => definition => definition
         .Executes(() =>
@@ -201,23 +188,6 @@ internal sealed partial class SpechtBuild
                 },
             });
 
-        var publishComparatorStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static z => z.Id == "publishComparator");
-        publishComparatorStep.ContinueOnError = true;
-        buildJob.Steps.Insert(
-            buildJob.Steps.IndexOf(publishComparatorStep) + 1,
-            new UploadArtifactStep("Upload the comparator")
-            {
-                Name = ComparatorArtifact,
-                Path = ComparatorPath,
-                IfNoFilesFound = "error",
-                RetentionDays = 1,
-                ContinueOnError = true,
-                With = new Dictionary<string, string>
-                {
-                    ["include-hidden-files"] = "true",
-                },
-            });
-
         configuration.Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
         {
             Contents = GitHubActionsPermission.Read,
@@ -285,10 +255,11 @@ internal sealed partial class SpechtBuild
                     },
                     Run = $"./build.cmd --target {nameof(CreateGitHubRelease)}",
                 },
-                DownloadComparator(),
+                BuildComparator(),
                 new RunStep("Request the release comparison")
                 {
                     Id = "comparisonRequest",
+                    If = ComparatorBuildSucceeded,
                     ContinueOnError = true,
                     Environment = new Dictionary<string, string>
                     {
@@ -311,6 +282,7 @@ internal sealed partial class SpechtBuild
                 new RunStep("Attach the comparison report")
                 {
                     Id = "comparisonAttach",
+                    If = ComparatorBuildSucceeded,
                     ContinueOnError = true,
                     Environment = new Dictionary<string, string>
                     {
@@ -334,17 +306,18 @@ internal sealed partial class SpechtBuild
             Matrix = [RunnerPool],
             Steps =
             [
-                new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false, ContinueOnError = true },
+                new CheckoutStep("Checkout") { Id = "checkout", FetchDepth = 0, Clean = true, PersistCredentials = false, ContinueOnError = true },
                 new SetupDotNetStep("Use .NET 10 and 11 SDKs")
                 {
                     DotNetVersion = "10.0.401",
                     ContinueOnError = true,
                     With = { ["global-json-file"] = "global.json" },
                 },
-                DownloadComparator(),
+                BuildComparator(),
                 new RunStep("Compare against the previous release")
                 {
                     Id = "comparisonCompare",
+                    If = ComparatorBuildSucceeded,
                     ContinueOnError = true,
                     Environment = new Dictionary<string, string>
                     {
@@ -371,7 +344,7 @@ internal sealed partial class SpechtBuild
         return configuration;
     }
 
-    private static CheckoutStep Checkout() => new("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false };
+    private static CheckoutStep Checkout() => new("Checkout") { Id = "checkout", FetchDepth = 0, Clean = true, PersistCredentials = false };
 
     private static SetupDotNetStep UseDotNet() => new("Use .NET 10 and 11 SDKs")
     {
@@ -379,10 +352,11 @@ internal sealed partial class SpechtBuild
         With = { ["global-json-file"] = "global.json" },
     };
 
-    private static DownloadArtifactStep DownloadComparator() => new("Download the comparator")
+    private static RunStep BuildComparator() => new("Build the comparator from source")
     {
-        Name = ComparatorArtifact,
-        Path = ComparatorPath,
+        Id = "comparatorBuild",
+        If = "${{ steps.checkout.outcome == 'success' }}",
+        Run = $"dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o {ComparatorPath}",
         ContinueOnError = true,
     };
 
@@ -400,7 +374,7 @@ internal sealed partial class SpechtBuild
 
     private const string PackagePath = ".artifacts/nupkg";
 
-    private const string ComparatorArtifact = "comparator";
+    private const string ComparatorBuildSucceeded = "${{ steps.comparatorBuild.outcome == 'success' }}";
 
     private const string ComparatorPath = ".artifacts/comparator";
 
