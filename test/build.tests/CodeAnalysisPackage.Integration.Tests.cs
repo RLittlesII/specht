@@ -64,6 +64,9 @@ public sealed class CodeAnalysisPackageIntegrationTests
             var nuspec = archive.Entries.Single(static entry => entry.FullName.EndsWith(".nuspec", StringComparison.Ordinal));
             using var stream = nuspec.Open();
             var metadata = XDocument.Load(stream).Descendants().Single(static element => element.Name.LocalName == "metadata");
+            var icon = metadata.Element(metadata.Name.Namespace + "icon")?.Value;
+            icon.Should().Be("specht-book-avatar.png");
+            entries.Should().Contain("specht-book-avatar.png");
             metadata.Descendants().Where(static element => element.Name.LocalName == "dependency").Should().BeEmpty();
             entries.Should().NotContain(static entry => entry.StartsWith("lib/", StringComparison.Ordinal));
 
