@@ -140,6 +140,7 @@ a `.issue/` beside that `.spec/`.
 - [Without .NET code](docs/non-dotnet.md)
 - [Exit codes](docs/exit-codes.md)
 - [Building](docs/building.md)
+- [Releasing](docs/releasing.md)
 - [Roadmap](docs/roadmap.md)
 - [Rule pages](docs/rules/v0.1.0/)
 
