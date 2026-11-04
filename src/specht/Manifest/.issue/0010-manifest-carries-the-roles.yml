@@ -2,7 +2,7 @@ id: "0010"
 type: feature
 title: The manifest carries the roles the engine hardcodes
 
-status: done
+status: ready
 
 value: 4
 risk: 4
@@ -30,6 +30,7 @@ children:
     "0347",
     "0349",
     "0350",
+    "0352",
   ]
 
 depends_on: []
@@ -107,10 +108,15 @@ claims:
   - B-073
   - B-074
   - B-075
+  - B-076
+  - B-077
+  - B-078
+  - B-079
+  - B-080
 
 created: "2026-10-08"
 updated: "2026-11-03"
-closed: "2026-11-03"
+closed: null
 
 summary: |
   As the maintainer of a sibling repository, I want every literal the engine
@@ -175,6 +181,8 @@ acceptance_criteria:
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-11-03: reopened for B-076 to B-080, cut to item 0352 under Manifest decision 0022.
   - |
     2026-11-03, spec-author: item 0348, the by-record value (OQ-12), is
     0350, renumbered before merge because open pull request #702 claimed

@@ -1127,3 +1127,117 @@ Feature: The manifest carries the roles
     When the manifest is loaded
     Then the table map contains no sign-off entry
     And the matrix table headers keep the declared names
+
+  @B-076
+  Scenario: CI and Release enforce their own claim prefixes
+    Given the schema supports Feature claim prefixes
+    And the repository uses its default claim grammar
+    And CI declares claim_prefix "CI-AC-" and claim "CI-AC-001"
+    And Release declares claim_prefix "RELEASE-AC-" and claim "RELEASE-AC-001"
+    When the check runs
+    Then both Features' claims pass the claim ID check
+    When CI also declares "RELEASE-AC-001"
+    And the check runs
+    Then SPEC4003 reports the new CI claim at its declaration, naming "RELEASE-AC-001" and the required prefix "CI-AC-"
+    And Release's claim still passes the claim ID check
+
+  @B-076 @boundary
+  Scenario: A claim prefix includes its literal punctuation and case
+    Given the schema supports Feature claim prefixes
+    And the repository uses its default claim grammar
+    And the manifest reads claim tags ignoring case
+    And CI declares claim_prefix "CI.AC-" and claims "CI.AC-001", "CIXAC-002" and "ci.ac-003"
+    When the check runs
+    Then the claim ID check reports "CIXAC-002" and "ci.ac-003" only
+
+  @B-004 @B-076
+  Scenario: The manifest names the Feature's prefix key
+    Given the schema supports Feature claim prefixes
+    And the manifest and the selected Feature schema name the claim prefix key "criterion_prefix"
+    And the repository uses its default claim grammar
+    And CI declares criterion_prefix "CI-AC-" and claim "RELEASE-AC-001"
+    When the check runs
+    Then SPEC4003 reports the CI claim at its declaration, naming "RELEASE-AC-001" and the required prefix "CI-AC-"
+
+  @B-077 @boundary
+  Scenario: A Feature can omit the prefix
+    Given the schema supports Feature claim prefixes
+    And the repository uses its default claim grammar
+    And CI declares claim_prefix "CI-AC-"
+    And another Feature declares no prefix and has claims "B-001" and "bad-id"
+    When the check runs
+    Then the claim ID check reports only "bad-id" in the Feature without a prefix
+
+  @B-078
+  Scenario Outline: An invalid prefix is a Feature frontmatter error
+    Given the schema supports Feature claim prefixes
+    And the CI Feature frontmatter contains the line '<declaration>'
+    When the check runs
+    Then SPEC1002 reports the invalid claim prefix in the CI specification
+
+    Examples:
+      | declaration              |
+      | claim_prefix: ""         |
+      | claim_prefix: "   "      |
+      | claim_prefix: ["CI-AC-"] |
+
+  @B-049 @boundary
+  Scenario: An older pin gives a custom frontmatter field no prefix semantics
+    Given the manifest pins schema version "0.2.1"
+    And the frontmatter schemas are read from the root
+    And the root's Feature schema permits a text field named "claim_prefix"
+    And CI declares claim_prefix "CI-AC-" and claim "B-001"
+    When the check runs
+    Then the CI claim passes the claim ID check
+
+  @B-079
+  Scenario: A Feature prefix keeps the default numbered suffix
+    Given the schema supports Feature claim prefixes
+    And the manifest uses all shipped defaults
+    And CI declares claim_prefix "CI-AC-"
+    And CI declares the following claims:
+      | Claim ID    |
+      | CI-AC-001   |
+      | CI-AC-001a  |
+      | CI-AC-01    |
+      | CI-AC-0001  |
+      | CI-AC-001A  |
+      | CI-AC-001aa |
+      | B-002       |
+    When the check runs
+    Then the claim ID check accepts only "CI-AC-001" and "CI-AC-001a"
+
+  @B-080
+  Scenario: The matrix and companion resolve the complete prefixed ID
+    Given the schema supports Feature claim prefixes
+    And the manifest uses all shipped defaults
+    And CI declares claim_prefix "CI-AC-" and claim "CI-AC-001a"
+    And CI's matrix cites "CI-AC-001a" and "CI-AC-002"
+    And CI's companion tags its scenarios with "@CI-AC-001a" and "@CI-AC-002"
+    When the check runs
+    Then the only unresolved matrix reference is "CI-AC-002"
+    And the only unresolved claim tag is "@CI-AC-002", with identifier "CI-AC-002"
+
+  @B-037 @B-080 @boundary
+  Scenario: A case-insensitive companion tag resolves the full prefixed ID
+    Given the schema supports Feature claim prefixes
+    And the repository uses its default claim grammar
+    And the manifest reads claim tags ignoring case
+    And CI declares claim_prefix "CI-AC-" and claim "CI-AC-001a"
+    And its companion tags scenarios with "@ci-ac-001A" and "@ci-ac-002"
+    When the check runs
+    Then the only unresolved claim tag is "@ci-ac-002", with identifier "ci-ac-002"
+
+  @B-077 @B-079 @B-080
+  Scenario: The Feature declaration selects the claim grammar
+    Given the schema supports Feature claim prefixes
+    And the repository's claim-ID regex is "^(CI-AC-|REQ-)[0-9]{4}$"
+    And CI declares claim_prefix "CI-AC-"
+    And Release omits the prefix
+    And each Feature declares "CI-AC-001a", "CI-AC-0001" and "REQ-0001"
+    And CI's matrix and companion cite "CI-AC-001a"
+    And Release's matrix and companion cite "REQ-0001"
+    When the check runs
+    Then the only well-formed CI claim is "CI-AC-001a"
+    And the well-formed Release claims are "CI-AC-0001" and "REQ-0001"
+    And both Features' matrix references and companion claim tags resolve
