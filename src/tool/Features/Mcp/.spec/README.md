@@ -233,13 +233,14 @@ Focused verification selects `net11.0`; the required gates keep their configured
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-31, 2026-11-04 -->
+<!-- last written by: spec-author, 2026-10-31, 2026-11-04 (ADR-0032 pointer) -->
 
 2026-11-04, by the owner in session: the premise of OQ-1 and ADR-0015 decision 3, a host inside `specht.tool`, is rejected. The MCP is a program of its own that runs the repository's pinned `specht` (ADR-0031, which supersedes ADR-0015 decision 3 only).
 
 - Withdrawn: B-007, C-4, C-6, C-7.
 - Reworded: B-001, B-006, B-009, B-011, B-013, B-014, B-015, C-2, C-8, C-10.
 - New: B-017 to B-034, C-9 to C-11; § 5 rows 11 to 19; A-4 to A-6.
+- Owner, 2026-11-04: the program's protocol layer is the official C# MCP SDK, stdio only (ADR-0032, which refines ADR-0031 and supersedes nothing); the checks it leaves the implementer are ADR-0032's Consequences.
 - Owner, 2026-11-04: package `specht.mcp`, command `specht-mcp` (OQ-2); installed through a local tool manifest or globally, no `dnx` (OQ-6); C-10 holds for this version only.
 - Owner, 2026-11-04: pin resolution (OQ-7), protocol revision 2026-07-28 only (OQ-5), the tool's own version stated (OQ-8), a minimum pinned-tool version checked once per session (OQ-9), roots from `--root` and the working directory (OQ-3). OQ-10 decided in session.
 - OQ-1 superseded; OQ-2, OQ-3, OQ-5, OQ-6, OQ-7, OQ-8, OQ-9, OQ-11, OQ-12 resolved; OQ-10 decided. B-019 and B-027 split on review, B-033 and B-034 added; A-2, B-008, B-017, B-023, C-8 and OQ-7 clarified on review.
