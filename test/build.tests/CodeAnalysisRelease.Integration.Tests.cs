@@ -141,10 +141,11 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         // Then
         ExitCode.Should().Be(0, Output);
-        var invocation = File.ReadAllLines(fixture.GhLog)
-            .Should().ContainSingle(line => line.StartsWith($"release create v{version} ", StringComparison.Ordinal)).Which;
-        invocation.Should().NotContain(".nupkg").And.Contain("--generate-notes --verify-tag");
-        invocation.Contains("--prerelease", StringComparison.Ordinal).Should().Be(prerelease);
+        var arguments = File.ReadAllLines(Path.Combine(fixture.Root, "create-arguments.txt"));
+        string[] expected = prerelease
+            ? ["release", "create", $"v{version}", "--generate-notes", "--verify-tag", "--prerelease", "--repo", "RLittlesII/specht"]
+            : ["release", "create", $"v{version}", "--generate-notes", "--verify-tag", "--repo", "RLittlesII/specht"];
+        arguments.Should().Equal(expected);
     }
 
     [Fact]
@@ -261,7 +262,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
                 printf '%s\n' "$*" >> "$INVOCATIONS"
                 case "$1 $2" in
                   "release view") [ -n "$EXISTING_RELEASE" ] || exit 1; printf '%s\n' "$EXISTING_RELEASE" ;;
-                  "release create") [ "$CREATE_FAILS" != "true" ] || exit 1 ;;
+                  "release create") printf '%s\n' "$@" > create-arguments.txt; [ "$CREATE_FAILS" != "true" ] || exit 1 ;;
                   "api "*) printf '%s\n' "$TAG_COMMIT" ;;
                 esac
 

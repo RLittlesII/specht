@@ -83,7 +83,7 @@ internal sealed partial class SpechtBuild
                 "The release job has no GitHub token.");
             var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
             Assert.True(!string.IsNullOrWhiteSpace(repository), "The release job has no repository.");
-            var prerelease = tag.Contains('-', StringComparison.Ordinal) ? "--prerelease " : string.Empty;
+            var prerelease = tag.Contains('-', StringComparison.Ordinal) ? "--prerelease" : string.Empty;
             var gh = ToolPathResolver.GetPathExecutable("gh");
 
             if (IsPublishedAtThisCommit(gh, repository!, tag))
@@ -94,7 +94,7 @@ internal sealed partial class SpechtBuild
 
             ProcessTasks.StartProcess(
                     gh,
-                    $"release create \"{tag}\" --generate-notes --verify-tag {prerelease}--repo \"{repository}\"",
+                    $"release create \"{tag}\" --generate-notes --verify-tag {prerelease} --repo \"{repository}\"",
                     RootDirectory)
                 .AssertZeroExitCode();
         });
