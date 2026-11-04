@@ -1,0 +1,42 @@
+id: "0356"
+type: chore
+title: Close milestone 0.4.0 and advance the development version
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+
+created: "2026-11-04"
+updated: "2026-11-04"
+closed: "2026-11-04"
+
+summary: |
+  All 22 selected 0.4.0 items are done, and its GitHub milestone has no
+  open issues, but the goal file still named it when the closeout began.
+  The existing mirror keeps every named milestone open. Complete the
+  owner's goal-section removal on chore/0.4.0 by advancing the development
+  version and updating the roadmap, then verify the mirror closes 0.4.0
+  after merge through the existing 0055-F9 B-060 behavior.
+
+acceptance_criteria:
+  - "The completed 0.4.0 section is absent from .issue/.goal; 0.5.0 is first and the remaining finish lines are unchanged."
+  - "version.json advances from 0.4-preview to 0.5-preview without changing schema versions."
+  - "docs/roadmap.md records the completed 0.4.0 slice and identifies 0.5.0 as current, without claiming its MCP work is built."
+  - "Existing mirror tests, Format, the self-check and the full build pass."
+  - "After merge, record the successful mirror run and verify GitHub milestone 0.4.0 is closed with no open issues; 0.5.0 remains open."
+
+decisions:
+  - "2026-11-04, the repository owner: complete the 0.4.0 closeout on chore/0.4.0, advance the version, update the roadmap, and verify the milestone closes after merge."
+  - "2026-11-04: preserve the owner's existing goal-removal commit and PR #718; add the remaining closeout work without rewriting history."
+
+out_of_scope:
+  - "No checker, analyzer, schema, mirror mechanism or scenario changes; existing 0055-F9 B-060 applies. Constraints preserved: 0055-F9 C-1, C-2 and C-3."
+  - "No release tag, package publication, manual milestone closure or changes to future milestone scope."
