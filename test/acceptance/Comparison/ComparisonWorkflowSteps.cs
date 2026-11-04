@@ -28,11 +28,13 @@ public sealed class ComparisonWorkflowSteps
     public void WhenTheComparatorStepsAreInspected(string job) =>
         _steps = ((YamlSequenceNode) ((YamlMappingNode) _jobs![job])["steps"]).Cast<YamlMappingNode>().ToArray();
 
-    [Then("the job builds the comparator directly from its checkout before invoking it")]
+    [Then("the job builds the comparator directly only after a successful checkout and before invoking it")]
     public void ThenTheJobBuildsFromSource()
     {
         var build = Array.FindIndex(_steps, static step => Value(step, "id") == "comparatorBuild");
         build.Should().BeGreaterThan(-1);
+        Value(_steps[build], "if").Should().Be("${{ steps.checkout.outcome == 'success' }}");
+        Value(_steps.Single(static step => Value(step, "id") == "checkout"), "uses").Should().StartWith("actions/checkout@");
         Value(_steps[build], "run").Trim().Should().Be(
             "dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o .artifacts/comparator");
         _steps.Take(build).Should().Contain(static step => Value(step, "uses").StartsWith("actions/checkout@", StringComparison.Ordinal));

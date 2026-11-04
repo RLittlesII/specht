@@ -306,7 +306,7 @@ internal sealed partial class SpechtBuild
             Matrix = [RunnerPool],
             Steps =
             [
-                new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false, ContinueOnError = true },
+                new CheckoutStep("Checkout") { Id = "checkout", FetchDepth = 0, Clean = true, PersistCredentials = false, ContinueOnError = true },
                 new SetupDotNetStep("Use .NET 10 and 11 SDKs")
                 {
                     DotNetVersion = "10.0.401",
@@ -344,7 +344,7 @@ internal sealed partial class SpechtBuild
         return configuration;
     }
 
-    private static CheckoutStep Checkout() => new("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false };
+    private static CheckoutStep Checkout() => new("Checkout") { Id = "checkout", FetchDepth = 0, Clean = true, PersistCredentials = false };
 
     private static SetupDotNetStep UseDotNet() => new("Use .NET 10 and 11 SDKs")
     {
@@ -355,6 +355,7 @@ internal sealed partial class SpechtBuild
     private static RunStep BuildComparator() => new("Build the comparator from source")
     {
         Id = "comparatorBuild",
+        If = "${{ steps.checkout.outcome == 'success' }}",
         Run = $"dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o {ComparatorPath}",
         ContinueOnError = true,
     };

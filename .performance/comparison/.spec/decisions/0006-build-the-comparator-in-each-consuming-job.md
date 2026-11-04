@@ -15,8 +15,9 @@ its tagged checkout for `net10.0`, in Release configuration, into
 packages without restoring local tools or needing a private-feed credential.
 
 The release job builds after successful publication. The comparison job builds
-before collection. Each build is advisory and comparator invocations require that
-job's build to succeed. A skipped invocation reaches the existing Incomplete
+before collection. Each build requires a successful checkout, because comparison
+treats checkout failure as advisory and a self-hosted runner can hold stale source.
+Each build is advisory and comparator invocations require that job's build to succeed. A skipped invocation reaches the existing Incomplete
 summary with its rerun instruction. The build step receives no comparison token.
 
 This supersedes § 7's build-job `PublishComparator` target and binary artifact

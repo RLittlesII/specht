@@ -13,7 +13,7 @@ Feature: Release baseline comparison
   Scenario Outline: Each consuming job builds its comparator from the tagged source
     Given the generated release workflow
     When its "<job>" comparator steps are inspected
-    Then the job builds the comparator directly from its checkout before invoking it
+    Then the job builds the comparator directly only after a successful checkout and before invoking it
     And comparator build failures leave invocation skipped and an advisory incomplete summary
     And the workflow transfers no comparator binary artifact
 

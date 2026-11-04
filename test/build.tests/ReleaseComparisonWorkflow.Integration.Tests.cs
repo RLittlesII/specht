@@ -257,6 +257,8 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
 
         // Then
         build.Should().BeGreaterThan(-1).And.BeLessThan(invocation);
+        Value(steps[build], "if").Should().Be("${{ steps.checkout.outcome == 'success' }}");
+        Uses(steps.Single(static step => Value(step, "id") == "checkout")).Should().StartWith("actions/checkout@");
         Value(steps[build], "run").Trim().Should().Be(
             "dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o .artifacts/comparator");
         steps[build].Children.ContainsKey("env").Should().BeFalse();

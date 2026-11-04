@@ -198,7 +198,8 @@ records. After publication in `release`, and before collection in `comparison`,
 `dotnet publish .performance/comparison/comparison.csproj -c Release -f net10.0 -o .artifacts/comparator`
 restores and publishes the comparator without invoking the local-tool restore in
 `./build.cmd`. Its dependencies come from nuget.org. The build step has no
-comparison token and continues on error. Each comparator invocation requires its
+comparison token and continues on error. The source build requires a successful
+checkout, so a failed advisory checkout cannot compile stale source. Each comparator invocation requires its
 job's build step to succeed, so a failed build reaches the existing Incomplete
 summary without running an older binary. `Release` depends on `VerifyTag` and
 `Pack`; no build-job comparator target or binary artifact remains. The request
@@ -583,7 +584,7 @@ empty project before its first tests. [`acceptance.csproj`](../../../test/accept
 
 `ConsumingJob_WhenGenerated_ShouldBuildItsComparatorFromSourceBeforeInvocation`
 checks both jobs' direct publish command, checkout and SDK ordering, the absence
-of a build-step token and publication before the release-side build.
+of a build-step token, the successful-checkout guard and publication before the release-side build.
 `ComparatorBuildFailure_WhenGenerated_ShouldSkipInvocationAndLeaveAnAdvisorySummary`
 checks `continue-on-error`, success guards on every invocation and the fallback
 summary's Incomplete result and rerun instruction.
