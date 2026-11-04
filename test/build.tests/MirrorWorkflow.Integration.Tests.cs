@@ -13,9 +13,9 @@ public sealed class MirrorWorkflowIntegrationTests
 
         Scalars(push["branches"]).Should().Equal("main");
         Scalars(push["paths"]).Should().Equal(MirroredPaths);
-        MirrorCommand().Should().Be("./build.cmd --target Mirror --skip MirrorTest");
-        MirrorEnvironment()["MirrorBefore"].ToString().Should().Be("${{ github.event.before }}");
-        MirrorEnvironment()["MirrorAfter"].ToString().Should().Be("${{ github.event.after }}");
+        MirrorStep()["uses"].ToString().Should().Be("./.github/actions/mirror");
+        MirrorInputs()["before"].ToString().Should().Be("${{ github.event.before }}");
+        MirrorInputs()["after"].ToString().Should().Be("${{ github.event.after }}");
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public sealed class MirrorWorkflowIntegrationTests
 
         backfill["type"].ToString().Should().Be("boolean");
         backfill["default"].ToString().Should().Be("false");
-        MirrorEnvironment()["MirrorBackfill"].ToString().Should().Be("${{ inputs.backfill || false }}");
+        MirrorInputs()["backfill"].ToString().Should().Be("${{ inputs.backfill || false }}");
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class MirrorWorkflowIntegrationTests
             ["issues"] = "write",
             ["pull-requests"] = "write",
         });
-        MirrorEnvironment()["GH_TOKEN"].ToString().Should().Be("${{ github.token }}");
+        MirrorInputs()["token"].ToString().Should().Be("${{ github.token }}");
         File.ReadAllText(WorkflowPath()).Should().NotContain("secrets.");
     }
 
@@ -90,6 +90,46 @@ public sealed class MirrorWorkflowIntegrationTests
 
         ((YamlMappingNode) checkout["with"])["fetch-depth"].ToString().Should().Be("0");
         Array.IndexOf(steps, checkout).Should().BeLessThan(Array.IndexOf(steps, MirrorStep()));
+    }
+
+    [Fact]
+    public void B069_Workflow_WhenGenerated_ShouldUseTheLocalActionWithoutDotnet()
+    {
+        var steps = Steps();
+
+        MirrorStep()["uses"].ToString().Should().Be("./.github/actions/mirror");
+        steps.Where(static step => step.Children.ContainsKey("uses"))
+            .Should().NotContain(static step => step["uses"].ToString().StartsWith("actions/setup-dotnet@", StringComparison.Ordinal));
+        MirrorInputs()["script"].ToString().Should().Be(".github/mirror/mirror_items.py");
+        steps.Should().NotContain(static step => step.Children.ContainsKey("id") && step["id"].ToString() == "mirrorTest");
+    }
+
+    [Fact]
+    public void B067_ActionMetadata_WhenRead_ShouldMapInputsThroughTheEnvironment()
+    {
+        var stream = new YamlStream();
+        using var input = File.OpenText(Path.Combine(FindRepositoryRoot(), ".github", "actions", "mirror", "action.yml"));
+        stream.Load(input);
+        var action = (YamlMappingNode) stream.Documents[0].RootNode;
+        var inputs = (YamlMappingNode) action["inputs"];
+        var runs = (YamlMappingNode) action["runs"];
+        var step = (YamlMappingNode) ((YamlSequenceNode) runs["steps"]).Single();
+        var environment = (YamlMappingNode) step["env"];
+
+        runs["using"].ToString().Should().Be("composite");
+        ((YamlMappingNode) inputs["script"])["default"].ToString().Should().BeEmpty();
+        ((YamlMappingNode) inputs["root"])["default"].ToString().Should().Be("${{ github.workspace }}");
+        ((YamlMappingNode) inputs["repository"])["default"].ToString().Should().Be("${{ github.repository }}");
+        ((YamlMappingNode) inputs["token"])["default"].ToString().Should().Be("${{ github.token }}");
+        foreach (var name in new[] { "root", "repository", "before", "after", "backfill", "dry-run", "script" })
+        {
+            environment["MIRROR_" + name.Replace('-', '_').ToUpperInvariant()].ToString()
+                .Should().Be("${{ inputs." + name + " }}");
+        }
+
+        environment["GH_TOKEN"].ToString().Should().Be("${{ inputs.token }}");
+        environment["MIRROR_ACTION_PATH"].ToString().Should().Be("${{ github.action_path }}");
+        step["run"].ToString().Should().NotContain("${{");
     }
 
     private static string WorkflowPath() => Path.Combine(FindRepositoryRoot(), ".github", "workflows", "mirror.yml");
@@ -117,9 +157,7 @@ public sealed class MirrorWorkflowIntegrationTests
         Steps().Single(static step =>
             step.Children.ContainsKey("id") && step["id"].ToString() == "mirror");
 
-    private static YamlMappingNode MirrorEnvironment() => (YamlMappingNode) MirrorStep()["env"];
-
-    private static string MirrorCommand() => MirrorStep()["run"].ToString().Trim();
+    private static YamlMappingNode MirrorInputs() => (YamlMappingNode) MirrorStep()["with"];
 
     private static string[] Scalars(YamlNode node) => ((YamlSequenceNode) node).Select(static item => item.ToString()).ToArray();
 
@@ -141,6 +179,8 @@ public sealed class MirrorWorkflowIntegrationTests
         "**/.issue/**",
         "epics/**/epic.md",
         ".github/mirror/**",
+        ".github/actions/mirror/**",
+        ".agents/skills/specht-conventions/scripts/**",
         ".github/workflows/mirror.yml",
     ];
 }

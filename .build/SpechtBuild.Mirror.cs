@@ -13,7 +13,15 @@ using Serilog;
     GitHubActionsImage.UbuntuLatest,
     AutoGenerate = true,
     OnPushBranches = ["main"],
-    OnPushIncludePaths = ["**/.issue/**", "epics/**/epic.md", ".github/mirror/**", ".github/workflows/mirror.yml"],
+    OnPushIncludePaths =
+    [
+        "**/.issue/**",
+        "epics/**/epic.md",
+        ".github/mirror/**",
+        ".github/actions/mirror/**",
+        ".agents/skills/specht-conventions/scripts/**",
+        ".github/workflows/mirror.yml",
+    ],
     InvokedTargets = [nameof(Mirror)],
     Enhancements = [nameof(MirrorMiddleware)]
 )]
@@ -21,7 +29,6 @@ using Serilog;
 internal sealed partial class SpechtBuild
 {
     private Target Mirror => definition => definition
-        .DependsOn(MirrorTest)
         .Executes(() =>
         {
             var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
@@ -71,18 +78,20 @@ internal sealed partial class SpechtBuild
 
         RunThroughEntryScript(job);
 
-        var checkout = job.Steps.OfType<CheckoutStep>().Single();
-        checkout.FetchDepth = 0;
-        job.Steps.Insert(
-            job.Steps.IndexOf(checkout) + 1,
-            new SetupDotNetStep("Use .NET 10 and 11 SDKs") { DotNetVersion = "10.0.401", With = { ["global-json-file"] = "global.json" } });
-
-        job.Steps.OfType<RunStep>().Single(static step => step.Id == "mirror").Environment = new Dictionary<string, string>
+        job.Steps.OfType<CheckoutStep>().Single().FetchDepth = 0;
+        var mirror = job.Steps.OfType<RunStep>().Single(static step => step.Id == "mirror");
+        job.Steps[job.Steps.IndexOf(mirror)] = new UsingStep("Mirror")
         {
-            ["GH_TOKEN"] = "${{ github.token }}",
-            ["MirrorBefore"] = "${{ github.event.before }}",
-            ["MirrorAfter"] = "${{ github.event.after }}",
-            ["MirrorBackfill"] = "${{ inputs.backfill || false }}",
+            Id = "mirror",
+            Uses = "./.github/actions/mirror",
+            With = new Dictionary<string, string>
+            {
+                ["token"] = "${{ github.token }}",
+                ["script"] = ".github/mirror/mirror_items.py",
+                ["before"] = "${{ github.event.before }}",
+                ["after"] = "${{ github.event.after }}",
+                ["backfill"] = "${{ inputs.backfill || false }}",
+            },
         };
 
         configuration.Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with

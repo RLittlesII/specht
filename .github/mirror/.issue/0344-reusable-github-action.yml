@@ -1,0 +1,29 @@
+id: "0344"
+type: feature
+title: Expose the work-item mirror as a reusable GitHub action
+status: done
+value: 4
+risk: 2
+parent: "0293"
+children: []
+depends_on: []
+spikes: []
+spec: .github/mirror/.spec/README.md
+claims: ["B-066", "B-067", "B-068", "B-069", "B-070", "B-071"]
+created: "2026-11-02"
+updated: "2026-11-04"
+closed: "2026-11-04"
+summary: |
+  Package the existing mirror for callers in other repositories and consume
+  that action from this repository’s generated mirror workflow.
+acceptance_criteria:
+  - "0055-F9 B-066 to B-071 are covered."
+decisions:
+  - "2026-11-04: owner requested consumer process scripts; decision 0013 addendum and B-070 to B-071 record the contract. Main and every open pull request were checked before claiming the new claims."
+  - "2026-11-02: owner selected hosting in specht; decision 0013 records the action boundary."
+  - "2026-11-02: main and open pull request 690 were checked; neither reserves 0344 or mirror claims B-066 to B-069."
+  - "2026-11-02: 76 Python mirror/action tests and 10 focused net11.0 workflow tests pass. The full build passes Specht, Restore, Format, Compile, CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest across its configured frameworks."
+  - "2026-11-04: 81 Python tests and 10 focused net11.0 workflow tests pass. The full build passes Specht, Restore, Format, Compile, CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest across the configured frameworks."
+  - "2026-11-04: review 5776968566 removes the runtime Python test gate and selects the repository script explicitly. New action coverage moves to C# integration tests; 22 focused net11.0 cases and the full configured build pass. Decision 0013 and C-13 record the correction."
+out_of_scope:
+  - "Project boards, new reconciliation rules, B-064 implementation and release tags."

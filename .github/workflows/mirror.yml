@@ -24,6 +24,8 @@ on:
       - '**/.issue/**'
       - 'epics/**/epic.md'
       - '.github/mirror/**'
+      - '.github/actions/mirror/**'
+      - '.agents/skills/specht-conventions/scripts/**'
       - '.github/workflows/mirror.yml'
   workflow_dispatch:
     inputs:
@@ -59,21 +61,12 @@ jobs:
         with:
           clean: 'false'
           fetch-depth: '0'
-      - name: 🔨 Use .NET 10 and 11 SDKs
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: 'global.json'
-          dotnet-version: '10.0.401'
-      - name: 💨 Mirror Test
-        id: mirrorTest
-        run: |
-          ./build.cmd --target MirrorTest
       - name: Mirror
         id: mirror
-        env:
-          GH_TOKEN: '${{ github.token }}'
-          MirrorBefore: '${{ github.event.before }}'
-          MirrorAfter: '${{ github.event.after }}'
-          MirrorBackfill: '${{ inputs.backfill || false }}'
-        run: |
-          ./build.cmd --target Mirror --skip MirrorTest
+        uses: ./.github/actions/mirror
+        with:
+          token: '${{ github.token }}'
+          script: '.github/mirror/mirror_items.py'
+          before: '${{ github.event.before }}'
+          after: '${{ github.event.after }}'
+          backfill: '${{ inputs.backfill || false }}'

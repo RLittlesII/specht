@@ -153,8 +153,11 @@ path anywhere is a defect (brief § 9), and the review looks for it.
 - **A generated workflow invokes a NUKE target** through `InvokedTargets`;
   `Enhancements` middleware only adds what the attribute cannot express
   (inputs, concurrency, permissions, step environment) and never replaces the
-  job's steps. `renovate` is the exception: it runs a third-party action
-  ([lesson 0013](../../../../.spec/lessons/0013-a-generated-workflow-invokes-a-target.md)).
+  job's steps. The exceptions are `renovate`, which runs a third-party action,
+  and `mirror`, which invokes the reusable mirror action
+  ([mirror decision 0013](../../../../.github/mirror/.spec/decisions/0013-the-mirror-ships-as-a-reusable-composite-action.md)).
+  [Lesson 0013](../../../../.spec/lessons/0013-a-generated-workflow-invokes-a-target.md)
+  records why target invocation remains the default.
 - **A workflow with one image has no matrix.** The generator emits `matrix` only
   for more than one image, so `${{ matrix.os }}` is the empty string in a
   single-image workflow and a condition on it is false without failing anything.

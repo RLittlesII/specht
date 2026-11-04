@@ -259,6 +259,8 @@ Feature: Work-item mirror
       | a work item                    |
       | an epic                        |
       | the mirror's script            |
+      | the reusable action            |
+      | the shared reader source       |
       | the mirror's generated workflow |
 
   @B-037
@@ -447,3 +449,54 @@ Feature: Work-item mirror
     Given an epic whose issue is in milestone 0.3.0
     When the mirror runs
     Then its issue is still in milestone 0.3.0
+
+  @B-066
+  Scenario: Another repository uses the mirror action without the specht build
+    Given a consumer checkout with work items and a release plan
+    And the action is downloaded separately from that checkout
+    When the consumer calls the mirror action with its workflow token
+    Then its issues and milestones are reconciled from the consumer checkout
+    And no build or skill installation in the consumer is needed
+
+  @B-067
+  Scenario: Action inputs select the checkout and the pushed range
+    Given a consumer checkout at a caller-supplied root and repository
+    When the action receives before and after commits and backfill enabled
+    Then it passes that root, repository, commit range and backfill to the mirror
+    And it appends the mirror counts to the workflow step summary
+
+  @B-068 @boundary
+  Scenario: A dry run through the action writes no GitHub state
+    Given a consumer checkout with a work item that has no mirrored issue
+    When the consumer calls the action with dry-run enabled
+    Then the action prints the planned issue creation
+    And it writes nothing to GitHub
+
+  @B-069
+  Scenario: This repository consumes its reusable action
+    When the mirror workflow is generated
+    Then it invokes the local reusable mirror action
+    And it passes the repository mirror script explicitly
+    And it runs no mirror test suite in that job
+    And it installs no .NET SDK for that job
+
+  @B-070
+  Scenario: A consumer runs its own process script
+    Given an executable script in a consumer checkout with a path containing spaces
+    When the action receives that script path and mirror inputs
+    Then it runs only that script from the consumer root
+    And the script receives separate mirror arguments and the workflow environment
+
+  @B-071 @boundary
+  Scenario: A failing script returns its exit code
+    Given a consumer script that exits with code 17
+    When the action runs that script
+    Then the action exits with code 17
+    And it does not run the bundled mirror
+
+  @B-071 @boundary
+  Scenario: An unstartable script fails
+    Given a script path that is missing or not executable
+    When the action runs that script
+    Then the action exits with code 2 and a script startup error
+    And it does not run the bundled mirror
