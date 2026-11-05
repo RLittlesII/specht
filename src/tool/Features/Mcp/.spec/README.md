@@ -144,32 +144,38 @@ An agent or an editor's assistant in a repository that pins `specht` reaches the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-04 (item 0329) -->
+<!-- last written by: implementer, 2026-11-04 (item 0329), 2026-11-04 (items 0359 and 0330) -->
 
-| Concern                                                                                                                                                                     | Classification | Where                                                                |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| Parsing `--root` and `--help`; a root that is not a directory is named as given on stderr and exits `2` before any session (B-010, B-013)                                   | Both           | `src/mcp/Features/Host/HostCommand.cs`                               |
-| The one supported revision, 2026-07-28, handed to the SDK as the server's protocol version (B-014, B-019, B-033)                                                            | Business       | `HostCommand.Revision`, `HostCommand.ExecuteAsync`                   |
-| The server's identity, its empty capabilities and the version it states, the informational version of its own assembly (B-001, B-006)                                       | Business       | `HostCommand.ExecuteAsync`, `ThisAssembly`                           |
-| The exit code `2` for missing input, repeated here because the MCP references neither the tool nor the engine (C-9)                                                         | Business       | `HostCommand.MissingInput`                                           |
-| The application's name and version in help                                                                                                                                  | Technical      | `src/mcp/Features/Host/HostRegistration.cs`                          |
-| The host's composition: one command, set as the default                                                                                                                     | Technical      | `src/mcp/Program.cs`                                                 |
-| JSON-RPC framing, one message per line, the discovery answer, the version negotiation and its errors, and ending on end of input (B-002, B-005, B-011, B-012, B-019, B-032) | Technical      | `ModelContextProtocol` 2.2.0, the SDK (ADR-0032)                     |
-| Standard input and output as the one transport: no port, no outbound call, no file (B-003, B-004, B-008; C-1, C-3)                                                          | Technical      | `src/mcp/mcp.csproj` (no AspNetCore package), `StdioServerTransport` |
+| Concern                                                                                                                                                                                                        | Classification | Where                                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| Parsing `--root` and `--help`; a root that is not a directory is named as given on stderr and exits `2` before any session (B-010, B-013)                                                                      | Both           | `src/mcp/Features/Host/HostCommand.cs`                                          |
+| The one supported revision, 2026-07-28, handed to the SDK as the server's protocol version (B-014, B-019, B-033)                                                                                               | Business       | `HostCommand.Revision`, `HostCommand.ExecuteAsync`                              |
+| The server's identity, its empty capabilities and the version it states, the informational version of its own assembly (B-001, B-006)                                                                          | Business       | `HostCommand.ExecuteAsync`, `ThisAssembly`                                      |
+| The exit code `2` for missing input, repeated here because the MCP references neither the tool nor the engine (C-9)                                                                                            | Business       | `HostCommand.MissingInput`                                                      |
+| The application's name and version in help                                                                                                                                                                     | Technical      | `src/mcp/Features/Host/HostRegistration.cs`                                     |
+| The host's composition: each slice registers itself and one factory lists them, with the process run passed in (OQ-10, ADR-0007)                                                                               | Technical      | `src/mcp/HostFactory.cs`, `src/mcp/Program.cs`, `TypeRegistrar`, `TypeResolver` |
+| The root the session answers for, stated once by the command and read by every part (B-009)                                                                                                                    | Business       | `SessionRoot`, `HostCommand.ExecuteAsync`                                       |
+| Which `specht` runs: the root's local tool manifest decides; a pin runs through `dotnet tool run` in the root, no pin runs the global tool, and nothing is restored (B-017, B-018, B-020, B-022, B-023, B-030) | Business       | `SpechtTool.RunAsync`                                                           |
+| The messages a call fails with or reports beside the answer, and the pointers in them (B-021, B-024, B-025, B-029; C-12)                                                                                       | Business       | `SpechtTool`                                                                    |
+| The tool's version, read once per session for each tool run and held to the minimum (B-026 to B-029, B-034)                                                                                                    | Business       | `SpechtTool.CheckVersionAsync`, `SpechtTool.Minimum`, `ToolVersion`             |
+| Starting a program: no shell, standard input closed, output read as UTF-8 and handed back as written                                                                                                           | Technical      | `IProcessRun`, `SystemProcessRun`                                               |
+| JSON-RPC framing, one message per line, the discovery answer, the version negotiation and its errors, and ending on end of input (B-002, B-005, B-011, B-012, B-019, B-032)                                    | Technical      | `ModelContextProtocol` 2.2.0, the SDK (ADR-0032)                                |
+| Standard input and output as the one transport: no port, no outbound call, no file (B-003, B-004, B-008; C-1, C-3)                                                                                             | Technical      | `src/mcp/mcp.csproj` (no AspNetCore package), `StdioServerTransport`            |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-04 (item 0329) -->
+<!-- last written by: implementer, 2026-11-04 (item 0329), 2026-11-04 (items 0359 and 0330) -->
 
-**The project (B-001, B-013; C-9).** `src/mcp/mcp.csproj` packs `specht.mcp`, command `specht-mcp`, assembly `specht.mcp`. It references `ModelContextProtocol` and `Spectre.Console.Cli`, and neither the engine nor the tool project (C-9). Versions are central in `Directory.Packages.props`, under the label `Mcp`.
+**The project (B-001, B-013; C-9).** `src/mcp/mcp.csproj` packs `specht.mcp`, command `specht-mcp`, assembly `specht.mcp`. It references `ModelContextProtocol`, `Spectre.Console.Cli` and `Microsoft.Extensions.DependencyInjection` (central, already pinned for the tool), and neither the engine nor the tool project (C-9). Versions are central in `Directory.Packages.props`, under the label `Mcp`.
 
-**The slice.** One folder, `src/mcp/Features/Host/`, laid out as [`dotnet-tool` § Vertical Slice](../../../../../.agents/skills/dotnet-tool/references/vertical-slice.md) lays out a command:
+**The slices.** Three folders under `src/mcp/Features/`, each laid out as [`dotnet-tool` § Vertical Slice](../../../../../.agents/skills/dotnet-tool/references/vertical-slice.md) lays out a command. `Host` is this item's, `PinnedTool` is `0359`'s and `Reading` is `0132-F4`'s (`0330`):
 
-- [`HostCommand`](../../../../mcp/Features/Host/HostCommand.cs) is the one default command, with its nested `Settings` (`--root <DIR>`, default `.`). It checks the root with `Directory.Exists`, writes `specht-mcp: '<root as given>' is not a directory.` on stderr and returns `2` before a transport exists (B-010). Otherwise it builds `McpServerOptions` and runs `McpServer.Create(new StdioServerTransport("specht-mcp"), options)` until `RunAsync` returns, which is the end of standard input, and returns `0` (B-012). The root is checked and not otherwise used: an answer that depends on it arrives with `0330` (B-009, § 9).
+- [`HostCommand`](../../../../mcp/Features/Host/HostCommand.cs) is the one default command, with its nested `Settings` (`--root <DIR>`, default `.`). It checks the root with `Directory.Exists`, writes `specht-mcp: '<root as given>' is not a directory.` on stderr and returns `2` before a transport exists (B-010). Otherwise it builds `McpServerOptions` and runs `McpServer.Create(new StdioServerTransport("specht-mcp"), options)` until `RunAsync` returns, which is the end of standard input, and returns `0` (B-012). It then states the root once, as a full path, in `SessionRoot` (B-009), and gives the SDK the tools the slices registered.
 - [`HostRegistration`](../../../../mcp/Features/Host/HostRegistration.cs) names the application and gives Spectre `ThisAssembly.AssemblyInformationalVersion`.
-- [`Program.cs`](../../../../mcp/Program.cs) is `new CommandApp<HostCommand>()`, `Configure(AddHost)`, `RunAsync(args)`.
+- [`SessionRoot`](../../../../mcp/Features/Host/SessionRoot.cs) is the one mutable object of the host: the command line names the root after the application is composed, so the command states it before the session starts and each part reads it.
+- [`Program.cs`](../../../../mcp/Program.cs) is `HostFactory.Create(new SystemProcessRun()).RunAsync(args)`.
 
-No domain type, interface or abstraction is declared in this item: the protocol types are the SDK's, and the program defines no answer (C-5). The compiler's declarations are the authority; this section restates none.
+The compiler's declarations are the authority; this section restates none.
 
 ```mermaid
 flowchart LR
@@ -180,7 +186,35 @@ flowchart LR
     E --> F[stdin closed: RunAsync returns, exit 0]
 ```
 
-**Composition (OQ-10).** ADR-0007's direction is that each part registers itself and one factory composes the host. This host has one part, so `Program.cs` lists it and no factory exists; a factory with one caller is the abstraction `coding-conventions` § Design forbids. The factory arrives with `0359`, the second part, which brings services for the pin lookup and the process run. No static state is added. The command takes no injected service, so no type registrar is built. Reuse found: the check command's shape (a command with nested `Settings`, a message on stderr, an exit code) is followed; `ExitCodes` is not referenced because it lives in the tool project (C-9), so the one code this item needs is a constant of the command. `OQ-10` stays decided in § 11 as the spec-author recorded it; this paragraph is the design it deferred to § 7.
+**Composition (OQ-10, settled with `0359`).** ADR-0007's direction governs: each slice registers itself and one factory composes the host. [`HostFactory.Create`](../../../../mcp/HostFactory.cs) lists the parts, `AddHost`, `AddPinnedTool` and `AddReading`, and takes what only the caller knows, the `IProcessRun`: `Program.cs` passes `SystemProcessRun`, and a test builds the same host with a fake. The factory is a static method with no state; the state is in `SessionRoot` and in `SpechtTool`'s version memo, both instances. `TypeRegistrar` and `TypeResolver` are Spectre's bridge to the container, the same four members the tool's own have: the MCP references neither the tool nor the engine (C-9), so there is no shared place to reference them from, and the copy is the second caller's price. A tool is registered as an `McpServerTool` by the slice that owns it, and `HostCommand` takes them all and hands them to the SDK's `ToolCollection`, so `0331`'s tools add a registration and touch neither the factory's list of internals nor the command.
+
+**Which `specht` runs (`0359`; B-017 to B-030, B-034; ADR-0031).** [`SpechtTool.RunAsync`](../../../../mcp/Features/PinnedTool/SpechtTool.cs) decides at each call, with the root as the working directory:
+
+1. `dotnet tool list` is the .NET local tool lookup, so the nearest manifest above the root counts (A-2). A row for `specht.tool` is the pin. The listing is read at each call and not remembered: a manifest edited between calls is the next call's (C-4). A listing that fails with an exit code is an error that quotes stderr, and the host does not fall back to any other tool; a listing that cannot start, no `dotnet`, is read as no pin.
+2. A pin runs `dotnet tool run specht -- <arguments>`. `dotnet tool run` runs what is restored and restores nothing, so B-018 is a property of the command and not of a check the host makes. No program is looked for on the path while a pin exists (B-022): the host names `dotnet`, never `specht`, in that branch.
+3. No pin runs `specht` as the system finds it, the global tool (B-023). The answer is `ToolOutcome.Ran` with an unpinned report, a separate text block beside the command's own (B-024), containing `docs/mcp.md#pin-the-tool` (B-025). A `specht` that will not start is the error that names the pin and the global tool as not found (B-030).
+4. The first use of each tool in a session runs `--version` once; the version is kept per tool run, keyed by `global` or `pinned <version>`, so a pin changed between calls is a new tool and is checked (B-026). A failed check is not kept. A pinned tool whose `--version` does not run is reported as not restored, naming `specht.tool` and the pinned version, with `docs/mcp.md#restore-the-tool` (B-020, B-021), and the host does not restore it. A tool older than `SpechtTool.Minimum` fails the call with an error naming it and containing `docs/mcp.md#update-the-tool`, and is given nothing but `--version` (B-027 to B-029, B-034). `--version` states the informational version, a commit after a plus sign and sometimes a pre-release label; `ToolVersion` reads the leading `major.minor.patch`.
+
+**The minimum, `0.1.90`, is the implementation's choice and is flagged for the owner (OQ-9: "the minimum is an implementation fact, not a claim").** No claim names it. The host calls two things of the tool, `--version` and the check's `--json`, and the first release tag that has both is `v0.1.90` (`--version` merged by item `0182` on 2026-10-11 and `--json` by item `0035`, before it). A tool older than that either has no `--version`, so the check cannot be made, or has no document to relay. It is the lowest value that makes the host's own calls well defined; a higher one is the owner's if a later command, `0331`'s `rules` or `manifest`, needs it, and each later tool raises it with its own test. Not verified: that `specht.tool` 0.1.90 was published to the package feed under that version; the tag is a commit on this repository's history.
+
+**The process run (`IProcessRun`).** The one place the host starts a program. `SystemProcessRun` starts it without a shell, closes its standard input at once so it never reads the session's, reads standard output and standard error as UTF-8 without a byte order mark and returns them as written (B-001 of `0132-F4`), kills the process tree on cancellation, and returns `null` when the system cannot start the program. It is an interface because a test decides exit codes, a start that fails and output with no trailing newline without a process, which `0132-F4` § 8 asks.
+
+```mermaid
+flowchart TD
+    A[a call that needs the tool] --> B[dotnet tool list in the root]
+    B -- exit not 0 --> X[error quoting stderr]
+    B -- specht.tool listed --> C[dotnet tool run specht]
+    B -- not listed or no dotnet --> D[specht, the global tool]
+    C --> E{version known this session?}
+    D --> E
+    E -- no --> F[--version once]
+    F -- pinned, does not run --> R[error: not restored, docs/mcp.md#restore-the-tool]
+    F -- global, does not start --> N[error: pin and global tool not found]
+    F -- older than the minimum --> U[error: update, docs/mcp.md#update-the-tool; no work given]
+    F -- ok --> G[run the command]
+    E -- yes, reaches the minimum --> G
+    G --> H[result; the global tool adds the unpinned report]
+```
 
 **Why Spectre.** `--help` listing `--root` and the `--root` option are what B-013 and B-010 need, and the repository's CLI skills name Spectre for options and help; the host uses no other part of it. Its footprint is `Spectre.Console` and `Spectre.Console.Ansi` 0.57.2, central.
 
@@ -207,9 +241,9 @@ flowchart LR
 | 5   | B-006           | Holds: `ServerInfo.Version` is `ThisAssembly.AssemblyInformationalVersion` of `specht.mcp`; the test reads the same value from the assembly's metadata.                                                                                                              |
 | 6   | Footprint       | Listed above, for the owner's acceptance.                                                                                                                                                                                                                            |
 
-**Tests.** No unit test is owed. The decisions § 8 listed as owed (the version decision, the framing, the discovery answer's composition) are the SDK's and this item declares no function that holds one; the one decision of this item's own, the root check, is a command and so an integration test in the Spectre convention. B-003, B-004 and B-008 remain absence proofs and `Partial`; B-009 waits for `0330`.
+**Tests.** The process-level tests of § 8 pass against this design: 61 of `Specht.Tests.Mcp` on `net11.0` and 38 of the 41 MCP scenarios, the other three being `docs/mcp.md`'s (`0332`). Unit tests are owed and not written, since § 8 names no seam; the seams are the ones this design declares: `IProcessRun.RunAsync(ProcessRequest, CancellationToken)` returning `ProcessResult?`, `SpechtTool.RunAsync(IReadOnlyList<string>, CancellationToken)` returning `ToolOutcome` (`Ran` or `Refused`), `SpechtTool.Minimum`, `ToolVersion.TryParse` and `CompareTo`, and `HostFactory.Create(IProcessRun)`. B-003, B-004 and B-008 remain absence proofs and `Partial`.
 
-**Not built.** Every answer (`0330`, `0331`), pin lookup and tool run (`0359`), `docs/mcp.md` (`0332`). The Feature's specification stays under `src/tool/Features/Mcp/` although the project now exists; moving it to `src/mcp/.spec/` (§ Tasks, OQ-2) is the spec-author's, as it moves the `.feature` file the acceptance project links.
+**Not built.** The other answers (`0331`), `docs/mcp.md` (`0332`). The Feature's specification stays under `src/tool/Features/Mcp/` although the project now exists; moving it to `src/mcp/.spec/` (§ Tasks, OQ-2) is the spec-author's, as it moves the `.feature` file the acceptance project links.
 
 ## 8. Testing Strategy
 

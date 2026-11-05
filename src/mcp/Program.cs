@@ -1,7 +1,4 @@
-using Specht.Mcp.Features.Host;
-using Spectre.Console.Cli;
+using Specht.Mcp;
+using Specht.Mcp.Features.PinnedTool;
 
-var app = new CommandApp<HostCommand>();
-app.Configure(static config => config.AddHost());
-
-return await app.RunAsync(args);
+return await HostFactory.Create(new SystemProcessRun()).RunAsync(args);

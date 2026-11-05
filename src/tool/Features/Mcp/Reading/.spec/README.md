@@ -113,15 +113,27 @@ An agent that asks about a repository through MCP has no `specht` answer to rece
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-31 -->
+<!-- last written by: implementer, 2026-11-04 (item 0330) -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                                                                                                    | Classification | Where                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| The verdict as the check's own `--json` standard output, one text block, unchanged; exit `1` is an answer, any other non-zero exit an error (B-001, B-011) | Business       | `CheckTool.CheckAsync`                                               |
+| The tool's declaration: its name `check`, its description, an input schema with no property, read-only (B-002, B-017, B-019)                               | Business       | `CheckTool.Declare`                                                  |
+| A fresh read at each call, with no memo of an earlier answer (B-015)                                                                                       | Business       | `CheckTool` holds no state; `SpechtTool` keeps only the version memo |
+| Registering the tool with the host so each later tool adds a registration                                                                                  | Technical      | `ReadingRegistration.AddReading`                                     |
+| Finding and running the pinned `specht`, and the messages when it cannot                                                                                   | Both           | `0132-F3` § 7, `SpechtTool`                                          |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-31 -->
+<!-- last written by: implementer, 2026-11-04 (item 0330) -->
 
-Pending: owned by `implementer`, written after agreement.
+**The slice.** One folder, `src/mcp/Features/Reading/`, beside `Host` and `PinnedTool` (`0132-F3` § 7). [`CheckTool`](../../../../../mcp/Features/Reading/CheckTool.cs) is the tool `check` (OQ-7, B-019): `Declare` hands the SDK the tool, and `CheckAsync` is what a call runs. It asks `SpechtTool` for `--json` in the session's root and answers with the command's standard output as the one text block, whether the exit code is `0` or `1` (B-001, B-011). The unpinned report the global tool adds is a second block, apart (`0132-F3` B-024; A-4). Any other exit code, `2`, `3` or `4`, and any refusal of `SpechtTool` is an error result (`isError`) whose text is the tool's standard error or the refusal's message; the wording of failures and the rest of B-012 are `0331`'s, and this item gives them the one behaviour that does not mark a failure as an answer.
+
+The command line is `specht --json` with the root as the working directory, so the lookup that finds the pin and the command that reads the tree see the same root, whether the root came from `--root` or the working directory (`0132-F3` B-009). `check` takes no argument (B-002) and no argument is read (C-5); an input schema with no property is what `McpServerTool.Create` gives a delegate that takes only a cancellation token. The tool calls no other command (C-7, B-017), writes nothing (B-016) and keeps nothing between calls (B-015, C-4): the call runs the command again on the tree as it is.
+
+`ReadingRegistration.AddReading` registers `CheckTool` and the `McpServerTool` it declares; `HostFactory` lists the slice (`0132-F3` § 7, OQ-10). `0331` adds its tools the same way.
+
+No other type is declared here: the answers are the pinned tool's, and the compiler holds the declarations.
 
 ## 8. Testing Strategy
 
