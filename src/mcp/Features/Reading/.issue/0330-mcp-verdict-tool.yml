@@ -25,6 +25,7 @@ claims:
   - B-017
   - B-019
   - B-020
+  - B-021
 
 created: "2026-11-01"
 updated: "2026-11-04"
@@ -48,7 +49,8 @@ acceptance_criteria:
   - "B-016 — a call writes nothing"
   - "B-017 — only tools B-001 to B-009 name"
   - "B-019 — each tool is named for the command it serves: `check` for the verdict; the same test holds 0331's `explain`, `rules` and `manifest`"
-  - "B-020 — a command that ends `0` or `1` with no standard output is an error that points to where to restore, and quotes nothing"
+  - "B-020 — a command that ends `0` or `1` with no standard output is an error that points to where to restore"
+  - "B-021 — the same answer carries no text the command wrote"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -57,7 +59,7 @@ decisions:
   - |
     2026-11-04, spec-author after the owner's ruling on OQ-7 (tools named for their commands): B-019 added here, with the first tool `check`. 0361's scenarios are driven through `check`, so this item's tool is what lets them bind in the shared pull request; the order 0329, 0361, 0330 is unchanged.
   - |
-    2026-11-04, spec-author after the host's review: B-020 added. A pinned tool no longer restored ends the call `1` with nothing on standard output; `check` answers it with an error that points to `docs/mcp.md#restore-the-tool` and quotes nothing. The behaviour was built and unit-tested before the claim; the test-writer binds it.
+    2026-11-04, spec-author after the host's review: B-020 and B-021 added, one assertion each. A pinned tool no longer restored ends the call `1` with nothing on standard output; `check` answers it with an error that points to `docs/mcp.md#restore-the-tool` and quotes nothing. The behaviour was built and unit-tested before the claim; the test-writer binds it.
 
 out_of_scope:
   - "Rule text, the rule list, the manifest, arguments and failures — B-003 to B-005, B-010, B-012, B-014; 0331."

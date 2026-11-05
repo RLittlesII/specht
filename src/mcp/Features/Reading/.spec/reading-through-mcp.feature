@@ -96,7 +96,13 @@ Feature: Reading through MCP
     When the verdict is asked for again
     Then the answer is marked as an error
     And it names where to read how to restore the tool
-    And it quotes nothing the command wrote
+
+  @B-021
+  Scenario: A check that ends with no report relays nothing it wrote
+    Given the verdict has been asked for once
+    And the pinned tool's restored copy is then removed
+    When the verdict is asked for again
+    Then the answer quotes nothing the command wrote
 
   @B-013
   Scenario Outline: Every answer is for the version the repository pins
