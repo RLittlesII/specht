@@ -164,7 +164,7 @@ An agent or an editor's assistant in a repository that pins `specht` reaches the
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-04 (item 0329), 2026-11-04 (items 0359 and 0330) -->
+<!-- last written by: implementer, 2026-11-04 (item 0329), 2026-11-04 (items 0359 and 0330), 2026-11-04 (unit tier stated) -->
 
 **The project (B-001, B-013; C-9).** `src/mcp/mcp.csproj` packs `specht.mcp`, command `specht-mcp`, assembly `specht.mcp`. It references `ModelContextProtocol`, `Spectre.Console.Cli` and `Microsoft.Extensions.DependencyInjection` (central, already pinned for the tool), and neither the engine nor the tool project (C-9). Versions are central in `Directory.Packages.props`, under the label `Mcp`.
 
@@ -241,7 +241,9 @@ flowchart TD
 | 5   | B-006           | Holds: `ServerInfo.Version` is `ThisAssembly.AssemblyInformationalVersion` of `specht.mcp`; the test reads the same value from the assembly's metadata.                                                                                                              |
 | 6   | Footprint       | Listed above, for the owner's acceptance.                                                                                                                                                                                                                            |
 
-**Tests.** The process-level tests of § 8 pass against this design: 61 of `Specht.Tests.Mcp` on `net11.0` and 38 of the 41 MCP scenarios, the other three being `docs/mcp.md`'s (`0332`). Unit tests are owed and not written, since § 8 names no seam; the seams are the ones this design declares: `IProcessRun.RunAsync(ProcessRequest, CancellationToken)` returning `ProcessResult?`, `SpechtTool.RunAsync(IReadOnlyList<string>, CancellationToken)` returning `ToolOutcome` (`Ran` or `Refused`), `SpechtTool.Minimum`, `ToolVersion.TryParse` and `CompareTo`, and `HostFactory.Create(IProcessRun)`. B-003, B-004 and B-008 remain absence proofs and `Partial`.
+**Tests.** The process-level tests of § 8 pass against this design: 61 of `Specht.Tests.Mcp` on `net11.0` and 38 of the 41 MCP scenarios, the other three being `docs/mcp.md`'s (`0332`). The unit tier exists, in `test/tests/Mcp`: `CheckTool.Unit.Tests.cs` (the relay, the declaration and the registered set), `SpechtTool.Unit.Tests.cs` (the pin lookup, the memo, the minimum and the three messages) and `ToolVersion.Unit.Tests.cs` (the parse and the order), over a scripted `IProcessRun`. Every type they use is public, so the test project needs no `InternalsVisibleTo`. B-003, B-004 and B-008 remain absence proofs and `Partial`.
+
+**The minimum is pinned by a unit test.** `0.1.90`, `SpechtTool.Minimum`, is held at its boundary, exactly the minimum and one below it, by `SpechtTool.Unit.Tests.cs`. The value is the owner's to rule on (OQ-9: the minimum is an implementation fact, flagged to the owner), so a change to it needs the owner, and changing it means changing that test in the same pull request.
 
 **Not built.** The other answers (`0331`), `docs/mcp.md` (`0332`). The Feature's specification stays under `src/tool/Features/Mcp/` although the project now exists; moving it to `src/mcp/.spec/` (§ Tasks, OQ-2) is the spec-author's, as it moves the `.feature` file the acceptance project links.
 
