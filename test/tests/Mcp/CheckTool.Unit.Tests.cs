@@ -50,7 +50,7 @@ public sealed class CheckToolUnitTests
 
     [Theory]
     [ClassData(typeof(EmptyVerdicts))]
-    public async Task AnEmptyVerdict_WhenTheCommandEndsWithACleanOrViolatingCode_ShouldBeAnErrorThatPointsToRestoringTheToolAndRelaysNoText(
+    public async Task AnEmptyVerdict_WhenTheCommandEndsWithACleanOrViolatingCode_ShouldBeAnErrorThatNamesWhereToReadHowToRestoreTheTool(
         int exitCode,
         bool pinned)
     {
@@ -63,7 +63,22 @@ public sealed class CheckToolUnitTests
 
         // Then
         result.IsError.Should().BeTrue();
-        Texts(result).Should().ContainSingle().Which.Should().Contain("docs/mcp.md#restore-the-tool").And.NotContain("standard error marker");
+        Texts(result).Should().Contain(static text => text.Contains("docs/mcp.md#restore-the-tool", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [ClassData(typeof(EmptyVerdicts))]
+    public async Task AnEmptyVerdict_WhenTheCommandEndsWithACleanOrViolatingCode_ShouldCarryNoTextTheCommandWrote(int exitCode, bool pinned)
+    {
+        // Given
+        var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
+        process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
+
+        // When
+        var result = await Check(process).CheckAsync(CancellationToken.None);
+
+        // Then
+        string.Concat(Texts(result)).Should().NotContain("standard error marker");
     }
 
     [Fact]

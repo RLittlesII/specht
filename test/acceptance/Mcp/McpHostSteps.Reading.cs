@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
+using Reqnroll.Infrastructure;
 
 namespace Specht.Acceptance.Mcp;
 
@@ -113,6 +115,44 @@ public sealed partial class McpHostSteps
     [Then("the verdict's tool is named for the check")]
     public void ThenTheVerdictIsNamedForTheCheck() => Names().Should().Contain("check");
 
+    [Then("the answer is marked as an error")]
+    public void ThenTheLastAnswerIsAnError()
+    {
+        if (!scenario.ScenarioInfo.Tags.Contains("B-020", StringComparer.Ordinal))
+        {
+            throw new PendingStepException();
+        }
+
+        LastFailure().Should().NotBeNull();
+    }
+
+    [Then("it names where to read how to restore the tool")]
+    public void ThenTheLastAnswerPointsToRestoring() => LastFailure().Should().Contain("docs/mcp.md#restore-the-tool");
+
+    [Then("the answer quotes nothing the command wrote")]
+    public void ThenTheLastAnswerQuotesNothingTheCommandWrote()
+    {
+        var start = new ProcessStartInfo("dotnet") { WorkingDirectory = Tree.Root };
+        foreach (var argument in new[] { "tool", "run", "specht", "--", "--json" })
+        {
+            start.ArgumentList.Add(argument);
+        }
+
+        foreach (var (name, value) in Fakes().Environment)
+        {
+            start.Environment[name] = value;
+        }
+
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+        exitCode.Should().Be(1);
+        stdout.Should().BeEmpty();
+        var written = stderr.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        written.Should().NotBeEmpty();
+        var answer = string.Join('\n', AcceptanceTool.McpTextBlocks(_answers[^1]));
+        written.Should().AllSatisfy(line => answer.Should().NotContain(line));
+    }
+
+
     private static JsonArray Offered(string? listing) =>
         JsonNode.Parse(listing ?? "null")?["result"]?["tools"] as JsonArray
         ?? throw new Xunit.Sdk.XunitException($"The host did not list its tools; tools/list answered: {listing ?? "nothing"}");
@@ -126,6 +166,8 @@ public sealed partial class McpHostSteps
     private JsonObject Tool(string name) =>
         _offered.Select(static tool => tool!.AsObject()).SingleOrDefault(tool => tool["name"]?.GetValue<string>() == name)
         ?? throw new Xunit.Sdk.XunitException($"The host offers no '{name}' tool; it lists {string.Join(", ", Names())}.");
+
+    private string? LastFailure() => AcceptanceTool.McpFailure(_answers[^1]);
 
     private static readonly string[] ArgumentsThatNameAPath = ["spec", "path", "file", "feature", "directory"];
 

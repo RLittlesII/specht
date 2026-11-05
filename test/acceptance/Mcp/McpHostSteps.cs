@@ -15,7 +15,7 @@ namespace Specht.Acceptance.Mcp;
 [Binding]
 [Scope(Feature = "The MCP host")]
 [Scope(Feature = "Reading through MCP")]
-public sealed partial class McpHostSteps
+public sealed partial class McpHostSteps(ScenarioContext scenario)
 {
     [Given("a repository whose local tool manifest lists the tool")]
     public void GivenAToolManifest()
@@ -82,7 +82,7 @@ public sealed partial class McpHostSteps
     [Given("another version of the tool is reachable from the path")]
     public void GivenAToolOnThePath() => Fakes().InstallOnPath(AcceptanceTool.FakeTools.PathVersion);
 
-    [Given("the pinned tool's restored copy is removed")]
+    [Given("^the pinned tool's restored copy is (?:then )?removed$")]
     public void GivenTheRestoredCopyIsRemoved() => Fakes().Unrestore();
 
     [Given("a global tool is installed")]
