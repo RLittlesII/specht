@@ -9,8 +9,7 @@ children: []
 depends_on: []
 spikes: []
 spec: docs/.spec/README.md
-claims:
-  - B-011
+claims: []
 created: "2026-11-05"
 updated: "2026-11-05"
 closed: "2026-11-05"
@@ -21,9 +20,8 @@ summary: |
   links on a documentation index.
 
 acceptance_criteria:
-  - "B-011 — documentation navigation"
+  - "0002-F1 C-6 and C-8 — documentation navigation and CLI guidance"
   - "The README shows the NuGet version, consumer layout and a usable JSON manifest."
-  - "§ 9 names the acceptance test for B-011."
 
 decisions: []
 out_of_scope:

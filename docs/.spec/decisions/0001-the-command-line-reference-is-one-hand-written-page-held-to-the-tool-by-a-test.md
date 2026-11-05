@@ -119,3 +119,9 @@ application of the existing help-derived contract, not a new command source.
 The owner directed the front page to link to `docs/README.md`. The index
 groups documentation links and carries the link to the command-line reference.
 This amends B-011 and C-6. The command-line reference remains at `docs/cli.md`.
+
+## Front page review 2026-11-05
+
+The owner withdrew the acceptance checks for the repository front page.
+Review covers its commands and documentation route under C-6 and C-8.
+The command-line reference and package readme retain their acceptance checks.

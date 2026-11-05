@@ -11,6 +11,9 @@ From an empty repository to a checked one.
 ## Install
 
 Install the .NET 10 SDK, then run these commands from the repository root.
+The tool is published on [NuGet.org](https://www.nuget.org/packages/specht.tool).
+The default NuGet source is sufficient for installation and restore without
+credentials.
 
 ```sh
 dotnet new tool-manifest --output .config  # once, if the repository has no tool manifest

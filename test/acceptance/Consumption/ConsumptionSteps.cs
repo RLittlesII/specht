@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using AwesomeAssertions;
@@ -9,13 +8,13 @@ using Reqnroll;
 namespace Specht.Acceptance.Consumption;
 
 /// <summary>
-/// Installation documentation and offline package-consumption proofs for 0055-F7. A folder feed above the consumer
+/// Offline package-consumption checks for 0055-F7. A folder feed above the consumer
 /// repository, configured as the only source as a machine's default nuget.org is, stands in for nuget.org. B-010 and
 /// B-011 state the end of the feed transition, item 0328, and stay unbound until it is true.
 /// </summary>
 [Binding]
 [Scope(Feature = "Consuming the package")]
-public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
+public sealed class ConsumptionSteps : IDisposable
 {
     public void Dispose()
     {
@@ -31,7 +30,6 @@ public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
     [Given("an empty repository with no package source of its own")]
     public void GivenAnEmptyRepositoryWithNoPackageSourceOfItsOwn()
     {
-        ReadInstallDocument();
         _feedVersion = SyntheticVersion;
         _install = true;
     }
@@ -70,24 +68,16 @@ public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
         _configuration = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "Consumption/nuget.config"));
     }
 
-    [Given("every published version of the tool is below 1.0.0")]
-    public void GivenEveryPublishedVersionOfTheToolIsBelowOne() =>
-        JsonNode.Parse(File.ReadAllText(Path.Combine(tool.Repository, "version.json")))!["version"]!.GetValue<string>()
-            .Should().StartWith("0.");
-
-    [When("the documented install command runs")]
-    public async Task WhenTheDocumentedInstallCommandRuns()
+    [When("the prerelease tool is installed locally")]
+    public async Task WhenThePrereleaseToolIsInstalledLocally()
     {
         await Prepare();
         File.Exists(Path.Combine(Repository, "nuget.config")).Should().BeFalse();
         File.Exists(Path.Combine(Repository, ".config/dotnet-tools.json")).Should().BeFalse();
-        _result = await Run(Repository, DocumentArguments("dotnet new tool-manifest"));
+        _result = await Run(Repository, "new", "tool-manifest", "--output", ".config");
         _result.ExitCode.Should().Be(0, _result.Output);
-        _result = await Run(Repository, DocumentArguments("dotnet tool install --local "));
+        _result = await Run(Repository, "tool", "install", "--local", "specht.tool", "--prerelease");
     }
-
-    [When("a consumer reads the install document")]
-    public void WhenAConsumerReadsTheInstallDocument() => ReadInstallDocument();
 
     [When("the local tools are restored")]
     public async Task WhenTheLocalToolsAreRestored()
@@ -115,59 +105,6 @@ public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
             .Select(static command => command!.GetValue<string>()).Should().Equal("specht");
     }
 
-    [Then("it names nuget.org as the feed")]
-    public void ThenItNamesNuGetOrgAsTheFeed() =>
-        _installDocument.Should().Contain("[nuget.org](https://www.nuget.org/packages/specht.tool)");
-
-    [Then("says no package source entry is committed for it")]
-    public void ThenSaysNoPackageSourceEntryIsCommittedForIt()
-    {
-        Prose.Should().Contain("No package source entry is committed for it");
-        _installDocument.Should().NotContain("<packageSources>");
-    }
-
-    [Then("it says installing and restoring the tool needs no credential")]
-    public void ThenItSaysInstallingAndRestoringTheToolNeedsNoCredential()
-    {
-        Prose.Should().Contain("no credential is needed to install or restore it");
-        _installDocument.Should().NotContain("NuGetPackageSourceCredentials");
-    }
-
-    [Then("it names the command that creates the local tool manifest")]
-    public void ThenItNamesTheCommandThatCreatesTheLocalToolManifest() =>
-        DocumentCommand("dotnet new tool-manifest").Should().Be("dotnet new tool-manifest --output .config");
-
-    [Then("it names the command that installs the tool locally")]
-    public void ThenItNamesTheCommandThatInstallsTheToolLocally() =>
-        DocumentCommand("dotnet tool install --local ").Should().MatchRegex(@"^dotnet tool install --local specht\.tool( |$)");
-
-    [Then("the command that restores it in a clone")]
-    public void ThenTheCommandThatRestoresItInAClone() => DocumentCommand("dotnet tool restore").Should().Be("dotnet tool restore");
-
-    [Then("it names the command that installs the tool globally")]
-    public void ThenItNamesTheCommandThatInstallsTheToolGlobally() =>
-        DocumentCommand("dotnet tool install --global ").Should().MatchRegex(@"^dotnet tool install --global specht\.tool( |$)");
-
-    [Then("names no package source or credential for it")]
-    public void ThenNamesNoPackageSourceOrCredentialForIt()
-    {
-        DocumentCommand("dotnet tool install --global ").Should().NotContain("--add-source").And.NotContain("--configfile");
-        _installDocument.Should().NotContain("dotnet nuget add source").And.NotContain("NuGetPackageSourceCredentials");
-    }
-
-    [Then("says a global install puts the command on the shell's path")]
-    public void ThenSaysAGlobalInstallPutsTheCommandOnTheShellsPath() => _installDocument.Should().Contain("`specht` on PATH");
-
-    [Then("says a tool manifest install is run through dotnet")]
-    public void ThenSaysAToolManifestInstallIsRunThroughDotnet() => _installDocument.Should().Contain("`dotnet specht`");
-
-    [Then("each install command it names opts in to prerelease versions")]
-    public void ThenEachInstallCommandItNamesOptsInToPrereleaseVersions() =>
-        _installDocument.Split('\n').Select(static line => line.Trim())
-            .Where(static line => line.StartsWith("dotnet tool install ", StringComparison.Ordinal))
-            .Should().NotBeEmpty()
-            .And.AllSatisfy(static command => command.Split(' ').Should().Contain("--prerelease"));
-
     [Then("the tool is available at the pinned version")]
     public async Task ThenTheToolIsAvailableAtThePinnedVersion()
     {
@@ -191,28 +128,11 @@ public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
 
     private string Repository => Path.Combine(_root, "repository");
 
-    private string Prose => Regex.Replace(_installDocument, @"\s+", " ");
-
     private void ReadManifest()
     {
         _manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Consumption/dotnet-tools.json")))!;
         _manifest["tools"]!.AsObject().Should().ContainKey("specht.tool", "the published checker must be pinned before consumption");
     }
-
-    private void ReadInstallDocument()
-    {
-        var readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "README.md"));
-        var start = readme.IndexOf("## Quick start", StringComparison.Ordinal);
-        var end = readme.IndexOf("## Usage", StringComparison.Ordinal);
-        start.Should().BeGreaterThanOrEqualTo(0);
-        end.Should().BeGreaterThan(start);
-        _installDocument = readme[start..end];
-    }
-
-    private string DocumentCommand(string prefix) => _installDocument.Split('\n').Select(static line => line.Trim())
-        .Single(line => line.StartsWith(prefix, StringComparison.Ordinal));
-
-    private string[] DocumentArguments(string prefix) => [.. DocumentCommand(prefix).Split(' ').Skip(1)];
 
     private async Task Prepare()
     {
@@ -332,7 +252,6 @@ public sealed class ConsumptionSteps(PackedTool tool) : IDisposable
     private string? _feedVersion;
     private bool _withoutCredential;
     private bool _install;
-    private string _installDocument = string.Empty;
     private XDocument? _configuration;
     private (int ExitCode, string Output) _result;
 }

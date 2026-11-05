@@ -20,7 +20,7 @@ depends_on: ["F6"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-11-01"
+updated: "2026-11-05"
 github_issue: null
 synced_at: null
 ---
@@ -54,38 +54,38 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-11-01 (B-001, B-002, B-004 and B-005 amended, B-009 to B-011 added, `0055-F6` decision 0007) -->
+<!-- last written by: spec-author, 2026-11-05 (README acceptance) -->
 
-| ID    | Claim                                                                                                                                                                                                                                                                                                          | Source                                                                   | Status  |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------- |
-| B-001 | Given an empty repository that adds no package source and supplies no credential, the documented install command adds `specht.tool` to its local tool manifest. Amended 2026-11-01 (`0055-F6` decision 0007): was a repository that adds the documented package source and supplies a token with package read. | brief § 6; owner, 2026-10-08; owner, 2026-11-01, `0055-F6` decision 0007 | Amended |
-| B-002 | Given a clone whose committed local tool manifest names `specht.tool` at a version published to nuget.org, `dotnet tool restore` with no credential restores the tool. Amended 2026-11-01 (`0055-F6` decision 0007): was a committed package source that is the documented one, restored with a read token.    | brief § 6; `0001-F2` C-6; owner, 2026-11-01, `0055-F6` decision 0007     | Amended |
-| B-003 | Given the first package has been published, this repository's committed local tool manifest names `specht.tool` at a published version.                                                                                                                                                                        | `0001-F2` B-014; brief § 7                                               | Active  |
-| B-004 | Given the install document, it names nuget.org as the feed the tool installs from and says a consumer commits no package source entry for it. Amended 2026-11-01 (`0055-F6` decision 0007): was the feed's address and the package source entry a consumer commits.                                            | owner, 2026-10-08; owner, 2026-11-01, `0055-F6` decision 0007            | Amended |
-| B-005 | Given the install document, it says installing and restoring the tool needs no credential. Amended 2026-11-01 (`0055-F6` decision 0007): was the token scope a consumer needs and how a CI run supplies the token.                                                                                             | owner, 2026-10-08; brief § 6; owner, 2026-11-01, `0055-F6` decision 0007 | Amended |
-| B-006 | Given the install document, it names the commands that install the tool locally and restore it in a clone.                                                                                                                                                                                                     | owner, 2026-10-08                                                        | Active  |
-| B-007 | Given a clone and no GitHub token, the solution restores and builds.                                                                                                                                                                                                                                           | OQ-2 (owner, 2026-10-08)                                                 | Amended |
-| B-008 | Given the install document, it names the command that installs the tool globally, says that install puts `specht` on PATH, and says a manifest install runs as `dotnet specht`.                                                                                                                                | owner, 2026-10-11; `0001-F2` decision 0009; OQ-3                         | Active  |
-| B-009 | Given the install document while every published version is below `1.0.0`, each install command it names carries `--prerelease`.                                                                                                                                                                               | owner, 2026-11-01, `0055-F6` decision 0007                               | Active  |
-| B-010 | Given a `specht.tool` version published to nuget.org, this repository's committed local tool manifest names `specht.tool` at a version published there.                                                                                                                                                        | owner, 2026-11-01, `0055-F6` decision 0007; B-003                        | Active  |
-| B-011 | Given this repository's committed local tool manifest names a version published to nuget.org (B-010), its committed `nuget.config` names no GitHub Packages source.                                                                                                                                            | owner, 2026-11-01, `0055-F6` decision 0007                               | Active  |
+| ID    | Claim                                                                                                                                                                                                                                                                                                                                  | Source                                                                   | Status    |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | --------- |
+| B-001 | Given an empty repository that adds no package source and supplies no credential, `dotnet tool install --local specht.tool --prerelease` adds `specht.tool` to its local tool manifest. Amended 2026-11-01 (`0055-F6` decision 0007): was a repository that adds the documented package source and supplies a token with package read. | brief § 6; owner, 2026-10-08; owner, 2026-11-01, `0055-F6` decision 0007 | Amended   |
+| B-002 | Given a clone whose committed local tool manifest names `specht.tool` at a version published to nuget.org, `dotnet tool restore` with no credential restores the tool. Amended 2026-11-01 (`0055-F6` decision 0007): was a committed package source that is the documented one, restored with a read token.                            | brief § 6; `0001-F2` C-6; owner, 2026-11-01, `0055-F6` decision 0007     | Amended   |
+| B-003 | Given the first package has been published, this repository's committed local tool manifest names `specht.tool` at a published version.                                                                                                                                                                                                | `0001-F2` B-014; brief § 7                                               | Active    |
+| B-004 | Given the install document, it names nuget.org as the feed the tool installs from and says a consumer commits no package source entry for it. Amended 2026-11-01 (`0055-F6` decision 0007): was the feed's address and the package source entry a consumer commits.                                                                    | owner, 2026-10-08; owner, 2026-11-01, `0055-F6` decision 0007            | Withdrawn |
+| B-005 | Given the install document, it says installing and restoring the tool needs no credential. Amended 2026-11-01 (`0055-F6` decision 0007): was the token scope a consumer needs and how a CI run supplies the token.                                                                                                                     | owner, 2026-10-08; brief § 6; owner, 2026-11-01, `0055-F6` decision 0007 | Withdrawn |
+| B-006 | Given the install document, it names the commands that install the tool locally and restore it in a clone.                                                                                                                                                                                                                             | owner, 2026-10-08                                                        | Withdrawn |
+| B-007 | Given a clone and no GitHub token, the solution restores and builds.                                                                                                                                                                                                                                                                   | OQ-2 (owner, 2026-10-08)                                                 | Amended   |
+| B-008 | Given the install document, it names the command that installs the tool globally, says that install puts `specht` on PATH, and says a manifest install runs as `dotnet specht`.                                                                                                                                                        | owner, 2026-10-11; `0001-F2` decision 0009; OQ-3                         | Withdrawn |
+| B-009 | Given the install document while every published version is below `1.0.0`, each install command it names carries `--prerelease`.                                                                                                                                                                                                       | owner, 2026-11-01, `0055-F6` decision 0007                               | Withdrawn |
+| B-010 | Given a `specht.tool` version published to nuget.org, this repository's committed local tool manifest names `specht.tool` at a version published there.                                                                                                                                                                                | owner, 2026-11-01, `0055-F6` decision 0007; B-003                        | Active    |
+| B-011 | Given this repository's committed local tool manifest names a version published to nuget.org (B-010), its committed `nuget.config` names no GitHub Packages source.                                                                                                                                                                    | owner, 2026-11-01, `0055-F6` decision 0007                               | Active    |
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-11-01 (C-5 amended, C-6 added, `0055-F6` decision 0007) -->
+<!-- last written by: spec-author, 2026-11-05 (README acceptance) -->
 
 | ID  | Constraint                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Rules Out                                                                                                                                                                                     |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | C-1 | A committed package source takes its credential from the environment.                                                                                                                                                                                                                                                                                                                                                                                                   | A token, password or username-and-token pair in any committed `nuget.config`, here or in the document's examples.                                                                             |
-| C-2 | The document gives the local install, through a committed tool manifest, and the global install (`0001-F2` C-6 and its decision 0009).                                                                                                                                                                                                                                                                                                                                  | A global install as the only documented path, or as a prerequisite of a build.                                                                                                                |
+| C-2 | The setup guide gives the local install through a committed tool manifest and the global install (`0001-F2` C-6 and its decision 0009).                                                                                                                                                                                                                                                                                                                                 | A global install as the only documented path, or as a prerequisite of a build.                                                                                                                |
 | C-3 | The document describes this repository's feed and nothing a consumer's own build does with the tool.                                                                                                                                                                                                                                                                                                                                                                    | Consumer build wiring, such as a NUKE target, written here as if it were this repository's to maintain.                                                                                       |
-| C-4 | The install document is a section of this repository's `README.md` (owner, 2026-10-08).                                                                                                                                                                                                                                                                                                                                                                                 | A second install document elsewhere in this repository while that section exists.                                                                                                             |
+| C-4 | The README gives a local quick start. The setup guide covers both installation paths.                                                                                                                                                                                                                                                                                                                                                                                   | Duplicating the full setup guide on the front page.                                                                                                                                           |
 | C-5 | Until this repository's committed local tool manifest names a `specht.tool` version published to nuget.org (B-010), its own CI, release and self-check runs read GitHub Packages with the workflow's own token granted `packages: read`; from then on they supply no package-read credential (owner, 2026-11-01; `0055-F6` decision 0007). Amended 2026-11-01: was the workflow's own token with no end, from the owner, 2026-10-08 (`0055-F2` B-011, `0055-F6` B-010). | A stored read token as a repository secret for this repository's own runs; once B-010 holds, `NuGetPackageSourceCredentials_specht` or `packages: read` supplied to any of them for the tool. |
 | C-6 | nuget.org is the only feed the document tells a consumer to install the tool from (`0055-F6` C-10).                                                                                                                                                                                                                                                                                                                                                                     | A documented GitHub Packages source, user-level source, `--add-source` or personal access token for `specht.tool`.                                                                            |
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-11-01 (row 6, `0055-F6` decision 0007) -->
+<!-- last written by: spec-author, 2026-11-05 (README acceptance) -->
 
 | #   | Item                                                            | Exclusion Reason                                                                                                              |
 | --- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -95,7 +95,7 @@ A consumer cannot install a package from a feed it does not know, with a credent
 | 4   | Writing the schema and templates into a consumer after install  | `specht init`, `0001-F4`.                                                                                                     |
 | 5   | What `SpecCheck` does once the manifest names the tool          | `0001-F2` B-014.                                                                                                              |
 | 6   | Installing from GitHub Packages, or from any feed but nuget.org | C-6; `0055-F6` C-10. Amended 2026-11-01: the row was installing from NuGet.org, not published there (`0055-F6` C-3, retired). |
-| 7   | Moving the install document into `docs/`                        | Later, under epic `0002`, which owns usage documentation; C-4 holds until then.                                               |
+| 7   | Maintaining the setup guide                                     | Epic `0002` owns usage documentation.                                                                                         |
 
 ## 6. Concern Separation
 
@@ -112,7 +112,7 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-16 (self-check package compatibility), 2026-11-01 (item 0327, nuget.org and the transition, `0055-F6` decision 0007) -->
+<!-- last written by: implementer, 2026-11-05 (README acceptance) -->
 
 **A consumer** installs from nuget.org, a default source of every SDK, so a
 consumer commits no package source and supplies no credential for the tool
@@ -143,21 +143,15 @@ then removes the `specht` source and its mapping from `nuget.config` and the
 credential and `packages: read` from this repository's runs; `nuget.config`
 keeps nuget.org and its audit source.
 
-The install section of `README.md` names nuget.org, says no package source
-entry and no credential are needed, and gives the local manifest
-creation, install and restore commands and the global install, each install
-with `--prerelease` (B-004 to B-006, B-008, B-009, C-6). It shows no
-`nuget.config`, no `NuGetPackageSourceCredentials_specht` and no
-`--add-source`; decision 0002's documented global source and environment
-credential were reversed with OQ-3's resolution. Documentation scenarios read
-that section. Until 2026-11-01 the section owned the source XML, the runtime
-credential and the global `--add-source` path.
+The README shows how to install the local tool, commit the manifest and restore
+the tool in a clone. The setup guide covers both install paths and the public
+NuGet feed. Review checks that the examples opt in to prereleases.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-01 (nuget.org and `--prerelease`, item 0327) -->
+<!-- last written by: test-writer, 2026-11-05 (README acceptance) -->
 
-`ConsumptionSteps` binds nine of the eleven scenarios, B-001 to B-009. B-010 and
+`ConsumptionSteps` binds B-001, B-002, B-003 and B-007. B-010 and
 B-011 state the end of the feed transition, which item `0328` delivers after the
 first nuget.org release; their steps stay unbound, so the acceptance tier
 reports both scenarios skipped (`missingOrPendingStepsOutcome` is `Ignore`) and
@@ -175,30 +169,13 @@ without `GITHUB_ACTIONS`, and, under "no credential for any package feed" or
 "no token for the package feed", without `NuGetPackageSourceCredentials_*`,
 `GITHUB_TOKEN` or `GH_TOKEN`.
 
-B-001 executes the README's manifest-creation and local install commands in that
-empty repository. It starts without a manifest or a source of its own and checks
-the installed package, version and command in `.config/dotnet-tools.json`. The
-explicit `--output .config` makes the documented manifest destination
-independent of the SDK template's default. Seen red on 2026-11-01: with
-`--prerelease` removed from the documented arguments inside the step, the
-install failed with "specht.tool is not found in NuGet feeds", naming only the
-stand-in feed; restored, it passes.
+B-001 runs `dotnet new tool-manifest --output .config` and
+`dotnet tool install --local specht.tool --prerelease` in the fixture. It checks
+the package, version and command written to `.config/dotnet-tools.json`.
 
 B-002 writes a manifest naming the synthetic package at its prerelease version,
 restores it with no source of the clone's own and no credential, and runs it;
 the output is the pinned version.
-
-B-004, B-005, B-008 and B-009 read the install section of `README.md`, whitespace
-folded where a sentence wraps. B-004 asserts the nuget.org link for
-`specht.tool`, the sentence that no package source entry is committed, and no
-`<packageSources>` block. B-005 asserts the sentence that no credential is
-needed and no `NuGetPackageSourceCredentials` variable. B-008 asserts that the
-global install command installs `specht.tool` and carries no `--add-source` or
-`--configfile`, and that the section names no `dotnet nuget add source` and no
-credential variable. B-009 asserts that every `dotnet tool install` line carries
-`--prerelease`, and that there is at least one; its Given reads the version
-line of `version.json`, which must begin `0.`. B-006's local-install step now
-matches the command up to the package id, since `--prerelease` follows it.
 
 B-003 is unchanged. B-007 writes this repository's `nuget.config`, its sources
 remapped to empty folder feeds, into the clone with a synthetic solution, and
@@ -213,14 +190,7 @@ B-007 removes credential environment variables, supplies no checker package,
 and runs native solution restore followed by build. No automated test uses a
 network or real credential.
 
-No new unit tier is needed: `README.md`, `nuget.config`, the tool manifest and
-`ConsumptionSteps` were read; the change adds documentation and its acceptance
-harness, not a production decision, derivation or selection algorithm. The native
-NuGet commands are observed at the process boundary. Re-read on 2026-11-01 for
-item 0327: `README.md` § Quick start is prose and four commands, and the
-`--prerelease` opt-in is a literal argument NuGet interprets; no code of this
-repository decides, derives or maps anything beneath B-001, B-002, B-004, B-005,
-B-008 or B-009.
+The fixture checks the native NuGet commands at the process boundary.
 
 The real root tool restore and token-free native solution build were verified on
 2026-10-14 for the existing consumption design. The installed package printed
@@ -233,25 +203,25 @@ Full verification on 2026-10-14: `./build.sh` passed Format, Compile, 904 unit t
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-01 (B-001, B-002, B-004, B-005, B-008 and B-009 rebound for nuget.org, item 0327) -->
+<!-- last written by: test-writer, 2026-11-05 (README acceptance) -->
 
-| Claim ID | Scenario                                                              | Test               | Status  |
-| -------- | --------------------------------------------------------------------- | ------------------ | ------- |
-| B-001    | A new repository installs the tool from the feed                      | `ConsumptionSteps` | Covered |
-| B-002    | A clone restores the pinned tool                                      | `ConsumptionSteps` | Covered |
-| B-003    | This repository installs its own published tool                       | `ConsumptionSteps` | Covered |
-| B-004    | The document names the feed and the source entry                      | `ConsumptionSteps` | Covered |
-| B-005    | The document says no credential is needed                             | `ConsumptionSteps` | Covered |
-| B-006    | The document names the install and restore commands                   | `ConsumptionSteps` | Covered |
-| B-007    | A contributor without a token can build                               | `ConsumptionSteps` | Covered |
-| B-008    | The document names the global install and how each install is invoked | `ConsumptionSteps` | Covered |
-| B-009    | The document opts in to prereleases below 1.0.0                       | `ConsumptionSteps` | Covered |
-| B-010    | This repository installs its own tool from nuget.org                  | Missing            | Missing |
-| B-011    | This repository drops the authenticated feed                          | Missing            | Missing |
+| Claim ID | Scenario                                                              | Test               | Status    |
+| -------- | --------------------------------------------------------------------- | ------------------ | --------- |
+| B-001    | A new repository installs the tool from the feed                      | `ConsumptionSteps` | Covered   |
+| B-002    | A clone restores the pinned tool                                      | `ConsumptionSteps` | Covered   |
+| B-003    | This repository installs its own published tool                       | `ConsumptionSteps` | Covered   |
+| B-004    | The document names the feed and the source entry                      | None               | Withdrawn |
+| B-005    | The document says no credential is needed                             | None               | Withdrawn |
+| B-006    | The document names the install and restore commands                   | None               | Withdrawn |
+| B-007    | A contributor without a token can build                               | `ConsumptionSteps` | Covered   |
+| B-008    | The document names the global install and how each install is invoked | None               | Withdrawn |
+| B-009    | The document opts in to prereleases below 1.0.0                       | None               | Withdrawn |
+| B-010    | This repository installs its own tool from nuget.org                  | Missing            | Missing   |
+| B-011    | This repository drops the authenticated feed                          | Missing            | Missing   |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-01 (`0055-F6` decision 0007) -->
+<!-- last written by: spec-author, 2026-11-05 (README acceptance) -->
 
 - 2026-10-11, C-2 amended in place and B-008 added on the owner's decision that a global install is documented as a second path, for a shell ([`0001-F2` decision 0009](../../src/tool/Features/Check/.spec/decisions/0009-a-global-install-is-a-second-documented-path.md)): a manifest install puts no command on PATH. C-2 ruled out a global install as the documented path; it now rules out one as the only path or as a prerequisite of a build. § 2 row 4 added. B-001 to B-007 are unchanged. The `@B-008` scenario is new and its § 9 row is `Missing`; owed to the `test-writer`.
 - 2026-10-11, OQ-3 raised on a note from the `spec-reviewer`: nothing says which package source and credential a global install uses outside a repository that commits the source (`0055-F6` C-3, A-1). B-008's Source cites it. No claim or constraint changes; C-1 holds.
@@ -261,6 +231,8 @@ Full verification on 2026-10-14: `./build.sh` passed Format, Compile, 904 unit t
 - 2026-10-14, decision 0002 applies OQ-3's permitted default. B-001's scenario explicitly starts without a tool manifest; B-006 names its creation; B-008 names the global source and environment credential. Claim and constraint ids are unchanged.
 
 - 2026-11-01, the owner moved the feed to nuget.org, with every version below `1.0.0` a `-preview` prerelease ([`0055-F6` decision 0007](../../.build/Releasing/.spec/decisions/0007-publish-prereleases-to-nuget-org-through-trusted-publishing.md)). A-1 retired and A-3 added; B-001, B-002, B-004 and B-005 amended in place: a consumer adds no source and supplies no credential; B-009 added, `--prerelease` below `1.0.0`; C-6 added; § 1, § 2 row 2 and § 5 row 6 amended; OQ-3 resolved in place; [decision 0002](decisions/0002-document-the-authenticated-global-install.md) reversed. Stated transition: this repository's own manifest pins `0.1.131`, published only to GitHub Packages, so its `specht` source and the `NuGetPackageSourceCredentials_specht` credential stay until the first nuget.org release. B-010 and B-011 state the end of it and C-5 is amended to it; their § 9 rows are `Missing` until item `0328` moves the pin. B-003 and B-007 are unchanged. `status` leaves `done`, since § 9 carries `Missing` rows, and `spec_status` returns to `in-review`. Owed to the `test-writer`: `ConsumptionSteps` for the reworded `@B-001`, `@B-002`, `@B-004`, `@B-005` and `@B-008` steps, and § 9's new rows. Owed to the `implementer`: § 7, which describes the GitHub Packages source and credential as the consumer path - delivered 2026-11-01 by the `implementer` in item 0327.
+
+- 2026-11-05, the README quick start changed and acceptance failed because the fixture depended on the old section heading. The owner withdrew the prose checks B-004, B-005, B-006, B-008 and B-009. B-001 still exercises installation against the synthetic feed using explicit commands.
 
 ## 11. Open Questions
 
