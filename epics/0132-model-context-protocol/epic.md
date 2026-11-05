@@ -409,7 +409,9 @@ beneath `specht rules`. A package of its own would move both. Resolved
 2026-11-01 by the owner: the host is a command inside `specht.tool`
 (`0132-F3` OQ-1), so both stay. Resolved 2026-11-04 by the owner: the host is
 a program of its own, package `specht.mcp`, command `specht-mcp`
-(ADR-0031; `0132-F3` OQ-2), so both move beside its project, `src/mcp`. Was: a command inside `specht.tool` on
+(ADR-0031; `0132-F3` OQ-2), so both move beside its project, `src/mcp`. Done 2026-11-04: `0132-F3` is at
+`src/mcp/.spec/README.md` and `0132-F4` at
+`src/mcp/Features/Reading/.spec/README.md` (`0132-F3` decision 0001). Was: a command inside `specht.tool` on
 `0132-F3` OQ-1's default.
 
 This epic file lives at `epics/0132-model-context-protocol/epic.md`, where

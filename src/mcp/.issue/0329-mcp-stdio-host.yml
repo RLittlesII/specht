@@ -13,7 +13,7 @@ children: []
 depends_on: []
 spikes: []
 
-spec: src/tool/Features/Mcp/.spec/README.md
+spec: src/mcp/.spec/README.md
 
 claims:
   - B-001
@@ -70,6 +70,8 @@ decisions:
     2026-11-04, review: B-009's scenarios need an answer only 0330's tool gives, so they bind in the shared pull request with 0359 and 0330, not in this item alone.
   - |
     2026-11-04, spec-author after the owner's ruling on `0132-F4` OQ-7: B-009's scenario calls the tool `check`, which 0330 registers (`0132-F3` A-7). The other scenarios here are unchanged.
+  - |
+    2026-11-04, spec-author: with this item's code the Feature's `.spec/` and `.issue/` moved to `src/mcp/` and `0132-F4`'s to `src/mcp/Features/Reading/` (OQ-2, decision 0001).
 
 out_of_scope:
   - "Every answer served — § 5 row 1; 0330 and 0331."

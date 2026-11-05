@@ -13,7 +13,7 @@ children: []
 depends_on: ["0329"]
 spikes: []
 
-spec: src/tool/Features/Mcp/.spec/README.md
+spec: src/mcp/.spec/README.md
 
 claims:
   - B-017

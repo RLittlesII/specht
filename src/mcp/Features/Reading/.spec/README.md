@@ -127,7 +127,7 @@ An agent that asks about a repository through MCP has no `specht` answer to rece
 
 <!-- last written by: implementer, 2026-11-04 (item 0330) -->
 
-**The slice.** One folder, `src/mcp/Features/Reading/`, beside `Host` and `PinnedTool` (`0132-F3` § 7). [`CheckTool`](../../../../../mcp/Features/Reading/CheckTool.cs) is the tool `check` (OQ-7, B-019): `Declare` hands the SDK the tool, and `CheckAsync` is what a call runs. It asks `SpechtTool` for `--json` in the session's root and answers with the command's standard output as the one text block, whether the exit code is `0` or `1` (B-001, B-011). The unpinned report the global tool adds is a second block, apart (`0132-F3` B-024; A-4). Any other exit code, `2`, `3` or `4`, and any refusal of `SpechtTool` is an error result (`isError`) whose text is the tool's standard error or the refusal's message; the wording of failures and the rest of B-012 are `0331`'s, and this item gives them the one behaviour that does not mark a failure as an answer.
+**The slice.** One folder, `src/mcp/Features/Reading/`, beside `Host` and `PinnedTool` (`0132-F3` § 7). [`CheckTool`](../CheckTool.cs) is the tool `check` (OQ-7, B-019): `Declare` hands the SDK the tool, and `CheckAsync` is what a call runs. It asks `SpechtTool` for `--json` in the session's root and answers with the command's standard output as the one text block, whether the exit code is `0` or `1` (B-001, B-011). The unpinned report the global tool adds is a second block, apart (`0132-F3` B-024; A-4). Any other exit code, `2`, `3` or `4`, and any refusal of `SpechtTool` is an error result (`isError`) whose text is the tool's standard error or the refusal's message; the wording of failures and the rest of B-012 are `0331`'s, and this item gives them the one behaviour that does not mark a failure as an answer.
 
 The command line is `specht --json` with the root as the working directory, so the lookup that finds the pin and the command that reads the tree see the same root, whether the root came from `--root` or the working directory (`0132-F3` B-009). `check` takes no argument (B-002) and no argument is read (C-5); an input schema with no property is what `McpServerTool.Create` gives a delegate that takes only a cancellation token. The tool calls no other command (C-7, B-017), writes nothing (B-016) and keeps nothing between calls (B-015, C-4): the call runs the command again on the tree as it is.
 
@@ -190,7 +190,7 @@ Focused verification selects `net11.0`; the required gates keep their configured
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-04 -->
+<!-- last written by: spec-author, 2026-11-04 (moved to src/mcp/Features/Reading/.spec/) -->
 
 2026-11-04, by the owner in session: the MCP is a program of its own that runs the repository's pinned `specht` (ADR-0031; `0132-F3`). No answer claim changes.
 
@@ -202,6 +202,8 @@ Focused verification selects `net11.0`; the required gates keep their configured
 
 - Added: B-019 and C-7; § 9 row B-019. No answer claim changes. The verdict's tool is `check`, registered by `0330`; `0332` documents it.
 - `0132-F3` drives its pinned-tool scenarios through `check` (its A-7).
+
+2026-11-04, by the owner in session: the MCP project is `src/mcp` (`0132-F3` OQ-2). This Feature's specification and items moved from `src/tool/Features/Mcp/Reading/` to `src/mcp/Features/Reading/`, beside the slice it specifies (`0132-F3` decision 0001). No claim changes.
 
 ## 11. Open Questions
 
