@@ -84,6 +84,7 @@ Feature: Docs as first-class citizen
     Then every command and option it names is one the help lists
 
   @B-011
-  Scenario: The front page links to the reference
+  Scenario: The docs index connects the front page to the CLI reference
     Given the repository's front page
-    Then it links to the command-line reference
+    Then it links to the documentation index
+    And the documentation index links to the command-line reference

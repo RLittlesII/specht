@@ -1,0 +1,30 @@
+id: "0362"
+type: task
+title: Improve the README and documentation index
+status: done
+value: 3
+risk: 1
+parent: "0002"
+children: []
+depends_on: []
+spikes: []
+spec: docs/.spec/README.md
+claims:
+  - B-011
+created: "2026-11-05"
+updated: "2026-11-05"
+closed: "2026-11-05"
+
+summary: |
+  Give consumers a NuGet version badge, a quick start with the generated
+  repository layout, and an annotated sample manifest. Group the reference
+  links on a documentation index.
+
+acceptance_criteria:
+  - "B-011 — documentation navigation"
+  - "The README shows the NuGet version, consumer layout and a usable JSON manifest."
+  - "§ 9 names the acceptance test for B-011."
+
+decisions: []
+out_of_scope:
+  - "Changes to the CLI and its help (0002-F1 § 5 row 3)."

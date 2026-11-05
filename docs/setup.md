@@ -10,19 +10,19 @@ From an empty repository to a checked one.
 
 ## Install
 
-> Not published yet. Install steps land with the first release.
+Install the .NET 10 SDK, then run these commands from the repository root.
 
 ```sh
-dotnet new tool-manifest          # once, if the repository has none
-dotnet tool install specht.tool   # records the version in .config/dotnet-tools.json
+dotnet new tool-manifest --output .config  # once, if the repository has no tool manifest
+dotnet tool install --local specht.tool --prerelease
 ```
 
 The local tool manifest pins the tool's version in the repository, so CI and
 every clone run the same release after `dotnet tool restore`. A local tool runs
 as `dotnet specht`.
 
-`dotnet tool install -g specht.tool` puts `specht` on PATH for a shell. It is
-not pinned per repository, so a build still uses the manifest.
+`dotnet tool install --global specht.tool --prerelease` puts `specht` on PATH
+for a shell. Use the local tool manifest to pin the version for a build.
 
 A repository with no .NET project installs the same way; the SDK is needed for
 the tool alone ([Without .NET code](non-dotnet.md)).
@@ -61,14 +61,7 @@ Beside an existing manifest that declares the epic grammar, `--schemas` and
 dotnet specht
 ```
 
-```text
-specifications: epics 0, features 0
-items: 0
-rules evaluated: 21
-errors: 0, warnings: 0
-```
-
-Clean, because there is nothing to check yet. Copy `.specht/templates/feature.md`
+An empty repository reports zero errors and warnings. Copy `.specht/templates/feature.md`
 to `<area>/.spec/README.md`, fill it in, put its `.feature` file beside it and
 run the check again: each violation is one line with a file, a line and a rule
 id. [What it checks](what-it-checks.md) says where a specification is found and
@@ -107,8 +100,9 @@ a setting by editing it.
 ```
 
 - `schemaVersion` pins the schema the tree is checked with. The pin is exact.
-  `init` writes no pin, and a manifest without one is read as `0.1.0`. A version
-  the installed tool does not ship exits `3` and names the versions it does.
+  `init` uses the newest schema the installed tool ships. An existing manifest
+  without a pin is read as `0.1.0`. An unshipped pin exits `3` and the check names
+  the versions the tool ships.
 - `rules` sets a rule's level: `error`, `warning` or `off`.
 - A key left out takes its default, so the two above are a whole manifest.
 

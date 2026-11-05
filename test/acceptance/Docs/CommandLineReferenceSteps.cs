@@ -98,9 +98,13 @@ public sealed partial class CommandLineReferenceSteps
     public void ThenEveryCommandAndOptionItNamesIsOneTheHelpLists() =>
         string.Join(", ", Unlisted(Page).Distinct()).Should().BeEmpty($"{Page} names only what the tool's help lists (A-6, A-7)");
 
-    [Then("it links to the command-line reference")]
-    public void ThenItLinksToTheCommandLineReference() =>
-        ReferenceLink().IsMatch(Read(Page)).Should().BeTrue($"{Page} links to {Reference} (B-011)");
+    [Then("it links to the documentation index")]
+    public void ThenItLinksToTheDocumentationIndex() =>
+        DocumentationIndexLink().IsMatch(Read(Page)).Should().BeTrue($"{Page} links to {DocumentationIndex} (B-011)");
+
+    [Then("the documentation index links to the command-line reference")]
+    public void ThenTheDocumentationIndexLinksToTheCommandLineReference() =>
+        ReferenceLink().IsMatch(Read(DocumentationIndex)).Should().BeTrue($"{DocumentationIndex} links to {Reference} (B-011)");
 
     private Dictionary<string, string[][]> Surface => field ??= ReadSurface();
 
@@ -227,7 +231,10 @@ public sealed partial class CommandLineReferenceSteps
     [GeneratedRegex(@"`([^`]+)`")]
     private static partial Regex CodeSpan();
 
-    [GeneratedRegex(@"\]\(docs/cli\.md(?:#[^)]*)?\)")]
+    [GeneratedRegex(@"\]\(docs/README\.md(?:#[^)]*)?\)")]
+    private static partial Regex DocumentationIndexLink();
+
+    [GeneratedRegex(@"\]\(cli\.md(?:#[^)]*)?\)")]
     private static partial Regex ReferenceLink();
 
     private IEnumerable<string> Unlisted(string page)
@@ -271,6 +278,7 @@ public sealed partial class CommandLineReferenceSteps
     }
 
     private const string Reference = "docs/cli.md";
+    private const string DocumentationIndex = "docs/README.md";
     private const string DefaultCommand = "specht";
     private const string UnsupportedCommand = "specht synthetic-unavailable-command";
     private string? _referenceContent;
