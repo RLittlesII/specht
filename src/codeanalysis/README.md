@@ -45,5 +45,10 @@ for manifest settings and the clean-checkout evidence sequence.
 Diagnostic severity and suppression use standard Roslyn configuration. The
 package adds no application runtime dependency.
 
+The package also rejects ordinary `//` comments on class and method declaration
+surfaces with [SPCT0013](docs/SPCT0013.md), an enabled warning that needs no
+manifest or specification inputs. XML documentation (`///`) remains allowed;
+bodies, separate file headers and suppression explanations remain outside this rule.
+
 See the [diagnostic reference](docs/README.md) for each published diagnostic,
 its reporting conditions, and available code fixes.

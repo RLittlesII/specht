@@ -80,6 +80,14 @@ its build and CI with scenarios alone and a § 8 verdict that the build had "no
 logic of its own", while `Build.cs` partitioned files by extension, skipped an
 empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0003-the-unit-tier-had-no-home.md).
 
+## Test language
+
+New automation coverage belongs in the existing C# test project, or an F#
+script when that is the chosen test harness. Existing Python mirror tests are
+legacy coverage, not a template for new suites. A runtime workflow invokes its
+process; it does not acquire a Python test gate merely because that process is
+implemented in Python (mirror decision 0013, review 5776968566).
+
 ## The stack
 
 - **xunit.v3**, self-hosting on Microsoft.Testing Platform. There is no

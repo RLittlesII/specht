@@ -1,0 +1,44 @@
+name: Work-item mirror
+description: Mirror local work items, epics and release milestones to GitHub, one way.
+inputs:
+  token:
+    description: Workflow token with issues write, pull-requests write and contents read.
+    default: ${{ github.token }}
+  root:
+    description: Consumer checkout containing the work items and full git history.
+    default: ${{ github.workspace }}
+  script:
+    description: Optional executable script path relative to root; replaces the bundled mirror and receives its CLI arguments.
+    default: ''
+  repository:
+    description: GitHub owner/repository receiving the mirror.
+    default: ${{ github.repository }}
+  before:
+    description: Commit before the push, for delivery comments.
+    default: ''
+  after:
+    description: Commit after the push, for delivery comments.
+    default: ''
+  backfill:
+    description: Post every missing delivery comment (true or false).
+    default: 'false'
+  dry-run:
+    description: Read GitHub and print the plan without writes (true or false).
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Reconcile work-item mirror
+      shell: bash
+      env:
+        MIRROR_ACTION_PATH: ${{ github.action_path }}
+        GH_TOKEN: ${{ inputs.token }}
+        MIRROR_ROOT: ${{ inputs.root }}
+        MIRROR_SCRIPT: ${{ inputs.script }}
+        MIRROR_REPOSITORY: ${{ inputs.repository }}
+        MIRROR_BEFORE: ${{ inputs.before }}
+        MIRROR_AFTER: ${{ inputs.after }}
+        MIRROR_BACKFILL: ${{ inputs.backfill }}
+        MIRROR_DRY_RUN: ${{ inputs.dry-run }}
+      run: |
+        python3 -B "$MIRROR_ACTION_PATH/run.py"

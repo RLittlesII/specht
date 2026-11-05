@@ -1,0 +1,26 @@
+id: "0360"
+type: chore
+title: Share package metadata across the packable projects
+status: done
+value: 1
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-04"
+updated: "2026-11-04"
+closed: "2026-11-04"
+summary: |
+  specht.tool and Specht.CodeAnalysis each repeat the license, project and
+  repository URLs and icon, and the analyzer package lacks the authors,
+  copyright and release notes the tool package states. One
+  src/Directory.Build.props holds the shared package metadata for both.
+acceptance_criteria:
+  - Both nuspecs state the same authors, copyright, license, project URL, repository, release notes and icon from src/Directory.Build.props.
+  - Each package keeps its own description and tags.
+  - The analyzer package still targets netstandard2.0 alone.
+out_of_scope:
+  - Changes to package ids, versions, the readme or the logo artwork.

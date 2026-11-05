@@ -141,6 +141,7 @@ a `.issue/` beside that `.spec/`.
 - [Exit codes](docs/exit-codes.md)
 - [Building](docs/building.md)
 - [Releasing](docs/releasing.md)
+- [Reusable GitHub work-item mirror action](.github/actions/mirror/README.md)
 - [Roadmap](docs/roadmap.md)
 - [Rule pages](docs/rules/v0.1.0/)
 

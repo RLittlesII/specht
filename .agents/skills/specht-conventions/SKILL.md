@@ -229,7 +229,7 @@ none.
 ./build.sh AcceptanceTest   # test/acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool, Specht.CodeAnalysis and specht.mcp packages into .artifacts/nupkg
 ./build.sh Specht           # the tool checking this repository's own .spec/ tree
-./build.sh MirrorTest       # python3 -m unittest over .github/mirror/tests; the mirror workflow runs it, Default and CI do not
+./build.sh MirrorTest       # legacy Python mirror tests, manual only; new action coverage runs in the C# integration tier
 ./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version> on a commit of main; skipped otherwise
 ```
 
