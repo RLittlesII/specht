@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -133,16 +135,44 @@ internal static class AcceptanceTool
             ["jsonrpc"] = "2.0",
             ["id"] = id,
             ["method"] = method,
+            ["params"] = new JsonObject { ["_meta"] = McpMeta(revision) },
+        }.ToJsonString();
+
+    /// <summary>Builds a call of the tool <paramref name="tool"/> with no arguments, naming the supported revision, as one line.</summary>
+    /// <param name="id">The request id.</param>
+    /// <param name="tool">The tool's name.</param>
+    /// <returns>The JSON-RPC request.</returns>
+    public static string McpToolCall(int id, string tool) =>
+        new JsonObject
+        {
+            ["jsonrpc"] = "2.0",
+            ["id"] = id,
+            ["method"] = "tools/call",
             ["params"] = new JsonObject
             {
-                ["_meta"] = new JsonObject
-                {
-                    ["io.modelcontextprotocol/protocolVersion"] = revision,
-                    ["io.modelcontextprotocol/clientInfo"] = new JsonObject { ["name"] = "AcceptanceClient", ["version"] = "1.0.0" },
-                    ["io.modelcontextprotocol/clientCapabilities"] = new JsonObject(),
-                },
+                ["name"] = tool,
+                ["arguments"] = new JsonObject(),
+                ["_meta"] = McpMeta(McpRevision),
             },
         }.ToJsonString();
+
+    /// <summary>Reads why a tool call failed, as a client sees it: the protocol error, or the text of a result marked as an error.</summary>
+    /// <param name="answer">The answer to a tool call.</param>
+    /// <returns>The failure's text; <see langword="null"/> when the call did not fail.</returns>
+    public static string? McpFailure(JsonObject answer) =>
+        answer["error"] is { } error
+            ? error.ToJsonString()
+            : answer["result"]?["isError"]?.GetValue<bool>() == true
+                ? string.Join('\n', McpTextBlocks(answer))
+                : null;
+
+    /// <summary>Lists the text of each content block of a tool call's result, in order.</summary>
+    /// <param name="answer">The answer to a tool call.</param>
+    /// <returns>The blocks' text.</returns>
+    public static IReadOnlyList<string> McpTextBlocks(JsonObject answer) =>
+        (answer["result"]?["content"] as JsonArray ?? [])
+            .Select(static block => block?["text"]?.GetValue<string>() ?? string.Empty)
+            .ToList();
 
     /// <summary>Builds the request a client of a revision with an initialize handshake opens with, as one line.</summary>
     /// <param name="id">The request id.</param>
@@ -231,7 +261,18 @@ internal static class AcceptanceTool
         /// <param name="workingDirectory">The directory the process starts in.</param>
         /// <param name="args">The arguments, each passed as one.</param>
         /// <returns>The running session.</returns>
-        public static McpSession Start(string workingDirectory, params string[] args)
+        public static McpSession Start(string workingDirectory, params string[] args) =>
+            Start(workingDirectory, new Dictionary<string, string>(StringComparer.Ordinal), args);
+
+        /// <summary>
+        /// Starts the MCP in <paramref name="workingDirectory"/> with <paramref name="args"/>, its standard input open and its process
+        /// carrying <paramref name="environment"/> over what this process hands it.
+        /// </summary>
+        /// <param name="workingDirectory">The directory the process starts in.</param>
+        /// <param name="environment">The environment variables set for the process, by name.</param>
+        /// <param name="args">The arguments, each passed as one.</param>
+        /// <returns>The running session.</returns>
+        public static McpSession Start(string workingDirectory, IReadOnlyDictionary<string, string> environment, params string[] args)
         {
             var start = new ProcessStartInfo("dotnet")
             {
@@ -240,6 +281,11 @@ internal static class AcceptanceTool
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
+            foreach (var (name, value) in environment)
+            {
+                start.Environment[name] = value;
+            }
+
             start.ArgumentList.Add(McpAssemblyPath);
             foreach (var arg in args)
             {
@@ -287,6 +333,29 @@ internal static class AcceptanceTool
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Calls the tool <paramref name="tool"/> as a client does: it first reads what the host offers and fails the test when the tool is
+        /// not offered, so a host that has not registered the tool is red for that reason and not green for the error a missing tool is.
+        /// </summary>
+        /// <param name="id">The request id of the call; the listing takes the id after it.</param>
+        /// <param name="tool">The tool's name.</param>
+        /// <returns>The answer to the call.</returns>
+        /// <exception cref="Xunit.Sdk.XunitException">The host does not offer the tool, or answered the call with nothing.</exception>
+        public JsonObject CallTool(int id, string tool)
+        {
+            var listing = Exchange(McpRequest(id + 1, "tools/list", McpRevision));
+            var offered = Parse(listing ?? string.Empty)?["result"]?["tools"] is JsonArray tools
+                && tools.Any(offer => offer?["name"]?.GetValue<string>() == tool);
+            if (!offered)
+            {
+                throw new Xunit.Sdk.XunitException($"The host offers no '{tool}' tool; tools/list answered: {listing ?? "nothing"}");
+            }
+
+            var answer = Exchange(McpToolCall(id, tool));
+
+            return Parse(answer ?? string.Empty) ?? throw new Xunit.Sdk.XunitException($"The host answered the call of '{tool}' with nothing.");
         }
 
         /// <summary>Reads the next line the process wrote to its standard output.</summary>
@@ -397,4 +466,245 @@ internal static class AcceptanceTool
         private readonly StringBuilder _stdout = new();
         private readonly Task<string> _stderr;
     }
+
+    /// <summary>
+    /// A world of fake <c>specht</c> tools for one session of the MCP (0132-F3 B-017 to B-030, B-034): a pinned one restored by a real
+    /// <c>dotnet tool restore</c> from a local feed into folders of its own, a global one, and one reachable from the path. Each fake
+    /// appends a line to a log outside every root, as its label, its version and its arguments, so a test reads which tool ran, how many
+    /// version checks it was given and what work. Nothing here reaches the network, the user's home or a real <c>specht</c>; the fakes are
+    /// shell scripts, so a test that uses them skips on Windows.
+    /// </summary>
+    public sealed class FakeTools : IDisposable
+    {
+        /// <summary>Creates the folders of one world; nothing is installed.</summary>
+        public FakeTools()
+        {
+            _directory = Path.Combine(Path.GetTempPath(), "specht-fake-tools-" + Guid.NewGuid().ToString("N"));
+            _home = Path.Combine(_directory, "home");
+            _packages = Path.Combine(_directory, "packages");
+            _feed = Path.Combine(_directory, "feed");
+            _globalBin = Path.Combine(_home, ".dotnet", "tools");
+            _pathBin = Path.Combine(_directory, "pathbin");
+            _dotnetBin = Path.Combine(_directory, "dotnetbin");
+            _log = Path.Combine(_directory, "runs.log");
+            foreach (var folder in new[] { _home, _packages, _feed, _globalBin, _pathBin, _dotnetBin })
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+            File.WriteAllText(_log, string.Empty);
+            if (!OperatingSystem.IsWindows())
+            {
+                File.CreateSymbolicLink(
+                    Path.Combine(_dotnetBin, "dotnet"),
+                    Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..", "dotnet")));
+            }
+        }
+
+        /// <summary>The version a fake pinned tool states unless a test says otherwise; far above any minimum the MCP can require.</summary>
+        public const string PinnedVersion = "98.76.54";
+
+        /// <summary>The version of the fake reachable from the path.</summary>
+        public const string PathVersion = "97.65.43";
+
+        /// <summary>The version of the fake global tool.</summary>
+        public const string GlobalVersion = "96.54.32";
+
+        /// <summary>A version older than any minimum the MCP can require.</summary>
+        public const string OldVersion = "0.0.1";
+
+        /// <summary>What a fake writes on standard output for any command but <c>--version</c>, followed by its label.</summary>
+        public const string OutputMarker = "FAKE-SPECHT-OUTPUT";
+
+        /// <summary>The label of the fake restored from the local tool manifest's pin.</summary>
+        public const string Pinned = "pinned";
+
+        /// <summary>The label of the fake global tool.</summary>
+        public const string Global = "global";
+
+        /// <summary>The label of the fake reachable from the path.</summary>
+        public const string OnPath = "path";
+
+        /// <summary>Gets the environment a process runs in to see this world and nothing else of the machine's tools.</summary>
+        public IReadOnlyDictionary<string, string> Environment =>
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["PATH"] = string.Join(Path.PathSeparator, _pathBin, _globalBin, _dotnetBin, "/usr/bin", "/bin"),
+                ["HOME"] = _home,
+                ["DOTNET_CLI_HOME"] = _home,
+                ["NUGET_PACKAGES"] = _packages,
+                ["SPECHT_FAKE_LOG"] = _log,
+                ["DOTNET_NOLOGO"] = "1",
+                ["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1",
+                ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
+            };
+
+        /// <summary>Gets every run of a fake so far, in order.</summary>
+        public IReadOnlyList<FakeRun> Runs =>
+            File.ReadAllLines(_log)
+                .Where(static line => line.Length > 0)
+                .Select(static line => line.Split(' ', 3))
+                .Select(static parts => new FakeRun(parts[0], parts[1], parts.Length > 2 ? parts[2] : string.Empty))
+                .ToList();
+
+        /// <summary>Gets whether anything of the pinned tool is in the folders a restore writes to.</summary>
+        public bool AnythingRestored =>
+            Directory.EnumerateFileSystemEntries(_packages).Any()
+            || Directory.Exists(Path.Combine(_home, ".dotnet", "toolResolverCache"));
+
+        /// <summary>
+        /// Writes a local tool manifest in <paramref name="directory"/> listing <c>specht.tool</c> at <paramref name="version"/>, a feed
+        /// that holds the fake package and a NuGet configuration that reads only that feed, so a restore the host should not run could
+        /// succeed. Restores the fake when <paramref name="restored"/>.
+        /// </summary>
+        /// <param name="directory">The directory that holds the manifest, the root or a directory above it.</param>
+        /// <param name="version">The pinned version, which the fake states.</param>
+        /// <param name="restored">Whether to run the restore the repository's own build would.</param>
+        public void Pin(string directory, string version, bool restored)
+        {
+            WriteFile(
+                Path.Combine(directory, ".config", "dotnet-tools.json"),
+                "{\"version\":1,\"isRoot\":true,\"tools\":{\"specht.tool\":{\"version\":\"" + version + "\",\"commands\":[\"specht\"]}}}");
+            WriteFile(
+                Path.Combine(directory, "nuget.config"),
+                "<configuration><packageSources><clear /><add key=\"fake\" value=\"" + _feed + "\" /></packageSources></configuration>");
+            using (var package = new ZipArchive(File.Create(Path.Combine(_feed, $"specht.tool.{version}.nupkg")), ZipArchiveMode.Create))
+            {
+                AddEntry(
+                    package,
+                    "specht.tool.nuspec",
+                    "<?xml version=\"1.0\" encoding=\"utf-8\"?><package xmlns=\"http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd\"><metadata>"
+                    + $"<id>specht.tool</id><version>{version}</version><authors>fake</authors><description>fake</description>"
+                    + "<packageTypes><packageType name=\"DotnetTool\" /></packageTypes></metadata></package>");
+                AddEntry(
+                    package,
+                    "tools/any/any/DotnetToolSettings.xml",
+                    "<?xml version=\"1.0\" encoding=\"utf-8\"?><DotNetCliTool Version=\"1\"><Commands>"
+                    + "<Command Name=\"specht\" EntryPoint=\"specht.sh\" Runner=\"executable\" /></Commands></DotNetCliTool>");
+                AddEntry(package, "tools/any/any/specht.sh", Script(Pinned, version));
+            }
+
+            if (restored)
+            {
+                Restore(directory);
+            }
+        }
+
+        /// <summary>Removes the pin: deletes the manifest in <paramref name="directory"/>, or leaves one that lists no tool.</summary>
+        /// <param name="directory">The directory that holds the manifest.</param>
+        /// <param name="removed">Whether the manifest is deleted rather than emptied.</param>
+        public void Unpin(string directory, bool removed)
+        {
+            var manifest = Path.Combine(directory, ".config", "dotnet-tools.json");
+            if (removed)
+            {
+                File.Delete(manifest);
+            }
+            else
+            {
+                WriteFile(manifest, "{\"version\":1,\"isRoot\":true,\"tools\":{}}");
+            }
+        }
+
+        /// <summary>Removes the restored copy, as a clone that has not run the restore has none.</summary>
+        public void Unrestore()
+        {
+            Directory.Delete(_packages, recursive: true);
+            Directory.CreateDirectory(_packages);
+            var cache = Path.Combine(_home, ".dotnet", "toolResolverCache");
+            if (Directory.Exists(cache))
+            {
+                Directory.Delete(cache, recursive: true);
+            }
+        }
+
+        /// <summary>Installs a fake global tool, the way a global install puts a command in the folder on the path.</summary>
+        /// <param name="version">The version it states.</param>
+        public void InstallGlobal(string version) => WriteScript(_globalBin, Global, version);
+
+        /// <summary>Puts a fake <c>specht</c> in a folder at the front of the path.</summary>
+        /// <param name="version">The version it states.</param>
+        public void InstallOnPath(string version) => WriteScript(_pathBin, OnPath, version);
+
+        /// <summary>Deletes the world.</summary>
+        public void Dispose()
+        {
+            if (Directory.Exists(_directory))
+            {
+                Directory.Delete(_directory, recursive: true);
+            }
+        }
+
+        private static string Script(string label, string version) =>
+            "#!/bin/sh\n"
+            + $"echo \"{label} {version} $*\" >> \"$SPECHT_FAKE_LOG\"\n"
+            + $"if [ \"$1\" = \"--version\" ]; then echo {version}; exit 0; fi\n"
+            + $"echo {OutputMarker} {label}\n";
+
+        private static void AddEntry(ZipArchive package, string name, string content)
+        {
+            using var writer = new StreamWriter(package.CreateEntry(name).Open());
+            writer.Write(content);
+        }
+
+        private static void WriteFile(string path, string content)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, content);
+        }
+
+        private static void WriteScript(string folder, string label, string version)
+        {
+            var path = Path.Combine(folder, "specht");
+            File.WriteAllText(path, Script(label, version));
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            }
+        }
+
+        private void Restore(string directory)
+        {
+            var start = new ProcessStartInfo("dotnet") { WorkingDirectory = directory };
+            start.ArgumentList.Add("tool");
+            start.ArgumentList.Add("restore");
+            foreach (var (name, value) in Environment)
+            {
+                start.Environment[name] = value;
+            }
+
+            var (stdout, stderr, exitCode) = Run(start);
+            if (exitCode != 0)
+            {
+                throw new InvalidOperationException($"The fake tool did not restore. Exit {exitCode}. {stdout}{stderr}");
+            }
+        }
+
+        private readonly string _directory;
+        private readonly string _home;
+        private readonly string _packages;
+        private readonly string _feed;
+        private readonly string _globalBin;
+        private readonly string _pathBin;
+        private readonly string _dotnetBin;
+        private readonly string _log;
+    }
+
+    /// <summary>One run of a fake <c>specht</c>.</summary>
+    /// <param name="Label">Which fake ran: pinned, global or path.</param>
+    /// <param name="Version">The version that fake states.</param>
+    /// <param name="Arguments">The arguments it was run with, joined by a space.</param>
+    public sealed record FakeRun(string Label, string Version, string Arguments)
+    {
+        /// <summary>Gets whether the run asked the tool for its version.</summary>
+        public bool IsVersionCheck => Arguments == "--version";
+    }
+
+    private static JsonObject McpMeta(string revision) =>
+        new()
+        {
+            ["io.modelcontextprotocol/protocolVersion"] = revision,
+            ["io.modelcontextprotocol/clientInfo"] = new JsonObject { ["name"] = "AcceptanceClient", ["version"] = "1.0.0" },
+            ["io.modelcontextprotocol/clientCapabilities"] = new JsonObject(),
+        };
 }

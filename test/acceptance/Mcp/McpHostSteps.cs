@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Tests.Shared;
@@ -7,8 +8,9 @@ namespace Specht.Acceptance.Mcp;
 
 /// <summary>
 /// Runs the built MCP as a process and holds what the host does over its standard input and output (0132-F3 B-001 to B-006,
-/// B-008, B-010 to B-014, B-019, B-032, B-033). The scenarios of the pinned-tool resolution (0359) and the documentation (0332)
-/// have no binding here, and B-009's wait for the first answer the tool serves (0330).
+/// B-008, B-010 to B-014, B-019, B-032, B-033) and the pinned-tool resolution through the tool check (0359: B-017, B-018, B-020 to
+/// B-030, B-034), whose scenarios stay red until 0330 registers it. The documentation scenarios (0332) have no binding here, and
+/// B-009's wait for the first answer the tool serves (0330).
 /// </summary>
 [Binding]
 [Scope(Feature = "The MCP host")]
@@ -18,14 +20,17 @@ public sealed class McpHostSteps
     public void GivenAToolManifest()
     {
         _tree = new SpechtTree();
-        Tree.WriteRaw(
-            ".config/dotnet-tools.json",
-            "{\"version\":1,\"isRoot\":true,\"tools\":{\"specht.tool\":{\"version\":\"0.0.0\",\"commands\":[\"specht\"]}}}");
+        _tools = new AcceptanceTool.FakeTools();
+        _tools.Pin(Tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: false);
     }
 
     [Given("the pinned tool is restored")]
     public void GivenTheToolIsRestored()
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            _tools!.Pin(Tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        }
     }
 
     [Given("a manifest the check accepts")]
@@ -66,6 +71,37 @@ public sealed class McpHostSteps
     [Given("a client that opens with a legacy initialize request")]
     public void GivenALegacyInitialize() => _request = AcceptanceTool.McpLegacyInitialize(1);
 
+    [Given("the repository pins the tool at a version other than the MCP's own")]
+    public void GivenAPinOtherThanTheMcps()
+    {
+        Fakes();
+        AcceptanceTool.FakeTools.PinnedVersion.Should().NotBe(AcceptanceTool.InformationalVersion(File.ReadAllBytes(AcceptanceTool.McpAssemblyPath)));
+    }
+
+    [Given("another version of the tool is reachable from the path")]
+    public void GivenAToolOnThePath() => Fakes().InstallOnPath(AcceptanceTool.FakeTools.PathVersion);
+
+    [Given("the pinned tool's restored copy is removed")]
+    public void GivenTheRestoredCopyIsRemoved() => Fakes().Unrestore();
+
+    [Given("a global tool is installed")]
+    public void GivenAGlobalTool() => Fakes().InstallGlobal(AcceptanceTool.FakeTools.GlobalVersion);
+
+    [Given("no global tool is installed")]
+    public void GivenNoGlobalTool() => Fakes();
+
+    [Given("a global tool is installed that is older than the minimum version the server requires")]
+    public void GivenAnOldGlobalTool() => Fakes().InstallGlobal(AcceptanceTool.FakeTools.OldVersion);
+
+    [Given(@"^the repository's local tool manifest (is removed|no longer lists the tool)$")]
+    public void GivenNoPin(string state) => Fakes().Unpin(Tree.Root, removed: state == "is removed");
+
+    [Given("the tool is older than the minimum version the server requires")]
+    public void GivenAnOldPinnedTool() => Fakes().Pin(Tree.Root, AcceptanceTool.FakeTools.OldVersion, restored: true);
+
+    [Given("a session in which a client calls the check tool twice")]
+    public void GivenTwoCalls() => _calls = 2;
+
     [When("the client sends the protocol's discovery request")]
     public void WhenDiscovery() =>
         _result = AcceptanceTool.LaunchMcp(Tree.Root, [AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)]);
@@ -100,6 +136,12 @@ public sealed class McpHostSteps
     [When("the client starts the server")]
     public void WhenTheServerStarts() =>
         _result = AcceptanceTool.LaunchMcp(Tree.Root, [AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)], _arguments);
+
+    [When("^(?:a|the) client calls the check tool$")]
+    public void WhenCheckIsCalled() => RunCalls(Fakes());
+
+    [When("the session ends")]
+    public void WhenTheSessionEnds() => RunCalls(Fakes());
 
     [When("the client closes the server's standard input")]
     public void WhenInputCloses() => _result = _session!.Close();
@@ -208,14 +250,119 @@ public sealed class McpHostSteps
     [Then("the error names the protocol revision the server supports")]
     public void ThenRevisionNamed() => Answer(1)["error"]!.ToJsonString().Should().Contain(AcceptanceTool.McpRevision);
 
+    [Then("the tool that ran is the pinned version")]
+    public void ThenThePinnedRan() =>
+        Work().Should().NotBeEmpty().And.OnlyContain(static run =>
+            run.Label == AcceptanceTool.FakeTools.Pinned && run.Version == AcceptanceTool.FakeTools.PinnedVersion);
+
+    [Then("the tool that ran is the pinned version and not the other")]
+    public void ThenOnlyThePinnedRan()
+    {
+        Fakes().Runs.Should().NotBeEmpty().And.OnlyContain(static run => run.Label == AcceptanceTool.FakeTools.Pinned);
+    }
+
+    [Then("the server has not restored the pinned tool")]
+    public void ThenNothingRestored()
+    {
+        Fakes().AnythingRestored.Should().BeFalse();
+        AcceptanceTool.Snapshot(Tree.Root).Should().BeEquivalentTo(_before);
+    }
+
+    [Then("the call fails with an error")]
+    public void ThenTheCallFails() => AcceptanceTool.McpFailure(_answers.First()).Should().NotBeNull();
+
+    [Then("the error names the tool and the version that is missing")]
+    public void ThenTheMissingToolIsNamed() =>
+        Failure().Should().Contain("specht.tool").And.Contain(AcceptanceTool.FakeTools.PinnedVersion);
+
+    [Then("the error names where to read how to restore the tool")]
+    public void ThenRestoreIsPointedTo() => Failure().Should().Contain("docs/mcp.md#restore-the-tool");
+
+    [Then("no other tool ran")]
+    public void ThenNoToolRan() => Fakes().Runs.Should().BeEmpty();
+
+    [Then("the global tool ran")]
+    public void ThenTheGlobalRan() =>
+        Work().Should().NotBeEmpty().And.OnlyContain(static run => run.Label == AcceptanceTool.FakeTools.Global);
+
+    [Then("the result carries a part, apart from the part holding the command's output, that tells the user the answer is unpinned")]
+    public void ThenAnUnpinnedPart()
+    {
+        var blocks = AcceptanceTool.McpTextBlocks(_answers.First());
+        blocks.Where(static block => block.Contains(AcceptanceTool.FakeTools.OutputMarker, StringComparison.Ordinal)).Should().ContainSingle();
+        UnpinnedReports().Should().ContainSingle();
+    }
+
+    [Then("the report names where to read how to pin the tool")]
+    public void ThenPinIsPointedTo() => UnpinnedReports().Should().ContainSingle().Which.Should().Contain("docs/mcp.md#pin-the-tool");
+
+    [Then("the server has checked the tool's version once")]
+    public void ThenCheckedOnce()
+    {
+        _answers.Select(AcceptanceTool.McpFailure).Should().AllSatisfy(static failure => failure.Should().BeNull());
+        Fakes().Runs.Count(static run => run.IsVersionCheck).Should().Be(1);
+    }
+
+    [Then("the server has checked the global tool's version once")]
+    public void ThenGlobalCheckedOnce()
+    {
+        ThenCheckedOnce();
+        Fakes().Runs.Where(static run => run.IsVersionCheck).Should().ContainSingle().Which.Label.Should().Be(AcceptanceTool.FakeTools.Global);
+    }
+
+    [Then("the tool has answered nothing")]
+    public void ThenTheToolWasGivenNoWork() => Work().Should().BeEmpty();
+
+    [Then("the global tool has answered nothing")]
+    public void ThenTheGlobalToolWasGivenNoWork() => Work().Should().BeEmpty();
+
+    [Then("the error names the minimum version required")]
+    public void ThenTheMinimumIsNamed() =>
+        Regex.Matches(Failure(), @"\d+\.\d+\.\d+")
+            .Select(static match => match.Value)
+            .Should()
+            .Contain(static version => version != AcceptanceTool.FakeTools.OldVersion);
+
+    [Then("the error names where to read how to update the tool")]
+    public void ThenUpdateIsPointedTo() => Failure().Should().Contain("docs/mcp.md#update-the-tool");
+
+    [Then("the error names the pin and the global tool as not found")]
+    public void ThenNeitherIsFound() => Failure().Should().ContainEquivalentOf("pin").And.ContainEquivalentOf("global").And.ContainEquivalentOf("not found");
+
     [AfterScenario]
     public void DisposeSession()
     {
         _session?.Dispose();
+        _tools?.Dispose();
         _tree?.Dispose();
     }
 
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No synthetic root was prepared.");
+
+    private AcceptanceTool.FakeTools Fakes()
+    {
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
+
+        return _tools ?? throw new InvalidOperationException("No fake tools were prepared.");
+    }
+
+    private void RunCalls(AcceptanceTool.FakeTools tools)
+    {
+        _before = AcceptanceTool.Snapshot(Tree.Root);
+        using var session = AcceptanceTool.McpSession.Start(Tree.Root, tools.Environment);
+        _answers = Enumerable.Range(0, _calls).Select(index => session.CallTool(10 + (index * 10), "check")).ToList();
+        _result = session.Close();
+    }
+
+    private IReadOnlyList<AcceptanceTool.FakeRun> Work() => Fakes().Runs.Where(static run => !run.IsVersionCheck).ToList();
+
+    private string Failure() => AcceptanceTool.McpFailure(_answers.First()) ?? throw new Xunit.Sdk.XunitException("The call did not fail.");
+
+    private IReadOnlyList<string> UnpinnedReports() =>
+        AcceptanceTool.McpTextBlocks(_answers.First())
+            .Where(static block => !block.Contains(AcceptanceTool.FakeTools.OutputMarker, StringComparison.Ordinal))
+            .Where(static block => block.Contains("unpinned", StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
     private JsonObject Answer(int id) =>
         AcceptanceTool.McpAnswer(_result.Stdout, id) ?? throw new Xunit.Sdk.XunitException(
@@ -226,6 +373,9 @@ public sealed class McpHostSteps
     private const string UnsupportedRevision = "1900-01-01";
 
     private SpechtTree? _tree;
+    private AcceptanceTool.FakeTools? _tools;
+    private int _calls = 1;
+    private IReadOnlyList<JsonObject> _answers = [];
     private string[] _arguments = [];
     private string _request = string.Empty;
     private IReadOnlyDictionary<string, string> _before = new Dictionary<string, string>();
