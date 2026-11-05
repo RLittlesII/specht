@@ -138,11 +138,12 @@ internal static class AcceptanceTool
             ["params"] = new JsonObject { ["_meta"] = McpMeta(revision) },
         }.ToJsonString();
 
-    /// <summary>Builds a call of the tool <paramref name="tool"/> with no arguments, naming the supported revision, as one line.</summary>
+    /// <summary>Builds a call of the tool <paramref name="tool"/> naming the supported revision, as one line.</summary>
     /// <param name="id">The request id.</param>
     /// <param name="tool">The tool's name.</param>
+    /// <param name="arguments">The arguments of the call by name; none when <see langword="null"/>.</param>
     /// <returns>The JSON-RPC request.</returns>
-    public static string McpToolCall(int id, string tool) =>
+    public static string McpToolCall(int id, string tool, JsonObject? arguments = null) =>
         new JsonObject
         {
             ["jsonrpc"] = "2.0",
@@ -151,7 +152,7 @@ internal static class AcceptanceTool
             ["params"] = new JsonObject
             {
                 ["name"] = tool,
-                ["arguments"] = new JsonObject(),
+                ["arguments"] = arguments ?? new JsonObject(),
                 ["_meta"] = McpMeta(McpRevision),
             },
         }.ToJsonString();
@@ -341,9 +342,10 @@ internal static class AcceptanceTool
         /// </summary>
         /// <param name="id">The request id of the call; the listing takes the id after it.</param>
         /// <param name="tool">The tool's name.</param>
+        /// <param name="arguments">The arguments of the call by name; none when <see langword="null"/>.</param>
         /// <returns>The answer to the call.</returns>
         /// <exception cref="Xunit.Sdk.XunitException">The host does not offer the tool, or answered the call with nothing.</exception>
-        public JsonObject CallTool(int id, string tool)
+        public JsonObject CallTool(int id, string tool, JsonObject? arguments = null)
         {
             var listing = Exchange(McpRequest(id + 1, "tools/list", McpRevision));
             var offered = Parse(listing ?? string.Empty)?["result"]?["tools"] is JsonArray tools
@@ -353,7 +355,7 @@ internal static class AcceptanceTool
                 throw new Xunit.Sdk.XunitException($"The host offers no '{tool}' tool; tools/list answered: {listing ?? "nothing"}");
             }
 
-            var answer = Exchange(McpToolCall(id, tool));
+            var answer = Exchange(McpToolCall(id, tool, arguments));
 
             return Parse(answer ?? string.Empty) ?? throw new Xunit.Sdk.XunitException($"The host answered the call of '{tool}' with nothing.");
         }
@@ -519,6 +521,24 @@ internal static class AcceptanceTool
         /// <summary>The line in a specification that makes a fake exit <c>1</c>, as a check does on a violation.</summary>
         public const string Violation = "FAKE-VIOLATION";
 
+        /// <summary>The rule id a fake explains.</summary>
+        public const string KnownRule = "SPEC4004";
+
+        /// <summary>A rule id no fake has; a fake ends <c>4</c> when asked to explain it.</summary>
+        public const string UnknownRule = "SPEC9999";
+
+        /// <summary>What a fake writes on standard error, and ends <c>2</c> with, for any command on a root that holds no manifest.</summary>
+        public const string MissingManifestMessage = "specht: no manifest at .specht/manifest.json.\n";
+
+        /// <summary>What a fake writes on standard error, and ends <c>3</c> with, for any command on a root whose manifest pins schema version 9.0.0.</summary>
+        public const string RejectedManifestMessage = "specht: the manifest is invalid: schema version 9.0.0 is not shipped.\n";
+
+        /// <summary>The manifest that a fake rejects.</summary>
+        public const string RejectedManifest = "{\"schemaVersion\":\"9.0.0\"}";
+
+        /// <summary>What a fake writes after its header for the manifest's shipped defaults, whatever the root's manifest holds.</summary>
+        public const string ShippedDefaults = "{\"schemaVersion\":\"newest-shipped\"}\n";
+
         /// <summary>The label of the fake restored from the local tool manifest's pin.</summary>
         public const string Pinned = "pinned";
 
@@ -577,9 +597,11 @@ internal static class AcceptanceTool
         /// </summary>
         /// <param name="label">Which fake ran.</param>
         /// <param name="root">The root it ran on.</param>
+        /// <param name="schemaSource">The value of <c>--schema-source</c> it was given; none when <see langword="null"/>.</param>
+        /// <param name="strict">Whether it was given <c>--strict</c>.</param>
         /// <returns>The text, byte for byte.</returns>
-        public static string JsonOutput(string label, string root) =>
-            $"{OutputMarker} {label} json\n"
+        public static string JsonOutput(string label, string root, string? schemaSource = null, bool strict = false) =>
+            $"{OutputMarker} {label} json{(schemaSource is null ? string.Empty : " schema-source=" + schemaSource)}{(strict ? " strict" : string.Empty)}\n"
             + File.ReadAllText(Path.Combine(root, ".specht", "manifest.json"))
             + string.Concat(
                 Directory.EnumerateFiles(root, "README.md", SearchOption.AllDirectories)
@@ -587,6 +609,46 @@ internal static class AcceptanceTool
                     .Where(static path => path.EndsWith("/.spec/README.md", StringComparison.Ordinal))
                     .OrderBy(static path => path, StringComparer.Ordinal)
                     .Select(path => File.ReadAllText(Path.Combine(root, path))));
+
+        /// <summary>
+        /// Gets what a fake labelled <paramref name="label"/> writes on standard output for <c>--explain</c> of <see cref="KnownRule"/> on
+        /// <paramref name="root"/>: its marker, then the root's manifest.
+        /// </summary>
+        /// <param name="label">Which fake ran.</param>
+        /// <param name="root">The root it ran on.</param>
+        /// <returns>The text, byte for byte.</returns>
+        public static string ExplainOutput(string label, string root) =>
+            $"{OutputMarker} {label} explain {KnownRule}\n" + File.ReadAllText(Path.Combine(root, ".specht", "manifest.json"));
+
+        /// <summary>
+        /// Gets what a fake labelled <paramref name="label"/> writes on standard output for <c>rules --json</c> on <paramref name="root"/>:
+        /// its marker, then the root's manifest.
+        /// </summary>
+        /// <param name="label">Which fake ran.</param>
+        /// <param name="root">The root it ran on.</param>
+        /// <returns>The text, byte for byte.</returns>
+        public static string RulesOutput(string label, string root) =>
+            $"{OutputMarker} {label} rules json\n" + File.ReadAllText(Path.Combine(root, ".specht", "manifest.json"));
+
+        /// <summary>
+        /// Gets what a fake labelled <paramref name="label"/> writes on standard output for <c>manifest --json</c> on <paramref name="root"/>:
+        /// its marker, then the root's manifest, or with <paramref name="defaults"/> <see cref="ShippedDefaults"/>.
+        /// </summary>
+        /// <param name="label">Which fake ran.</param>
+        /// <param name="root">The root it ran on.</param>
+        /// <param name="defaults">Whether it was given <c>--defaults</c>.</param>
+        /// <returns>The text, byte for byte.</returns>
+        public static string ManifestOutput(string label, string root, bool defaults = false) =>
+            $"{OutputMarker} {label} manifest json{(defaults ? " defaults" : string.Empty)}\n"
+            + (defaults ? ShippedDefaults : File.ReadAllText(Path.Combine(root, ".specht", "manifest.json")));
+
+        /// <summary>
+        /// Gets what a fake writes on standard error, and ends <c>4</c> with, when asked to explain <paramref name="ruleId"/>, a rule it
+        /// does not have.
+        /// </summary>
+        /// <param name="ruleId">The rule id.</param>
+        /// <returns>The text, byte for byte.</returns>
+        public static string UnknownRuleMessage(string ruleId) => $"specht: no rule {ruleId} in the pinned schema version.\n";
 
         /// <summary>
         /// Writes a local tool manifest in <paramref name="directory"/> listing <c>specht.tool</c> at <paramref name="version"/>, a feed
@@ -672,17 +734,54 @@ internal static class AcceptanceTool
         }
 
         private static string Script(string label, string version) =>
-            "#!/bin/sh\n"
-            + $"echo \"{label} {version} $*\" >> \"$SPECHT_FAKE_LOG\"\n"
-            + $"if [ \"$1\" = \"--version\" ]; then echo {version}; exit 0; fi\n"
-            + "case \" $* \" in *\" --json \"*) ;; *) echo " + OutputMarker + $" {label}; exit 0;; esac\n"
-            + "root=\"$PWD\"; previous=\"\"\n"
-            + "for argument in \"$@\"; do if [ \"$previous\" = \"--root\" ]; then root=\"$argument\"; fi; previous=\"$argument\"; done\n"
-            + $"echo \"{OutputMarker} {label} json\"\n"
-            + "cat \"$root/.specht/manifest.json\"\n"
-            + "(cd \"$root\" && find . -path '*/.spec/README.md' | LC_ALL=C sort | while read -r file; do cat \"$file\"; done)\n"
-            + $"if grep -rqs --include=README.md {Violation} \"$root\"; then exit 1; fi\n"
-            + "exit 0\n";
+            """
+            #!/bin/sh
+            echo "@LABEL@ @VERSION@ $*" >> "$SPECHT_FAKE_LOG"
+            if [ "$1" = "--version" ]; then echo @VERSION@; exit 0; fi
+            case "$1" in
+              --explain) command=explain;;
+              rules) command=rules;;
+              manifest) command=manifest;;
+              *) case " $* " in *" --json "*) command=json;; *) echo @MARKER@ @LABEL@; exit 0;; esac;;
+            esac
+            root="$PWD"; previous=""; source=""; defaults=""; strict=""
+            for argument in "$@"; do
+              if [ "$previous" = "--root" ]; then root="$argument"; fi
+              if [ "$previous" = "--schema-source" ]; then source=" schema-source=$argument"; fi
+              if [ "$argument" = "--defaults" ]; then defaults=" defaults"; fi
+              if [ "$argument" = "--strict" ]; then strict=" strict"; fi
+              previous="$argument"
+            done
+            manifest="$root/.specht/manifest.json"
+            if [ ! -f "$manifest" ]; then printf '%s\n' '@MISSING@' >&2; exit 2; fi
+            if grep -qF '@REJECTED@' "$manifest"; then printf '%s\n' '@INVALID@' >&2; exit 3; fi
+            case "$command" in
+              explain)
+                if [ "$2" != "@KNOWN@" ]; then printf 'specht: no rule %s in the pinned schema version.\n' "$2" >&2; exit 4; fi
+                echo "@MARKER@ @LABEL@ explain $2"; cat "$manifest"; exit 0;;
+              rules)
+                echo "@MARKER@ @LABEL@ rules json"; cat "$manifest"; exit 0;;
+              manifest)
+                echo "@MARKER@ @LABEL@ manifest json$defaults"
+                if [ -n "$defaults" ]; then printf '%s\n' '@DEFAULTS@'; else cat "$manifest"; fi
+                exit 0;;
+            esac
+            echo "@MARKER@ @LABEL@ json$source$strict"
+            cat "$manifest"
+            (cd "$root" && find . -path '*/.spec/README.md' | LC_ALL=C sort | while read -r file; do cat "$file"; done)
+            if grep -rqs --include=README.md @VIOLATION@ "$root"; then exit 1; fi
+            exit 0
+
+            """
+                .Replace("@LABEL@", label, StringComparison.Ordinal)
+                .Replace("@VERSION@", version, StringComparison.Ordinal)
+                .Replace("@MARKER@", OutputMarker, StringComparison.Ordinal)
+                .Replace("@MISSING@", MissingManifestMessage.TrimEnd('\n'), StringComparison.Ordinal)
+                .Replace("@INVALID@", RejectedManifestMessage.TrimEnd('\n'), StringComparison.Ordinal)
+                .Replace("@REJECTED@", RejectedManifest, StringComparison.Ordinal)
+                .Replace("@KNOWN@", KnownRule, StringComparison.Ordinal)
+                .Replace("@DEFAULTS@", ShippedDefaults.TrimEnd('\n'), StringComparison.Ordinal)
+                .Replace("@VIOLATION@", Violation, StringComparison.Ordinal);
 
         private static void AddEntry(ZipArchive package, string name, string content)
         {

@@ -35,8 +35,9 @@ has the packable project `specht.mcp`, command `specht-mcp`: an MCP server that 
 own, not a `specht` command, and runs the repository's pinned `specht`
 ([ADR-0031](.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md), `0132-F3`).
 Built: the host over standard input and output (`0329`), the pinned-tool
-resolution (`0361`) and the `check` tool (`0330`). Not built: the rule, rule-list
-and manifest tools (`0331`) and `docs/mcp.md` (`0332`). It is not yet in the `Pack` or release targets and is not released; it
+resolution (`0361`), the `check` tool (`0330`) and the rule, rule-list and
+manifest tools, `explain`, `rules` and `manifest` (`0331`). Not built:
+`docs/mcp.md` (`0332`). It is not yet in the `Pack` or release targets and is not released; it
 will release on the tool's one `v<version>` tag.
 
 `README.md` is the public front page: what the tool is, why, how to install and

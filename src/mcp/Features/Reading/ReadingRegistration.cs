@@ -12,5 +12,11 @@ public static class ReadingRegistration
     public static IServiceCollection AddReading(this IServiceCollection services) =>
         services
             .AddSingleton<CheckTool>()
-            .AddSingleton(static provider => provider.GetRequiredService<CheckTool>().Declare());
+            .AddSingleton(static provider => provider.GetRequiredService<CheckTool>().Declare())
+            .AddSingleton<ExplainTool>()
+            .AddSingleton(static provider => provider.GetRequiredService<ExplainTool>().Declare())
+            .AddSingleton<RulesTool>()
+            .AddSingleton(static provider => provider.GetRequiredService<RulesTool>().Declare())
+            .AddSingleton<ManifestTool>()
+            .AddSingleton(static provider => provider.GetRequiredService<ManifestTool>().Declare());
 }

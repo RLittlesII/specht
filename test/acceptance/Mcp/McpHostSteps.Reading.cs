@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
-using Reqnroll.Infrastructure;
 
 namespace Specht.Acceptance.Mcp;
 
@@ -33,7 +32,7 @@ public sealed partial class McpHostSteps
     public void GivenTheVerdictWasAskedFor() => WhenTheVerdictIsAskedFor();
 
     [When(@"^the verdict is asked for(?: again)?$")]
-    public void WhenTheVerdictIsAskedFor() => _answers = [.. _answers, Session().CallTool(_nextId += 10, "check")];
+    public void WhenTheVerdictIsAskedFor() => Ask("check", null, "--json");
 
     [When("each answer is asked for")]
     public void WhenEachAnswerIsAskedFor()
@@ -116,15 +115,7 @@ public sealed partial class McpHostSteps
     public void ThenTheVerdictIsNamedForTheCheck() => Names().Should().Contain("check");
 
     [Then("the answer is marked as an error")]
-    public void ThenTheLastAnswerIsAnError()
-    {
-        if (!scenario.ScenarioInfo.Tags.Contains("B-020", StringComparer.Ordinal))
-        {
-            throw new PendingStepException();
-        }
-
-        LastFailure().Should().NotBeNull();
-    }
+    public void ThenTheLastAnswerIsAnError() => LastFailure().Should().NotBeNull();
 
     [Then("it names where to read how to restore the tool")]
     public void ThenTheLastAnswerPointsToRestoring() => LastFailure().Should().Contain("docs/mcp.md#restore-the-tool");
@@ -132,18 +123,7 @@ public sealed partial class McpHostSteps
     [Then("the answer quotes nothing the command wrote")]
     public void ThenTheLastAnswerQuotesNothingTheCommandWrote()
     {
-        var start = new ProcessStartInfo("dotnet") { WorkingDirectory = Tree.Root };
-        foreach (var argument in new[] { "tool", "run", "specht", "--", "--json" })
-        {
-            start.ArgumentList.Add(argument);
-        }
-
-        foreach (var (name, value) in Fakes().Environment)
-        {
-            start.Environment[name] = value;
-        }
-
-        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+        var (stdout, stderr, exitCode) = RunPinnedTool("--json");
         exitCode.Should().Be(1);
         stdout.Should().BeEmpty();
         var written = stderr.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -157,9 +137,32 @@ public sealed partial class McpHostSteps
         JsonNode.Parse(listing ?? "null")?["result"]?["tools"] as JsonArray
         ?? throw new Xunit.Sdk.XunitException($"The host did not list its tools; tools/list answered: {listing ?? "nothing"}");
 
+    private (string Stdout, string Stderr, int ExitCode) RunPinnedTool(params string[] arguments)
+    {
+        var start = new ProcessStartInfo("dotnet") { WorkingDirectory = Tree.Root };
+        foreach (var argument in new[] { "tool", "run", "specht", "--" }.Concat(arguments))
+        {
+            start.ArgumentList.Add(argument);
+        }
+
+        foreach (var (name, value) in Fakes().Environment)
+        {
+            start.Environment[name] = value;
+        }
+
+        return AcceptanceTool.Run(start);
+    }
+
+    private void Ask(string tool, JsonObject? arguments, params string[] command)
+    {
+        _command = command;
+        _answers = [.. _answers, Session().CallTool(_nextId += 10, tool, arguments)];
+    }
+
     private AcceptanceTool.McpSession Session() => _session ?? throw new InvalidOperationException("No session was started.");
 
-    private string Report(string label) => AcceptanceTool.FakeTools.JsonOutput(label, Tree.Root);
+    private string Report(string label, string? schemaSource = null, bool strict = false) =>
+        AcceptanceTool.FakeTools.JsonOutput(label, Tree.Root, schemaSource, strict);
 
     private IReadOnlyList<string> Names() => _offered.Select(static tool => tool!["name"]!.GetValue<string>()).ToList();
 
@@ -177,5 +180,9 @@ public sealed partial class McpHostSteps
     private static readonly HashSet<string> WriteTools = new(["init", "upgrade", "schema_pin", "format", "rules_set", "report"], StringComparer.Ordinal);
 
     private int _nextId;
+    private int _expectedExit;
+    private string _rule = AcceptanceTool.FakeTools.KnownRule;
+    private string[] _command = [];
+    private Func<string> _expected = static () => string.Empty;
     private JsonArray _offered = [];
 }

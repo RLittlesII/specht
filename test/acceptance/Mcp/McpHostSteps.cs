@@ -15,7 +15,7 @@ namespace Specht.Acceptance.Mcp;
 [Binding]
 [Scope(Feature = "The MCP host")]
 [Scope(Feature = "Reading through MCP")]
-public sealed partial class McpHostSteps(ScenarioContext scenario)
+public sealed partial class McpHostSteps
 {
     [Given("a repository whose local tool manifest lists the tool")]
     public void GivenAToolManifest()
@@ -40,16 +40,18 @@ public sealed partial class McpHostSteps(ScenarioContext scenario)
     [Given(@"^a client configured with one entry that runs the MCP (through the local tool manifest|from a global install)$")]
     public void GivenAnEntry(string installed) => installed.Should().NotBeNullOrWhiteSpace();
 
-    [Given(@"^the repository's manifest (is removed|is replaced by one the check rejects)$")]
+    [Given(@"^the (?:repository's )?manifest (is removed|is replaced by one the check rejects)$")]
     public void GivenAnUnusableManifest(string state)
     {
         if (state == "is removed")
         {
             File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
+            _expectedExit = 2;
         }
         else
         {
-            Tree.WriteRaw(SpechtTree.ManifestPath, "{\"schemaVersion\":\"9.0.0\"}");
+            Tree.WriteRaw(SpechtTree.ManifestPath, AcceptanceTool.FakeTools.RejectedManifest);
+            _expectedExit = 3;
         }
     }
 
