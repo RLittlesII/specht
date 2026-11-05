@@ -113,8 +113,8 @@ tree (the owner, 2026-11-01 and 2026-11-04).
 
 **Built so far:** the host over standard input and output, the pinned-tool
 resolution, the verdict through the `check` tool, and the rule text, the rule
-list and the manifest through the `explain`, `rules` and `manifest` tools. Not
-built: `docs/mcp.md`. Nothing is released.
+list and the manifest through the `explain`, `rules` and `manifest` tools, and
+`docs/mcp.md`. Nothing is released.
 
 **Done means:** an MCP client configured with one entry starts the host and
 reads the verdict, a rule's text, the rule list and the manifest, each equal to

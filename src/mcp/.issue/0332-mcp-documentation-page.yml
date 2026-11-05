@@ -2,7 +2,7 @@ id: "0332"
 type: task
 title: The MCP page, `docs/mcp.md`
 
-status: in-progress
+status: done
 
 value: 3
 risk: 1
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-05"
-closed: null
+closed: "2026-11-05"
 
 summary: |
   As a maintainer configuring an MCP client I want one page with the configuration entries, the tools the host offers and how to restore, pin and update the tool, so that I set up the server and fix what its messages report without reading the source.

@@ -134,6 +134,7 @@ a `.issue/` beside that `.spec/`.
 
 - [Setup](docs/setup.md)
 - [Command line](docs/cli.md)
+- [MCP](docs/mcp.md)
 - [What it checks](docs/what-it-checks.md)
 - [Configuration](docs/configuration.md)
 - [Multiple projects](docs/multiple-projects.md)

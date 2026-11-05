@@ -27,6 +27,9 @@ not pinned per repository, so a build still uses the manifest.
 A repository with no .NET project installs the same way; the SDK is needed for
 the tool alone ([Without .NET code](non-dotnet.md)).
 
+An MCP client reaches the pinned tool through `specht-mcp`, which has its own
+page ([MCP](mcp.md)).
+
 ## Initialise
 
 ```sh
