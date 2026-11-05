@@ -29,8 +29,15 @@ and no repository carries the engine."_
 Distribution is the NuGet package `specht.tool`, command `specht`, installed per
 consumer through a local tool manifest; a global install is the second
 documented path, for a shell (`0001-F2` decision 0009). `src/tool` is the one
-tool project that packs. `src/codeanalysis` packs the companion
-`Specht.CodeAnalysis` analyzer package; `IsPackable=false` elsewhere.
+project that packs the tool. `src/codeanalysis` packs the companion
+`Specht.CodeAnalysis` analyzer package; `IsPackable=false` elsewhere. `src/mcp`
+has the packable project `specht.mcp`, command `specht-mcp`: an MCP server that is a program of its
+own, not a `specht` command, and runs the repository's pinned `specht`
+([ADR-0031](.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md), `0132-F3`).
+Built: the host over standard input and output (`0329`), the pinned-tool
+resolution (`0361`) and the `check` tool (`0330`). Not built: the rule, rule-list
+and manifest tools (`0331`) and `docs/mcp.md` (`0332`). It is not yet in the `Pack` or release targets and is not released; it
+will release on the tool's one `v<version>` tag.
 
 `README.md` is the public front page: what the tool is, why, how to install and
 use it, and the layout; the reference pages are under `docs/`. The design
@@ -69,7 +76,7 @@ NUKE drives everything. `specht.slnx` is the solution.
 ./build.sh             # Default = Compile + CodeAnalysis + Test
 ./build.sh Format      # verify-only - fails on a diff
 ./build.sh CodeAnalysis # pack the current analyzer and check all three source projects
-./build.sh Pack        # specht.tool and Specht.CodeAnalysis packages
+./build.sh Pack        # specht.tool and Specht.CodeAnalysis packages (specht.mcp is not yet in Pack)
 ./build.sh Specht   # specht, on this repository's own .spec/ tree
 ```
 
@@ -78,7 +85,9 @@ Every target, the tier filters, and what CI actually runs:
 
 ## Architecture
 
-Two projects, one direction of dependency:
+Three built projects. `src/tool` references `src/specht`, one direction of
+dependency; `src/mcp` is a third that references neither and holds no engine (its
+invariants are `0132-F3`'s):
 
 - **`src/specht`** — the rule engine, imported at commit `e7dba24` (brief § 3). A
   pipeline: `SpechtDiscovery` finds specifications (co-located `**/.spec/README.md`

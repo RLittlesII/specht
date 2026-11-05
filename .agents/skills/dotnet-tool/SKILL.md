@@ -111,7 +111,7 @@ public sealed class IssueListCommand : AsyncCommand<IssueListCommand.Settings>
 - **USE** `Spectre.Console.Cli` for all CLI parsing — not `System.CommandLine`, `McMaster.Extensions.CommandLineUtils`, or manual `args` parsing.
 - **INJECT** `IAnsiConsole` rather than calling static `AnsiConsole.*` — that is what makes output assertable from a test. Several examples in this skill use the static form for brevity; prefer the injected one in real commands.
 - **ORGANIZE** by feature/domain (vertical slice) — never create top-level `Commands/`, `Settings/`, or `Services/` folders. In this repository a slice is `src/tool/Features/<Command>/`; [Vertical Slice](references/vertical-slice.md) owns that rule.
-- **PACK** the tool. `PackAsTool=true` in `src/tool`; `./build.sh Pack` produces `specht.tool.<version>.nupkg`; consumers install it from NuGet.org through a local tool manifest. The repository-wide `IsPackable=false` default is overridden in that one project and nowhere else.
+- **PACK** the tool. `PackAsTool=true` in `src/tool`; `./build.sh Pack` produces `specht.tool.<version>.nupkg`; consumers install it from NuGet.org through a local tool manifest. The repository-wide `IsPackable=false` default is overridden only in the projects that pack; `src/mcp` (`specht.mcp`, command `specht-mcp`) is a program of its own and not a command of this tool.
 - **KEEP** commands as entry points — parse, dispatch, fold a result into an exit code. Business logic does not live in a command.
 - **NEVER** accept a secret as a `--flag` option — it lands in shell history and process lists. This tool needs none; see [Conventions](references/conventions.md) § "Secrets".
 - **ALWAYS** implement `Validate()` on `CommandSettings` when options have cross-field constraints.

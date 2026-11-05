@@ -22,6 +22,7 @@
     <Project Path="src/analyzers/analyzers.csproj" />
     <Project Path="src/codefixes/codefixes.csproj" />
     <Project Path="src/codeanalysis/codeanalysis.csproj" />
+    <Project Path="src/mcp/mcp.csproj" />
     <Project Path="src/testevidence.mtp/testevidence.mtp.csproj" />
     <Project Path="src/testevidence.vstest/testevidence.vstest.csproj" />
     <Project Path="src/specht/specht.csproj" />

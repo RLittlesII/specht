@@ -87,7 +87,7 @@ Nothing sets the package's version, so every `Pack` would produce the same defau
 | 2   | Publishing on a tag                                                                                                               | `0055-F6`.                                                                                                                                                           |
 | 3   | Withdrawn 2026-10-11: the owner asked for a `--version` option on the command, and `0001-F2` B-040 claims it. Was: not asked for. | The command's surface is epic `0001`'s (`0001-F2` decision 0010); what it prints is the version this Feature computes, as each assembly states it (`0001-F2` B-030). |
 | 4   | When the first tag is cut                                                                                                         | `0055-F6` C-2.                                                                                                                                                       |
-| 5   | Versioning any assembly other than the packed tool's                                                                              | Only `specht.tool` packs (`0001-F2` C-5); the rest takes the same version, unasserted.                                                                               |
+| 5   | Versioning any assembly other than the packed tool's                                                                              | `src/tool` is the packed tool (`0001-F2` C-5); the rest, `specht.mcp` included, takes the same version line, unasserted.                                             |
 
 ## 6. Concern Separation
 

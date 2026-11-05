@@ -1,0 +1,77 @@
+id: "0361"
+type: task
+title: Find, check and run the repository's pinned specht from the MCP
+
+status: done
+
+value: 4
+risk: 3
+
+parent: "0132"
+children: []
+
+depends_on: ["0329"]
+spikes: []
+
+spec: src/mcp/.spec/README.md
+
+claims:
+  - B-017
+  - B-018
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+  - B-029
+  - B-030
+  - B-034
+
+created: "2026-11-04"
+updated: "2026-11-04"
+closed: "2026-11-04"
+
+summary: |
+  As a maintainer I want the MCP to run the `specht` my repository pins, and to say so plainly when it cannot, so that an agent is never answered by a version the repository did not choose.
+
+  The host finds the pinned tool through the root's local tool manifest (OQ-7), falls back to the global tool and reports the answer as unpinned in a part of the result apart from the command's text (B-024), fails with an error naming what is missing, never restores or installs (C-10), and checks the tool's version once per session against a minimum (OQ-9, OQ-12).
+
+  Waits on 0329, the host. 0329, 0361 and 0330 deliver in one pull request (epic `0132` § Features, candidate B); 0330 waits on this item, which runs each command it answers with.
+
+  This item registers no tool. Its scenarios are driven through the tool `check`, which 0330 registers (`0132-F3` A-7; `0132-F4` OQ-7, C-7), so they bind in the shared pull request once 0330 lands. The messages' pointers are the paths in `0132-F3` C-12.
+
+acceptance_criteria:
+  - "B-017 — the pinned version runs"
+  - "B-018 — nothing is restored"
+  - "B-020 — the missing tool is named"
+  - "B-021 — where to restore: the error contains `docs/mcp.md#restore-the-tool` (`0132-F3` C-12)"
+  - "B-022 — no other tool runs"
+  - "B-023 — no pin, the global tool"
+  - "B-024 — the unpinned report apart"
+  - "B-025 — where to pin: the report contains `docs/mcp.md#pin-the-tool` (`0132-F3` C-12)"
+  - "B-026 — one version check"
+  - "B-027 — too old fails the call"
+  - "B-028 — the minimum named"
+  - "B-029 — where to update: the error contains `docs/mcp.md#update-the-tool` (`0132-F3` C-12)"
+  - "B-030 — neither found"
+  - "B-034 — too old, no work given"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-04, spec-author's cut for ADR-0031: the pinned-tool resolution is its own item, since it is the one place the host meets the installed tool and 0330 and 0331 both wait on it. Rejected: leaving it in 0329, which would make the host item carry a second concern; one item per claim, since none is done alone.
+  - |
+    2026-11-04, review: the scenarios here that need an answer only 0330's tool gives, and B-009's in 0329, bind in the shared pull request with 0329 and 0330, not in this item alone.
+  - |
+    2026-11-04, spec-author after the owner's ruling on `0132-F4` OQ-7 (tools named for their commands): the scenarios call the tool `check` (`0132-F3` A-7). 0330 registers it; the tests here are written against the name and stay red until it does. Order stays 0329, 0361, 0330. Rejected: registering `check` here, which would put a `0132-F4` answer in a host item.
+  - |
+    2026-11-04: renumbered from 0359 — main took 0359 (analyzer item, #725) before this branch merged; commits on this branch up to 7cf72d26 cite it as 0359.
+
+out_of_scope:
+  - "Restoring, installing or updating a tool — C-10; § 5 row 13, row 15."
+  - "The messages' documentation entries — B-031; 0332."
+  - "Answering from a pinned version other than the one listed — § 5 row 14."

@@ -1,6 +1,6 @@
 ---
 title: Coding in specht
-description: The analyzer severities that are errors, the central package policy, the one project that packs, and the generated files that are never hand-edited
+description: The analyzer severities that are errors, the central package policy, the projects that pack, and the generated files that are never hand-edited
 type: reference
 ---
 
@@ -26,7 +26,7 @@ solution-wide from day one.
 
 `IsPackable=false` is the **default**, not the rule: `src/tool` overrides
 it to `true` with `PackAsTool`, because the tool is the product and the package
-is how it ships. No other built project currently packs; the engine library `src/specht` is
+is how it ships. `src/mcp` is also packable, as `specht.mcp`, though the `Pack` and release targets do not yet include it ([ADR-0031](../../../../.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md)). No other project packs; the engine library `src/specht` is
 consumed through the tool, never as a package of its own (brief § 2 Must-4).
 For epic `0201`, [ADR-0016](../../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md)
 adopts CodeAnalysis as the future deployment project and keeps Analyzers and
@@ -181,7 +181,7 @@ but a build-file change made without running `Format` can still fail CI first.
 ## Never add
 
 - A package version in a `.csproj`.
-- `IsPackable=true` or `PackAsTool` anywhere but `src/tool`.
+- `IsPackable=true` or `PackAsTool` anywhere but `src/tool`, `src/codeanalysis` and `src/mcp`.
 - A hand edit to `ci.yml` or a commit of `format.json`.
 - A condition on `matrix.*` in a generated workflow or a build target.
 - A suppression without its reason on the adjacent line.

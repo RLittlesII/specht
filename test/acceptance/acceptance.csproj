@@ -33,6 +33,8 @@
     <ReqnrollFeatureFile Include="../../src/tool/Features/Rules/.spec/rules.feature" Link="Features/rules.feature" />
     <ReqnrollFeatureFile Include="../../src/tool/Features/Rules/Set/.spec/set-rule-level.feature" Link="Features/rule-setting.feature" />
     <ReqnrollFeatureFile Include="../../src/tool/Features/Manifest/.spec/manifest.feature" Link="Features/effective-manifest.feature" />
+    <ReqnrollFeatureFile Include="../../src/mcp/.spec/mcp-host.feature" Link="Features/mcp-host.feature" />
+    <ReqnrollFeatureFile Include="../../src/mcp/Features/Reading/.spec/reading-through-mcp.feature" Link="Features/reading-through-mcp.feature" />
     <ReqnrollFeatureFile Include="..\..\docs\.spec\docs-as-first-class-citizen.feature" Link="Features\docs-as-first-class-citizen.feature" />
   </ItemGroup>
 
@@ -56,6 +58,7 @@
     <ProjectReference Include="../../src/codefixes/codefixes.csproj" />
     <ProjectReference Include="../../.performance/comparison/comparison.csproj" />
     <ProjectReference Include="..\..\src\tool\tool.csproj" />
+    <ProjectReference Include="..\..\src\mcp\mcp.csproj" />
     <ProjectReference Include="..\..\.build\.build.csproj" />
   </ItemGroup>
 
