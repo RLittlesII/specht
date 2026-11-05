@@ -7,9 +7,18 @@ status: deferred
 priority: med
 milestone: null
 children:
-  ["0201-F1", "0201-F2", "0201-F3", "0201-F4", "0201-F5", "0201-F6", "0201-F7"]
+  [
+    "0201-F1",
+    "0201-F2",
+    "0201-F3",
+    "0201-F4",
+    "0201-F5",
+    "0201-F6",
+    "0201-F7",
+    "0201-F8",
+  ]
 created: "2026-10-13"
-updated: "2026-10-23"
+updated: "2026-11-04"
 github_issue: null
 ---
 
@@ -472,6 +481,7 @@ belong in the Feature specifications produced during decomposition.
 | R7  | A maintainer can distinguish a valid reference, complete required bindings and passing behavioral evidence                                       | Must | A tag does not prove that an implementation meets a claim or obeys an ADR.                                                                                           |
 | R8  | The checks are deterministic, offline and read-only, and diagnostics identify the offending source location and target reference                 | Must | Paths exposed by product diagnostics and reports are repository-relative.                                                                                            |
 | R9  | A consumer can adopt the analysis with an explicit scope and enforcement policy, with the same binding rules used in the editor and build        | Must | Reporting controls, coverage/enforcement and input-delivery behavior are decided; installation and detailed domain/input configuration remain open.                  |
+| R10 | Class and method surfaces reject ordinary line comments while allowing XML documentation                                                         | Must | Owner request, 2026-11-04; the bounded convention exception is defined by 0201-F8 decision 0001.                                                                     |
 
 ## Analyzer testing direction
 
@@ -498,8 +508,8 @@ spike is mechanical evidence, not the production test-harness choice.
 
 ## Feature decomposition
 
-The seven co-located draft specifications below are the decomposition of the
-adopted model. Their companion scenarios state the obligations before production
+The co-located specifications below decompose the adopted model and its
+explicit declaration-comment extension. Their companion scenarios state the obligations before production
 tests or code exist; traceability rows remain Missing until implementation. Delivery items are now cut
 from the agreed claims; the implementation queue is below. Owner review selected the three
 project homes below; this does not select a mediator or change the engine
@@ -514,6 +524,7 @@ architecture.
 | 0201-F5 | [Traceability reconciliation](../../src/analyzers/Reconciliation/.spec/README.md)      | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.              | R5, R7, R8 | F1, F3         |
 | 0201-F6 | [Consumer analysis adoption](../../src/codeanalysis/.spec/README.md)                   | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                          | R9         | F1, F2, F3, F5 |
 | 0201-F7 | [Native Gherkin claim catalogue](../../src/analyzers/Bindings/Gherkin/.spec/README.md) | Claims tagged in a consumer's Gherkin enter the same catalogue, diagnostics and enforcement as claims in a Markdown table.      | R9         | F1, F6         |
+| 0201-F8 | [Declaration comments](../../src/analyzers/DeclarationComments/.spec/README.md)        | Ordinary line comments are rejected on class and method surfaces while XML documentation remains allowed.                       | R10        | None           |
 
 F4 is an optional extension; F5 and F6 do not depend on it. F2 keeps diagnostics
 and their repairs together because a repair's safety depends on the same binding
@@ -524,7 +535,9 @@ claim-tag interpretation. F7, added for consumer request #256, reads a
 consumer's claims from tagged Gherkin through that same claim-tag grammar; F4
 resolves scenario tags against the catalogue it builds, and F3 B-010 to B-019
 cover the xUnit v2 and VSTest evidence the same request needs. No Feature name bundles unrelated capabilities with a
-coordinating conjunction.
+coordinating conjunction. F8, requested by the owner on 2026-11-04, adds only
+the declaration-comment convention described in 0201-F8 decision 0001; other
+generic convention analyzers remain outside this epic.
 
 ## Constraints
 
@@ -576,15 +589,15 @@ is silently settled by prototype behavior.
 
 ## Out of this epic
 
-| Item                                                                            | Boundary                                                                                                                                                |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Proving arbitrary code behavior or architectural conformance from an annotation | Tests and review remain the evidence; this epic checks bindings and their completeness under a declared policy.                                         |
-| Generic coding-convention analyzers                                             | No transfer of the consumer's convention analyzer scope is implied; OQ-10 addresses ownership.                                                          |
-| Replacing the Markdown specification checker                                    | Epic `0001` continues to own repository-wide specification validation.                                                                                  |
-| Creating claims or auto-approving specifications from code                      | The specification-first artifact chain remains authoritative.                                                                                           |
-| Code fixes that invent references or edit specification records                 | Invoked repairs use existing records and the code-fix safety contract in 0201-F2 decision 0008; they never invent claims or edit specification records. |
-| Runtime enforcement or remote traceability services                             | The requested capability is static, deterministic and offline.                                                                                          |
-| Production analyzer delivery from this decomposition                            | The isolated binding spike supplies evidence; each production Feature starts with an agreed specification and scenarios before delivery items are cut.  |
+| Item                                                                            | Boundary                                                                                                                                                     |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Proving arbitrary code behavior or architectural conformance from an annotation | Tests and review remain the evidence; this epic checks bindings and their completeness under a declared policy.                                              |
+| Generic coding-convention analyzers                                             | Only the owner-requested class/method declaration-comment rule is admitted by 0201-F8 decision 0001; other convention analyzer scope remains consumer-owned. |
+| Replacing the Markdown specification checker                                    | Epic `0001` continues to own repository-wide specification validation.                                                                                       |
+| Creating claims or auto-approving specifications from code                      | The specification-first artifact chain remains authoritative.                                                                                                |
+| Code fixes that invent references or edit specification records                 | Invoked repairs use existing records and the code-fix safety contract in 0201-F2 decision 0008; they never invent claims or edit specification records.      |
+| Runtime enforcement or remote traceability services                             | The requested capability is static, deterministic and offline.                                                                                               |
+| Production analyzer delivery from this decomposition                            | The isolated binding spike supplies evidence; each production Feature starts with an agreed specification and scenarios before delivery items are cut.       |
 
 ## Project layout
 
