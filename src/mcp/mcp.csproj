@@ -8,7 +8,12 @@
     <PackageId>specht.mcp</PackageId>
     <RootNamespace>Specht.Mcp</RootNamespace>
     <AssemblyName>specht.mcp</AssemblyName>
+    <Description>An MCP server that gives a coding agent the verdict of the specht its repository pins.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\.assets\logos\specht-book-avatar.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
