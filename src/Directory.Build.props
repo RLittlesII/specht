@@ -1,0 +1,18 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <Description>A dotnet tool that checks a repository's specification documents against a versioned schema.</Description>
+    <Authors>Rodney Littles, II</Authors>
+    <Copyright>Copyright (c) 2026 Rodney Littles, II</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/RLittlesII/specht</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RLittlesII/specht</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>https://github.com/RLittlesII/specht/releases</PackageReleaseNotes>
+    <PackageTags>specification sdd spec-driven-development traceability gherkin dotnet-tool</PackageTags>
+    <PackageIcon>specht-book-avatar.png</PackageIcon>
+  </PropertyGroup>
+
+</Project>
