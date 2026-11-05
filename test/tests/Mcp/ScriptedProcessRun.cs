@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Specht.Mcp.Features.PinnedTool;
 
 namespace Specht.Tests.Mcp;
@@ -19,26 +20,41 @@ internal sealed class ScriptedProcessRun : IProcessRun
 
     public ProcessResult? Verdict { get; set; } = new(0, "{}\n", string.Empty);
 
-    public List<ProcessRequest> Requests { get; } = [];
+    public ProcessResult? FailedListing { get; set; }
+
+    public bool DotnetMissing { get; set; }
+
+    public TaskCompletionSource? VersionGate { get; set; }
+
+    public ConcurrentQueue<ProcessRequest> Requests { get; } = [];
 
     public IEnumerable<ProcessRequest> VersionChecks => Requests.Where(static request => request.Arguments[^1] == "--version");
 
     public static ScriptedProcessRun Tool(bool pinned, string version) =>
         pinned ? new ScriptedProcessRun { ListedPin = Pin, PinnedReports = version } : new ScriptedProcessRun { GlobalReports = version };
 
-    public Task<ProcessResult?> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
+    public async Task<ProcessResult?> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
-        Requests.Add(request);
+        Requests.Enqueue(request);
+        if (VersionGate is not null && request.Arguments[^1] == "--version")
+        {
+            await VersionGate.Task.WaitAsync(cancellationToken);
+        }
 
-        return Task.FromResult(Answer(request));
+        return Answer(request);
     }
 
     private ProcessResult? Answer(ProcessRequest request)
     {
         var arguments = request.Arguments;
+        if (request.FileName == "dotnet" && DotnetMissing)
+        {
+            return null;
+        }
+
         if (request.FileName == "dotnet" && arguments.SequenceEqual(["tool", "list"]))
         {
-            return new ProcessResult(
+            return FailedListing ?? new ProcessResult(
                 0,
                 "Package Id      Version      Commands\n---------------------------------------\n"
                 + (ListedPin is null ? string.Empty : $"specht.tool     {ListedPin}      specht\n"),

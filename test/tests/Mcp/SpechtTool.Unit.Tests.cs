@@ -164,9 +164,120 @@ public sealed class SpechtToolUnitTests
         outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().NotBeNullOrWhiteSpace();
     }
 
+    [Fact]
+    public async Task AListingThatEndsWithAFailureCode_WhenTheToolRuns_ShouldRefuseNamingTheCodeAndNotTheListingsTextAndRunNothingMore()
+    {
+        // Given
+        var process = new ScriptedProcessRun
+        {
+            GlobalReports = "96.54.32",
+            FailedListing = new ProcessResult(145, "listing stdout marker", "listing stderr marker"),
+        };
+
+        // When
+        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+
+        // Then
+        outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message
+            .Should().Contain("145").And.NotContain("listing stderr marker").And.NotContain("listing stdout marker");
+        process.Requests.Should().ContainSingle().Which.Arguments.Should().Equal("tool", "list");
+    }
+
+    [Fact]
+    public async Task AListingThatCannotBeStarted_WhenAGlobalToolIsInstalled_ShouldReadNoPinAndRunTheGlobalToolUnpinned()
+    {
+        // Given
+        var process = new ScriptedProcessRun { DotnetMissing = true, GlobalReports = "96.54.32" };
+
+        // When
+        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+
+        // Then
+        outcome.Should().BeOfType<ToolOutcome.Ran>().Which.UnpinnedReport.Should().Contain("docs/mcp.md#pin-the-tool");
+        process.Requests.Where(static request => request.FileName == "specht").Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task AListingThatCannotBeStarted_WhenNoGlobalToolIsInstalled_ShouldRefuseNamingThePinAndTheGlobalToolAsNotFound()
+    {
+        // Given
+        var process = new ScriptedProcessRun { DotnetMissing = true };
+
+        // When
+        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+
+        // Then
+        outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message
+            .Should().ContainEquivalentOf("pin").And.ContainEquivalentOf("global").And.ContainEquivalentOf("not found");
+    }
+
+    [Theory]
+    [ClassData(typeof(PinnedOrGlobalTools))]
+    public async Task TwoFirstCallsInFlight_WhenTheVersionCheckIsHeldOpen_ShouldAskTheToolForItsVersionOnceAndLetBothRun(bool pinned)
+    {
+        // Given
+        var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
+        process.VersionGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tool = Tool(process);
+
+        // When
+        var first = tool.RunAsync(Json, CancellationToken.None);
+        var second = tool.RunAsync(Json, CancellationToken.None);
+        process.VersionChecks.Should().ContainSingle();
+        process.VersionGate.SetResult();
+        var outcomes = await Task.WhenAll(first, second).WaitAsync(Bound, TestContext.Current.CancellationToken);
+
+        // Then
+        outcomes.Should().AllBeOfType<ToolOutcome.Ran>();
+        process.VersionChecks.Should().ContainSingle();
+        process.Requests.Count(static request => request.Arguments[^1] == "--json").Should().Be(2);
+    }
+
+    [Fact]
+    public async Task TwoFirstCallsInFlight_WhenTheFirstVersionCheckFails_ShouldAskAgainForTheSecond()
+    {
+        // Given
+        var process = new ScriptedProcessRun { ListedPin = ScriptedProcessRun.Pin, VersionGate = new TaskCompletionSource() };
+        var tool = Tool(process);
+
+        // When
+        var first = tool.RunAsync(Json, CancellationToken.None);
+        var second = tool.RunAsync(Json, CancellationToken.None);
+        process.VersionGate.SetResult();
+        var outcomes = await Task.WhenAll(first, second).WaitAsync(Bound, TestContext.Current.CancellationToken);
+
+        // Then
+        outcomes.Should().AllBeOfType<ToolOutcome.Refused>();
+        process.VersionChecks.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task TwoFirstCallsInFlight_WhenTheFirstCallerIsCancelled_ShouldLetTheSecondCheckTheVersionAndRun()
+    {
+        // Given
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        process.VersionGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tool = Tool(process);
+        using var cancel = new CancellationTokenSource();
+        var first = tool.RunAsync(Json, cancel.Token);
+        var second = tool.RunAsync(Json, CancellationToken.None);
+
+        // When
+        await cancel.CancelAsync();
+        var cancelled = await Record.ExceptionAsync(() => first.WaitAsync(Bound, TestContext.Current.CancellationToken));
+        process.VersionGate.SetResult();
+        var outcome = await second.WaitAsync(Bound, TestContext.Current.CancellationToken);
+
+        // Then
+        cancelled.Should().BeAssignableTo<OperationCanceledException>();
+        outcome.Should().BeOfType<ToolOutcome.Ran>();
+    }
+
     private static SpechtTool Tool(ScriptedProcessRun process) => new(process, new SessionRoot { Value = Root });
 
     private const string Root = "repository";
+
+    private static readonly TimeSpan Bound = TimeSpan.FromSeconds(30);
 
     private static readonly string[] Json = ["--json"];
 }

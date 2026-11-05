@@ -48,6 +48,24 @@ public sealed class CheckToolUnitTests
         Texts(result).Should().Equal("the manifest is invalid");
     }
 
+    [Theory]
+    [ClassData(typeof(EmptyVerdicts))]
+    public async Task AnEmptyVerdict_WhenTheCommandEndsWithACleanOrViolatingCode_ShouldBeAnErrorThatPointsToRestoringTheToolAndRelaysNoText(
+        int exitCode,
+        bool pinned)
+    {
+        // Given
+        var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
+        process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
+
+        // When
+        var result = await Check(process).CheckAsync(CancellationToken.None);
+
+        // Then
+        result.IsError.Should().BeTrue();
+        Texts(result).Should().ContainSingle().Which.Should().Contain("docs/mcp.md#restore-the-tool").And.NotContain("standard error marker");
+    }
+
     [Fact]
     public async Task ACommandThatCannotBeStarted_WhenCheckIsCalled_ShouldBeAnError()
     {
