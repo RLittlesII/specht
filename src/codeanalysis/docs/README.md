@@ -26,3 +26,4 @@ configuration.
 | [SPCT0010](SPCT0010.md) | Duplicate claim declaration                             | Warning          | No          |
 | [SPCT0011](SPCT0011.md) | Claim tag where no claim is declared                    | Warning          | No          |
 | [SPCT0012](SPCT0012.md) | Scenario carries no claim                               | Warning          | No          |
+| [SPCT0013](SPCT0013.md) | Ordinary comment on a declaration surface               | Warning          | No          |
