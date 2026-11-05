@@ -22,9 +22,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -43,9 +44,10 @@ public sealed class McpHostPinnedToolIntegrationTests
             .WithPin(tree.Root)
             .WithOnPath()
             .WithGlobal();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         session.CallTool(10, "check");
         session.Close();
 
@@ -59,9 +61,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree(["below"]);
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(Path.GetDirectoryName(tree.Root)!).WithGlobal();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         session.CallTool(10, "check");
         session.Close();
 
@@ -76,9 +79,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root, restored: false);
         var before = AcceptanceTool.Snapshot(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         session.CallTool(10, "check");
         session.Close();
 
@@ -94,9 +98,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root, restored: false);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -110,9 +115,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root, restored: false);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -129,9 +135,10 @@ public sealed class McpHostPinnedToolIntegrationTests
             .WithPin(tree.Root, restored: false)
             .WithGlobal()
             .WithOnPath();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         session.CallTool(10, "check");
         session.Close();
 
@@ -149,9 +156,10 @@ public sealed class McpHostPinnedToolIntegrationTests
             .WithPin(tree.Root)
             .WithUnpinned(tree.Root, manifestRemoved)
             .WithGlobal();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         session.CallTool(10, "check");
         session.Close();
 
@@ -165,9 +173,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithUnpinned(tree.Root).WithGlobal();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -187,9 +196,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithUnpinned(tree.Root).WithGlobal();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -210,9 +220,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPinnedOrGlobal(pinned, tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answers = new[] { session.CallTool(10, "check"), session.CallTool(20, "check") };
         session.Close();
 
@@ -229,9 +240,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPinnedOrGlobal(pinned, tree.Root, AcceptanceTool.FakeTools.OldVersion);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -246,9 +258,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPinnedOrGlobal(pinned, tree.Root, AcceptanceTool.FakeTools.OldVersion);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         session.CallTool(10, "check");
         session.Close();
 
@@ -263,9 +276,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPinnedOrGlobal(pinned, tree.Root, AcceptanceTool.FakeTools.OldVersion);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -285,9 +299,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPinnedOrGlobal(pinned, tree.Root, AcceptanceTool.FakeTools.OldVersion);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -301,9 +316,10 @@ public sealed class McpHostPinnedToolIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithUnpinned(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 

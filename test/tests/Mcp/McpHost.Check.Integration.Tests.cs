@@ -23,9 +23,10 @@ public sealed class McpHostCheckIntegrationTests
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -45,9 +46,10 @@ public sealed class McpHostCheckIntegrationTests
             .WithUnpinned(tree.Root)
             .WithGlobal();
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -63,12 +65,18 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root);
 
         // When
-        List<JsonObject> offered = new OfferedToolsFixture().WithRoot(tree.Root);
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        var listing = session.Exchange(AcceptanceTool.McpRequest(10, "tools/list", AcceptanceTool.McpRevision));
+        session.Close();
 
         // Then
-        var arguments = offered.Single(static tool => tool["name"]?.GetValue<string>() == "check")["inputSchema"]?["properties"] as JsonObject ?? [];
+        var offered = JsonNode.Parse(listing ?? "null")?["result"]?["tools"] as JsonArray;
+        offered.Should().NotBeNull($"the host must list its tools; tools/list answered: {listing ?? "nothing"}");
+        var arguments = offered!.Select(static tool => tool!.AsObject())
+            .Single(static tool => tool["name"]?.GetValue<string>() == "check")["inputSchema"]?["properties"] as JsonObject ?? [];
         arguments.Select(static argument => argument.Key)
             .Should()
             .NotContain(static name => new[] { "spec", "path", "file", "feature", "directory" }
@@ -82,9 +90,10 @@ public sealed class McpHostCheckIntegrationTests
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -102,9 +111,10 @@ public sealed class McpHostCheckIntegrationTests
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
         tree.Pin(version);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -121,7 +131,8 @@ public sealed class McpHostCheckIntegrationTests
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var first = session.CallTool(10, "check");
 
         // When
@@ -142,9 +153,10 @@ public sealed class McpHostCheckIntegrationTests
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
         var before = AcceptanceTool.Snapshot(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 
@@ -158,12 +170,17 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root);
 
         // When
-        List<JsonObject> offered = new OfferedToolsFixture().WithRoot(tree.Root);
-        var names = offered.Select(static tool => tool["name"]!.GetValue<string>()).ToList();
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        var listing = session.Exchange(AcceptanceTool.McpRequest(10, "tools/list", AcceptanceTool.McpRevision));
+        session.Close();
 
         // Then
+        var offered = JsonNode.Parse(listing ?? "null")?["result"]?["tools"] as JsonArray;
+        offered.Should().NotBeNull($"the host must list its tools; tools/list answered: {listing ?? "nothing"}");
+        var names = offered!.Select(static tool => tool!["name"]!.GetValue<string>()).ToList();
         names.Should().NotBeEmpty().And.NotContain(["init", "upgrade", "schema_pin", "format", "rules_set", "report"]);
         names.Should().NotContain(static name => name.Contains("queue", StringComparison.OrdinalIgnoreCase));
     }
@@ -173,12 +190,17 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root);
 
         // When
-        List<JsonObject> offered = new OfferedToolsFixture().WithRoot(tree.Root);
-        var names = offered.Select(static tool => tool["name"]!.GetValue<string>()).ToList();
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        var listing = session.Exchange(AcceptanceTool.McpRequest(10, "tools/list", AcceptanceTool.McpRevision));
+        session.Close();
 
         // Then
+        var offered = JsonNode.Parse(listing ?? "null")?["result"]?["tools"] as JsonArray;
+        offered.Should().NotBeNull($"the host must list its tools; tools/list answered: {listing ?? "nothing"}");
+        var names = offered!.Select(static tool => tool!["name"]!.GetValue<string>()).ToList();
         names.Should().Contain("check").And.BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"]);
     }
 
@@ -191,12 +213,13 @@ public sealed class McpHostCheckIntegrationTests
         using var other = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
-        using AcceptanceTool.McpSession session = new McpSessionFixture()
+        McpSessionStart start = new McpSessionFixture()
             .WithRoot(elsewhere ? other.Root : tree.Root)
             .WithTools(tools)
             .WithArguments(elsewhere ? ["--root", tree.Root] : []);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         var answer = session.CallTool(10, "check");
         session.Close();
 

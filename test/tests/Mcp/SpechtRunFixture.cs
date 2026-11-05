@@ -5,8 +5,8 @@ using Specht.Acceptance;
 namespace Specht.Tests.Mcp;
 
 /// <summary>
-/// Runs <c>specht</c> through <c>dotnet</c>, the local tool lookup, in a directory over the environment of fake tools, or runs a shell
-/// command that finds it on the path, and gives back what it wrote and how it ended.
+/// Arranges a run of <c>specht</c> through <c>dotnet</c>, the local tool lookup, in a directory over the environment of fake tools, or
+/// of a shell command that finds it on the path.
 /// </summary>
 internal sealed class SpechtRunFixture : AutoFixtureBase<SpechtRunFixture>
 {
@@ -18,21 +18,21 @@ internal sealed class SpechtRunFixture : AutoFixtureBase<SpechtRunFixture>
 
     public SpechtRunFixture WithShellCommand(string command) => With(ref _shellCommand, command);
 
-    public void Deconstruct(out string stdout, out string stderr, out int exitCode)
+    public static implicit operator ProcessStartInfo(SpechtRunFixture fixture)
     {
-        var start = _shellCommand is null ? new ProcessStartInfo("dotnet") : new ProcessStartInfo("sh");
-        start.WorkingDirectory = _root;
-        foreach (var (name, value) in _tools?.Environment ?? new Dictionary<string, string>())
+        var start = fixture._shellCommand is null ? new ProcessStartInfo("dotnet") : new ProcessStartInfo("sh");
+        start.WorkingDirectory = fixture._root;
+        foreach (var (name, value) in fixture._tools?.Environment ?? new Dictionary<string, string>())
         {
             start.Environment[name] = value;
         }
 
-        foreach (var argument in _shellCommand is null ? ["specht", .. _arguments] : new[] { "-c", _shellCommand })
+        foreach (var argument in fixture._shellCommand is null ? ["specht", .. fixture._arguments] : new[] { "-c", fixture._shellCommand })
         {
             start.ArgumentList.Add(argument);
         }
 
-        (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+        return start;
     }
 
     private string _root = ".";

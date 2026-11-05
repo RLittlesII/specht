@@ -118,7 +118,8 @@ public sealed class McpHostSessionIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root);
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
         session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)).Should().NotBeNull();
 
         // When

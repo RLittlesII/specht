@@ -20,12 +20,15 @@ public sealed class McpHostNetworkIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithDiscoveryServed();
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        var served = session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision));
         var listening = session.Sockets("-iTCP", "-sTCP:LISTEN");
 
         // Then
+        served.Should().NotBeNull("the session must have served before its sockets are read");
         listening.Should().BeEmpty();
     }
 
@@ -34,12 +37,15 @@ public sealed class McpHostNetworkIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithDiscoveryServed();
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root);
 
         // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        var served = session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision));
         var open = session.Sockets("-i", "-sTCP:^LISTEN");
 
         // Then
+        served.Should().NotBeNull("the session must have served before its sockets are read");
         open.Should().BeEmpty();
     }
 

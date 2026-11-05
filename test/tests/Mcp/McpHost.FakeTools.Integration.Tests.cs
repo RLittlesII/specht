@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AwesomeAssertions;
 using Specht.Acceptance;
 using Specht.Tests.Shared;
@@ -24,9 +25,10 @@ public sealed class McpHostFakeToolsIntegrationTests
             .WithPin(tree.Root)
             .WithGlobal()
             .WithOnPath();
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--version");
 
         // When
-        var (stdout, stderr, exitCode) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--version");
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
 
         // Then
         exitCode.Should().Be(0, stderr);
@@ -43,9 +45,10 @@ public sealed class McpHostFakeToolsIntegrationTests
             .WithPin(tree.Root)
             .WithGlobal()
             .WithUnrestored();
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--version");
 
         // When
-        var (_, _, exitCode) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--version");
+        var (_, _, exitCode) = AcceptanceTool.Run(start);
 
         // Then
         exitCode.Should().NotBe(0);
@@ -59,9 +62,10 @@ public sealed class McpHostFakeToolsIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithGlobal().WithOnPath();
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithShellCommand("specht --version");
 
         // When
-        var (stdout, stderr, exitCode) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithShellCommand("specht --version");
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
 
         // Then
         exitCode.Should().Be(0, stderr);
@@ -76,12 +80,13 @@ public sealed class McpHostFakeToolsIntegrationTests
         using var tree = new SpechtTree();
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--json");
 
         // When
-        var (violatingOut, violatingErr, violatingExit) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--json");
+        var (violatingOut, violatingErr, violatingExit) = AcceptanceTool.Run(start);
         var violatingExpected = AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root);
         AcceptanceTool.FakeTools.FixViolation(tree.Root);
-        var (editedOut, editedErr, editedExit) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--json");
+        var (editedOut, editedErr, editedExit) = AcceptanceTool.Run(start);
 
         // Then
         violatingExit.Should().Be(1, violatingErr);
@@ -100,9 +105,10 @@ public sealed class McpHostFakeToolsIntegrationTests
         var above = Path.GetDirectoryName(tree.Root)!;
         using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(above);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(above).WithTools(tools).WithArguments("--root", tree.Root, "--json");
 
         // When
-        var (stdout, stderr, _) = new SpechtRunFixture().WithRoot(above).WithTools(tools).WithArguments("--root", tree.Root, "--json");
+        var (stdout, stderr, _) = AcceptanceTool.Run(start);
 
         // Then
         stdout.Should().Be(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root), stderr);
