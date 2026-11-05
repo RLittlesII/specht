@@ -7,12 +7,7 @@
     <PackageId>Specht.CodeAnalysis</PackageId>
     <Description>Specht analyzer, code fixes and consumer build integration.</Description>
     <PackageTags>analyzers code-analysis specifications</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/RLittlesII/specht</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/RLittlesII/specht</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>specht-book-avatar.png</PackageIcon>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
