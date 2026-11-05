@@ -2,7 +2,7 @@ id: "0329"
 type: task
 title: The `specht-mcp` host program over standard input and output
 
-status: in-progress
+status: done
 
 value: 4
 risk: 3
@@ -35,7 +35,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-04"
-closed: null
+closed: "2026-11-04"
 
 summary: |
   As a maintainer configuring an MCP client I want one entry that runs `specht-mcp`, a program of its own, so that every agent in the repository reaches the answers with no terminal session.

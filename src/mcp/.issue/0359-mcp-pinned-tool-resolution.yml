@@ -2,7 +2,7 @@ id: "0359"
 type: task
 title: Find, check and run the repository's pinned specht from the MCP
 
-status: in-progress
+status: done
 
 value: 4
 risk: 3
@@ -33,7 +33,7 @@ claims:
 
 created: "2026-11-04"
 updated: "2026-11-04"
-closed: null
+closed: "2026-11-04"
 
 summary: |
   As a maintainer I want the MCP to run the `specht` my repository pins, and to say so plainly when it cannot, so that an agent is never answered by a version the repository did not choose.

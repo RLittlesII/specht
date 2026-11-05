@@ -2,7 +2,7 @@ id: "0330"
 type: task
 title: The verdict through MCP, and the rules every answer keeps
 
-status: in-progress
+status: done
 
 value: 4
 risk: 3
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-04"
-closed: null
+closed: "2026-11-04"
 
 summary: |
   As a coding agent I want the check's verdict for the whole tree through MCP, byte for byte what `specht --json` prints, so that I stop scraping the command's output.
