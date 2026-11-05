@@ -89,6 +89,15 @@ Feature: Reading through MCP
       | the manifest is replaced by one the check rejects | the rule list    |
       | a rule id the pinned version does not have   | that rule's text      |
 
+  @B-020
+  Scenario: A check that ends with no report is an error that says where to restore
+    Given the verdict has been asked for once
+    And the pinned tool's restored copy is then removed
+    When the verdict is asked for again
+    Then the answer is marked as an error
+    And it names where to read how to restore the tool
+    And it quotes nothing the command wrote
+
   @B-013
   Scenario Outline: Every answer is for the version the repository pins
     Given the repository pins schema version <version>
