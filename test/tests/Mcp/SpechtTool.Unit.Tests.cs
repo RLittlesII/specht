@@ -16,14 +16,16 @@ public sealed class SpechtToolUnitTests
     public async Task ARestoredPin_WhenTheToolRuns_ShouldRunThePinnedToolInTheRootAndNoOther()
     {
         // Given
+        const string root = "the-root-the-tool-runs-in";
         var process = new ScriptedProcessRun { ListedPin = ScriptedProcessRun.Pin, PinnedReports = ScriptedProcessRun.Pin, GlobalReports = "96.54.32" };
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process).WithRoot(root);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Ran>().Which.UnpinnedReport.Should().BeNull();
-        process.Requests.Should().NotBeEmpty().And.OnlyContain(static request => request.FileName == "dotnet" && request.WorkingDirectory == Root);
+        process.Requests.Should().NotBeEmpty().And.OnlyContain(static request => request.FileName == "dotnet" && request.WorkingDirectory == root);
     }
 
     [Fact]
@@ -31,9 +33,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = new ScriptedProcessRun { ListedPin = ScriptedProcessRun.Pin, GlobalReports = "96.54.32" };
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         var message = outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message;
@@ -47,9 +50,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = new ScriptedProcessRun { GlobalReports = "96.54.32", PinnedReports = ScriptedProcessRun.Pin };
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         var ran = outcome.Should().BeOfType<ToolOutcome.Ran>().Subject;
@@ -63,9 +67,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = new ScriptedProcessRun();
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message
@@ -78,9 +83,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.1.90");
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Ran>();
@@ -92,9 +98,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.1.89");
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().Contain("0.1.90").And.Contain("docs/mcp.md#update-the-tool");
@@ -107,9 +114,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "not a version");
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().Contain("docs/mcp.md#update-the-tool");
@@ -122,11 +130,11 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.5.0-preview+abc");
-        var tool = Tool(process);
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        await tool.RunAsync(Json, CancellationToken.None);
-        await tool.RunAsync(Json, CancellationToken.None);
+        await tool.RunAsync(["--json"], CancellationToken.None);
+        await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         process.VersionChecks.Should().ContainSingle();
@@ -138,12 +146,12 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = new ScriptedProcessRun { ListedPin = ScriptedProcessRun.Pin };
-        var tool = Tool(process);
-        var first = await tool.RunAsync(Json, CancellationToken.None);
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
+        var first = await tool.RunAsync(["--json"], CancellationToken.None);
         process.PinnedReports = ScriptedProcessRun.Pin;
 
         // When
-        var second = await tool.RunAsync(Json, CancellationToken.None);
+        var second = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         first.Should().BeOfType<ToolOutcome.Refused>();
@@ -156,9 +164,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = new ScriptedProcessRun { GlobalReports = "96.54.32", Verdict = null };
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().NotBeNullOrWhiteSpace();
@@ -173,9 +182,10 @@ public sealed class SpechtToolUnitTests
             GlobalReports = "96.54.32",
             FailedListing = new ProcessResult(145, "listing stdout marker", "listing stderr marker"),
         };
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message
@@ -188,9 +198,10 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = new ScriptedProcessRun { DotnetMissing = true, GlobalReports = "96.54.32" };
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Ran>().Which.UnpinnedReport.Should().Contain("docs/mcp.md#pin-the-tool");
@@ -202,30 +213,31 @@ public sealed class SpechtToolUnitTests
     {
         // Given
         var process = new ScriptedProcessRun { DotnetMissing = true };
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var outcome = await Tool(process).RunAsync(Json, CancellationToken.None);
+        var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
         outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message
             .Should().ContainEquivalentOf("pin").And.ContainEquivalentOf("global").And.ContainEquivalentOf("not found");
     }
 
-    [Theory]
+    [Theory(Timeout = 30_000)]
     [ClassData(typeof(PinnedOrGlobalTools))]
     public async Task TwoFirstCallsInFlight_WhenTheVersionCheckIsHeldOpen_ShouldAskTheToolForItsVersionOnceAndLetBothRun(bool pinned)
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
         process.VersionGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var tool = Tool(process);
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var first = tool.RunAsync(Json, CancellationToken.None);
-        var second = tool.RunAsync(Json, CancellationToken.None);
+        var first = tool.RunAsync(["--json"], TestContext.Current.CancellationToken);
+        var second = tool.RunAsync(["--json"], TestContext.Current.CancellationToken);
         process.VersionChecks.Should().ContainSingle();
         process.VersionGate.SetResult();
-        var outcomes = await Task.WhenAll(first, second).WaitAsync(Bound, TestContext.Current.CancellationToken);
+        var outcomes = await Task.WhenAll(first, second);
 
         // Then
         outcomes.Should().AllBeOfType<ToolOutcome.Ran>();
@@ -233,51 +245,43 @@ public sealed class SpechtToolUnitTests
         process.Requests.Count(static request => request.Arguments[^1] == "--json").Should().Be(2);
     }
 
-    [Fact]
+    [Fact(Timeout = 30_000)]
     public async Task TwoFirstCallsInFlight_WhenTheFirstVersionCheckFails_ShouldAskAgainForTheSecond()
     {
         // Given
         var process = new ScriptedProcessRun { ListedPin = ScriptedProcessRun.Pin, VersionGate = new TaskCompletionSource() };
-        var tool = Tool(process);
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
-        var first = tool.RunAsync(Json, CancellationToken.None);
-        var second = tool.RunAsync(Json, CancellationToken.None);
+        var first = tool.RunAsync(["--json"], TestContext.Current.CancellationToken);
+        var second = tool.RunAsync(["--json"], TestContext.Current.CancellationToken);
         process.VersionGate.SetResult();
-        var outcomes = await Task.WhenAll(first, second).WaitAsync(Bound, TestContext.Current.CancellationToken);
+        var outcomes = await Task.WhenAll(first, second);
 
         // Then
         outcomes.Should().AllBeOfType<ToolOutcome.Refused>();
         process.VersionChecks.Should().HaveCount(2);
     }
 
-    [Fact]
+    [Fact(Timeout = 30_000)]
     public async Task TwoFirstCallsInFlight_WhenTheFirstCallerIsCancelled_ShouldLetTheSecondCheckTheVersionAndRun()
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
         process.VersionGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var tool = Tool(process);
+        SpechtTool tool = new SpechtToolFixture().WithProcess(process);
         using var cancel = new CancellationTokenSource();
-        var first = tool.RunAsync(Json, cancel.Token);
-        var second = tool.RunAsync(Json, CancellationToken.None);
+        var first = tool.RunAsync(["--json"], cancel.Token);
+        var second = tool.RunAsync(["--json"], TestContext.Current.CancellationToken);
 
         // When
         await cancel.CancelAsync();
-        var cancelled = await Record.ExceptionAsync(() => first.WaitAsync(Bound, TestContext.Current.CancellationToken));
+        var cancelled = await Record.ExceptionAsync(() => first);
         process.VersionGate.SetResult();
-        var outcome = await second.WaitAsync(Bound, TestContext.Current.CancellationToken);
+        var outcome = await second;
 
         // Then
         cancelled.Should().BeAssignableTo<OperationCanceledException>();
         outcome.Should().BeOfType<ToolOutcome.Ran>();
     }
-
-    private static SpechtTool Tool(ScriptedProcessRun process) => new(process, new SessionRoot { Value = Root });
-
-    private const string Root = "repository";
-
-    private static readonly TimeSpan Bound = TimeSpan.FromSeconds(30);
-
-    private static readonly string[] Json = ["--json"];
 }

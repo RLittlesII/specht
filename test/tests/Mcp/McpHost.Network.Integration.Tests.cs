@@ -13,11 +13,12 @@ namespace Specht.Tests.Mcp;
 [Trait("Tier", "Integration")]
 public sealed class McpHostNetworkIntegrationTests
 {
-    [Fact]
+    public static bool IsWindows => OperatingSystem.IsWindows();
+
+    [Fact(Skip = "Sockets are read with lsof, which Windows does not have.", SkipWhen = nameof(IsWindows))]
     public void ASessionThatHasServed_WhenItsSocketsAreListed_ShouldHoldNoListeningSocket()
     {
         // Given
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "Sockets are read with lsof, which Windows does not have.");
         using var tree = new SpechtTree();
         using var session = ServedSession(tree);
 
@@ -28,11 +29,10 @@ public sealed class McpHostNetworkIntegrationTests
         listening.Should().BeEmpty();
     }
 
-    [Fact]
+    [Fact(Skip = "Sockets are read with lsof, which Windows does not have.", SkipWhen = nameof(IsWindows))]
     public void ASessionThatHasServed_WhenItsSocketsAreListed_ShouldHoldNoConnectionAndNoDatagramSocket()
     {
         // Given
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "Sockets are read with lsof, which Windows does not have.");
         using var tree = new SpechtTree();
         using var session = ServedSession(tree);
 

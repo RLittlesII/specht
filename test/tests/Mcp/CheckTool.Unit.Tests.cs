@@ -23,13 +23,15 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, "{\"violations\":1,\"dash\":\"— café\"}", "ignored");
+        CheckTool check = new CheckToolFixture().WithProcess(process);
 
         // When
-        var result = await Check(process).CheckAsync(CancellationToken.None);
+        var result = await check.CheckAsync(CancellationToken.None);
 
         // Then
+        var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
         result.IsError.Should().NotBe(true);
-        Texts(result).Should().Equal("{\"violations\":1,\"dash\":\"— café\"}");
+        texts.Should().Equal("{\"violations\":1,\"dash\":\"— café\"}");
     }
 
     [Theory]
@@ -39,13 +41,15 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, "{}", "the manifest is invalid");
+        CheckTool check = new CheckToolFixture().WithProcess(process);
 
         // When
-        var result = await Check(process).CheckAsync(CancellationToken.None);
+        var result = await check.CheckAsync(CancellationToken.None);
 
         // Then
+        var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
         result.IsError.Should().BeTrue();
-        Texts(result).Should().Equal("the manifest is invalid");
+        texts.Should().Equal("the manifest is invalid");
     }
 
     [Theory]
@@ -57,13 +61,15 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
+        CheckTool check = new CheckToolFixture().WithProcess(process);
 
         // When
-        var result = await Check(process).CheckAsync(CancellationToken.None);
+        var result = await check.CheckAsync(CancellationToken.None);
 
         // Then
+        var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
         result.IsError.Should().BeTrue();
-        Texts(result).Should().Contain(static text => text.Contains("docs/mcp.md#restore-the-tool", StringComparison.Ordinal));
+        texts.Should().Contain(static text => text.Contains("docs/mcp.md#restore-the-tool", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -73,12 +79,14 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
+        CheckTool check = new CheckToolFixture().WithProcess(process);
 
         // When
-        var result = await Check(process).CheckAsync(CancellationToken.None);
+        var result = await check.CheckAsync(CancellationToken.None);
 
         // Then
-        string.Concat(Texts(result)).Should().NotContain("standard error marker");
+        var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
+        string.Concat(texts).Should().NotContain("standard error marker");
     }
 
     [Fact]
@@ -87,13 +95,15 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned: false, "0.5.0");
         process.Verdict = null;
+        CheckTool check = new CheckToolFixture().WithProcess(process);
 
         // When
-        var result = await Check(process).CheckAsync(CancellationToken.None);
+        var result = await check.CheckAsync(CancellationToken.None);
 
         // Then
+        var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
         result.IsError.Should().BeTrue();
-        Texts(result).Should().ContainSingle().Which.Should().NotBeNullOrWhiteSpace();
+        texts.Should().ContainSingle().Which.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -101,15 +111,17 @@ public sealed class CheckToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        CheckTool check = new CheckToolFixture().WithProcess(process);
 
         // When
-        var result = await Check(process).CheckAsync(CancellationToken.None);
+        var result = await check.CheckAsync(CancellationToken.None);
 
         // Then
+        var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
         process.Requests.Last().Arguments[^1].Should().Be("--json");
         process.Requests.Last().Arguments.Where(static argument => argument is not ("--json" or "--"))
             .Should().NotContain(static argument => argument.StartsWith("--", StringComparison.Ordinal));
-        Texts(result).Should().Equal(process.Verdict!.StandardOutput);
+        texts.Should().Equal(process.Verdict!.StandardOutput);
     }
 
     [Fact]
@@ -117,15 +129,16 @@ public sealed class CheckToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned: false, "0.5.0");
+        CheckTool check = new CheckToolFixture().WithProcess(process);
 
         // When
-        var result = await Check(process).CheckAsync(CancellationToken.None);
+        var result = await check.CheckAsync(CancellationToken.None);
 
         // Then
-        var parts = Texts(result);
-        parts.Should().HaveCount(2);
-        parts[0].Should().Be(process.Verdict!.StandardOutput);
-        parts[1].Should().Contain("unpinned").And.NotContain(process.Verdict.StandardOutput);
+        var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
+        texts.Should().HaveCount(2);
+        texts[0].Should().Be(process.Verdict!.StandardOutput);
+        texts[1].Should().Contain("unpinned").And.NotContain(process.Verdict.StandardOutput);
     }
 
     [Fact]
@@ -133,7 +146,7 @@ public sealed class CheckToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
-        var check = Check(process);
+        CheckTool check = new CheckToolFixture().WithProcess(process);
         var first = await check.CheckAsync(CancellationToken.None);
         process.Verdict = new ProcessResult(0, "{\"violations\":0}\n", string.Empty);
 
@@ -141,15 +154,15 @@ public sealed class CheckToolUnitTests
         var second = await check.CheckAsync(CancellationToken.None);
 
         // Then
-        Texts(first).Should().Equal("{}\n");
-        Texts(second).Should().Equal("{\"violations\":0}\n");
+        first.Content.OfType<TextContentBlock>().Select(static block => block.Text).Should().Equal("{}\n");
+        second.Content.OfType<TextContentBlock>().Select(static block => block.Text).Should().Equal("{\"violations\":0}\n");
     }
 
     [Fact]
     public void TheDeclaration_WhenRead_ShouldNameTheToolCheckAndTakeNoArgument()
     {
         // Given
-        var check = Check(new ScriptedProcessRun());
+        CheckTool check = new CheckToolFixture();
 
         // When
         var tool = check.Declare().ProtocolTool;
@@ -177,13 +190,7 @@ public sealed class CheckToolUnitTests
 
         // Then
         names.Should().Contain("check");
-        names.Should().OnlyContain(static name => CommandNames.Contains(name));
+        names.Should().BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"]);
         names.Should().NotContain(["init", "upgrade", "schema_pin", "format", "rules_set", "report"]);
     }
-
-    private static CheckTool Check(ScriptedProcessRun process) => new(new SpechtTool(process, new SessionRoot { Value = "repository" }));
-
-    private static IReadOnlyList<string> Texts(CallToolResult result) => result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
-
-    private static readonly string[] CommandNames = ["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"];
 }

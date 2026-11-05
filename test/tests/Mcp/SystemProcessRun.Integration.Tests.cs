@@ -12,14 +12,11 @@ namespace Specht.Tests.Mcp;
 [Trait("Tier", "Integration")]
 public sealed class SystemProcessRunIntegrationTests
 {
-    [Fact]
+    public static bool IsWindows => OperatingSystem.IsWindows();
+
+    [Fact(Skip = "The fixture program is a shell script.", SkipWhen = nameof(IsWindows))]
     public async Task AProgramThatWrites_WhenItEnds_ShouldGiveBackItsCodeAndBothStreamsUnchanged()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            Assert.Skip("The fixture program is a shell script.");
-        }
-
         // Given
         var request = new ProcessRequest("sh", ["-c", "printf ' a — b '; printf 'e\\n' >&2; exit 3"], Directory.GetCurrentDirectory());
 
@@ -30,21 +27,14 @@ public sealed class SystemProcessRunIntegrationTests
         result.Should().Be(new ProcessResult(3, " a — b ", "e\n"));
     }
 
-    [Fact]
+    [Fact(Skip = "The fixture program is a shell script.", SkipWhen = nameof(IsWindows), Timeout = 30_000)]
     public async Task AProgramThatReadsStandardInput_WhenItRuns_ShouldFindItClosedAndEnd()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            Assert.Skip("The fixture program is a shell script.");
-        }
-
         // Given
         var request = new ProcessRequest("sh", ["-c", "cat >/dev/null; printf ended"], Directory.GetCurrentDirectory());
-        using var bound = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        bound.CancelAfter(Bound);
 
         // When
-        var result = await new SystemProcessRun().RunAsync(request, bound.Token);
+        var result = await new SystemProcessRun().RunAsync(request, TestContext.Current.CancellationToken);
 
         // Then
         result.Should().Be(new ProcessResult(0, "ended", string.Empty));
@@ -63,14 +53,9 @@ public sealed class SystemProcessRunIntegrationTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Fact(Skip = "The fixture program is a shell script.", SkipWhen = nameof(IsWindows), Timeout = 30_000)]
     public async Task AProgramThatIsRunning_WhenTheRunIsCancelled_ShouldThrowCancelledAndLeaveNoProgramAlive()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            Assert.Skip("The fixture program is a shell script.");
-        }
-
         // Given
         var directory = Directory.CreateTempSubdirectory("specht-process-").FullName;
         var pids = Path.Combine(directory, "pids");
@@ -84,20 +69,20 @@ public sealed class SystemProcessRunIntegrationTests
         var request = new ProcessRequest("sh", ["-c", "exec 3>\"$1\"; echo $$ >&3; sleep 300 & echo $! >&3; wait", "sh", pids], directory);
         var run = new SystemProcessRun().RunAsync(request, cancel.Token);
         var token = TestContext.Current.CancellationToken;
-        using var reader = await opening.WaitAsync(Bound, TestContext.Current.CancellationToken);
-        var shell = int.Parse((await reader.ReadLineAsync(token).AsTask().WaitAsync(Bound, token))!);
-        var sleeper = int.Parse((await reader.ReadLineAsync(token).AsTask().WaitAsync(Bound, token))!);
+        using var reader = await opening;
+        var shell = int.Parse((await reader.ReadLineAsync(token))!);
+        var sleeper = int.Parse((await reader.ReadLineAsync(token))!);
 
         // When
         await cancel.CancelAsync();
-        var thrown = await Record.ExceptionAsync(() => run.WaitAsync(Bound, TestContext.Current.CancellationToken));
+        var thrown = await Record.ExceptionAsync(() => run);
         var survivors = new List<int>();
         foreach (var pid in new[] { shell, sleeper })
         {
             try
             {
                 using var program = Process.GetProcessById(pid);
-                if (!program.WaitForExit(Bound))
+                if (!program.WaitForExit(TimeSpan.FromSeconds(30)))
                 {
                     survivors.Add(pid);
                     program.Kill();
@@ -114,6 +99,4 @@ public sealed class SystemProcessRunIntegrationTests
         thrown.Should().BeAssignableTo<OperationCanceledException>();
         survivors.Should().BeEmpty();
     }
-
-    private static readonly TimeSpan Bound = TimeSpan.FromSeconds(30);
 }

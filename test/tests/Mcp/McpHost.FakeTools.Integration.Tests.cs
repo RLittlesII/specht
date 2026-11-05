@@ -14,11 +14,12 @@ namespace Specht.Tests.Mcp;
 [Trait("Tier", "Integration")]
 public sealed class McpHostFakeToolsIntegrationTests
 {
-    [Fact]
+    public static bool IsWindows => OperatingSystem.IsWindows();
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
     public void ARestoredPinnedFake_WhenTheLocalToolLookupRunsIt_ShouldBeTheOnlyFakeToRunAndStateItsVersion()
     {
         // Given
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
         using var tree = new SpechtTree();
         using var tools = new AcceptanceTool.FakeTools();
         tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
@@ -34,11 +35,10 @@ public sealed class McpHostFakeToolsIntegrationTests
         tools.Runs.Should().Equal(new AcceptanceTool.FakeRun(AcceptanceTool.FakeTools.Pinned, AcceptanceTool.FakeTools.PinnedVersion, "--version"));
     }
 
-    [Fact]
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
     public void APinnedFakeWhoseRestoredCopyIsRemoved_WhenTheLocalToolLookupRunsIt_ShouldFindNothingToRun()
     {
         // Given
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
         using var tree = new SpechtTree();
         using var tools = new AcceptanceTool.FakeTools();
         tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
@@ -54,11 +54,10 @@ public sealed class McpHostFakeToolsIntegrationTests
         tools.AnythingRestored.Should().BeFalse();
     }
 
-    [Fact]
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
     public void AGlobalFakeAndAPathFake_WhenSpechtIsRunFromThePath_ShouldRunThePathFakeFirstAndNoRealTool()
     {
         // Given
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
         using var tree = new SpechtTree();
         using var tools = new AcceptanceTool.FakeTools();
         tools.InstallGlobal(AcceptanceTool.FakeTools.GlobalVersion);
@@ -73,11 +72,10 @@ public sealed class McpHostFakeToolsIntegrationTests
         tools.Runs.Should().ContainSingle().Which.Label.Should().Be(AcceptanceTool.FakeTools.OnPath);
     }
 
-    [Fact]
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
     public void APinnedFakeOnATreeWithAViolation_WhenRunWithJson_ShouldWriteTheStatedOutputAndExitOneUntilTheViolationIsFixed()
     {
         // Given
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
         using var tree = new SpechtTree();
         using var tools = new AcceptanceTool.FakeTools();
         tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
@@ -98,11 +96,10 @@ public sealed class McpHostFakeToolsIntegrationTests
             .And.NotContain(AcceptanceTool.FakeTools.Violation);
     }
 
-    [Fact]
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
     public void APinnedFakeRunFromTheDirectoryAboveARoot_WhenRunWithJsonAndThatRoot_ShouldWriteTheOutputForThatRoot()
     {
         // Given
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
         using var tree = new SpechtTree(["below"]);
         using var tools = new AcceptanceTool.FakeTools();
         var above = System.IO.Path.GetDirectoryName(tree.Root)!;
