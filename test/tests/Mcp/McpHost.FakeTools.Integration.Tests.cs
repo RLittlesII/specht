@@ -73,6 +73,49 @@ public sealed class McpHostFakeToolsIntegrationTests
         tools.Runs.Should().ContainSingle().Which.Label.Should().Be(AcceptanceTool.FakeTools.OnPath);
     }
 
+    [Fact]
+    public void APinnedFakeOnATreeWithAViolation_WhenRunWithJson_ShouldWriteTheStatedOutputAndExitOneUntilTheViolationIsFixed()
+    {
+        // Given
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
+        using var tree = new SpechtTree();
+        using var tools = new AcceptanceTool.FakeTools();
+        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+
+        // When
+        var (violatingOut, violatingErr, violatingExit) = Specht(tree.Root, tools, "--json");
+        var violatingExpected = AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root);
+        AcceptanceTool.FakeTools.FixViolation(tree.Root);
+        var (editedOut, editedErr, editedExit) = Specht(tree.Root, tools, "--json");
+
+        // Then
+        violatingExit.Should().Be(1, violatingErr);
+        violatingOut.Should().Be(violatingExpected).And.Contain(AcceptanceTool.FakeTools.Violation);
+        editedExit.Should().Be(0, editedErr);
+        editedOut.Should()
+            .Be(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root))
+            .And.NotContain(AcceptanceTool.FakeTools.Violation);
+    }
+
+    [Fact]
+    public void APinnedFakeRunFromTheDirectoryAboveARoot_WhenRunWithJsonAndThatRoot_ShouldWriteTheOutputForThatRoot()
+    {
+        // Given
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake tools are shell scripts, which Windows does not run.");
+        using var tree = new SpechtTree(["below"]);
+        using var tools = new AcceptanceTool.FakeTools();
+        var above = System.IO.Path.GetDirectoryName(tree.Root)!;
+        tools.Pin(above, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+
+        // When
+        var (stdout, stderr, _) = Specht(above, tools, "--root", tree.Root, "--json");
+
+        // Then
+        stdout.Should().Be(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root), stderr);
+    }
+
     private static (string Stdout, string Stderr, int ExitCode) Specht(string root, AcceptanceTool.FakeTools tools, params string[] args) =>
         Start(new ProcessStartInfo("dotnet"), root, tools, ["specht", .. args]);
 

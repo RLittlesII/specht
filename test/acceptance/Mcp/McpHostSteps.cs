@@ -9,12 +9,13 @@ namespace Specht.Acceptance.Mcp;
 /// <summary>
 /// Runs the built MCP as a process and holds what the host does over its standard input and output (0132-F3 B-001 to B-006,
 /// B-008, B-010 to B-014, B-019, B-032, B-033) and the pinned-tool resolution through the tool check (0359: B-017, B-018, B-020 to
-/// B-030, B-034), whose scenarios stay red until 0330 registers it. The documentation scenarios (0332) have no binding here, and
-/// B-009's wait for the first answer the tool serves (0330).
+/// B-030, B-034, B-009), whose scenarios stay red until 0330 registers it. The documentation scenarios (0332) have no binding here.
+/// Reading through MCP (0132-F4) shares the world these steps build, so its steps are the other part of this class.
 /// </summary>
 [Binding]
 [Scope(Feature = "The MCP host")]
-public sealed class McpHostSteps
+[Scope(Feature = "Reading through MCP")]
+public sealed partial class McpHostSteps
 {
     [Given("a repository whose local tool manifest lists the tool")]
     public void GivenAToolManifest()
@@ -101,6 +102,16 @@ public sealed class McpHostSteps
 
     [Given("a session in which a client calls the check tool twice")]
     public void GivenTwoCalls() => _calls = 2;
+
+    [Given(@"^the client starts the server (in the repository, naming no root|in another directory, naming the repository root)$")]
+    public void GivenWhereTheServerStarts(string where)
+    {
+        if (where.StartsWith("in another", StringComparison.Ordinal))
+        {
+            _elsewhere = new SpechtTree();
+            _arguments = ["--root", Tree.Root];
+        }
+    }
 
     [When("the client sends the protocol's discovery request")]
     public void WhenDiscovery() =>
@@ -268,6 +279,10 @@ public sealed class McpHostSteps
         AcceptanceTool.Snapshot(Tree.Root).Should().BeEquivalentTo(_before);
     }
 
+    [Then("the answer is for the repository")]
+    public void ThenTheAnswerIsForTheRepository() =>
+        AcceptanceTool.McpTextBlocks(_answers.First()).Should().Equal(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, Tree.Root));
+
     [Then("the call fails with an error")]
     public void ThenTheCallFails() => AcceptanceTool.McpFailure(_answers.First()).Should().NotBeNull();
 
@@ -334,6 +349,7 @@ public sealed class McpHostSteps
     {
         _session?.Dispose();
         _tools?.Dispose();
+        _elsewhere?.Dispose();
         _tree?.Dispose();
     }
 
@@ -349,7 +365,7 @@ public sealed class McpHostSteps
     private void RunCalls(AcceptanceTool.FakeTools tools)
     {
         _before = AcceptanceTool.Snapshot(Tree.Root);
-        using var session = AcceptanceTool.McpSession.Start(Tree.Root, tools.Environment);
+        using var session = AcceptanceTool.McpSession.Start(_elsewhere?.Root ?? Tree.Root, tools.Environment, _arguments);
         _answers = Enumerable.Range(0, _calls).Select(index => session.CallTool(10 + (index * 10), "check")).ToList();
         _result = session.Close();
     }
@@ -373,6 +389,7 @@ public sealed class McpHostSteps
     private const string UnsupportedRevision = "1900-01-01";
 
     private SpechtTree? _tree;
+    private SpechtTree? _elsewhere;
     private AcceptanceTool.FakeTools? _tools;
     private int _calls = 1;
     private IReadOnlyList<JsonObject> _answers = [];

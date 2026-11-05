@@ -33,6 +33,7 @@
     <ReqnrollFeatureFile Include="../../src/tool/Features/Rules/Set/.spec/set-rule-level.feature" Link="Features/rule-setting.feature" />
     <ReqnrollFeatureFile Include="../../src/tool/Features/Manifest/.spec/manifest.feature" Link="Features/effective-manifest.feature" />
     <ReqnrollFeatureFile Include="../../src/tool/Features/Mcp/.spec/mcp-host.feature" Link="Features/mcp-host.feature" />
+    <ReqnrollFeatureFile Include="../../src/tool/Features/Mcp/Reading/.spec/reading-through-mcp.feature" Link="Features/reading-through-mcp.feature" />
     <ReqnrollFeatureFile Include="..\..\docs\.spec\docs-as-first-class-citizen.feature" Link="Features\docs-as-first-class-citizen.feature" />
   </ItemGroup>
 

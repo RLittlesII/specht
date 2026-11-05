@@ -516,6 +516,9 @@ internal static class AcceptanceTool
         /// <summary>What a fake writes on standard output for any command but <c>--version</c>, followed by its label.</summary>
         public const string OutputMarker = "FAKE-SPECHT-OUTPUT";
 
+        /// <summary>The line in a specification that makes a fake exit <c>1</c>, as a check does on a violation.</summary>
+        public const string Violation = "FAKE-VIOLATION";
+
         /// <summary>The label of the fake restored from the local tool manifest's pin.</summary>
         public const string Pinned = "pinned";
 
@@ -551,6 +554,39 @@ internal static class AcceptanceTool
         public bool AnythingRestored =>
             Directory.EnumerateFileSystemEntries(_packages).Any()
             || Directory.Exists(Path.Combine(_home, ".dotnet", "toolResolverCache"));
+
+        /// <summary>
+        /// Writes two specifications under <paramref name="root"/>, one of which carries the line a fake reports as a violation, the
+        /// way a repository of two Feature specifications with a violation looks to a fake.
+        /// </summary>
+        /// <param name="root">The root to write under.</param>
+        public static void WriteSpecifications(string root)
+        {
+            WriteFile(Path.Combine(root, "features", "clean", ".spec", "README.md"), "# Clean\n\nA specification the check accepts \u2014 caf\u00e9.\n");
+            WriteFile(Path.Combine(root, "features", "violating", ".spec", "README.md"), $"# Violating\n\n{Violation} in this specification.\n");
+        }
+
+        /// <summary>Rewrites the violating specification without the line a fake reports.</summary>
+        /// <param name="root">The root the specifications were written under.</param>
+        public static void FixViolation(string root) =>
+            WriteFile(Path.Combine(root, "features", "violating", ".spec", "README.md"), "# Violating\n\nFixed.\n");
+
+        /// <summary>
+        /// Gets what a fake labelled <paramref name="label"/> writes on standard output for <c>--json</c> on <paramref name="root"/>: its
+        /// marker, then the root's manifest and every specification under it, in path order.
+        /// </summary>
+        /// <param name="label">Which fake ran.</param>
+        /// <param name="root">The root it ran on.</param>
+        /// <returns>The text, byte for byte.</returns>
+        public static string JsonOutput(string label, string root) =>
+            $"{OutputMarker} {label} json\n"
+            + File.ReadAllText(Path.Combine(root, ".specht", "manifest.json"))
+            + string.Concat(
+                Directory.EnumerateFiles(root, "README.md", SearchOption.AllDirectories)
+                    .Select(path => "./" + Path.GetRelativePath(root, path).Replace('\\', '/'))
+                    .Where(static path => path.EndsWith("/.spec/README.md", StringComparison.Ordinal))
+                    .OrderBy(static path => path, StringComparer.Ordinal)
+                    .Select(path => File.ReadAllText(Path.Combine(root, path))));
 
         /// <summary>
         /// Writes a local tool manifest in <paramref name="directory"/> listing <c>specht.tool</c> at <paramref name="version"/>, a feed
@@ -639,7 +675,14 @@ internal static class AcceptanceTool
             "#!/bin/sh\n"
             + $"echo \"{label} {version} $*\" >> \"$SPECHT_FAKE_LOG\"\n"
             + $"if [ \"$1\" = \"--version\" ]; then echo {version}; exit 0; fi\n"
-            + $"echo {OutputMarker} {label}\n";
+            + "case \" $* \" in *\" --json \"*) ;; *) echo " + OutputMarker + $" {label}; exit 0;; esac\n"
+            + "root=\"$PWD\"; previous=\"\"\n"
+            + "for argument in \"$@\"; do if [ \"$previous\" = \"--root\" ]; then root=\"$argument\"; fi; previous=\"$argument\"; done\n"
+            + $"echo \"{OutputMarker} {label} json\"\n"
+            + "cat \"$root/.specht/manifest.json\"\n"
+            + "(cd \"$root\" && find . -path '*/.spec/README.md' | LC_ALL=C sort | while read -r file; do cat \"$file\"; done)\n"
+            + $"if grep -rqs --include=README.md {Violation} \"$root\"; then exit 1; fi\n"
+            + "exit 0\n";
 
         private static void AddEntry(ZipArchive package, string name, string content)
         {
