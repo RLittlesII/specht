@@ -36,6 +36,10 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
   </ItemGroup>
 
+  <ItemGroup Label="Mcp">
+    <PackageVersion Include="ModelContextProtocol" Version="2.2.0" />
+  </ItemGroup>
+
   <ItemGroup Label="Build">
     <PackageVersion Include="Nuke.Common" Version="10.1.0" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
