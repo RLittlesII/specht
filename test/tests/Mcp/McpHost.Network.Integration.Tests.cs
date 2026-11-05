@@ -20,7 +20,7 @@ public sealed class McpHostNetworkIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var session = ServedSession(tree);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithDiscoveryServed();
 
         // When
         var listening = session.Sockets("-iTCP", "-sTCP:LISTEN");
@@ -34,7 +34,7 @@ public sealed class McpHostNetworkIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var session = ServedSession(tree);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithDiscoveryServed();
 
         // When
         var open = session.Sockets("-i", "-sTCP:^LISTEN");
@@ -49,6 +49,19 @@ public sealed class McpHostNetworkIntegrationTests
         // Given
         using var file = new PEReader(File.OpenRead(AcceptanceTool.McpAssemblyPath));
         var reader = file.GetMetadataReader();
+        string[] networkAssemblies =
+        [
+            "System.Net.Sockets",
+            "System.Net.Http",
+            "System.Net.HttpListener",
+            "System.Net.WebSockets",
+            "System.Net.Security",
+            "System.Net.NameResolution",
+            "System.Net.Requests",
+            "System.Net.WebClient",
+            "System.Net.Ping",
+            "Microsoft.AspNetCore",
+        ];
 
         // When
         var references = reader.AssemblyReferences
@@ -56,37 +69,6 @@ public sealed class McpHostNetworkIntegrationTests
             .ToList();
 
         // Then
-        references.Where(name => NetworkAssemblies.Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal))).Should().BeEmpty();
+        references.Where(name => networkAssemblies.Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal))).Should().BeEmpty();
     }
-
-    private static AcceptanceTool.McpSession ServedSession(SpechtTree tree)
-    {
-        var session = AcceptanceTool.McpSession.Start(tree.Root);
-        try
-        {
-            session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision))
-                .Should().NotBeNull("the session must have served before its sockets are read");
-
-            return session;
-        }
-        catch
-        {
-            session.Dispose();
-            throw;
-        }
-    }
-
-    private static readonly string[] NetworkAssemblies =
-    [
-        "System.Net.Sockets",
-        "System.Net.Http",
-        "System.Net.HttpListener",
-        "System.Net.WebSockets",
-        "System.Net.Security",
-        "System.Net.NameResolution",
-        "System.Net.Requests",
-        "System.Net.WebClient",
-        "System.Net.Ping",
-        "Microsoft.AspNetCore",
-    ];
 }

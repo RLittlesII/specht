@@ -50,6 +50,20 @@ public sealed class McpHostSessionIntegrationTests
         var lines = stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         lines.Should().NotBeEmpty();
         lines.Where(static line => !IsProtocolMessage(line)).Should().BeEmpty();
+
+        static bool IsProtocolMessage(string line)
+        {
+            try
+            {
+                return JsonNode.Parse(line) is JsonObject message
+                    && message["jsonrpc"]?.GetValue<string>() == "2.0"
+                    && (message.ContainsKey("result") || message.ContainsKey("error") || message.ContainsKey("method"));
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
     }
 
     [Fact]
@@ -79,6 +93,7 @@ public sealed class McpHostSessionIntegrationTests
     public void ARootThatIsNotADirectory_WhenTheServerStarts_ShouldNameItOnStandardErrorAndExitBeforeAnySession(string root, bool exists)
     {
         // Given
+        const int missingInput = 2;
         using var tree = new SpechtTree();
         if (exists)
         {
@@ -93,7 +108,7 @@ public sealed class McpHostSessionIntegrationTests
             root);
 
         // Then
-        exitCode.Should().Be(MissingInput, stderr);
+        exitCode.Should().Be(missingInput, stderr);
         stderr.Should().Contain(root).And.NotContain(tree.Root);
         stdout.Should().BeEmpty();
     }
@@ -103,7 +118,7 @@ public sealed class McpHostSessionIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var session = AcceptanceTool.McpSession.Start(tree.Root);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root);
         session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)).Should().NotBeNull();
 
         // When
@@ -126,20 +141,4 @@ public sealed class McpHostSessionIntegrationTests
         exitCode.Should().Be(0, stderr);
         (stdout + stderr).Should().Contain("--root");
     }
-
-    private static bool IsProtocolMessage(string line)
-    {
-        try
-        {
-            return JsonNode.Parse(line) is JsonObject message
-                && message["jsonrpc"]?.GetValue<string>() == "2.0"
-                && (message.ContainsKey("result") || message.ContainsKey("error") || message.ContainsKey("method"));
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-    }
-
-    private const int MissingInput = 2;
 }

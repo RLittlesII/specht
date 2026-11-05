@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using AwesomeAssertions;
 using Specht.Acceptance;
 using Specht.Tests.Shared;
@@ -21,13 +20,13 @@ public sealed class McpHostFakeToolsIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
-        tools.InstallGlobal(AcceptanceTool.FakeTools.GlobalVersion);
-        tools.InstallOnPath(AcceptanceTool.FakeTools.PathVersion);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture()
+            .WithPin(tree.Root)
+            .WithGlobal()
+            .WithOnPath();
 
         // When
-        var (stdout, stderr, exitCode) = Specht(tree.Root, tools, "--version");
+        var (stdout, stderr, exitCode) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--version");
 
         // Then
         exitCode.Should().Be(0, stderr);
@@ -40,13 +39,13 @@ public sealed class McpHostFakeToolsIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
-        tools.InstallGlobal(AcceptanceTool.FakeTools.GlobalVersion);
-        tools.Unrestore();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture()
+            .WithPin(tree.Root)
+            .WithGlobal()
+            .WithUnrestored();
 
         // When
-        var (_, _, exitCode) = Specht(tree.Root, tools, "--version");
+        var (_, _, exitCode) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--version");
 
         // Then
         exitCode.Should().NotBe(0);
@@ -59,12 +58,10 @@ public sealed class McpHostFakeToolsIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.InstallGlobal(AcceptanceTool.FakeTools.GlobalVersion);
-        tools.InstallOnPath(AcceptanceTool.FakeTools.PathVersion);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithGlobal().WithOnPath();
 
         // When
-        var (stdout, stderr, exitCode) = Path(tree.Root, tools);
+        var (stdout, stderr, exitCode) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithShellCommand("specht --version");
 
         // Then
         exitCode.Should().Be(0, stderr);
@@ -77,15 +74,14 @@ public sealed class McpHostFakeToolsIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
 
         // When
-        var (violatingOut, violatingErr, violatingExit) = Specht(tree.Root, tools, "--json");
+        var (violatingOut, violatingErr, violatingExit) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--json");
         var violatingExpected = AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root);
         AcceptanceTool.FakeTools.FixViolation(tree.Root);
-        var (editedOut, editedErr, editedExit) = Specht(tree.Root, tools, "--json");
+        var (editedOut, editedErr, editedExit) = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--json");
 
         // Then
         violatingExit.Should().Be(1, violatingErr);
@@ -101,37 +97,14 @@ public sealed class McpHostFakeToolsIntegrationTests
     {
         // Given
         using var tree = new SpechtTree(["below"]);
-        using var tools = new AcceptanceTool.FakeTools();
-        var above = System.IO.Path.GetDirectoryName(tree.Root)!;
-        tools.Pin(above, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        var above = Path.GetDirectoryName(tree.Root)!;
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(above);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
 
         // When
-        var (stdout, stderr, _) = Specht(above, tools, "--root", tree.Root, "--json");
+        var (stdout, stderr, _) = new SpechtRunFixture().WithRoot(above).WithTools(tools).WithArguments("--root", tree.Root, "--json");
 
         // Then
         stdout.Should().Be(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root), stderr);
-    }
-
-    private static (string Stdout, string Stderr, int ExitCode) Specht(string root, AcceptanceTool.FakeTools tools, params string[] args) =>
-        Start(new ProcessStartInfo("dotnet"), root, tools, ["specht", .. args]);
-
-    private static (string Stdout, string Stderr, int ExitCode) Path(string root, AcceptanceTool.FakeTools tools) =>
-        Start(new ProcessStartInfo("sh"), root, tools, ["-c", "specht --version"]);
-
-    private static (string Stdout, string Stderr, int ExitCode) Start(ProcessStartInfo start, string root, AcceptanceTool.FakeTools tools, string[] args)
-    {
-        start.WorkingDirectory = root;
-        foreach (var (name, value) in tools.Environment)
-        {
-            start.Environment[name] = value;
-        }
-
-        foreach (var arg in args)
-        {
-            start.ArgumentList.Add(arg);
-        }
-
-        return AcceptanceTool.Run(start);
     }
 }

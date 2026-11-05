@@ -78,6 +78,7 @@ public sealed class McpHostDiscoveryIntegrationTests
     public void ARequestNamingTheSupportedRevision_WhenSent_ShouldNotBeAnsweredWithAVersionError()
     {
         // Given
+        const int unsupportedProtocolVersion = -32022;
         using var tree = new SpechtTree();
 
         // When
@@ -86,8 +87,6 @@ public sealed class McpHostDiscoveryIntegrationTests
         // Then
         var answer = AcceptanceTool.McpAnswer(stdout, 1);
         answer.Should().NotBeNull(stderr);
-        answer!["error"]?["code"]?.GetValue<int>().Should().NotBe(UnsupportedProtocolVersion);
+        answer!["error"]?["code"]?.GetValue<int>().Should().NotBe(unsupportedProtocolVersion);
     }
-
-    private const int UnsupportedProtocolVersion = -32022;
 }

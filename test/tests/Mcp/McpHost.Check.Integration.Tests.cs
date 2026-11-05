@@ -21,15 +21,16 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
-        var answers = Call(tree.Root, tools, calls: 1);
+        var answer = session.CallTool(10, "check");
+        session.Close();
 
         // Then
-        AcceptanceTool.McpTextBlocks(answers.Single())
+        AcceptanceTool.McpTextBlocks(answer)
             .Should()
             .Equal(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root));
     }
@@ -39,17 +40,19 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
-        tools.Unpin(tree.Root, removed: false);
-        tools.InstallGlobal(AcceptanceTool.FakeTools.GlobalVersion);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture()
+            .WithPin(tree.Root)
+            .WithUnpinned(tree.Root)
+            .WithGlobal();
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
-        var answers = Call(tree.Root, tools, calls: 1);
+        var answer = session.CallTool(10, "check");
+        session.Close();
 
         // Then
-        AcceptanceTool.McpTextBlocks(answers.Single())
+        AcceptanceTool.McpTextBlocks(answer)
             .Where(static block => block.StartsWith(AcceptanceTool.FakeTools.OutputMarker, StringComparison.Ordinal))
             .Should()
             .Equal(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Global, tree.Root));
@@ -62,7 +65,7 @@ public sealed class McpHostCheckIntegrationTests
         using var tree = new SpechtTree();
 
         // When
-        var offered = Offered(tree.Root);
+        List<JsonObject> offered = new OfferedToolsFixture().WithRoot(tree.Root);
 
         // Then
         var arguments = offered.Single(static tool => tool["name"]?.GetValue<string>() == "check")["inputSchema"]?["properties"] as JsonObject ?? [];
@@ -77,16 +80,17 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
-        var answers = Call(tree.Root, tools, calls: 1);
+        var answer = session.CallTool(10, "check");
+        session.Close();
 
         // Then
-        AcceptanceTool.McpFailure(answers.Single()).Should().BeNull();
-        string.Concat(AcceptanceTool.McpTextBlocks(answers.Single())).Should().Contain(AcceptanceTool.FakeTools.Violation);
+        AcceptanceTool.McpFailure(answer).Should().BeNull();
+        string.Concat(AcceptanceTool.McpTextBlocks(answer)).Should().Contain(AcceptanceTool.FakeTools.Violation);
     }
 
     [Theory(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
@@ -95,16 +99,17 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
         tree.Pin(version);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
-        var answers = Call(tree.Root, tools, calls: 1);
+        var answer = session.CallTool(10, "check");
+        session.Close();
 
         // Then
-        AcceptanceTool.McpTextBlocks(answers.Single())
+        AcceptanceTool.McpTextBlocks(answer)
             .Should()
             .Equal(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root));
     }
@@ -114,10 +119,9 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
-        using var session = AcceptanceTool.McpSession.Start(tree.Root, tools.Environment);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
         var first = session.CallTool(10, "check");
 
         // When
@@ -135,16 +139,17 @@ public sealed class McpHostCheckIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
         var before = AcceptanceTool.Snapshot(tree.Root);
+        using AcceptanceTool.McpSession session = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
 
         // When
-        var answers = Call(tree.Root, tools, calls: 1);
+        var answer = session.CallTool(10, "check");
+        session.Close();
 
         // Then
-        answers.Should().NotBeEmpty();
+        answer.Should().NotBeNull();
         AcceptanceTool.Snapshot(tree.Root).Should().BeEquivalentTo(before);
     }
 
@@ -155,7 +160,8 @@ public sealed class McpHostCheckIntegrationTests
         using var tree = new SpechtTree();
 
         // When
-        var names = Names(Offered(tree.Root));
+        List<JsonObject> offered = new OfferedToolsFixture().WithRoot(tree.Root);
+        var names = offered.Select(static tool => tool["name"]!.GetValue<string>()).ToList();
 
         // Then
         names.Should().NotBeEmpty().And.NotContain(["init", "upgrade", "schema_pin", "format", "rules_set", "report"]);
@@ -169,10 +175,11 @@ public sealed class McpHostCheckIntegrationTests
         using var tree = new SpechtTree();
 
         // When
-        var names = Names(Offered(tree.Root));
+        List<JsonObject> offered = new OfferedToolsFixture().WithRoot(tree.Root);
+        var names = offered.Select(static tool => tool["name"]!.GetValue<string>()).ToList();
 
         // Then
-        names.Should().Contain("check").And.OnlyContain(static name => CommandNames.Contains(name));
+        names.Should().Contain("check").And.BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"]);
     }
 
     [Theory(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
@@ -182,13 +189,12 @@ public sealed class McpHostCheckIntegrationTests
         // Given
         using var tree = new SpechtTree();
         using var other = new SpechtTree();
-        using var tools = new AcceptanceTool.FakeTools();
-        tools.Pin(tree.Root, AcceptanceTool.FakeTools.PinnedVersion, restored: true);
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
         AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
-        using var session = AcceptanceTool.McpSession.Start(
-            elsewhere ? other.Root : tree.Root,
-            tools.Environment,
-            elsewhere ? ["--root", tree.Root] : []);
+        using AcceptanceTool.McpSession session = new McpSessionFixture()
+            .WithRoot(elsewhere ? other.Root : tree.Root)
+            .WithTools(tools)
+            .WithArguments(elsewhere ? ["--root", tree.Root] : []);
 
         // When
         var answer = session.CallTool(10, "check");
@@ -197,29 +203,4 @@ public sealed class McpHostCheckIntegrationTests
         // Then
         AcceptanceTool.McpTextBlocks(answer).Should().Equal(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root));
     }
-
-    private static IReadOnlyList<string> Names(IReadOnlyList<JsonObject> offered) => offered.Select(static tool => tool["name"]!.GetValue<string>()).ToList();
-
-    private static IReadOnlyList<JsonObject> Offered(string root)
-    {
-        using var session = AcceptanceTool.McpSession.Start(root);
-        var listing = session.Exchange(AcceptanceTool.McpRequest(10, "tools/list", AcceptanceTool.McpRevision));
-        session.Close();
-
-        return (JsonNode.Parse(listing ?? "null")?["result"]?["tools"] as JsonArray
-            ?? throw new Xunit.Sdk.XunitException($"The host did not list its tools; tools/list answered: {listing ?? "nothing"}"))
-            .Select(static tool => tool!.AsObject())
-            .ToList();
-    }
-
-    private static IReadOnlyList<JsonObject> Call(string root, AcceptanceTool.FakeTools tools, int calls)
-    {
-        using var session = AcceptanceTool.McpSession.Start(root, tools.Environment);
-        var answers = Enumerable.Range(0, calls).Select(index => session.CallTool(10 + (index * 10), "check")).ToList();
-        session.Close();
-
-        return answers;
-    }
-
-    private static readonly string[] CommandNames = ["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"];
 }
