@@ -2,7 +2,7 @@ id: "0331"
 type: task
 title: Rule text, the rule list and the manifest through MCP
 
-status: ready
+status: in-progress
 
 value: 3
 risk: 2
@@ -24,7 +24,7 @@ claims:
   - B-014
 
 created: "2026-11-01"
-updated: "2026-11-04"
+updated: "2026-11-05"
 closed: null
 
 summary: |
