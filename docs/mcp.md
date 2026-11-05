@@ -22,7 +22,8 @@ dotnet tool install --global specht.mcp   # on PATH, runs as specht-mcp
 
 `specht-mcp --help` lists its options. The one option, `--root <DIR>`, names
 the repository root to answer for; it defaults to the working directory, and a
-client may start the server in another directory, so name the root.
+client may start the server in another directory, so name the root; `.` is
+relative to where the client starts it.
 
 ## Client configuration
 
@@ -82,7 +83,8 @@ effect. Optional `defaults` (true) is `--defaults`.
 
 ## Restore the tool
 
-The root's local tool manifest, `.config/dotnet-tools.json`, pins `specht.tool`.
+The nearest local tool manifest at or above the root, `.config/dotnet-tools.json`,
+pins `specht.tool`.
 The server never restores it. A pin that is not restored fails a call with an
 error naming `specht.tool` and the pinned version. Restore it, then call again:
 
