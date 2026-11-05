@@ -36,7 +36,7 @@ own, not a `specht` command, and runs the repository's pinned `specht`
 ([ADR-0031](.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md), `0132-F3`).
 Built: the host over standard input and output (`0329`), the pinned-tool
 resolution (`0361`), the `check` tool (`0330`) and the rule, rule-list and
-manifest tools, `explain`, `rules` and `manifest` (`0331`). Not built:
+manifest tools, `explain`, `rules` and `manifest` (`0331`), and the page,
 `docs/mcp.md` (`0332`). It is not yet in the `Pack` or release targets and is not released; it
 will release on the tool's one `v<version>` tag.
 
