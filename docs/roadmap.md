@@ -111,6 +111,10 @@ tree (the owner, 2026-11-01 and 2026-11-04).
 | `0132-F3` | The MCP host: a local program of its own, finding the pinned `specht`, no port, and `docs/mcp.md` |
 | `0132-F4` | Part: the verdict, a rule's text, the rule list and the manifest, and nothing is written          |
 
+**Built so far:** the host over standard input and output, the pinned-tool
+resolution and the verdict through the `check` tool. Not built: the rule text,
+the rule list and the manifest tools, and `docs/mcp.md`. Nothing is released.
+
 **Done means:** an MCP client configured with one entry starts the host and
 reads the verdict, a rule's text, the rule list and the manifest, each equal to
 its command's output on the same tree; `docs/mcp.md` documents the entry and

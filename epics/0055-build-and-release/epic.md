@@ -33,10 +33,10 @@ dependency updates, the package version, the release that publishes
 `specht.tool` to nuget.org (GitHub Packages until 2026-11-01, `0055-F6`
 decision 0007), what a consumer needs to install it, the
 GitHub repository settings that make the checks binding, and a read-only
-mirror of the work items as GitHub issues. From item `0329` the same tag and
-version line also pack and publish `specht.mcp`, the MCP server of epic `0132`
-(ADR-0031); the claims of `0055-F5` and `0055-F6` that name one or both packages
-are amended by that item's delivery, not before.
+mirror of the work items as GitHub issues. `src/mcp` packs `specht.mcp`, the MCP
+server of epic `0132` (ADR-0031, item `0329`); the same tag and version line are
+to publish it, and it is not released. The claims of `0055-F5` and `0055-F6`
+that name one or both packages are amended by that item's delivery, not before.
 
 The need is the owner's (2026-10-08): everything a pull request needs must be
 in place **before** the repository is first pushed to GitHub, so that the
