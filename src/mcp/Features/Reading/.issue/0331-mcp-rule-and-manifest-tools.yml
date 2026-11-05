@@ -2,7 +2,7 @@ id: "0331"
 type: task
 title: Rule text, the rule list and the manifest through MCP
 
-status: ready
+status: done
 
 value: 3
 risk: 2
@@ -22,10 +22,11 @@ claims:
   - B-010
   - B-012
   - B-014
+  - B-022
 
 created: "2026-11-01"
-updated: "2026-11-04"
-closed: null
+updated: "2026-11-05"
+closed: "2026-11-05"
 
 summary: |
   As a coding agent with no `specht` skill I want a rule's text, the rule list and the manifest through MCP, each byte for byte its command's stdout, so that I follow the pinned version and not a copied skill.
@@ -41,6 +42,7 @@ acceptance_criteria:
   - "B-010 — a command's argument passes through"
   - "B-012 — exit `2`, `3` or `4` is an error answer with stderr's message"
   - "B-014 — a pin moved between calls"
+  - "B-022 — a value that starts with a dash runs no command and is an error"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

@@ -69,6 +69,7 @@ Feature: Reading through MCP
       | answer       | argument                                              |
       | the manifest | the request for the tool's shipped defaults           |
       | the verdict  | the request to read the frontmatter schemas from disk |
+      | the verdict  | the request to treat every violation as an error      |
 
   @B-011
   Scenario: A tree with violations is an answer, not an error
@@ -103,6 +104,17 @@ Feature: Reading through MCP
     And the pinned tool's restored copy is then removed
     When the verdict is asked for again
     Then the answer quotes nothing the command wrote
+
+  @B-022 @boundary
+  Scenario Outline: A value that starts with a dash runs no command and is an error
+    When <answer> is asked for with <argument>
+    Then no command is run
+    And the answer is marked as an error
+
+    Examples:
+      | answer           | argument                                |
+      | that rule's text | a rule id that starts with a dash       |
+      | the verdict      | a schema source that starts with a dash |
 
   @B-013
   Scenario Outline: Every answer is for the version the repository pins

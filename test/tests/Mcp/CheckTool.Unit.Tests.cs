@@ -1,10 +1,6 @@
 using AwesomeAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Protocol;
-using ModelContextProtocol.Server;
-using Specht.Mcp.Features.Host;
 using Specht.Mcp.Features.PinnedTool;
-using Specht.Mcp.Features.Reading;
 
 namespace Specht.Tests.Mcp;
 
@@ -23,10 +19,10 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, "{\"violations\":1,\"dash\":\"— café\"}", "ignored");
-        CheckTool check = new CheckToolFixture().WithProcess(process);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
-        var result = await check.CheckAsync(CancellationToken.None);
+        var result = await tools.CallAsync("check");
 
         // Then
         var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
@@ -41,10 +37,10 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, "{}", "the manifest is invalid");
-        CheckTool check = new CheckToolFixture().WithProcess(process);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
-        var result = await check.CheckAsync(CancellationToken.None);
+        var result = await tools.CallAsync("check");
 
         // Then
         var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
@@ -61,10 +57,10 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
-        CheckTool check = new CheckToolFixture().WithProcess(process);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
-        var result = await check.CheckAsync(CancellationToken.None);
+        var result = await tools.CallAsync("check");
 
         // Then
         var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
@@ -79,10 +75,10 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
-        CheckTool check = new CheckToolFixture().WithProcess(process);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
-        var result = await check.CheckAsync(CancellationToken.None);
+        var result = await tools.CallAsync("check");
 
         // Then
         var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
@@ -95,10 +91,10 @@ public sealed class CheckToolUnitTests
         // Given
         var process = ScriptedProcessRun.Tool(pinned: false, "0.5.0");
         process.Verdict = null;
-        CheckTool check = new CheckToolFixture().WithProcess(process);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
-        var result = await check.CheckAsync(CancellationToken.None);
+        var result = await tools.CallAsync("check");
 
         // Then
         var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
@@ -111,10 +107,10 @@ public sealed class CheckToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
-        CheckTool check = new CheckToolFixture().WithProcess(process);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
-        var result = await check.CheckAsync(CancellationToken.None);
+        var result = await tools.CallAsync("check");
 
         // Then
         var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
@@ -129,10 +125,10 @@ public sealed class CheckToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned: false, "0.5.0");
-        CheckTool check = new CheckToolFixture().WithProcess(process);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
-        var result = await check.CheckAsync(CancellationToken.None);
+        var result = await tools.CallAsync("check");
 
         // Then
         var texts = result.Content.OfType<TextContentBlock>().Select(static block => block.Text).ToList();
@@ -146,12 +142,12 @@ public sealed class CheckToolUnitTests
     {
         // Given
         var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
-        CheckTool check = new CheckToolFixture().WithProcess(process);
-        var first = await check.CheckAsync(CancellationToken.None);
+        using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
+        var first = await tools.CallAsync("check");
         process.Verdict = new ProcessResult(0, "{\"violations\":0}\n", string.Empty);
 
         // When
-        var second = await check.CheckAsync(CancellationToken.None);
+        var second = await tools.CallAsync("check");
 
         // Then
         first.Content.OfType<TextContentBlock>().Select(static block => block.Text).Should().Equal("{}\n");
@@ -159,34 +155,31 @@ public sealed class CheckToolUnitTests
     }
 
     [Fact]
-    public void TheDeclaration_WhenRead_ShouldNameTheToolCheckAndTakeNoArgument()
+    public void TheDeclaration_WhenRead_ShouldNameTheToolCheckAndOfferNoArgumentThatNamesASpecificationOrAPath()
     {
         // Given
-        CheckTool check = new CheckToolFixture();
+        using RegisteredTools tools = new RegisteredToolsFixture();
 
         // When
-        var tool = check.Declare().ProtocolTool;
+        var tool = tools.Declared("check");
 
         // Then
         tool.Name.Should().Be("check");
-        var schema = tool.InputSchema;
-        (schema.TryGetProperty("properties", out var properties) ? properties.EnumerateObject().Count() : 0).Should().Be(0);
-        schema.TryGetProperty("required", out var required).Should().BeFalse(required.ToString());
+        var names = tool.InputSchema.TryGetProperty("properties", out var properties)
+            ? properties.EnumerateObject().Select(static property => property.Name).ToList()
+            : [];
+        names.Should().NotContain(static name => new[] { "spec", "path", "file", "feature", "directory" }
+            .Any(word => name.Contains(word, StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
     public void TheRegisteredTools_WhenResolvedFromTheHostsRegistrations_ShouldBeCheckAndNoWriteAndNoQueue()
     {
         // Given
-        using var provider = new ServiceCollection()
-            .AddSingleton<IProcessRun>(new ScriptedProcessRun())
-            .AddHost()
-            .AddPinnedTool()
-            .AddReading()
-            .BuildServiceProvider();
+        using RegisteredTools tools = new RegisteredToolsFixture();
 
         // When
-        var names = provider.GetServices<McpServerTool>().Select(static tool => tool.ProtocolTool.Name).ToList();
+        var names = tools.Names;
 
         // Then
         names.Should().Contain("check");

@@ -113,4 +113,132 @@ public sealed class McpHostFakeToolsIntegrationTests
         // Then
         stdout.Should().Be(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root), stderr);
     }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void APinnedFake_WhenRunWithTheSchemaSourceOption_ShouldWriteTheStatedOutputNamingIt()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--json", "--schema-source", "disk");
+
+        // When
+        var (stdout, stderr, _) = AcceptanceTool.Run(start);
+
+        // Then
+        stdout.Should().Be(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root, "disk"), stderr);
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void APinnedFake_WhenRunWithTheStrictOption_ShouldWriteTheStatedOutputNamingIt()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--json", "--strict");
+
+        // When
+        var (stdout, stderr, _) = AcceptanceTool.Run(start);
+
+        // Then
+        stdout.Should().Be(AcceptanceTool.FakeTools.JsonOutput(AcceptanceTool.FakeTools.Pinned, tree.Root, strict: true), stderr);
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void APinnedFake_WhenRunToExplainARuleItHas_ShouldWriteTheStatedOutputAndEndZero()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("--explain", AcceptanceTool.FakeTools.KnownRule);
+
+        // When
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+
+        // Then
+        exitCode.Should().Be(0, stderr);
+        stdout.Should().Be(AcceptanceTool.FakeTools.ExplainOutput(AcceptanceTool.FakeTools.Pinned, tree.Root));
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void APinnedFake_WhenRunToListTheRulesAsJson_ShouldWriteTheStatedOutputAndEndZero()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("rules", "--json");
+
+        // When
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+
+        // Then
+        exitCode.Should().Be(0, stderr);
+        stdout.Should().Be(AcceptanceTool.FakeTools.RulesOutput(AcceptanceTool.FakeTools.Pinned, tree.Root));
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void APinnedFake_WhenRunToPrintTheManifestAsJson_ShouldWriteTheStatedOutputAndEndZero()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("manifest", "--json");
+
+        // When
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+
+        // Then
+        exitCode.Should().Be(0, stderr);
+        stdout.Should().Be(AcceptanceTool.FakeTools.ManifestOutput(AcceptanceTool.FakeTools.Pinned, tree.Root));
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void APinnedFake_WhenRunToPrintTheManifestWithDefaults_ShouldWriteTheShippedDefaultsAndEndZero()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("manifest", "--defaults", "--json");
+
+        // When
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+
+        // Then
+        exitCode.Should().Be(0, stderr);
+        stdout.Should().Be(AcceptanceTool.FakeTools.ManifestOutput(AcceptanceTool.FakeTools.Pinned, tree.Root, defaults: true));
+    }
+
+    [Theory(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    [ClassData(typeof(FailingFakeCommands))]
+    public void APinnedFake_WhenRunOnARootItCannotServe_ShouldEndWithTheStatedCodeAndWriteTheStatedMessageOnStandardError(
+        string[] command,
+        string manifest,
+        int expectedExit,
+        string expectedMessage)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        if (manifest == "removed")
+        {
+            File.Delete(Path.Combine(tree.Root, SpechtTree.ManifestPath));
+        }
+
+        if (manifest == "rejected")
+        {
+            tree.WriteRaw(SpechtTree.ManifestPath, AcceptanceTool.FakeTools.RejectedManifest);
+        }
+
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments(command);
+
+        // When
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+
+        // Then
+        exitCode.Should().Be(expectedExit);
+        stderr.Should().Be(expectedMessage);
+        stdout.Should().BeEmpty();
+    }
 }

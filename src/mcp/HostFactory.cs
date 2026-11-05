@@ -12,18 +12,22 @@ namespace Specht.Mcp;
 /// </summary>
 public static class HostFactory
 {
-    /// <summary>Builds the application the program runs.</summary>
+    /// <summary>Lists the parts the host is made of: the process run, the host, the pinned tool and the reading slice.</summary>
     /// <param name="process">Starts the programs the host runs; the system's in the program, a fake in a test.</param>
-    /// <returns>The application, not yet run.</returns>
-    public static CommandApp<HostCommand> Create(IProcessRun process)
-    {
-        var services = new ServiceCollection()
+    /// <returns>The registrations, from which the application and a test of its tools both resolve.</returns>
+    public static IServiceCollection Compose(IProcessRun process) =>
+        new ServiceCollection()
             .AddSingleton(process)
             .AddHost()
             .AddPinnedTool()
             .AddReading();
 
-        var app = new CommandApp<HostCommand>(new TypeRegistrar(services));
+    /// <summary>Builds the application the program runs.</summary>
+    /// <param name="process">Starts the programs the host runs; the system's in the program, a fake in a test.</param>
+    /// <returns>The application, not yet run.</returns>
+    public static CommandApp<HostCommand> Create(IProcessRun process)
+    {
+        var app = new CommandApp<HostCommand>(new TypeRegistrar(Compose(process)));
         app.Configure(static config => config.AddHost());
 
         return app;

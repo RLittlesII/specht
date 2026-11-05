@@ -82,7 +82,7 @@ public sealed class SpechtToolUnitTests
     public async Task AToolAtTheMinimumVersion_WhenTheToolRuns_ShouldRunTheCommand(bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.1.90");
+        var process = ScriptedProcessRun.Tool(pinned, "0.3.1");
         SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
@@ -97,14 +97,14 @@ public sealed class SpechtToolUnitTests
     public async Task AToolOneBelowTheMinimumVersion_WhenTheToolRuns_ShouldRefuseNamingTheMinimumAndGiveItNoWork(bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.1.89");
+        var process = ScriptedProcessRun.Tool(pinned, "0.3.0");
         SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
         var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
-        outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().Contain("0.1.90").And.Contain("docs/mcp.md#update-the-tool");
+        outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().Contain("0.3.1").And.Contain("docs/mcp.md#update-the-tool");
         process.Requests.SelectMany(static request => request.Arguments).Should().NotContain("--json");
     }
 
