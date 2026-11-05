@@ -30,7 +30,7 @@ closed: null
 summary: |
   As a coding agent with no `specht` skill I want a rule's text, the rule list and the manifest through MCP, each byte for byte its command's stdout, so that I follow the pinned version and not a copied skill.
 
-  Three tools over built commands: `--explain`, `rules --json` and `manifest --json`. The arguments each command takes pass through (B-010), and a command's failure is an error answer (B-012).
+  Three tools over built commands, named for them (`0132-F4` C-7, B-019): `explain` for `--explain`, `rules` for `rules --json` and `manifest` for `manifest --json`. The arguments each command takes pass through (B-010), and a command's failure is an error answer (B-012).
 
   Waits on 0330: the answer rules and the first tool are there.
 

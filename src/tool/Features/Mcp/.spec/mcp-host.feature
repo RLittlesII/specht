@@ -52,8 +52,8 @@ Feature: The MCP host
   @B-009
   Scenario Outline: The server answers for the root the check would take
     Given the client starts the server <where>
-    When the server is asked for an answer
-    Then it answers for the repository
+    When the client calls the check tool
+    Then the answer is for the repository
 
     Examples:
       | where                                            |
@@ -112,19 +112,19 @@ Feature: The MCP host
   @B-017
   Scenario: Every call runs the version the repository pins
     Given the repository pins the tool at a version other than the MCP's own
-    When a client starts the server and calls it
+    When a client calls the check tool
     Then the tool that ran is the pinned version
 
   @B-017 @boundary
   Scenario: A tool the path resolves is never run while a pin exists
     Given another version of the tool is reachable from the path
-    When a client starts the server and calls it
+    When a client calls the check tool
     Then the tool that ran is the pinned version and not the other
 
   @B-018 @boundary
   Scenario: A tool that is not restored is not restored by the server
     Given the pinned tool's restored copy is removed
-    When a client starts the server and calls it
+    When a client calls the check tool
     Then the server has not restored the pinned tool
 
   @B-019
@@ -142,28 +142,28 @@ Feature: The MCP host
   @B-020
   Scenario: A pinned tool that is not restored is named in the error
     Given the pinned tool's restored copy is removed
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the call fails with an error
     And the error names the tool and the version that is missing
 
   @B-021
   Scenario: The not-restored error says where to read how to restore
     Given the pinned tool's restored copy is removed
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the error names where to read how to restore the tool
 
   @B-022 @boundary
   Scenario: A pinned tool that is not restored is never replaced
     Given the pinned tool's restored copy is removed
     And a global tool is installed
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then no other tool ran
 
   @B-023
   Scenario Outline: With no pin the global tool answers
     Given the repository's local tool manifest <state>
     And a global tool is installed
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the global tool ran
 
     Examples:
@@ -175,19 +175,19 @@ Feature: The MCP host
   Scenario: With no pin the answer is reported as unpinned
     Given the repository's local tool manifest no longer lists the tool
     And a global tool is installed
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the result carries a part, apart from the part holding the command's output, that tells the user the answer is unpinned
 
   @B-025
   Scenario: The unpinned report says where to read how to pin
     Given the repository's local tool manifest no longer lists the tool
     And a global tool is installed
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the report names where to read how to pin the tool
 
   @B-026
   Scenario: The tool's version is checked once per session
-    Given a session in which a client calls the server twice for answers that need the tool
+    Given a session in which a client calls the check tool twice
     When the session ends
     Then the server has checked the tool's version once
 
@@ -195,53 +195,53 @@ Feature: The MCP host
   Scenario: The global tool's version is checked once per session
     Given the repository's local tool manifest no longer lists the tool
     And a global tool is installed
-    And a session in which a client calls the server twice for answers that need the tool
+    And a session in which a client calls the check tool twice
     When the session ends
     Then the server has checked the global tool's version once
 
   @B-027
   Scenario: A tool older than the minimum answers nothing
     Given the tool is older than the minimum version the server requires
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the call fails with an error
 
   @B-034
   Scenario: A tool older than the minimum is given no work
     Given the tool is older than the minimum version the server requires
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the tool has answered nothing
 
   @B-027
   Scenario: A global tool older than the minimum answers nothing
     Given the repository's local tool manifest no longer lists the tool
     And a global tool is installed that is older than the minimum version the server requires
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the call fails with an error
 
   @B-034
   Scenario: A global tool older than the minimum is given no work
     Given the repository's local tool manifest no longer lists the tool
     And a global tool is installed that is older than the minimum version the server requires
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the global tool has answered nothing
 
   @B-028
   Scenario: The too-old error names the minimum version
     Given the tool is older than the minimum version the server requires
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the error names the minimum version required
 
   @B-029
   Scenario: The too-old error says where to read how to update
     Given the tool is older than the minimum version the server requires
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the error names where to read how to update the tool
 
   @B-030
   Scenario: With no pin and no global tool the error says neither was found
     Given the repository's local tool manifest no longer lists the tool
     And no global tool is installed
-    When a client calls the server for an answer that needs the tool
+    When a client calls the check tool
     Then the call fails with an error
     And the error names the pin and the global tool as not found
 

@@ -68,6 +68,8 @@ decisions:
     2026-11-04, spec-author's re-cut for ADR-0031: the MCP is a program of its own. B-007 is withdrawn; B-017, B-018 and B-020 to B-030 and B-034 go to 0359; B-015, B-016 and B-031 are 0332's; B-019, B-032 and B-033 are the host's. The spec stays under `src/tool/Features/Mcp/` until `src/mcp` exists and moves there with this item's code (OQ-2).
   - |
     2026-11-04, review: B-009's scenarios need an answer only 0330's tool gives, so they bind in the shared pull request with 0359 and 0330, not in this item alone.
+  - |
+    2026-11-04, spec-author after the owner's ruling on `0132-F4` OQ-7: B-009's scenario calls the tool `check`, which 0330 registers (`0132-F3` A-7). The other scenarios here are unchanged.
 
 out_of_scope:
   - "Every answer served — § 5 row 1; 0330 and 0331."

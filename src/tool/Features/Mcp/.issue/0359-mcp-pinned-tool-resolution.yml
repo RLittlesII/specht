@@ -42,19 +42,21 @@ summary: |
 
   Waits on 0329, the host. 0329, 0359 and 0330 deliver in one pull request (epic `0132` § Features, candidate B); 0330 waits on this item, which runs each command it answers with.
 
+  This item registers no tool. Its scenarios are driven through the tool `check`, which 0330 registers (`0132-F3` A-7; `0132-F4` OQ-7, C-7), so they bind in the shared pull request once 0330 lands. The messages' pointers are the paths in `0132-F3` C-12.
+
 acceptance_criteria:
   - "B-017 — the pinned version runs"
   - "B-018 — nothing is restored"
   - "B-020 — the missing tool is named"
-  - "B-021 — where to restore"
+  - "B-021 — where to restore: the error contains `docs/mcp.md#restore-the-tool` (`0132-F3` C-12)"
   - "B-022 — no other tool runs"
   - "B-023 — no pin, the global tool"
   - "B-024 — the unpinned report apart"
-  - "B-025 — where to pin"
+  - "B-025 — where to pin: the report contains `docs/mcp.md#pin-the-tool` (`0132-F3` C-12)"
   - "B-026 — one version check"
   - "B-027 — too old fails the call"
   - "B-028 — the minimum named"
-  - "B-029 — where to update"
+  - "B-029 — where to update: the error contains `docs/mcp.md#update-the-tool` (`0132-F3` C-12)"
   - "B-030 — neither found"
   - "B-034 — too old, no work given"
   - "§ 9 carries a row naming a test for each id above."
@@ -64,6 +66,8 @@ decisions:
     2026-11-04, spec-author's cut for ADR-0031: the pinned-tool resolution is its own item, since it is the one place the host meets the installed tool and 0330 and 0331 both wait on it. Rejected: leaving it in 0329, which would make the host item carry a second concern; one item per claim, since none is done alone.
   - |
     2026-11-04, review: the scenarios here that need an answer only 0330's tool gives, and B-009's in 0329, bind in the shared pull request with 0329 and 0330, not in this item alone.
+  - |
+    2026-11-04, spec-author after the owner's ruling on `0132-F4` OQ-7 (tools named for their commands): the scenarios call the tool `check` (`0132-F3` A-7). 0330 registers it; the tests here are written against the name and stay red until it does. Order stays 0329, 0359, 0330. Rejected: registering `check` here, which would put a `0132-F4` answer in a host item.
 
 out_of_scope:
   - "Restoring, installing or updating a tool — C-10; § 5 row 13, row 15."

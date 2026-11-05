@@ -135,3 +135,9 @@ Feature: Reading through MCP
     Given another repository holding only the manifest that initialising writes
     When a Feature specification and its scenarios are built from the server's answers alone
     Then the verdict on that repository reports no violation
+
+  @B-019
+  Scenario: Each tool is named for the command it serves
+    When the tools the server offers are listed
+    Then each tool's name is the name of the command it serves
+    And the verdict's tool is named for the check
