@@ -9,7 +9,7 @@ namespace Specht.Acceptance.Mcp;
 /// <summary>
 /// Runs the built MCP as a process and holds what the host does over its standard input and output (0132-F3 B-001 to B-006,
 /// B-008, B-010 to B-014, B-019, B-032, B-033) and the pinned-tool resolution through the tool check (0361: B-017, B-018, B-020 to
-/// B-030, B-034, B-009), whose scenarios stay red until 0330 registers it. The documentation scenarios (0332) have no binding here.
+/// B-030, B-034, B-009), whose scenarios stay red until 0330 registers it. The documentation scenarios (0332) are bound in McpPageSteps.
 /// Reading through MCP (0132-F4) shares the world these steps build, so its steps are the other part of this class.
 /// </summary>
 [Binding]

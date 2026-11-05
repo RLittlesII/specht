@@ -65,6 +65,13 @@
              Link="docs\schema\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <!-- The MCP page (0132-F3 B-031), copied at its repository-relative path: the anchors a message points to are held to the
+       page's headings. A wildcard, so its absence fails the test that reads it, not the build. -->
+  <ItemGroup>
+    <Content Include="..\..\docs\mcp*.md"
+             Link="docs\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\acceptance\AcceptanceTool.cs">
       <Link>AcceptanceTool.cs</Link>
