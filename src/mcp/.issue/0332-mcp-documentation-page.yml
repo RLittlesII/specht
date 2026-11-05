@@ -10,7 +10,7 @@ risk: 1
 parent: "0132"
 children: []
 
-depends_on: ["0331", "0359"]
+depends_on: ["0331", "0361"]
 spikes: []
 
 spec: src/mcp/.spec/README.md

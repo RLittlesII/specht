@@ -35,7 +35,7 @@ packs `specht.mcp`, command `specht-mcp`: an MCP server that is a program of its
 own, not a `specht` command, and runs the repository's pinned `specht`
 ([ADR-0031](.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md), `0132-F3`).
 Built: the host over standard input and output (`0329`), the pinned-tool
-resolution (`0359`) and the `check` tool (`0330`). Not built: the rule, rule-list
+resolution (`0361`) and the `check` tool (`0330`). Not built: the rule, rule-list
 and manifest tools (`0331`) and `docs/mcp.md` (`0332`). It is not released; it
 releases on the tool's one `v<version>` tag.
 

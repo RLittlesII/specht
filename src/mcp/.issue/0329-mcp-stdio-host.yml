@@ -40,7 +40,7 @@ closed: "2026-11-04"
 summary: |
   As a maintainer configuring an MCP client I want one entry that runs `specht-mcp`, a program of its own, so that every agent in the repository reaches the answers with no terminal session.
 
-  The host is the program `src/mcp` and the package `specht.mcp` (ADR-0031; OQ-2), composed by the one factory (OQ-10) and holding no engine (C-9). It serves no answer of its own (C-5): 0329, 0359 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B). Order: 0329 first, then 0359, which finds the pinned tool, then 0330.
+  The host is the program `src/mcp` and the package `specht.mcp` (ADR-0031; OQ-2), composed by the one factory (OQ-10) and holding no engine (C-9). It serves no answer of its own (C-5): 0329, 0361 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B). Order: 0329 first, then 0361, which finds the pinned tool, then 0330.
 
 acceptance_criteria:
   - "B-001 — a discovery request gets the server's identity"
@@ -65,9 +65,9 @@ decisions:
   - |
     2026-11-01, spec-author's cut of the agreed Feature for the owner's first-release ruling: the host in one item, delivered with 0330. Rejected: one item per claim group, since none of them is done while the host serves nothing.
   - |
-    2026-11-04, spec-author's re-cut for ADR-0031: the MCP is a program of its own. B-007 is withdrawn; B-017, B-018 and B-020 to B-030 and B-034 go to 0359; B-015, B-016 and B-031 are 0332's; B-019, B-032 and B-033 are the host's. The spec stays under `src/tool/Features/Mcp/` until `src/mcp` exists and moves there with this item's code (OQ-2).
+    2026-11-04, spec-author's re-cut for ADR-0031: the MCP is a program of its own. B-007 is withdrawn; B-017, B-018 and B-020 to B-030 and B-034 go to 0361; B-015, B-016 and B-031 are 0332's; B-019, B-032 and B-033 are the host's. The spec stays under `src/tool/Features/Mcp/` until `src/mcp` exists and moves there with this item's code (OQ-2).
   - |
-    2026-11-04, review: B-009's scenarios need an answer only 0330's tool gives, so they bind in the shared pull request with 0359 and 0330, not in this item alone.
+    2026-11-04, review: B-009's scenarios need an answer only 0330's tool gives, so they bind in the shared pull request with 0361 and 0330, not in this item alone.
   - |
     2026-11-04, spec-author after the owner's ruling on `0132-F4` OQ-7: B-009's scenario calls the tool `check`, which 0330 registers (`0132-F3` A-7). The other scenarios here are unchanged.
   - |
@@ -76,5 +76,5 @@ decisions:
 out_of_scope:
   - "Every answer served — § 5 row 1; 0330 and 0331."
   - "`docs/mcp.md` — B-015, B-016, B-031; 0332."
-  - "Finding, version-checking and running the pinned tool — B-017, B-018, B-020 to B-030, B-034; 0359."
+  - "Finding, version-checking and running the pinned tool — B-017, B-018, B-020 to B-030, B-034; 0361."
   - "The workspace roots a client sends — § 5 row 19."

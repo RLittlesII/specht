@@ -448,7 +448,7 @@ inside `specht.tool` (ADR-0031), so the first release's host has no section in
 `0132-F2`. `0132-F1` is unscheduled. Was: no release named; "The minimum
 set" counted every Must answer before MCP is valuable. The status stays `needs-decomposition`
 until `0001-F18` is specified. Built, 2026-11-04: `src/mcp` is built with the
-host over standard input and output (`0329`), the pinned-tool resolution (`0359`)
+host over standard input and output (`0329`), the pinned-tool resolution (`0361`)
 and the tool `check` (`0330`). The rule, rule-list and manifest tools (`0331`),
 `docs/mcp.md` (`0332`) and the tree's facts, claim coverage and schema answers
 are not built, and `specht.mcp` is not released.

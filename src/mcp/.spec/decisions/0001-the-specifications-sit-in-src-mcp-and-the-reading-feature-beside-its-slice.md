@@ -38,7 +38,7 @@ Reading slice is a folder of that project, as `specht rules set` sits beneath
 ## Affects
 
 OQ-2, § Tasks, epic `0132` § Features and § Placement, items `0329`, `0332`,
-`0359` (`0132-F3`) and `0330`, `0331` (`0132-F4`), `test/acceptance`.
+`0361` (`0132-F3`) and `0330`, `0331` (`0132-F4`), `test/acceptance`.
 
 ## Reversal
 

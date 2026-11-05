@@ -10,7 +10,7 @@ risk: 3
 parent: "0132"
 children: []
 
-depends_on: ["0329", "0359"]
+depends_on: ["0329", "0361"]
 spikes: []
 
 spec: src/mcp/Features/Reading/.spec/README.md
@@ -32,9 +32,9 @@ closed: "2026-11-04"
 summary: |
   As a coding agent I want the check's verdict for the whole tree through MCP, byte for byte what `specht --json` prints, so that I stop scraping the command's output.
 
-  The first tool, and the answer rules every later tool inherits: the pin, a fresh read at each call, no write, and only answers the command line gives. The verdict is the tool `check`, named for the command it serves (§ 11 OQ-7, resolved 2026-11-04; C-7, B-019); the answers are tools only (§ 11 OQ-4). This item registers `check`, the first tool: the scenarios of `0359` and of `0132-F3` B-009 are driven through it (`0132-F3` A-7).
+  The first tool, and the answer rules every later tool inherits: the pin, a fresh read at each call, no write, and only answers the command line gives. The verdict is the tool `check`, named for the command it serves (§ 11 OQ-7, resolved 2026-11-04; C-7, B-019); the answers are tools only (§ 11 OQ-4). This item registers `check`, the first tool: the scenarios of `0361` and of `0132-F3` B-009 are driven through it (`0132-F3` A-7).
 
-  Waits on 0329, the host, and on 0359, which finds the pinned tool each answer runs. 0329, 0359 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B).
+  Waits on 0329, the host, and on 0361, which finds the pinned tool each answer runs. 0329, 0361 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B).
 
   The host is a program of its own that relays the pinned `specht`'s output (ADR-0031); the answers stay byte for byte the command's, and the host's unpinned report is a separate part of the result (`0132-F3` B-024; this Feature's A-4).
 
@@ -53,7 +53,7 @@ decisions:
   - |
     2026-11-01, spec-author's cut for the owner's first-release ruling. B-012 and B-014 go to 0331 instead: their scenarios name the rule list and a rule's text, which 0331 registers, so their tests cannot pass here. Rejected: amending the agreed scenarios to the verdict alone.
   - |
-    2026-11-04, spec-author after the owner's ruling on OQ-7 (tools named for their commands): B-019 added here, with the first tool `check`. 0359's scenarios are driven through `check`, so this item's tool is what lets them bind in the shared pull request; the order 0329, 0359, 0330 is unchanged.
+    2026-11-04, spec-author after the owner's ruling on OQ-7 (tools named for their commands): B-019 added here, with the first tool `check`. 0361's scenarios are driven through `check`, so this item's tool is what lets them bind in the shared pull request; the order 0329, 0361, 0330 is unchanged.
 
 out_of_scope:
   - "Rule text, the rule list, the manifest, arguments and failures — B-003 to B-005, B-010, B-012, B-014; 0331."
