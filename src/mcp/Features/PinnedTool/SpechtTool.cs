@@ -43,7 +43,8 @@ public sealed class SpechtTool(IProcessRun process, SessionRoot root)
         var listing = await process.RunAsync(new ProcessRequest("dotnet", ["tool", "list"], root.Value), cancellationToken);
         if (listing is { ExitCode: not 0 })
         {
-            return new ToolOutcome.Refused($"The root's local tool manifest could not be read: {listing.StandardError.Trim()}");
+            return new ToolOutcome.Refused(
+                $"The local tool manifest for this root could not be read: dotnet tool list ended with code {listing.ExitCode}. Nothing was run.");
         }
 
         var pinned = listing is null ? null : PinnedVersion(listing.StandardOutput);
@@ -82,29 +83,40 @@ public sealed class SpechtTool(IProcessRun process, SessionRoot root)
     {
         if (!_versions.TryGetValue(target.Key, out var version))
         {
-            var answer = await Run(target, ["--version"], cancellationToken);
-            if (answer is null && !pinned)
+            await _gate.WaitAsync(cancellationToken);
+            try
             {
-                return new ToolOutcome.Refused(
-                    "No pin and no global tool: the pin in a local tool manifest for this root is not found, and the global specht tool "
-                    + $"is not found. Pin {PackageId} (docs/mcp.md#pin-the-tool) or install it as a global tool.");
-            }
+                if (!_versions.TryGetValue(target.Key, out version))
+                {
+                    var answer = await Run(target, ["--version"], cancellationToken);
+                    if (answer is null && !pinned)
+                    {
+                        return new ToolOutcome.Refused(
+                            "No pin and no global tool: the pin in a local tool manifest for this root is not found, and the global specht tool "
+                            + $"is not found. Pin {PackageId} (docs/mcp.md#pin-the-tool) or install it as a global tool.");
+                    }
 
-            if (pinned && answer is not { ExitCode: 0 })
+                    if (pinned && answer is not { ExitCode: 0 })
+                    {
+                        return new ToolOutcome.Refused(
+                            $"{target.Name} is pinned in the local tool manifest and cannot run, as it is not restored. The host never restores "
+                            + "it: restore it, then call again (docs/mcp.md#restore-the-tool).");
+                    }
+
+                    if (answer is not { ExitCode: 0 } || !ToolVersion.TryParse(answer.StandardOutput, out version))
+                    {
+                        return new ToolOutcome.Refused(
+                            $"{target.Name} did not state a version for --version, so it cannot be checked against the minimum {Minimum}. "
+                            + $"Update {PackageId} to {Minimum} or later (docs/mcp.md#update-the-tool).");
+                    }
+
+                    _versions[target.Key] = version;
+                }
+            }
+            finally
             {
-                return new ToolOutcome.Refused(
-                    $"{target.Name} is pinned in the local tool manifest and cannot run, as it is not restored. The host never restores "
-                    + "it: restore it, then call again (docs/mcp.md#restore-the-tool).");
+                _gate.Release();
             }
-
-            if (answer is not { ExitCode: 0 } || !ToolVersion.TryParse(answer.StandardOutput, out version))
-            {
-                return new ToolOutcome.Refused(
-                    $"{target.Name} did not state a version for --version, so it cannot be checked against the minimum {Minimum}. "
-                    + $"Update {PackageId} to {Minimum} or later (docs/mcp.md#update-the-tool).");
-            }
-
-            _versions[target.Key] = version;
         }
 
         return version.CompareTo(Minimum) < 0
@@ -120,4 +132,6 @@ public sealed class SpechtTool(IProcessRun process, SessionRoot root)
     private sealed record Target(string Key, string Name, string FileName, IReadOnlyList<string> Prefix);
 
     private readonly ConcurrentDictionary<string, ToolVersion> _versions = new(StringComparer.Ordinal);
+
+    private readonly SemaphoreSlim _gate = new(1, 1);
 }

@@ -53,7 +53,15 @@ public sealed class SystemProcessRun : IProcessRun
         }
         catch (OperationCanceledException)
         {
-            process.Kill(entireProcessTree: true);
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            await Task.WhenAll(output, error).ContinueWith(static _ => { }, TaskScheduler.Default);
             throw;
         }
 

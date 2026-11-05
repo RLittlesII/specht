@@ -16,6 +16,7 @@ namespace Specht.Mcp.Features.Reading;
 /// <implements epic="0132" feature="F4" claim="B-001" />
 /// <implements epic="0132" feature="F4" claim="B-002" />
 /// <implements epic="0132" feature="F4" claim="B-011" />
+/// <implements epic="0132" feature="F4" claim="B-012" />
 /// <implements epic="0132" feature="F4" claim="B-019" />
 public sealed class CheckTool(SpechtTool tool)
 {
@@ -41,13 +42,17 @@ public sealed class CheckTool(SpechtTool tool)
     /// <returns>The verdict, with the unpinned report beside it when no pin chose the tool; an error when no tool answered.</returns>
     /// <implements epic="0132" feature="F4" claim="B-001" />
     /// <implements epic="0132" feature="F4" claim="B-011" />
+    /// <implements epic="0132" feature="F4" claim="B-012" />
     public async Task<CallToolResult> CheckAsync(CancellationToken cancellationToken)
     {
         var outcome = await tool.RunAsync(["--json"], cancellationToken);
 
         return outcome switch
         {
-            ToolOutcome.Ran { Result.ExitCode: 0 or 1 } ran => Answer(ran),
+            ToolOutcome.Ran { Result: { ExitCode: 0 or 1, StandardOutput.Length: > 0 } } ran => Answer(ran),
+            ToolOutcome.Ran { Result: { ExitCode: 0 or 1 } empty } => Failure(
+                $"The check ended with code {empty.ExitCode} and wrote no verdict. A pinned tool that is no longer restored ends this way: "
+                + "restore it (docs/mcp.md#restore-the-tool)."),
             ToolOutcome.Ran ran => Failure(
                 ran.Result.StandardError.Length > 0
                     ? ran.Result.StandardError

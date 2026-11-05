@@ -31,13 +31,13 @@ consumer through a local tool manifest; a global install is the second
 documented path, for a shell (`0001-F2` decision 0009). `src/tool` is the one
 project that packs the tool. `src/codeanalysis` packs the companion
 `Specht.CodeAnalysis` analyzer package; `IsPackable=false` elsewhere. `src/mcp`
-packs `specht.mcp`, command `specht-mcp`: an MCP server that is a program of its
+has the packable project `specht.mcp`, command `specht-mcp`: an MCP server that is a program of its
 own, not a `specht` command, and runs the repository's pinned `specht`
 ([ADR-0031](.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md), `0132-F3`).
 Built: the host over standard input and output (`0329`), the pinned-tool
 resolution (`0361`) and the `check` tool (`0330`). Not built: the rule, rule-list
-and manifest tools (`0331`) and `docs/mcp.md` (`0332`). It is not released; it
-releases on the tool's one `v<version>` tag.
+and manifest tools (`0331`) and `docs/mcp.md` (`0332`). It is not yet in the `Pack` or release targets and is not released; it
+will release on the tool's one `v<version>` tag.
 
 `README.md` is the public front page: what the tool is, why, how to install and
 use it, and the layout; the reference pages are under `docs/`. The design
@@ -76,7 +76,7 @@ NUKE drives everything. `specht.slnx` is the solution.
 ./build.sh             # Default = Compile + CodeAnalysis + Test
 ./build.sh Format      # verify-only - fails on a diff
 ./build.sh CodeAnalysis # pack the current analyzer and check all three source projects
-./build.sh Pack        # specht.tool, Specht.CodeAnalysis and specht.mcp packages
+./build.sh Pack        # specht.tool and Specht.CodeAnalysis packages (specht.mcp is not yet in Pack)
 ./build.sh Specht   # specht, on this repository's own .spec/ tree
 ```
 
