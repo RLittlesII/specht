@@ -1,7 +1,7 @@
 id: "0289"
 type: spike
 title: Analyze large HTML comment chunks in specification markdown
-status: ready
+status: in-progress
 value: 2
 risk: 2
 parent: null
@@ -11,7 +11,7 @@ spikes: []
 spec: null
 claims: []
 created: "2026-10-24"
-updated: "2026-10-27"
+updated: "2026-11-06"
 closed: null
 summary: |
   Specify opt-in detection of bulky amendment comments in specification
