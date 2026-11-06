@@ -1,0 +1,47 @@
+id: "0367"
+type: task
+title: Lessons, sign-off rows and manifest-named sections in the facts
+
+status: ready
+
+value: 3
+risk: 3
+
+parent: "0132"
+children: []
+
+depends_on: ["0364", "0365"]
+spikes: []
+
+spec: src/tool/Features/Facts/.spec/README.md
+
+claims:
+  - B-009
+  - B-010
+  - B-016
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As a maintainer reviewing work I want each Feature's § 10 lessons and deltas entries and § 12 sign-off rows in the facts, read under the headings, roles and table headers the pinned manifest names, so that a consumer who renamed them gets the same answer.
+
+  A § 10 entry is a list item's text or a table row's cells (B-009). Only the `sections`, `roles` and `tables` keys the shipped manifest declares are read; the constraints, out-of-scope, lessons and deltas and open-questions table headers stay the engine's (C-7). Every section is found as the check finds it (C-1).
+
+  Waits on 0364: the command and the document it adds members to. Waits on 0365: B-016's Outline renames the claims and constraints headings, which 0365 reads.
+
+acceptance_criteria:
+  - "B-009 — a § 10 entry's line and text, as a list item or a table row"
+  - "B-010 — a sign-off row's section, status, reviewer, note and line"
+  - "B-016 — claims, constraints and sign-off rows under the headings, roles and headers the manifest names"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author's cut of the approved Feature. Rejected: B-016 split across each section's own item; one item reads every renamed heading, role and header the manifest names, and its Outline spans claims, constraints and sign-off rows.
+
+out_of_scope:
+  - "A manifest key for the constraints, out-of-scope, lessons and deltas or open-questions table headers — C-7."
+  - "The records beside a specification — B-011; 0368."
+  - "A specification's §§ 1, 2 and 6 to 8 as text — § 5 row 8."
