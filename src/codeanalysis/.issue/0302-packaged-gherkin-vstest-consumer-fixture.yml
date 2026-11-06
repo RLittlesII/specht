@@ -1,17 +1,17 @@
 id: "0302"
 type: test
 title: "Prove native Gherkin claims with xUnit v2 VSTest evidence in one packaged consumer"
-status: ready
+status: blocked
 value: 4
 risk: 3
 parent: "0201"
 children: []
-depends_on: []
+depends_on: ["0409", "0410"]
 spikes: []
 spec: src/codeanalysis/.spec/README.md
 claims: ["B-002", "B-016", "B-017", "B-025", "B-026", "B-027"]
 created: "2026-10-25"
-updated: "2026-10-26"
+updated: "2026-11-06"
 closed: null
 summary: |
   Consumer request #256 asks for one packaged consumer integration fixture that
@@ -64,6 +64,23 @@ decisions:
     required-case scopes partitioned across several test projects (0201-F3
     B-021, 0201-F5 B-021) are not combined here. Rejected: a second test project,
     which the instruction does not ask for.
+  - |
+    2026-11-06, repository owner, recorded by spec-author: chose "Cut items,
+    block 0302". The fixture is built and committed on branch
+    `0302/packaged-gherkin-vstest-fixture` at commit `38670c0d`
+    (`test/gherkin.vstest.fixture/`,
+    `test/build.tests/GherkinVsTestConsumer.Integration.Tests.cs`); 27 of its
+    32 cases pass and 5 fail on three product gaps. One: `specht evidence`
+    rejects a Gherkin-only manifest (exit 3, `invalidInput`), because the
+    reconciler reads claims only from Markdown claims tables. Two: the gate
+    needs a current export for every declared project, including the
+    production project enforcement requires to be declared, which no collector
+    exports. Both are 0409, under 0201-F5 decision 0007 and OQ-5. Three: a
+    test method with no `verifies` is never recognised, so the mandatory role
+    never reports; bug 0410. This item waits on both and is not widened.
+    Rejected: building the three fixes here. The "0201-F7 B-030 - the gate
+    reads the native claims" criterion is proved through the 0201-F5 claim
+    0409 adds; that claim id joins the criterion once it exists.
 out_of_scope:
   - "Reqnroll and scenario records: 0201-F4 is an optional input this fixture does not use."
   - "Planned scenarios and Examples blocks reaching the gate: 0201-F5 OQ-3."
