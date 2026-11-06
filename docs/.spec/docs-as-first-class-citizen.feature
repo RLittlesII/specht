@@ -5,8 +5,8 @@ Feature: Docs as first-class citizen
 
   # Mechanism only: doc-comment enforcement on the public surface, a
   # generated API reference as a build artifact, and one hand-written
-  # command-line reference page held to the tool's own help. The site is
-  # 0002-F2, deferred.
+  # command-line reference page held to the tool's own help. The site and
+  # its publish step are 0002-F2's.
 
   @B-001
   Scenario: An undocumented public member fails the build
@@ -39,7 +39,6 @@ Feature: Docs as first-class citizen
   Scenario: Documentation generation publishes nothing
     When the documentation target runs
     Then nothing is published
-    And no site framework is restored or invoked
 
   @B-005
   Scenario: The default build runs documentation enforcement and generation

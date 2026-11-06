@@ -1,0 +1,70 @@
+id: "0404"
+type: task
+title: Fail the build on an undocumented public member of the engine and the tool
+
+status: ready-for-architecture
+
+value: 4
+risk: 2
+
+parent: "0002"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: docs/.spec/README.md
+
+claims:
+  - B-001
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  A public type or member of `src/specht` or `src/tool` with no XML doc
+  comment fails the build with `CS1591` as an error, and only the public
+  surface is held to it (C-3).
+
+  Today the opposite holds. `Directory.Build.props` turns on
+  `GenerateDocumentationFile` and adds `1591` to `NoWarn` together, and only
+  when `SpechtCodeAnalysisPackageVersion` is set, for `analyzers`, `specht`
+  and `tool`. Outside that condition no documentation file is generated; inside
+  it `CS1591` is suppressed. `TreatWarningsAsErrors` is already on for every
+  project, so the warning becomes an error once the two projects generate the
+  file and stop suppressing it.
+
+  The scope includes writing the missing XML doc comments on every public
+  type and member of the two projects, so the build stays green in the same
+  pull request. Each comment says what the type or member does; it is not a
+  restatement of its name. Narrowing a type to `internal` instead of
+  documenting it changes the engine's contract (A-5) and is `implementer`'s
+  call in § 7, not a way round the claim.
+
+  Value 4 and risk 2 are spec-author's: the owner's requirement, and a build
+  setting plus comment-writing across about 170 files with a known end state.
+
+  Expected files: `Directory.Build.props`; `src/specht/**/*.cs` and
+  `src/tool/**/*.cs` (doc comments only); the tests and step definitions for
+  B-001; § 6 to § 9 of the specification by their owners.
+
+acceptance_criteria:
+  - "B-001 — `CS1591` as an error on the public surface of `src/specht` and `src/tool`"
+  - "Constraints preserved: 0002-F1 C-3 — no enforcement on internal or private members, and no blanket `TreatWarningsAsErrors` change."
+  - "No behaviour of the tool changes; the golden baseline reports are unchanged."
+  - "`./build.sh Format`, `./build.sh Specht` and `./build.sh` pass."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's ruling of that date
+    lifting `0002-F2`'s deferral, which the owner asked to be cut beside
+    `0002-F1`'s remaining claims. The cut follows epic `0002`'s former
+    candidate task `0002-01`. Not an owner ruling.
+
+out_of_scope:
+  - "The API reference and its NUKE target — 0405."
+  - "The default build running enforcement and generation — 0405 and 0406 (B-005)."
+  - "Doc comments on `src/analyzers`, `src/codefixes`, `src/codeanalysis`, `src/mcp`, the tests and `.build` — A-5 names only `src/specht` and `src/tool`."
+  - "Any change to what the tool does."
