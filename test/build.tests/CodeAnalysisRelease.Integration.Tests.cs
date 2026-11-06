@@ -103,24 +103,75 @@ public sealed class CodeAnalysisReleaseIntegrationTests
     }
 
     [Fact]
-    public async Task PushReleasePackages_WhenRunOnATagPush_ShouldPushBothPackagesToNuGetOrgWithTheIssuedKey()
+    public async Task PushReleasePackages_WhenRunOnATagPush_ShouldPushAllThreePackagesToNuGetOrgWithTheIssuedKey()
     {
         if (OperatingSystem.IsWindows())
         {
             Assert.Skip("The release job runs on Ubuntu.");
         }
 
+        // Given
         using var fixture = new ReleaseFixture();
         fixture.WritePackages();
+
+        // When
         var (ExitCode, Output) = await fixture.RunTarget("PushReleasePackages", "push");
+
+        // Then
         ExitCode.Should().Be(0, Output);
         var pushes = File.ReadAllLines(fixture.DotNetLog);
-        pushes.Should().HaveCount(2).And.AllSatisfy(static push => push.Should()
+        pushes.Should().HaveCount(3).And.AllSatisfy(static push => push.Should()
             .StartWith("nuget push ")
             .And.Contain("--source https://api.nuget.org/v3/index.json")
             .And.Contain("--api-key fixture-key"));
         pushes.Should().ContainSingle(static push => push.Contains("specht.tool.1.2.3.nupkg", StringComparison.Ordinal))
-            .And.ContainSingle(static push => push.Contains("Specht.CodeAnalysis.1.2.3.nupkg", StringComparison.Ordinal));
+            .And.ContainSingle(static push => push.Contains("Specht.CodeAnalysis.1.2.3.nupkg", StringComparison.Ordinal))
+            .And.ContainSingle(static push => push.Contains("specht.mcp.1.2.3.nupkg", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task PushReleasePackages_WhenTheMcpPackageIsMissing_ShouldFailBeforePushingAnyPackage()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("The release job runs on Ubuntu.");
+        }
+
+        // Given
+        using var fixture = new ReleaseFixture();
+        fixture.WritePackages();
+        File.Delete(Path.Combine(fixture.Root, ".artifacts", "nupkg", "specht.mcp.1.2.3.nupkg"));
+
+        // When
+        var (ExitCode, Output) = await fixture.RunTarget("PushReleasePackages", "push");
+
+        // Then
+        ExitCode.Should().NotBe(0, Output);
+        Output.Should().Contain("Missing release package specht.mcp.1.2.3.nupkg");
+        File.Exists(fixture.DotNetLog).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Pack_WhenRun_ShouldPackTheToolTheAnalyzerAndTheMcpProjects()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("The release job runs on Ubuntu.");
+        }
+
+        // Given
+        using var fixture = new ReleaseFixture();
+
+        // When
+        var (ExitCode, Output) = await fixture.RunTarget("Pack", "push", skip: "Build");
+
+        // Then
+        ExitCode.Should().Be(0, Output);
+        var packs = File.ReadAllLines(fixture.DotNetLog).Where(static line => line.StartsWith("pack ", StringComparison.Ordinal)).ToArray();
+        packs.Should().HaveCount(3)
+            .And.ContainSingle(static pack => pack.Contains(Path.Combine("src", "tool", "tool.csproj"), StringComparison.Ordinal))
+            .And.ContainSingle(static pack => pack.Contains(Path.Combine("src", "codeanalysis", "codeanalysis.csproj"), StringComparison.Ordinal))
+            .And.ContainSingle(static pack => pack.Contains(Path.Combine("src", "mcp", "mcp.csproj"), StringComparison.Ordinal));
     }
 
     [Theory]
@@ -245,6 +296,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             Directory.CreateDirectory(Path.Combine(Root, ".nuke"));
             Directory.CreateDirectory(Path.Combine(Root, "src", "tool"));
             Directory.CreateDirectory(Path.Combine(Root, "src", "codeanalysis"));
+            Directory.CreateDirectory(Path.Combine(Root, "src", "mcp"));
             Directory.CreateDirectory(Path.Combine(Root, "bin"));
             Directory.CreateDirectory(Path.Combine(Root, "runner"));
             Directory.CreateDirectory(Path.Combine(Root, "tools"));
@@ -256,6 +308,9 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             File.WriteAllText(
                 Path.Combine(Root, "src", "codeanalysis", "codeanalysis.csproj"),
                 "<Project><PropertyGroup><PackageId>Specht.CodeAnalysis</PackageId></PropertyGroup></Project>");
+            File.WriteAllText(
+                Path.Combine(Root, "src", "mcp", "mcp.csproj"),
+                "<Project><PropertyGroup><PackageId>specht.mcp</PackageId></PropertyGroup></Project>");
             var gh = Path.Combine(Root, "bin", "gh");
             File.WriteAllText(gh, """
                 #!/bin/sh
@@ -290,10 +345,11 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             Directory.CreateDirectory(packages);
             File.WriteAllText(Path.Combine(packages, $"specht.tool.{_version}.nupkg"), "tool");
             File.WriteAllText(Path.Combine(packages, $"Specht.CodeAnalysis.{_version}.nupkg"), "analysis");
+            File.WriteAllText(Path.Combine(packages, $"specht.mcp.{_version}.nupkg"), "mcp");
         }
 
         public async Task<(int ExitCode, string Output)> RunTarget(string target, string eventName, string existingRelease = "",
-            string tagCommit = Commit, bool createFails = false)
+            string tagCommit = Commit, bool createFails = false, string? skip = null)
         {
             using var process = new Process();
             process.StartInfo = new ProcessStartInfo("dotnet")
@@ -308,6 +364,12 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             process.StartInfo.ArgumentList.Add(Path.GetFullPath(Root));
             process.StartInfo.ArgumentList.Add("--target");
             process.StartInfo.ArgumentList.Add(target);
+            if (skip is not null)
+            {
+                process.StartInfo.ArgumentList.Add("--skip");
+                process.StartInfo.ArgumentList.Add(skip);
+            }
+
             process.StartInfo.Environment["NUKE_TELEMETRY_OPTOUT"] = "1";
             process.StartInfo.Environment["GITHUB_ACTIONS"] = "true";
             process.StartInfo.Environment["GITHUB_EVENT_NAME"] = eventName;
