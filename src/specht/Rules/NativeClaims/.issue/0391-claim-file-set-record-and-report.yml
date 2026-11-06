@@ -1,0 +1,61 @@
+id: "0391"
+type: task
+title: Give a claim file set its record, a single identity and a report entry
+
+status: ready
+
+risk: 3
+
+parent: "0387"
+children: []
+
+depends_on: ["0390"] # 0390 builds the claim file sets this item gives a record, an identity and a report entry
+spikes: []
+
+spec: src/specht/Rules/NativeClaims/.spec/README.md
+
+claims:
+  - B-003
+  - B-017
+  - B-026
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  A native Feature as the rest of the check sees it: its frontmatter,
+  lifecycle and edges from the set's `record`, held to the Feature
+  schema by `SPEC1001` to `SPEC1003`, or current with no edge when the
+  set has none (B-003); its identity declared once across sets and
+  layouts, `SPEC3002` otherwise (B-017); and its place in the summary
+  and the report (B-026).
+
+  Risk 3: a record is a specification document missing its claims
+  table, so discovery must not also read it as a layout's Feature, and
+  the report path of a record-less Feature is its first claim file in
+  ordinal order.
+
+  Waits on 0390, for the sets.
+
+acceptance_criteria:
+  - "B-003 — a record supplies frontmatter, lifecycle and edges, held by SPEC1001 to SPEC1003; none means current, no edge"
+  - "B-017 — one identity in two sets, or a set and a layout's specification: SPEC3002 at each"
+  - "B-026 — counted among `features`; listed by its record, or its first claim file"
+  - "Relative paths only (C-2); no file written (C-6)"
+  - "`0001-F7` B-154 — same report under 0.3.0 and 0.3.1 for a tree without `claim.source: gherkin`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's rulings of
+    2026-11-06 (OQ-2 to OQ-9 accepted; OQ-5 "0.3.1 patch, amend C-11",
+    `0001-F7` decision 0022). Two claims leave the proposed split:
+    B-001 to 0390, where the reader's scenarios need it, and B-022 to
+    0396, since `SPEC024` (`0001-F6` B-013), the rule it holds, is a
+    working name no item builds. The open Discovery and Report items
+    are not prerequisites. Value omitted, inheriting 0387's.
+
+out_of_scope:
+  - "Items, children and spikes for a native Feature - § 5 row 13."
+  - "A claim file as a stray companion, B-022 - 0396."

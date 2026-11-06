@@ -1,0 +1,66 @@
+id: "0396"
+type: task
+title: Hold native claims to SPEC024, the matrix rules and the trace
+
+status: blocked
+
+risk: 3
+
+parent: "0387"
+children: []
+
+depends_on: ["0391", "0336", "0337"] # 0391 gives a set its record and its matrix; 0336 and 0337 are the 0001-F12 rules B-023 runs
+spikes: []
+
+spec: src/specht/Rules/NativeClaims/.spec/README.md
+
+claims:
+  - B-022
+  - B-023
+  - B-024
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  Native claims under the rules and the command still to be built: a
+  claim file is not a stray companion to `SPEC024` (B-022); a record's
+  matrix holds one row per native claim, and the `0001-F12` rules
+  resolve its rows against the set's claim files (B-023); and without a
+  matrix nothing of `0001-F12` reports and `specht trace` lists each
+  claim as `none` (B-024).
+
+  Blocked: no item builds `SPEC024` (`0001-F6` B-013), a working name,
+  or the trace command (`0001-F13`, approved, with no items cut), so no
+  test of B-022 or of B-024's trace half can fail yet. When those items
+  are cut, they join `depends_on`. It also waits on 0336 and 0337
+  (`0001-F12`), open, which plan to add their rules to schema `0.3.0`,
+  now published.
+
+  Risk 3: three other Features' rules and a command read the
+  catalogue, and each must see a native claim as the claim a § 3 row
+  becomes (C-5).
+
+acceptance_criteria:
+  - "B-022 — a .feature file a set's glob matches is not reported by SPEC024"
+  - "B-023 — a record's matrix: SPEC4004 one row per native claim; `0001-F12` rules resolve against the set's claim files"
+  - "B-024 — no record or no matrix: no `0001-F12` rule and no SPEC4004 reports; the trace lists each claim as `none`"
+  - "One catalogue, no second parse of a claim file in the trace (C-5)"
+  - "`0001-F7` B-154 — same report under 0.3.0 and 0.3.1 for a tree without `claim.source: gherkin`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's rulings of
+    2026-11-06 (OQ-2 to OQ-9 accepted; OQ-5 "0.3.1 patch, amend C-11",
+    `0001-F7` decision 0022). B-022 moves here from the proposed 0391,
+    because `SPEC024` is unbuilt and has no item. 0338 is not a
+    prerequisite: B-023 and B-024 read the rules, not the guard below
+    0.3.0. Status blocked, since two of its dependencies have no item
+    to name. Value omitted, inheriting 0387's.
+
+out_of_scope:
+  - "How a § 9 row's scenario and test names resolve - § 5 row 10."
+  - "What `specht trace` prints beyond `none` and the scenario count - § 5 row 11."
+  - "Test names carried on scenarios - § 5 row 9."

@@ -1,0 +1,75 @@
+id: "0388"
+type: task
+title: Cut schema 0.3.1, where an opt-in addition is a patch
+
+status: ready
+
+value: 4
+risk: 3
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-066
+  - B-154
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As the maintainer of `0001-F16`, I want a schema version above the
+  published `0.3.0` that differs from it only in its patch, so that
+  native Gherkin claims, an addition no tree has to set, ship without
+  a `0.minor` step (decision 0022).
+
+  The cut copies `0.3.0` through 0189's target (B-094 to B-100) and
+  locks it through 0188's. `0.3.1` adds no key and no rule id at the
+  cut; `0001-F16`'s items add them, each with a relock, while no
+  published package carries `0.3.1` (C-17; decision 0014). This item
+  also lands B-066 as amended and B-154, the version-number checks the
+  ruling changes.
+
+  Risk 3: `0.3.0` is published and must stay byte-identical (C-1);
+  the B-066 check must tell an opt-in rule from one a tree can meet
+  without the new key, whose mechanism is § 7 design; and this
+  repository's live `.specht/` and pin move to `0.3.1` in the same
+  pull request, because `0001-F4` B-004 fails from the cut until they
+  do (the precedent is 0339, in 0321's pull request).
+
+  Waits on nothing open: 0188 and 0189 are done. No parent, as 0321
+  has none; value 4 is the value of `0001-F16`, whose items wait on it.
+
+acceptance_criteria:
+  - "B-066 — a patch step below 1.0.0 accepted only when every added rule id is an opt-in addition; the bound @B-066 scenario reworded and rebound"
+  - "B-154 — a tree checked under 0.3.0 and 0.3.1 gives the same report, the schema version aside"
+  - "0.3.1 cut through 0189's target (B-094 to B-100) and locked through 0188's; relocked only as C-17 and decision 0014 allow"
+  - "0.1.0, 0.2.0, 0.2.1 and 0.3.0 byte-identical and their lock entries unchanged (C-1)"
+  - "This repository's live `.specht/` equals 0.3.1 and its pin moves to 0.3.1 in the same pull request (`0001-F4` B-004)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's ruling of
+    2026-11-06 answering `0001-F16` OQ-5, "0.3.1 patch, amend C-11"
+    (decision 0022). spec-author's cut, not an owner ruling: one item
+    for the cut, the pin move and the two claims the ruling changed,
+    with no parent, following 0321. The pin move is a criterion here,
+    not an item of its own as 0339 was, because no `0055-F1` claim is
+    new: the move only keeps `0001-F4` B-004 true across the cut.
+  - |
+    2026-11-06, spec-author: from `1.0.0` on, an opt-in addition is
+    OQ-74, open; B-040 is unchanged, and this item proves nothing above
+    `1.0.0`.
+
+out_of_scope:
+  - "The `claim` members and the three rules of `0001-F16` - items 0389 to 0395."
+  - "Writing the cut version's rule vocabulary - § 5 #25; by hand."
+  - "Relocking a version a package has carried - C-17."
+  - "An opt-in addition from schema 1.0.0 on - OQ-74."

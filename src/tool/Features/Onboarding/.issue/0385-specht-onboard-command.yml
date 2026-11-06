@@ -1,0 +1,67 @@
+id: "0385"
+type: task
+title: The `specht onboard` command and the terminal report
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0384"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Onboarding/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-004
+  - B-005
+  - B-006
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  The command `specht onboard [--root <dir>] --output <path>` (decision
+  0002): it runs the check once and prints, in the terminal, every finding of
+  that run with its rule explained, a summary by rule and a total, or that no
+  findings were reported. The check command gains no option and keeps its
+  output and exit code. `--output` is the command's option here; 0386
+  writes its file.
+
+  Risk 3: a new command in the command-line surface, so its help and
+  `docs/cli.md` move together (`0002-F1` B-006 to B-008); B-002's explanation
+  comes from the pinned version's rule definitions, the same the check ran
+  (A-2), not from text written for this command; and the command's exit codes
+  are OQ-2, open.
+
+  Waits on no open item: the check it runs is `0001-F2`'s, whose items are
+  done, and the rule text is 0040's, done.
+
+acceptance_criteria:
+  - "B-001 — one check run, every finding with rule id, severity, path, line, identifier"
+  - "B-002 — the rule explained, with the message and evidence"
+  - "B-004 — findings by rule, and a total"
+  - "B-005 — a clean check says no findings"
+  - "B-006 — the check's output and exit code unchanged"
+  - "Derived from one check result, deterministic (C-1); no absolute path (C-4)."
+  - "`docs/cli.md` gives `onboard` and each option its help lists an entry (`0002-F1` B-006 to B-008), held to the help."
+  - "OQ-2 resolved and its answer claimed before this item is done."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut with the five claims the terminal report
+    shows, on the repository owner's ruling on OQ-1 (decision 0002). B-003,
+    the same findings in the Markdown file, goes to 0386, which writes what
+    this item prints. Value omitted, inheriting 0384's.
+
+out_of_scope:
+  - "The Markdown file at `--output` (B-003) — 0386."
+  - "An onboarding option on the check command — § 5 row 4."
+  - "Fixing, suppressing or regrading findings — § 5 row 2."
+  - "Comparing findings across runs — § 5 row 3."
