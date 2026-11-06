@@ -7,15 +7,6 @@
 # Open finish lines name child items explicitly; Feature containers remain
 # delivery summaries so newly cut children do not silently enlarge a release.
 
-0.5.0
-# MCP first release: the owner, 2026-11-01. The host 0132-F3, the four
-# 0132-F4 answers whose commands are built, and docs/mcp.md.
-0329
-0361
-0330
-0331
-0332
-
 0.6.0
 # Pull-request surface: epic 0142, whose Features are not yet specified; a
 # Feature's items join this list once cut.
