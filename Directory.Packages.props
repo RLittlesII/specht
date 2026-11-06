@@ -69,7 +69,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
   </ItemGroup>
 
-  <ItemGroup Label="VSTest evidence fixture only">
+  <ItemGroup Label="VSTest evidence fixtures only">
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
