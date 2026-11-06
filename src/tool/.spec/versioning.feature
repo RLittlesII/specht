@@ -625,6 +625,27 @@ Feature: Schema versioning
     When their numbers are compared
     Then the higher one's minor is greater than the lower one's
 
+  @B-066
+  Scenario: Before 1.0.0 an opt-in rule may come in a patch
+    Given two schema versions the tool ships, both below version 1.0.0, the higher one greater in its patch alone
+    And every rule the higher one holds and the lower one does not reports only when a manifest sets a key the lower one does not define
+    When their numbers are compared
+    Then the numbers are accepted
+
+  @B-066 @boundary
+  Scenario: Before 1.0.0 a rule an existing tree can meet is not a patch
+    Given two schema versions the tool ships, both below version 1.0.0, the higher one greater in its patch alone
+    And the higher one holds a rule that reports on a tree whose manifest sets no key the lower one does not define
+    When their numbers are compared
+    Then the numbers are refused
+
+  @B-154
+  Scenario: An opt-in addition in a patch changes no report
+    Given a tree the check runs on under a shipped schema version below 1.0.0
+    And the tool ships a version higher than it in its patch alone
+    When the tree is checked under each of the two versions
+    Then the two reports are the same, the schema version each names aside
+
   @B-041
   Scenario: Listing names every shipped version
     Given the tool ships schema versions 0.1.0 and 0.2.0

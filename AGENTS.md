@@ -154,9 +154,11 @@ The layout and the three part options are built (items `0185` and `0186`).
 
 `schemaVersion` is a `major.minor.patch` schema version, numbered apart from
 the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
-key means it. A patch changes no tree's verdict; from schema `1.0.0` on a minor
-only accepts more and a major can fail a tree that passed, and before it a
-`0.minor` step can fail one too. A published version is never changed in
+key means it. A patch changes no verdict of a tree the lower version accepts;
+from schema `1.0.0` on a minor only accepts more and a major can fail a tree
+that passed, and before it a `0.minor` step can fail one too, while an opt-in
+addition - an optional key, and rules that report only when it is set - is a
+patch (`0001-F7` decision 0022). A published version is never changed in
 place; from schema `1.0.0` on it is in every later tool, and before it a later
 tool may stop shipping a `0.x.y` (`0001-F7` C-1, C-11, decision 0007). A pin is
 exact. `specht schema pin <version>` moves it to
@@ -248,7 +250,8 @@ for the manifest's exact pin without running a check. It is built (item `0040`).
   the pin command, which changes only `schemaVersion` in the manifest
   (`0001-F7` decision 0005), the set command, which changes only one rule's
   level in the manifest's `rules` (`0001-F11` decision 0001), the caller-named
-  `--report` file and, from epic
+  `--report` file, the caller-named `onboard --output` file (`0001-F15`
+  decision 0002) and, from epic
   `0101`, `format`, which only moves whole table rows and frontmatter keys
   (brief § 9; `0101-F5` decision 0001). `init` never overwrites.
 - **Deterministic and offline.** The check never touches the network and never
@@ -258,8 +261,9 @@ for the manifest's exact pin without running a check. It is built (item `0040`).
   gives the same report. `generatedAtUtc` is not in the report for this reason.
 - **The rule vocabulary is fixed per published schema version.** A new rule
   id enters a version no published package carries, in place, or else a new
-  schema version - a major from schema `1.0.0` on, at least a `0.minor` before
-  it (`0001-F7` C-11) - after brief § 8 step 6. From schema `0.3.0` a rule id
+  schema version - a major from schema `1.0.0` on, and before it a `0.minor`,
+  or a patch when the rule reports only under an opt-in key (`0001-F7` C-11,
+  decision 0022) - after brief § 8 step 6. From schema `0.3.0` a rule id
   is `SPEC` and four digits, the thousands digit its group; `0.1.0`, `0.2.0`
   and `0.2.1` keep their three-digit ids ([ADR-0029](.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md); `0001-F1` C-5).
 

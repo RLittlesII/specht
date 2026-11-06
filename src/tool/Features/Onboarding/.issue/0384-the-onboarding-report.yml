@@ -1,0 +1,71 @@
+id: "0384"
+type: feature
+title: The onboarding report
+
+status: ready-for-architecture
+
+value: 3
+risk: 2
+
+parent: "0001"
+children: ["0385", "0386"]
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Onboarding/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As a repository owner adopting Specht, I want `specht onboard` to explain
+  every finding of one check run in the terminal and in a Markdown file at
+  the path I name, so that I understand what Specht found before I choose
+  what to address.
+
+  Risk 2: the command reuses the check (`0001-F2`) and leaves its output and
+  exit code as they are (B-006, C-2); one check run feeds both outputs (B-001,
+  B-003, C-1); what is new is a command, rule explanations from the pinned
+  version's rule definitions (A-2, B-002), and one file write (C-3).
+
+  The first child is 0385, the command and the terminal report; the second is
+  0386, the Markdown file, after 0385.
+
+  Waits on no open item: every `0001-F2` check item under
+  `src/tool/Features/Check/.issue/` is done, and so is 0040, the rule text
+  `--explain` prints.
+
+acceptance_criteria:
+  - "B-001 — one check run, every finding (0385)"
+  - "B-002 — each finding's rule explained, with its message and evidence (0385)"
+  - "B-003 — the same findings in the terminal and the Markdown file (0386)"
+  - "B-004 — findings by rule, and a total (0385)"
+  - "B-005 — a clean check says no findings (0385)"
+  - "B-006 — the check's output and exit code unchanged (0385)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's approval of B-001
+    to B-006 and ruling on OQ-1 (decision 0002): `specht onboard [--root
+    <dir>] --output <path>` prints the report and writes it as Markdown at
+    `--output`; the check is untouched. Rejected by the owner: an HTML file;
+    a flag on the check, `specht --onboarding <path>`. value 3 follows the
+    specification's priority: med, as item 0224 does. Split in two: the
+    command with the terminal report, then the file, which writes what the
+    terminal already shows. Rejected: one item for the whole Feature, which
+    holds the terminal report behind the file write. OQ-2, the command's exit
+    codes, is open and is 0385's to settle before it is done.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

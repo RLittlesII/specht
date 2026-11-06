@@ -1,0 +1,64 @@
+id: "0395"
+type: task
+title: Report an unreadable claim file or set, SPEC027, in schema 0.3.1
+
+status: ready
+
+risk: 3
+
+parent: "0387"
+children: []
+
+depends_on: ["0390"] # 0390 builds the claim file sets and reads their files
+spikes: []
+
+spec: src/specht/Rules/NativeClaims/.spec/README.md
+
+claims:
+  - B-014
+  - B-015
+  - B-016
+  - B-018
+  - B-019
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  One rule for a claim file or set the reader cannot take claims from:
+  a `# language:` other than `en` (B-014), no `Feature:` line (B-015),
+  a glob matching no file (B-016), a file two sets match (B-018), and a
+  Feature-level tag naming another identity under
+  `claim.scopes.featureTag` (B-019). Each records no claim from what it
+  reports.
+
+  Risk 3: five conditions, two of them across sets, and B-016 reports
+  at a glob as written, a path that names no file.
+
+  Waits on 0390, for the sets and their files; nothing of 0391 is
+  read.
+
+acceptance_criteria:
+  - "B-014 — `# language:` other than `en`: reported at that line, no claim from the file"
+  - "B-015 — no `Feature:` line: reported at line 0, no claim from the file"
+  - "B-016 — a set's glob matches no file: reported at line 0, path the glob as written"
+  - "B-018 — one file matched by two sets: reported at that file, line 0, its claims under neither"
+  - "B-019 — under `claim.scopes.featureTag`, a Feature-level tag naming another identity: reported at that tag's line"
+  - "Its id the next free one in its ADR-0029 group, on the owner's approval in this item's pull request; working name SPEC027 (OQ-5)"
+  - "`0001-F7` B-014 — the id joins 0.3.1's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.0 unchanged (`0001-F7` C-1)"
+  - "`0001-F7` B-066 — the id is an opt-in addition: it reports only when `claim.source` is set"
+  - "`0001-F7` B-154 — same report under 0.3.0 and 0.3.1 for a tree without `claim.source: gherkin`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's rulings of
+    2026-11-06 (OQ-2 to OQ-9 accepted; OQ-5 "0.3.1 patch, amend C-11",
+    `0001-F7` decision 0022, the level error, the id undecided). It
+    waits on 0390, not the proposed 0391: its claims read only the sets
+    and their files, not a record or an identity check. Value omitted,
+    inheriting 0387's.
+
+out_of_scope:
+  - "Claim files in a Gherkin language other than English - § 5 row 8."

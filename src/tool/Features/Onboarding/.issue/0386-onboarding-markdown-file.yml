@@ -1,0 +1,50 @@
+id: "0386"
+type: task
+title: Write the onboarding report as Markdown at `--output`
+
+status: ready-for-architecture
+
+risk: 2
+
+parent: "0384"
+children: []
+
+depends_on: ["0385"]
+spikes: []
+
+spec: src/tool/Features/Onboarding/.spec/README.md
+
+claims:
+  - B-003
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  `specht onboard` writes the report as a Markdown file at the path
+  `--output` names, with the same complete set of findings the terminal
+  shows (decision 0002).
+
+  Risk 2: one write into the consumer's tree, the caller-named file and
+  nothing else (C-3; AGENTS.md § "Invariants"); the file and the terminal
+  must not drift apart, so both come from the one check result (C-1).
+
+  Waits on 0385: the file holds what that command prints from one check run.
+
+acceptance_criteria:
+  - "B-003 — the same complete findings in the terminal and the Markdown file"
+  - "Writes only the file at `--output` (C-3); no absolute path in it (C-4)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut with B-003 alone, on the repository owner's
+    ruling on OQ-1 (decision 0002) that the standalone file is Markdown at
+    the caller-named `--output` path. Rejected by the owner: an HTML file.
+    Value omitted, inheriting 0384's.
+
+out_of_scope:
+  - "The command and the terminal report — 0385."
+  - "An HTML file, or any format but Markdown — § 5 row 5."
+  - "Fixing, suppressing or regrading findings — § 5 row 2."

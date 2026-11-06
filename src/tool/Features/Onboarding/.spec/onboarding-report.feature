@@ -25,8 +25,9 @@ Feature: The onboarding report
   @B-003
   Scenario: The terminal and file reports contain the same findings
     Given a repository root whose check reports findings
-    When an onboarding report is requested
-    Then both outputs contain the complete set of findings from the check
+    When an onboarding report is requested with a path for its file
+    Then a Markdown report is written at that path
+    And the terminal report and the file contain the same complete set of findings from the check
 
   @B-004
   Scenario: The report summarizes findings by rule

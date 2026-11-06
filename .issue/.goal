@@ -41,6 +41,17 @@
 0336
 0337
 0338
+# 0001-F16, native Gherkin claims in the checker; 0388 cuts schema 0.3.1
+# under 0001-F7 for its opt-in rules (decision 0022).
+0388
+0389
+0390
+0391
+0392
+0393
+0394
+0395
+0396
 
 0.8.0
 # Review and presentation: epics 0228, 0194 and 0101. Their Features' items
@@ -51,3 +62,6 @@
 0.9.0
 # Onboarding and documentation: epics 0196 and 0002, Features 0002-F1 and
 # 0002-F2. A Feature's items join this list once cut.
+# 0001-F15, the onboarding report.
+0385
+0386

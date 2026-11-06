@@ -1,0 +1,130 @@
+id: "0387"
+type: feature
+title: Native Gherkin claims
+
+status: ready
+
+value: 4
+risk: 4
+
+parent: "0001"
+children: ["0389", "0390", "0391", "0392", "0393", "0394", "0395", "0396"]
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Rules/NativeClaims/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+  - B-029
+  - B-030
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As a maintainer whose repository keeps its claims as tags in .feature
+  files and has no specification document per Feature, I want the check
+  to build each Feature's claims from those tags when the manifest
+  selects `claim.source: gherkin`, so that the same rules hold my tree
+  without a Markdown claims table copied from the Gherkin.
+
+  Risk 4: a second claim source feeds one catalogue that the claim rules,
+  `0001-F12` and `0001-F13` all read (C-5), so its record shape is fixed
+  for three Features; the tag reading must give the analyzer's answer
+  (C-1; A-3); three new rules and the `claim` members enter schema
+  `0.3.1`, a patch, so every verdict they add is reached only under
+  `claim.source: gherkin` and a tree without it gets the report it gets
+  under `0.3.0` (C-3; `0001-F7` C-11, B-154, decision 0022).
+
+  Every child waits, through 0389, on 0388 (`0001-F7`), which cuts
+  schema `0.3.1`. 0389 adds the `claim` members; 0390 the reader and
+  the claim file sets; 0391 a set's record, identity and report entry;
+  0392 the existing rules on a native Feature; 0393 to 0395 the three
+  new rules; 0396, blocked, the claims that need `SPEC024`, the open
+  `0001-F12` rules and the trace command.
+
+acceptance_criteria:
+  - "B-001 — claims built from a set's .feature files (0390)"
+  - "B-002 — no `claim.source` or `markdown`: no verdict changes (0389)"
+  - "B-003 — a record supplies lifecycle and edges; none means current (0391)"
+  - "B-004 — a claim tag declares at its element's keyword line (0390)"
+  - "B-005 — an ordinary tag declares nothing (0390)"
+  - "B-006 — an outline declares one claim (0390)"
+  - "B-007 — a Rule declares once for its scenarios (0390)"
+  - "B-008 — one identifier on two elements, SPEC4003 at both (0392)"
+  - "B-009 — claim tag on an Examples block, SPEC026 (0394)"
+  - "B-010 — scenario with no claim, SPEC025 at warning (0393)"
+  - "B-011 — reorder and retitle keep the catalogue (0390)"
+  - "B-012 — lifecycle tags give the status (0390)"
+  - "B-013 — a planned scenario keeps its claim (0390)"
+  - "B-014 — a non-English claim file, SPEC027 (0395)"
+  - "B-015 — no Feature line, SPEC027 (0395)"
+  - "B-016 — a set matching no file, SPEC027 (0395)"
+  - "B-017 — one identity declared twice, SPEC3002 (0391)"
+  - "B-018 — a file two sets match, SPEC027 (0395)"
+  - "B-019 — a Feature-level tag that disagrees, SPEC027 (0395)"
+  - "B-020 — a record needs every section but the claims table (0392)"
+  - "B-021 — SPEC4001 and SPEC4002 leave a native Feature alone (0392)"
+  - "B-022 — a claim file is not a stray companion, SPEC024 (0396)"
+  - "B-023 — a record's matrix held to the native claims (0396)"
+  - "B-024 — no matrix: no 0001-F12 report, the trace says none (0396)"
+  - "B-025 — the scenarios that carry a claim (0390)"
+  - "B-026 — a native Feature counted and listed (0391)"
+  - "B-027 — a set's identity follows the epic grammar (0389)"
+  - "B-028 — a pin of 0.3.0 or earlier is untouched (0389)"
+  - "B-029 — an invalid claim file set exits 3 before any rule (0389)"
+  - "B-030 — the same tree gives the same output (0390)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's rulings of
+    2026-11-06 - OQ-2, OQ-3, OQ-4 and OQ-6 to OQ-9 "Accept all
+    defaults", and OQ-5 "0.3.1 patch, amend C-11" (`0001-F7` decision
+    0022). Value 4 and risk 4 as the delivering session set them;
+    risk on the basis in the summary. The rule levels stand: SPEC025
+    warning, SPEC026 and SPEC027 error. Their four-digit ids are not
+    decided; each rule item assigns the next free id in its ADR-0029
+    group, for the owner's approval in that pull request.
+  - |
+    2026-11-06, spec-author: two moves from the proposed split. B-001
+    goes to the reader, 0390, not 0391: every 0390 scenario runs the
+    check over a claim file set, so 0390 cannot pass its § 9 gate
+    without B-001, and B-001 needs the reader - as proposed, the two
+    items waited on each other. B-022 goes to 0396, not 0391: it is
+    held by `SPEC024` (`0001-F6` B-013), a working name no item builds,
+    so its test cannot fail until that rule exists. Ids 0387 to 0396
+    checked against main and the open pull requests, none open.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."
