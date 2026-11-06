@@ -103,19 +103,25 @@ None.
 
 ## Withdrawal
 
-Withdrawn 2026-10-23 by the repository owner, who directed that the analyzer
-export the claim catalogue in the evidence artifact and that the shared library
-be dropped. The facts that remove the need for it:
+Withdrawn 2026-10-23 by the repository owner, whose review comments on this
+record rejected the new assembly ("Why do we need a new assembly.") and the
+Gherkin package ("So we are adding `Specht.Claims` so we can reference a nuget
+package that parses Gherkin?!"). The owner did not direct a catalogue export.
+That direction was an agent proposal, in a reply posted through the owner's
+account on the same pull request, 2026-10-24, and recorded as the owner's call
+in 0201-F7 decision 0003. It is superseded by 0201-F7
+[decision 0004](../../src/analyzers/Bindings/Gherkin/.spec/decisions/0004-the-gherkin-claim-reader-lives-in-the-engine.md),
+2026-11-06. Corrected 2026-11-06 by spec-author; the section as first written
+is at commit `5ad5a6fe`. The facts that remove the need for the library:
 
 - [ADR-0017](0017-compiler-loaded-components-target-netstandard.md) (Accepted)
   adopts no new shared-core assembly; `Specht.Claims` would have been one.
-- `specht evidence` need not parse Gherkin. The analyzer exports the native
-  claim catalogue into the test-evidence artifact the tool already reads through
-  `src/tool/Features/Evidence/Contract/TestEvidenceArtifactReader.cs`
-  (0201-F7 decision 0003, B-030).
-- The engine needs no change for 0201-F7. `FeatureTagParser` keeps its own
-  implementation; the analyzer's reading of the same rule is held to it by a
-  characterization test (0201-F7 § 7, C-1).
+- `specht evidence` reads claim files through the engine's Gherkin claim
+  reader, which `src/tool` reaches through its existing reference to
+  `src/specht` (0201-F7 decision 0004).
+- The analyzer compiles that reader through a `<Compile Include>` link, as it
+  compiles the engine's four text-reading files (0201-F7 decision 0004, item
+  0411).
 
 The Gherkin package choice falls with the library. The analyzer's parser is
 proposed in 0201-F7 [ADR-0001](../../src/analyzers/Bindings/Gherkin/.spec/adr/0001-native-claim-source-contract.md).

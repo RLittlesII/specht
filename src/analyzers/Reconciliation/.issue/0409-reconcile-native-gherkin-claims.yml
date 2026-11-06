@@ -6,7 +6,7 @@ value: 4
 risk: 3
 parent: "0201"
 children: []
-depends_on: []
+depends_on: ["0411"]
 spikes: []
 spec: src/analyzers/Reconciliation/.spec/README.md
 claims: []
@@ -22,7 +22,10 @@ summary: |
   `invalidInput` on `.specht/manifest.json`: `EvidencePolicy` requires a mapped
   `claimsSection`, and `EvidenceReconciler.ReadClaims` reads only Markdown
   claims tables. The owner put native claims in scope (0201-F5 decision 0007,
-  OQ-3 resolved); the reconciler reads them from the artifact's `catalog`.
+  OQ-3 resolved); the reconciler reads them from the claim files through the
+  engine's Gherkin claim reader (0201-F7 decision 0004), not from the
+  artifact's `catalog`. Item 0411 moves that reader into `src/specht/Model/`,
+  so this item waits on it.
 
   The gate's project set. `EvidenceReconciler.Reconcile` needs a current export
   for every project in `codeAnalysis.projects`. Enforcement requires the
@@ -32,7 +35,7 @@ summary: |
   count is 0201-F5 OQ-5; this item proceeds on its proposed default.
 
   The § 3 claims do not exist yet. The first commit is spec-author's amendment
-  of 0201-F5 § 3, and of § 5 row 6, which decision 0007 assigns here; tests
+  of 0201-F5 § 3, and of § 5 rows 5 and 6, which decision 0007 assigns here; tests
   and code follow in the same pull request (AGENTS.md rule 1). Then `claims:`
   lists the new ids.
 
@@ -40,9 +43,9 @@ summary: |
   gate. Risk 3: a second claim source in the reconciler, beside the Markdown
   path it must leave unchanged.
 acceptance_criteria:
-  - "0201-F5 § 3 states, as new claims, that the reconciler reads native claims and planned marks from the artifact's `catalog`, and which declared projects the gate requires a current export from; § 5 row 6 agrees with 0201-F7 § 5 row 11."
+  - "0201-F5 § 3 states, as new claims, that the reconciler reads native claims and planned marks through the engine's Gherkin claim reader, and which declared projects the gate requires a current export from; § 5 rows 5 and 6 agree with 0201-F7 § 5 row 11 as 0411 amends it."
   - "0201-F5 OQ-5 is resolved in place, or the claims follow its recorded default and cite it."
-  - "A Gherkin-only manifest with no mapped claims section reconciles; 0201-F7 B-030's catalogue is the claim source."
+  - "A Gherkin-only manifest with no mapped claims section reconciles; the claim files, read through the engine's reader, are the claim source."
   - "The Markdown claim path's reports are unchanged: every claim not Withdrawn keeps its § 9 tests green."
   - "The gate counts the projects OQ-5's resolution names; under its proposed default, a consumer declaring a production project for `implements` enforcement reaches a complete default gate with only its test project's evidence."
   - "§ 9 carries a row naming a test for each new claim id."
@@ -52,8 +55,16 @@ decisions:
     2026-11-06, repository owner, recorded by spec-author: chose "Cut items,
     block 0302". This item takes both reconciler gaps; 0302 waits on it.
     Rejected: widening 0302 to build them.
+  - |
+    2026-11-06, repository owner, recorded by spec-author: on the catalogue
+    export, "This sounds like uncessary coupling. It does not sounds like what
+    I would ask you to do."; on where the Gherkin claim reader lives so the
+    tool can use it, "In the specht engine". The reconciler reads native claims
+    through the engine's reader (0201-F7 decision 0004). Rejected: reading the
+    artifact's `catalog`.
 out_of_scope:
-  - "Parsing `.feature` files in `specht evidence`: 0201-F5 § 5 row 5."
+  - "Moving the Gherkin claim reader into the engine, and 0201-F7 B-030: 0411."
+  - "A second Gherkin reader in the tool: rejected in 0201-F7 decision 0004."
   - "Recognising a test method missing `verifies`: 0410."
   - "The packaged consumer fixture itself: 0302."
   - "Scenario records and the Reqnroll producer: 0201-F4."

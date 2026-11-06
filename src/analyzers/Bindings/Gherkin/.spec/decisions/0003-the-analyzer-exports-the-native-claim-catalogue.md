@@ -43,4 +43,25 @@ the English-only reading, rest on the proposal in ADR-0001, not on this call.
 
 ## Reversal
 
-None.
+Superseded 2026-11-06 by the repository owner in
+[decision 0004](0004-the-gherkin-claim-reader-lives-in-the-engine.md): the
+Gherkin claim reader lives in the engine, the analyzer compiles it through a
+source link, and `specht evidence` reads claim files through it. The reasoning
+above is kept as it was at the time.
+
+## Correction - 2026-11-06
+
+Recorded by spec-author. The call above is not the owner's. In
+[review 5635389907](https://github.com/RLittlesII/specht/pull/260#pullrequestreview-5635389907)
+the owner's comments on ADR-0021, 2026-10-23, objected to two things only: the
+new assembly ("Why do we need a new assembly.") and the Gherkin package ("So we
+are adding `Specht.Claims` so we can reference a nuget package that parses
+Gherkin?!"). Neither asks for a catalogue export. The export design first
+appears in a reply on that pull request, 2026-10-24, written by an agent and
+posted through the owner's GitHub account. The quoted chat ("withdraw ADR-0021,
+[...] have the analyzer export the catalogue in the evidence artifact") is in no
+repository record. On 2026-11-06 the owner said of the export: "This sounds like
+uncessary coupling. It does not sounds like what I would ask you to do."
+"Decided by" above is therefore wrong; the export was an agent proposal recorded
+as a decision. B-030 and the sections that cite this record rest on it until
+item 0411 amends them.

@@ -15,6 +15,13 @@ It is the design that [decision 0002](../decisions/0002-a-claim-tag-is-the-exist
 and OQ-1 to OQ-7 leave open. It depends on no repo-wide ADR beyond ADR-0017 and
 ADR-0014. Section 7 states the keys and rules in full.
 
+Revised 2026-11-06 by `spec-author`, after
+[decision 0004](../decisions/0004-the-gherkin-claim-reader-lives-in-the-engine.md)
+superseded decision 0003: the parser of item 2 lives in the engine
+(`src/specht/Model/`) and the analyzer compiles it through a source link; item
+0411 moves it. Items 3 and 10, and the text below that rests on decision 0003,
+stand as written until that item revises them.
+
 ## Context
 
 The owner's calls fix what native input does, that a claim tag is the existing
