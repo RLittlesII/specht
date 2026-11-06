@@ -13,140 +13,136 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/RLittlesII/specht/actions/workflows/ci.yml"><img src="https://github.com/RLittlesII/specht/actions/workflows/ci.yml/badge.svg" alt="ci" /></a>
-  <img src="https://img.shields.io/badge/.NET-10-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 10" />
-  <img src="https://img.shields.io/badge/schema-v0.1.0-1e1e1e?style=flat" alt="schema v0.1.0" />
-  <img src="https://img.shields.io/badge/status-pre--release-orange?style=flat" alt="pre-release" />
+  <a href="https://www.nuget.org/packages/specht.tool"><img src="https://img.shields.io/nuget/vpre/specht.tool?logo=nuget&amp;label=NuGet" alt="specht.tool on NuGet" /></a>
+  <a href="https://github.com/RLittlesII/specht/actions/workflows/ci.yml"><img src="https://github.com/RLittlesII/specht/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="MIT" /></a>
 </p>
 
-<p align="center">
-  <a href="#quick-start">Quick start</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#layout">Layout</a> •
-  <a href="#documentation">Documentation</a> •
-  <a href="#license">License</a>
-</p>
-
----
-
-Every violation comes back with a file, a line and a rule id.
+Specht checks Markdown frontmatter and structure, matches Gherkin tags and
+traceability rows to claims, and verifies that feature dependencies agree in
+both directions. Checks run offline and report each violation with a
+repository-relative path, a line number, and a rule ID.
 
 ```text
-src/specht/.spec/README.md(214): error SPEC4004: § 9 has no row for claim B-007 [B-007]
+src/checkout/.spec/README.md(42): error SPEC4004: claim 'B-007' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists [B-007]
 ```
-
-A line ends with the identifier it is about in square brackets, and at the
-message when the violation has none.
-
-`specht` checks frontmatter against JSON Schema, the contracted sections and
-their order, claim ids, one traceability row per claim, `.feature` tags that
-resolve to claims, and dependency edges that agree from both ends.
-
-Deterministic and offline: the same tree gives the same report, and every path
-is relative to the root.
-
-**Why:** one schema and one checker, not a hand-copied set per repository. A
-repository pins `schemaVersion`, its build calls the tool, and it upgrades when
-it chooses.
-
----
 
 ## Quick start
 
-Requires the .NET 10 SDK. `specht.tool` is published on
-[nuget.org](https://www.nuget.org/packages/specht.tool). No package source entry
-is committed for it and no credential is needed to install or restore it.
-
-Every version below `1.0.0` is a prerelease, so each install command below
-opts in to prereleases.
-
-For a new repository, create the manifest and install locally:
+Install the .NET 10 SDK, then run these commands from your repository root.
+If you already have a local tool manifest, skip the first command.
 
 ```sh
 dotnet new tool-manifest --output .config
 dotnet tool install --local specht.tool --prerelease
-dotnet specht init
 dotnet specht init --all
-dotnet specht
 ```
 
-Commit `.config/dotnet-tools.json` to pin the tool version. A clone, or CI,
-runs:
+Copy `.specht/templates/feature.md` to `src/checkout/.spec/README.md` or another
+feature directory. Fill in the specification and put its `.feature` file beside it.
+
+Commit `.config/dotnet-tools.json` to pin the tool version, along with your
+`.specht/` configuration and specifications. Run the same check locally and in CI.
 
 ```sh
 dotnet tool restore
 dotnet specht
 ```
 
-A local tool manifest install runs as `dotnet specht`.
-
-For a workstation shell outside a repository, install globally:
-
-```sh
-dotnet tool install --global specht.tool --prerelease
-specht init
-specht
-```
-
-A global install puts `specht` on PATH; ensure the SDK's global tools directory
-is on your shell's PATH. The local manifest is the install path for a repository
-and its build; a global install is a second path for a shell.
-
-## Usage
-
-```sh
-specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <rule id>]
-specht schema list [--root <dir>]
-specht schema pin [version] [--root <dir>]
-specht rules [--root <dir>] [--json]
-specht rules set <id> <level>
-specht manifest [--root <dir>] [--defaults] [--json]
-specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]
-specht evidence [--root <dir>] [<path>...] [--run <id>] [--json] [--report <path>]
-specht init [--root <dir>] [--schemas] [--templates] [--all]
-            [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
-specht --version
-```
-
-Every command and option, what each prints and the exit codes it returns:
-[docs/cli.md](docs/cli.md).
-
-One file configures it: `.specht/manifest.json`, which can
-pin `schemaVersion` - a `major.minor.patch` schema version, numbered apart from
-the tool's own. A patch changes no verdict; from schema `1.0.0` on a minor only
-accepts more and a major can fail a tree that passed, and before it a `0.minor`
-step can fail one too. The pin is exact; a manifest without the key
-is read as version `0.1.0`.
-
-A build and CI call the tool through the local tool manifest, which pins the
-tool's version beside `schemaVersion` so every clone runs the same release. A
-global install puts `specht` on PATH for a shell and is not pinned per
-repository.
-
 ## Layout
 
-Every Feature is specified in a `.spec/README.md` beside the code it covers, such
-as `src/specht/Rules/Form/.spec/`, with its `.feature` file. Its work items sit in
-a `.issue/` beside that `.spec/`.
+A repository using the local tool and `dotnet specht init --all` might look like this.
+
+```text
+your-repository/
+├── .config/
+│   └── dotnet-tools.json
+├── .specht/
+│   ├── manifest.json
+│   ├── schema/
+│   │   └── frontmatter/
+│   │       ├── feature.schema.json
+│   │       └── task.schema.json
+│   └── templates/
+│       ├── adr.md
+│       ├── decision.md
+│       ├── feature.md
+│       └── lesson.md
+└── src/
+    └── checkout/
+        └── .spec/
+            ├── README.md
+            └── checkout.feature
+```
+
+`.specht/` holds the checker configuration and scaffolding. The `.spec/`
+folders hold the specifications you write. Plain `dotnet specht init` writes
+only the manifest. Add `--epics` to `init --all` on a fresh setup to include
+the epic schema and its manifest settings.
+
+## Manifest
+
+For the `specht.tool` 0.5.0 release, `dotnet specht init` pins schema `0.3.0`
+in a new `.specht/manifest.json`. The package and schema have independent
+versions. The sample below uses that schema pin and shows how to change
+settings. Specht ignores keys starting with `$`, so they can hold comments.
+
+After running `dotnet specht init --all` in a fresh repository, this example
+uses the frontmatter schemas written to disk and checks specifications under
+`src/`.
+
+```json
+{
+  "schemaVersion": "0.3.0",
+  "$comment.pinPolicy": "Use the exact pin. Set latest-patch to allow newer shipped patches in the same minor.",
+  "pinPolicy": "exact",
+  "$comment.layouts": "Find feature specifications beside the code under src/.",
+  "layouts": [{ "name": "features", "glob": "src/**/.spec/README.md" }],
+  "$comment.exclusions": "This replaces the default list. Bare names match at any depth. A leading slash anchors a path to the repository root.",
+  "exclusions": [
+    ".git",
+    ".artifacts",
+    ".skillfile",
+    ".claude",
+    "graphify-out",
+    "bin",
+    "obj",
+    "node_modules",
+    "/.spec",
+    "/src/checkout/generated"
+  ],
+  "$comment.schemaSource": "Read local frontmatter schemas. Omit this setting to use the bundled schemas when there is no recorded upstream.",
+  "schemaSource": "disk",
+  "$comment.frontmatterSchemas": "Names are relative to .specht/schema/frontmatter/. Rename these entries if you rename the files.",
+  "frontmatterSchemas": {
+    "feature": "feature.schema.json",
+    "task": "task.schema.json"
+  },
+  "$comment.rules": "Report traceability-row violations as warnings. Rule levels are error, warning, and off.",
+  "rules": {
+    "SPEC4004": "warning"
+  },
+  "$comment.matrix": "Check that each traceability row's scenario title resolves to a tagged companion scenario.",
+  "matrix": { "scenarioTitles": true },
+  "$comment.tests": "Resolve named tests in the traceability matrix against these files. Adjust the glob to your test tree.",
+  "tests": { "files": ["test/**/*.cs"] }
+}
+```
+
+Use `spechtSchema` to share frontmatter schemas across repositories with a
+recorded source and hashes. For .NET projects, `codeAnalysis` selects the
+projects and features whose code is checked against the specifications. The
+Configuration guide in the documentation index has examples of both.
+
+Run `dotnet specht manifest` to see your effective settings, including defaults
+for omitted keys. Run `dotnet specht manifest --defaults --json` to see the
+manifest for the newest schema shipped by your installed tool.
 
 ## Documentation
 
-- [Setup](docs/setup.md)
-- [Command line](docs/cli.md)
-- [MCP](docs/mcp.md)
-- [What it checks](docs/what-it-checks.md)
-- [Configuration](docs/configuration.md)
-- [Multiple projects](docs/multiple-projects.md)
-- [Without .NET code](docs/non-dotnet.md)
-- [Exit codes](docs/exit-codes.md)
-- [Building](docs/building.md)
-- [Releasing](docs/releasing.md)
-- [Reusable GitHub work-item mirror action](.github/actions/mirror/README.md)
-- [Roadmap](docs/roadmap.md)
-- [Rule pages](docs/rules/v0.1.0/)
+[Browse the documentation](docs/README.md).
 
 ## License
 
 [MIT](LICENSE.md) © 2026 Rodney Littles, II. A personal project, published
-openly; issues and pull requests are not being sought.
+openly.

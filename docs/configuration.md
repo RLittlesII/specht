@@ -91,6 +91,8 @@ For a one-run selection with any shipped pin, use `specht --schema-source disk`.
 The JSON report says `"schemaSource": "disk"`. Source selection changes only
 frontmatter schemas; the manifest, version pin and rule vocabulary stay the same.
 
+### Shared frontmatter schemas
+
 A recorded `spechtSchema` takes the verified upstream path even under explicit
 `disk`; explicit `embedded` contradicts that record and exits `3`.
 
@@ -100,6 +102,34 @@ and `version`, plus a hash for `feature` and `task`, and for `epic` when the
 manifest explicitly declares `identifiers.epic`. Each hash is `sha256:` followed
 by 64 lowercase hexadecimal digits, computed over the original file bytes.
 The upstream version is independent of the pinned rule vocabulary.
+
+For example, a team can share custom Feature and task frontmatter schemas.
+Merge these keys into the repository manifest, substitute your public HTTPS
+directory and version label, and replace each placeholder with the SHA-256
+of the corresponding file. The [setup guide](setup.md#host-your-schemas-on-github)
+shows how to compute the hashes and fetch the files.
+
+```json
+{
+  "$comment.frontmatterSchemas": "Use these filenames in both the source directory and .specht/schema/frontmatter/.",
+  "frontmatterSchemas": {
+    "feature": "feature-spec.frontmatter.schema.json",
+    "task": "task.frontmatter.schema.json"
+  },
+  "$comment.spechtSchema": "Init and upgrade fetch from this directory. The check verifies the files already on disk.",
+  "spechtSchema": {
+    "location": "https://schemas.example.org/frontmatter/",
+    "version": "team-schemas-v1",
+    "hashes": {
+      "feature": "sha256:<feature-file-sha256>",
+      "task": "sha256:<task-file-sha256>"
+    }
+  }
+}
+```
+
+With epics enabled, add the epic filename and hash. Set `epicFiles` to the
+paths that hold epic records, such as `["**/.spec/epic.md"]`.
 
 A missing or changed local file exits `3`, naming its relative path on stderr.
 For a missing file, the message names `specht init`; use `specht init --schemas`
@@ -112,6 +142,73 @@ into the root.
 Under schema `0.2.0`, companion claim tags follow `identifiers.claim` inside the literal tag form. For example, `@req:{claim}` recognizes `@req:B-001`; punctuation in the form is literal. SPEC4002 (SPEC021 below `0.3.0`) quotes an unresolved tag exactly as written and carries the claim id alone as its identifier. Claim and matrix ids remain case-sensitive even when tags ignore case. Full-line comments are skipped.
 
 Pin `0.1.0` retains the original `@B-nnn` scanner with an optional lowercase suffix. Pins below `0.3.0` read the frontmatter keys by their default names.
+
+## C# traceability
+
+When a project uses `Specht.CodeAnalysis`, add `codeAnalysis` to select the
+projects and Feature identities it checks. In this example the checkout
+project implements claims from Feature `F1`, and repository ADRs live under
+`.spec/adr/`. Replace the project path, target framework and Feature ID with
+the values in your repository. If epics are enabled, include the epic ID in
+each Feature selection.
+
+```json
+{
+  "$comment.contract": "Declare the values mapped into the analyzer. It reads these values from the consumer manifest.",
+  "schemaVersion": "0.3.0",
+  "identifiers": {
+    "feature": "^F[0-9]+[a-z]?$",
+    "claim": "^B-[0-9]{3}[a-z]?$"
+  },
+  "roles": { "claims": "3. Acceptance Criteria" },
+  "markers": {
+    "approved": "approved",
+    "withdrawn": "Withdrawn",
+    "superseded": "Superseded"
+  },
+  "$comment.codeAnalysis": "Map the shared manifest values into the analyzer and set the C# scope.",
+  "codeAnalysis": {
+    "mappings": {
+      "/schemaVersion": "/schemaVersion",
+      "/identifiers": "/identifiers",
+      "/claimsSection": "/roles/claims",
+      "/markers": "/markers",
+      "/policy": "/codeAnalysis"
+    },
+    "projects": [
+      {
+        "path": "src/checkout/checkout.csproj",
+        "targetFrameworks": ["net10.0"]
+      }
+    ],
+    "features": [{ "feature": "F1" }],
+    "enforcement": [
+      {
+        "project": "src/checkout/checkout.csproj",
+        "include": ["src/checkout/**/*.cs"],
+        "exclude": ["src/checkout/**/*.g.cs"],
+        "role": "implements",
+        "declarationKinds": ["type", "constructor", "method"]
+      }
+    ],
+    "records": {
+      "adrProfiles": [
+        {
+          "glob": ".spec/adr/*.md",
+          "owner": "repository",
+          "identity": { "headingLevel": 1, "separator": ": " },
+          "lifecycle": { "section": "Status", "firstWord": true }
+        }
+      ]
+    }
+  }
+}
+```
+
+The `enforcement` entry requires implementation links on the selected C#
+declarations. The ADR profile tells the analyzer which files to read and
+where to find each record's identity and lifecycle status. See the
+[analyzer guide](../src/codeanalysis/README.md) for package setup.
 
 ## Default manifest
 

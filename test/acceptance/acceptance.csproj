@@ -109,15 +109,12 @@
     <Content Include="..\..\docs\schema\*.json"
              Link="docs\schema\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
-    <!-- The pages the command-line reference's scenarios read, at their repository-relative paths (0002-F1 B-003, B-006 to B-011). -->
+    <!-- Documentation fixtures at their repository-relative paths. -->
     <Content Include="..\..\docs\*.md"
              Link="docs\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../.config/dotnet-tools.json" Link="Consumption/dotnet-tools.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../nuget.config" Link="Consumption/nuget.config" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\README.md"
-             Link="README.md"
-             CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\tool\README.md"
              Link="src\tool\README.md"
              CopyToOutputDirectory="PreserveNewest" />

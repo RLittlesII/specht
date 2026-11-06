@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-27"
+updated: "2026-11-05"
 github_issue: null
 synced_at: null
 ---
@@ -60,25 +60,25 @@ No Feature of epic `0001` names documentation as something it owns. Nothing requ
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-07, 2026-10-11 (B-003 amended, B-006 to B-011 added, decision 0001; B-003's Status set to `Amended`, review round 1) -->
+<!-- last written by: spec-author, 2026-11-05 (front page review) -->
 
-| ID    | Claim                                                                                                                                                                                                                                | Source                                        | Status  |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | ------- |
-| B-001 | Given a public type or public member in `src/specht` or `src/tool` with no XML doc comment, this Feature fails the build with `CS1591` reported as an error.                                                                         | owner requirements, 2026-09-29                | Active  |
-| B-002 | Given the build's documentation target runs, this Feature writes an API reference generated from the XML doc comments of the current public surface under `.artifacts/`, and no hand-maintained copy of it exists in the repository. | owner requirements, 2026-09-29                | Active  |
-| B-003 | Given this repository, this Feature keeps the command-line reference as the page `docs/cli.md`, distinct from every command's `.spec/README.md`.                                                                                     | owner requirements, 2026-09-29; decision 0001 | Amended |
-| B-004 | Given this Feature is delivered, no hosted site, publish step or site framework exists in the repository or its CI.                                                                                                                  | owner requirements, 2026-09-29                | Active  |
-| B-005 | Given `./build.sh` runs its default target, the documentation enforcement (B-001) and generation (B-002) run as part of it, with no separate manual step.                                                                            | owner requirements, 2026-09-29                | Active  |
-| B-006 | Given a command in the command-line surface (A-6), this Feature gives it a section of its own in `docs/cli.md`.                                                                                                                      | decision 0001                                 | Active  |
-| B-007 | Given an option the help of a command in the command-line surface lists, this Feature gives that option an entry in that command's section of `docs/cli.md`.                                                                         | decision 0001                                 | Active  |
-| B-008 | Given a command section or an option entry in `docs/cli.md`, what it documents is in the command-line surface (A-6).                                                                                                                 | decision 0001                                 | Active  |
-| B-009 | Given a command or an option that `README.md` names (A-7), it is in the command-line surface (A-6).                                                                                                                                  | decision 0001                                 | Active  |
-| B-010 | Given a command or an option that `src/tool/README.md` names (A-7), it is in the command-line surface (A-6).                                                                                                                         | decision 0001; `0001-F2` C-10                 | Active  |
-| B-011 | Given `README.md`, this Feature links it to `docs/cli.md`.                                                                                                                                                                           | decision 0001                                 | Active  |
+| ID    | Claim                                                                                                                                                                                                                                | Source                                        | Status    |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | --------- |
+| B-001 | Given a public type or public member in `src/specht` or `src/tool` with no XML doc comment, this Feature fails the build with `CS1591` reported as an error.                                                                         | owner requirements, 2026-09-29                | Active    |
+| B-002 | Given the build's documentation target runs, this Feature writes an API reference generated from the XML doc comments of the current public surface under `.artifacts/`, and no hand-maintained copy of it exists in the repository. | owner requirements, 2026-09-29                | Active    |
+| B-003 | Given this repository, this Feature keeps the command-line reference as the page `docs/cli.md`, distinct from every command's `.spec/README.md`.                                                                                     | owner requirements, 2026-09-29; decision 0001 | Amended   |
+| B-004 | Given this Feature is delivered, no hosted site, publish step or site framework exists in the repository or its CI.                                                                                                                  | owner requirements, 2026-09-29                | Active    |
+| B-005 | Given `./build.sh` runs its default target, the documentation enforcement (B-001) and generation (B-002) run as part of it, with no separate manual step.                                                                            | owner requirements, 2026-09-29                | Active    |
+| B-006 | Given a command in the command-line surface (A-6), this Feature gives it a section of its own in `docs/cli.md`.                                                                                                                      | decision 0001                                 | Active    |
+| B-007 | Given an option the help of a command in the command-line surface lists, this Feature gives that option an entry in that command's section of `docs/cli.md`.                                                                         | decision 0001                                 | Active    |
+| B-008 | Given a command section or an option entry in `docs/cli.md`, what it documents is in the command-line surface (A-6).                                                                                                                 | decision 0001                                 | Active    |
+| B-009 | Given a command or an option that `README.md` names (A-7), it is in the command-line surface (A-6).                                                                                                                                  | decision 0001                                 | Withdrawn |
+| B-010 | Given a command or an option that `src/tool/README.md` names (A-7), it is in the command-line surface (A-6).                                                                                                                         | decision 0001; `0001-F2` C-10                 | Active    |
+| B-011 | Given the repository front page, a link leads to the documentation index at `docs/README.md`, which links to `docs/cli.md`.                                                                                                          | decision 0001                                 | Withdrawn |
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-10-07, 2026-10-11 (C-5 amended, C-6 to C-8 added, decision 0001) -->
+<!-- last written by: spec-author, 2026-11-05 (documentation route) -->
 
 | ID  | Constraint                                                                                                                                                                                                    | Rules Out                                                                                                                                                 |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -87,7 +87,7 @@ No Feature of epic `0001` names documentation as something it owns. Nothing requ
 | C-3 | Doc-comment enforcement is scoped to the public surface.                                                                                                                                                      | `CS1591`-style enforcement on internal or private members; a blanket `TreatWarningsAsErrors` change made only for this.                                   |
 | C-4 | The generated reference is deterministic and carries no absolute path (AGENTS.md § Invariants), and it is never committed.                                                                                    | A timestamp or a machine path in the artifact; a generated reference checked into git.                                                                    |
 | C-5 | A pull request that changes the command-line surface (A-6), or what a command does, changes `docs/cli.md` in the same pull request; `spec-reviewer` enforces at review what B-006 to B-008 cannot see.        | A documentation-only follow-up pull request; a section left describing the old behaviour.                                                                 |
-| C-6 | The command-line reference is one page, `docs/cli.md`, holding every command and every option; `README.md` keeps a short synopsis and links to it (decision 0001).                                            | A page per command under `docs/cli/`; a usage doc in a command folder, such as `src/tool/Features/<Command>/USAGE.md`; the full reference in `README.md`. |
+| C-6 | The command-line reference at `docs/cli.md` covers every command and option on one page. `README.md` links to it through the documentation index (decision 0001).                                             | A page per command under `docs/cli/`; a usage doc in a command folder, such as `src/tool/Features/<Command>/USAGE.md`; the full reference in `README.md`. |
 | C-7 | `docs/cli.md` is written by hand, and a test that runs the help of every command holds it to the tool (decision 0001).                                                                                        | A page generated by a NUKE target; verbatim `--help` blocks compared byte for byte; review as the only check.                                             |
 | C-8 | `docs/cli.md`, `README.md` and `src/tool/README.md` show only the command-line surface (A-6); a command's section and its synopsis line arrive in the pull request that delivers the command (decision 0001). | A section, an entry or a synopsis line for a command or option that is specified and not built; a "planned" marker standing in for one.                   |
 
@@ -107,7 +107,7 @@ No Feature of epic `0001` names documentation as something it owns. Nothing requ
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-07; implementer, 2026-10-11 (B-003 and B-006 to B-011, item 0181) -->
+<!-- last written by: implementer, 2026-11-05 (front page review) -->
 
 The concerns of B-001, B-002, B-004 and B-005 are pending: they are not cut into an item.
 
@@ -115,12 +115,12 @@ The concerns of B-001, B-002, B-004 and B-005 are pending: they are not cut into
 | --- | ------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------- |
 | 1   | What a command does, prints and returns, as a consumer reads it (B-003, B-006, B-007)             | Business       | `docs/cli.md`                                |
 | 2   | Which commands and options exist (A-6)                                                            | Technical      | `src/tool/Program.cs` and each `Settings`    |
-| 3   | The short synopsis and the way to the reference (B-009 to B-011, C-6)                             | Business       | `README.md`, `src/tool/README.md`            |
+| 3   | The short synopsis and the way to the reference (B-010, C-6, C-8)                                 | Business       | `README.md`, `src/tool/README.md`            |
 | 4   | What an exit code means, the manifest, the rules and the report document, which the page links to | Business       | `docs/exit-codes.md` and the pages beside it |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-07; implementer, 2026-10-11 (B-003 and B-006 to B-011, item 0181; the `--version` entry, item 0182) -->
+<!-- last written by: implementer, 2026-11-05 (documentation index) -->
 
 The design for B-001, B-002, B-004 and B-005 is pending: they are not cut into an item.
 
@@ -132,7 +132,7 @@ The design for B-001, B-002, B-004 and B-005 is pending: they are not cut into a
 
 **Facts stated once (C-6, § 5 row 4).** The page says which exit codes a command can return and links `docs/exit-codes.md` for what each means; it claims a code for a command only where that command's `ExecuteAsync` returns it: `0` to `3` for `specht`, `0` and `2` for `specht init`. The manifest is `docs/configuration.md`'s, the rules `docs/what-it-checks.md`'s and `docs/rules/v1/`'s, the `--json` document `docs/schema/report.schema.json`'s, and the first run `docs/setup.md`'s. Defaults are the ones the `Settings` classes declare.
 
-**The readmes (B-009 to B-011, C-8; `0001-F2` C-9, C-10, B-026).** `README.md` § Usage keeps a two-line synopsis and links `docs/cli.md`, which is also in its Documentation list; its command table is gone. `src/tool/README.md` keeps the same two lines and links the page at its absolute `https` address, as every link in the packed readme is.
+**The readmes (B-010, C-6, C-8).** The root `README.md` shows a quick start and links to the documentation index at `docs/README.md`. The index groups links by topic, including the full command-line reference at `docs/cli.md`. The package readme links to the reference at its absolute `https` address.
 
 **`--version` (C-5; item 0182, `0001-F2` B-040 to B-044).** `Program.cs` sets the application version, so the help of `specht` lists `-v, --version` and the help of `specht init` does not. The `specht` section gains a second synopsis line, a `--version` row, and one sentence each under stdout and exit codes; each readme's synopsis gains the line `specht --version`, its third. The row names the long form, the one § 8 looks for, and not `-v`, which `0001-F2` OQ-7 leaves open. The page describes the option as the only argument and says nothing of it beside another (`0001-F2` OQ-8).
 
@@ -140,7 +140,7 @@ The design for B-001, B-002, B-004 and B-005 is pending: they are not cut into a
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-07; test-writer, 2026-10-11 (B-003 and B-006 to B-011, item 0181) -->
+<!-- last written by: test-writer, 2026-11-05 (front page review) -->
 
 B-001, B-002, B-004 and B-005 are not cut into an item; their strategy is pending, and their scenarios have no step definitions, so `test/acceptance/reqnroll.json` (`missingOrPendingStepsOutcome: Ignore`) reports them skipped.
 
@@ -148,15 +148,14 @@ B-001, B-002, B-004 and B-005 are not cut into an item; their strategy is pendin
 - **The command-line surface (A-6), as read.** `--help` gives the default command, `specht`, and its options; each name a help page's `COMMANDS:` block lists is appended to its parent command and launched with `--help`, recursively, including branches and their leaf commands. An option is a line of an `OPTIONS:` block that starts with `-`; its names are every `-x` and `--name` before the description, and the last of them, the long one, is the option B-007 looks for.
 - **A command section (B-006, B-008).** A heading of any level whose whole text is one code span holding the command line as typed: `` ## `specht` ``, `` ## `specht init` ``. It runs to the next such heading. Each command the help lists has exactly one; a section whose code span is anything else that starts with `specht` is a command the help does not list.
 - **An option entry (B-007, B-008).** A table row or a list item inside a command section whose first cell or first text is a code span starting with `-`: ``| `--root <DIR>` |``, `` - `-h, --help` ``. It documents every `-x` and `--name` in that code span; the value an option takes is not a name. Each long option of the command's help has an entry in that command's section, and every name in an entry is one that command's help lists.
-- **A name in a readme (A-7, B-009, B-010).** Code is a code span, or a line of a fenced block. Code that begins `specht`, `dotnet specht` or `dotnet tool run specht` is a command line: the longest command prefix found in the recursively read help is the command, or the default one when no command name follows; every `-x` and `--name` on the line is an option of that command. Any other code that begins with `-` is an option on its own, checked against the options of every command. Prose, HTML, a path, and code that begins with anything else name nothing.
-- **The link (B-011).** A Markdown link in `README.md` whose target is `docs/cli.md`, with or without a fragment.
+- **A name in the package readme (A-7, B-010).** Code is a code span, or a line of a fenced block. Code that begins `specht`, `dotnet specht` or `dotnet tool run specht` is a command line: the longest command prefix found in the recursively read help is the command, or the default one when no command name follows; every `-x` and `--name` on the line is an option of that command. Any other code that begins with `-` is an option on its own, checked against the options of every command. Prose, HTML, a path, and code that begins with anything else name nothing.
 - **Not a specification (B-003).** The page is found at `docs/cli.md`, and no line of it is `type: feature`, the frontmatter type every specification carries. This reading is `test-writer`'s.
 - **An unsupported command (B-008's boundary).** An invocation-local copy of the reference receives a section for `specht synthetic-unavailable-command`, first verified absent from the built help. The same section comparison must reject it. No real document is changed and no live backlog entry is required; delivering the last previously unbuilt command cannot invalidate this fixture.
 
 One line per claim, its mechanism, and its unit test or why it has none:
 
-- **B-003, B-006, B-007, B-008, B-011** - mechanism: the text of `docs/cli.md` and of `README.md`, which a person writes (C-7). No code of this repository decides it, so there is no unit tier; the scenario is the proof.
-- **B-009, B-010** - mechanism: the text of the two readmes. As above.
+- **B-003, B-006, B-007, B-008** compare the hand-written reference with the tool. The acceptance scenarios cover that comparison at the command boundary.
+- **B-010** compares the package readme with the tool. Review covers the repository front page.
 - **The surface the pages are held to** - Spectre.Console.Cli renders it from `Program.cs` (`SetDefaultCommand<CheckCommand>()`, `AddCommand<InitCommand>("init")`) and from the `[CommandOption]` attributes on `CheckCommand.Settings` and `InitCommand.Settings` (all read). None of them holds a decision of this repository's about help; `0001-F2` § 8 gives the same verdict for B-008 there.
 
 What the design makes hard to test, for `implementer`:
@@ -168,31 +167,35 @@ What the design makes hard to test, for `implementer`:
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-07, 2026-10-11 (B-003's scenario retitled, rows for B-006 to B-011 added as `Missing`); test-writer, 2026-10-11 (B-003 and B-006 to B-011 bound, item 0181; no unit tier, § 8) -->
+<!-- last written by: test-writer, 2026-11-05 (front page review) -->
 
-| Claim ID | Scenario                                                        | Test                        | Status  |
-| -------- | --------------------------------------------------------------- | --------------------------- | ------- |
-| B-001    | An undocumented public member fails the build                   | Missing                     | Missing |
-| B-002    | The API reference is generated from the doc comments            | Missing                     | Missing |
-| B-003    | The command-line reference is one page                          | `CommandLineReferenceSteps` | Covered |
-| B-004    | Documentation generation publishes nothing                      | Missing                     | Missing |
-| B-005    | The default build runs documentation enforcement and generation | Missing                     | Missing |
-| B-006    | Every command has a section in the reference                    | `CommandLineReferenceSteps` | Covered |
-| B-007    | Every option has an entry under its command                     | `CommandLineReferenceSteps` | Covered |
-| B-008    | The reference documents nothing the tool does not accept        | `CommandLineReferenceSteps` | Covered |
-| B-009    | The front page shows only what the tool accepts                 | `CommandLineReferenceSteps` | Covered |
-| B-010    | The package readme shows only what the tool accepts             | `CommandLineReferenceSteps` | Covered |
-| B-011    | The front page links to the reference                           | `CommandLineReferenceSteps` | Covered |
+| Claim ID | Scenario                                                        | Test                        | Status    |
+| -------- | --------------------------------------------------------------- | --------------------------- | --------- |
+| B-001    | An undocumented public member fails the build                   | Missing                     | Missing   |
+| B-002    | The API reference is generated from the doc comments            | Missing                     | Missing   |
+| B-003    | The command-line reference is one page                          | `CommandLineReferenceSteps` | Covered   |
+| B-004    | Documentation generation publishes nothing                      | Missing                     | Missing   |
+| B-005    | The default build runs documentation enforcement and generation | Missing                     | Missing   |
+| B-006    | Every command has a section in the reference                    | `CommandLineReferenceSteps` | Covered   |
+| B-007    | Every option has an entry under its command                     | `CommandLineReferenceSteps` | Covered   |
+| B-008    | The reference documents nothing the tool does not accept        | `CommandLineReferenceSteps` | Covered   |
+| B-009    | The front page shows only what the tool accepts                 | None                        | Withdrawn |
+| B-010    | The package readme shows only what the tool accepts             | `CommandLineReferenceSteps` | Covered   |
+| B-011    | The docs index connects the front page to the CLI reference     | None                        | Withdrawn |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11 (decision 0001; § 5 row 7 amended and OQ-3 opened; review round 1: B-003's Status, OQ-4 and OQ-5 opened) -->
+<!-- last written by: spec-author, 2026-11-05 (documentation index) -->
 
 - 2026-10-11, OQ-2 resolved by the repository owner ([decision 0001](decisions/0001-the-command-line-reference-is-one-hand-written-page-held-to-the-tool-by-a-test.md)): the command-line reference is one hand-written page, `docs/cli.md`, held to the tool's help by a test, and it and both readmes show only what the shipped tool accepts. B-003 amended: it placed a usage doc in each command folder "at the location the convention names (OQ-2)". C-5 amended to name the page. Need 3 and A-4 amended; need 6, A-6, A-7, B-006 to B-011, C-6 to C-8 and § 5 rows 6 and 7 added; § 5 row 3 reworded, with `--help` still Spectre's. The `@B-003` scenario is retitled and reworded, `@B-006` to `@B-011` are added, and the Feature's header no longer speaks of co-location. § 1 and the frontmatter description name the page. Spec-author's, not the owner's: A-6's reading of "accepts" as what the help lists, A-7's reading of "names", B-011 as a claim of its own, § 5 row 7, and the split of the owner's "missing from, or extra in" into B-006, B-007 and B-008. Owed to the `test-writer`: the tests for B-003 and B-006 to B-011, whose § 9 rows are added here as `Missing`.
 - 2026-10-11, § 5 row 7 amended in place: it excluded `AGENTS.md` § CLI whole. The repository owner approved, 2026-10-11, a plan whose step reads "`AGENTS.md` § CLI: mark `upgrade`, `--explain` and `--report` as specified and not built, as it already does for `manifest` and `rules`", and item 0181 made that one-paragraph edit. Row 7 now excludes the skills and any other change to `AGENTS.md`; decision 0001 records the approval as the owner's. OQ-3 opened, on exit `4` in `docs/exit-codes.md`; the page is not changed.
 - 2026-10-11, after `spec-reviewer`'s round 1, three non-blocking findings recorded and no claim, constraint or page changed. B-003's Status is `Amended`, not `Active`: item `0173` cites the claim as it read before decision 0001. OQ-4 opened: B-008 does not read a synopsis or example line of `docs/cli.md`, so C-8 is held there by review under C-5. OQ-5 opened: a command line Spectre rejects exits `255`, which neither `docs/exit-codes.md` nor `docs/cli.md` lists. It is a question of its own, not part of OQ-3, which asks about a code the page lists and the tool cannot return. The repository owner has been asked neither.
 
 - 2026-10-27, B-008's boundary scenario uses a synthetic unsupported section after the last command in its original fixture list shipped. The existing § 8 instruction to reword that boundary is fulfilled; B-008 and C-8 are unchanged. The production reference remains held to the real help.
+
+- 2026-11-05, B-011 and C-6 amended to route the front page through the documentation index. [Decision 0001](decisions/0001-the-command-line-reference-is-one-hand-written-page-held-to-the-tool-by-a-test.md#documentation-index-2026-11-05).
+
+- 2026-11-05, the owner withdrew B-009 and B-011 as acceptance claims. Review covers the repository front page under C-6 and C-8. [Decision 0001](decisions/0001-the-command-line-reference-is-one-hand-written-page-held-to-the-tool-by-a-test.md#front-page-review-2026-11-05).
 
 ## 11. Open Questions
 
@@ -220,6 +223,8 @@ What the design makes hard to test, for `implementer`:
 ## Tasks
 
 Cut 2026-10-11 into [`../.issue/`](../.issue/): `0181` carries B-003 and B-006 to B-011, on the repository owner's direction of that date. B-001, B-002, B-004 and B-005 are not cut; their candidate cut is in the epic.
+
+Item `0362` delivers the front page and documentation index under C-6 and C-8.
 
 ## Scoring
 
