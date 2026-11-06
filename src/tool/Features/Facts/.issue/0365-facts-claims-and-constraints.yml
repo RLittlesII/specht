@@ -1,0 +1,52 @@
+id: "0365"
+type: task
+title: Claims and constraints in the facts
+
+status: ready
+
+value: 3
+risk: 2
+
+parent: "0132"
+children: []
+
+depends_on: ["0364"]
+spikes: []
+
+spec: src/tool/Features/Facts/.spec/README.md
+
+claims:
+  - B-005
+  - B-006
+  - B-012
+  - B-013
+  - B-025
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As a coding agent I want each Feature's § 3 claims and § 4 constraints in the facts, with their text, status and line, so that I learn where a claim stands without reading the Markdown.
+
+  The claims and constraints are found as the check finds them (C-1); the constraints table's headers are the engine's (C-7). A withdrawn claim and two claims sharing an id are still given, and the command exits `0` on a tree the check fails (B-012, B-013). The members join the document and its schema by addition (C-3).
+
+  Waits on 0364: the command and the document it adds members to.
+
+acceptance_criteria:
+  - "B-005 — a claim's id, text, status and line"
+  - "B-006 — a constraint's id, text, what it rules out and line"
+  - "B-012 — a withdrawn or superseded claim, with that status"
+  - "B-013 — two claims sharing an id both given, exit `0`"
+  - "B-025 — no § 9 row, scenario or test on a claim"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author's cut of the approved Feature. Rejected: B-013 with the command in 0364; two claims sharing an id need the claims this item gives.
+
+out_of_scope:
+  - "Claim coverage: § 9 rows, scenarios and tests — § 5 row 1; `0001-F13`."
+  - "A verdict on two claims sharing an id — § 5 row 2; the check."
+  - "Claims and constraints under a heading the manifest renames — B-016; 0367."
+  - "Their text-form lines — B-024; 0370."

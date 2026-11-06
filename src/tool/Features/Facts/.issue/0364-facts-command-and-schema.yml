@@ -1,0 +1,68 @@
+id: "0364"
+type: task
+title: The facts command and its published schema
+
+status: ready
+
+value: 3
+risk: 3
+
+parent: "0132"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Facts/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-014
+  - B-017
+  - B-021
+  - B-022
+  - B-023
+  - B-026
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As an agent or a maintainer I want `specht facts --json` to give every Feature specification's path, identity, statuses and dependencies as one document with a published schema, so that I read the tree without searching Markdown.
+
+  This item is the document contract. It publishes the schema at `docs/schema/facts.schema.json`, OQ-1's default; OQ-1 stays open in § 11. Every later item adds members to the document and the schema only by addition (C-3). An epic file gives no facts (B-026) on OQ-6's default, which stays open too.
+
+  `docs/cli.md` is held to the help by a test (`0002-F1`), so the command's page lands here. Discovery, the parse and the manifest are read in the engine, never inside `Features/Facts/` (C-4, C-1).
+
+  The text form is 0370's; the scenarios here that name no form run against `--json`.
+
+acceptance_criteria:
+  - "B-001 — every discovered Feature specification, in discovery order"
+  - "B-002 — one document, valid against the published schema"
+  - "B-003 — path, qualified Feature id, `spec_status` and `status`"
+  - "B-004 — `depends_on`, `blocks` and `children` as the frontmatter lists them"
+  - "B-014 — no violation, no count, no verdict"
+  - "B-017 — the same members under two shipped pins; no member present under one pin only"
+  - "B-021 — exit `2` and `3` as the check"
+  - "B-022 — byte-identical output for the same tree"
+  - "B-023 — nothing created, modified or deleted"
+  - "B-026 — no facts for an epic file"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author's cut of the approved Feature. Rejected: publishing the schema in a last item once every member exists, which leaves each earlier item adding members no schema checks.
+
+out_of_scope:
+  - "Claims and constraints — B-005, B-006, B-012, B-013, B-025; 0365."
+  - "Out-of-scope rows, open questions and a missing section — B-007, B-008, B-015; 0366."
+  - "Lessons and deltas entries, sign-off rows and the headings the manifest names — B-009, B-010, B-016; 0367."
+  - "The records beside a specification — B-011; 0368."
+  - "The path selector — B-018 to B-020; 0369."
+  - "The text form — B-024; 0370."
+  - "Claim coverage — § 5 row 1; `0001-F13`."
+  - "Serving the facts through MCP — § 5 row 4; `0132-F4`."

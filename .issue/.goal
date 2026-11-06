@@ -24,8 +24,16 @@
 
 0.7.0
 # Agent surface completed: the tree's facts 0132-F2, 0132-F4's facts, trace
-# and schema answers, and 0001-F18; items join this list once cut. 0132-F1,
-# the index, is unscheduled (the owner, 2026-11-01).
+# and schema answers, and 0001-F18; the others' items join this list once cut.
+# 0132-F1, the index, is unscheduled (the owner, 2026-11-01).
+# 0132-F2's items, the facts command.
+0364
+0365
+0366
+0367
+0368
+0369
+0370
 0252
 0256
 # Remaining matrix validation, moved from 0.4.0 beside facts and coverage.
