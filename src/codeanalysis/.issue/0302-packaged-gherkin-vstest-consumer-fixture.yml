@@ -1,7 +1,7 @@
 id: "0302"
 type: test
 title: "Prove native Gherkin claims with xUnit v2 VSTest evidence in one packaged consumer"
-status: ready
+status: in-progress
 value: 4
 risk: 3
 parent: "0201"
@@ -11,7 +11,7 @@ spikes: []
 spec: src/codeanalysis/.spec/README.md
 claims: ["B-002", "B-016", "B-017", "B-025", "B-026", "B-027"]
 created: "2026-10-25"
-updated: "2026-10-26"
+updated: "2026-11-06"
 closed: null
 summary: |
   Consumer request #256 asks for one packaged consumer integration fixture that
