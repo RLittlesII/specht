@@ -251,7 +251,7 @@ flowchart TD
 
 **The page.** [`docs/mcp.md`](../../../docs/mcp.md) (`0332`) is the one MCP page (C-8): the install, the two client configuration entries, one entry for each of the four tools (`check`, `explain`, `rules`, `manifest`), and the three entries `Restore the tool`, `Pin the tool` and `Update the tool` that the host's messages point to (C-12). A tool's entry names the command it serves and its arguments and points to [`docs/cli.md`](../../../docs/cli.md) for the answer (§ 5 row 10). The page states the minimum, `0.3.1`, as prose that no test holds to `SpechtTool.Minimum`.
 
-**Not built.** Nothing of this Feature's own scope. The package is not yet in the `Pack` or release targets and is not released.
+**Not built.** Nothing of this Feature's own scope. `Pack` and the release package list name `specht.mcp` beside `specht.tool` and `Specht.CodeAnalysis` (B-035; `.build/SpechtBuild.cs`, `ReleaseProjects`).
 
 ## 8. Testing Strategy
 

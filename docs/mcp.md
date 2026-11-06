@@ -13,11 +13,9 @@ tool; the .NET SDK is needed to run it.
 
 ## Install
 
-> Not published yet. Install steps land with the first release.
-
 ```sh
-dotnet tool install specht.mcp            # local tool manifest, runs as dotnet specht-mcp
-dotnet tool install --global specht.mcp   # on PATH, runs as specht-mcp
+dotnet tool install specht.mcp --prerelease           # local tool manifest, runs as dotnet specht-mcp
+dotnet tool install --global specht.mcp --prerelease  # on PATH, runs as specht-mcp
 ```
 
 `specht-mcp --help` lists its options. The one option, `--root <DIR>`, names

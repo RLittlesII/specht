@@ -26,7 +26,7 @@ solution-wide from day one.
 
 `IsPackable=false` is the **default**, not the rule: `src/tool` overrides
 it to `true` with `PackAsTool`, because the tool is the product and the package
-is how it ships. `src/mcp` is also packable, as `specht.mcp`, though the `Pack` and release targets do not yet include it ([ADR-0031](../../../../.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md)). No other project packs; the engine library `src/specht` is
+is how it ships. `src/mcp` is also packable, as `specht.mcp` ([ADR-0031](../../../../.spec/adr/0031-the-mcp-is-its-own-program-that-runs-the-repositorys-pinned-specht.md)). No other project packs; the engine library `src/specht` is
 consumed through the tool, never as a package of its own (brief § 2 Must-4).
 For epic `0201`, [ADR-0016](../../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md)
 adopts CodeAnalysis as the future deployment project and keeps Analyzers and
