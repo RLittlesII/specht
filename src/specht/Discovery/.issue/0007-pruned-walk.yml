@@ -2,7 +2,7 @@ id: "0007"
 type: task
 title: Walk the tree without entering an excluded directory
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 2
 
@@ -18,7 +18,7 @@ claims:
   - B-006
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-11-06"
 closed: null
 
 summary: |
