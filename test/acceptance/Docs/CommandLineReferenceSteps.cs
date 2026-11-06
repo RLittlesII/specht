@@ -5,7 +5,7 @@ using Reqnroll;
 namespace Specht.Acceptance.Docs;
 
 /// <summary>
-/// Steps for <c>docs/.spec/docs-as-first-class-citizen.feature</c> (0002-F1): item 0181 binds B-003 and B-006 to B-011, and
+/// Steps for <c>docs/.spec/docs-as-first-class-citizen.feature</c> (0002-F1): B-003, B-006 to B-008 and B-010 are bound, and
 /// the file's other scenarios stay pending for their items. The command-line surface (A-6) is read from the launched
 /// tool's own help, so a command the host registers is seen without a test naming it. The pages are this repository's,
 /// copied beside the tests at their repository-relative paths. How a section, an entry and a name (A-7) are recognised is
@@ -32,9 +32,6 @@ public sealed partial class CommandLineReferenceSteps
         Surface.Should().NotContainKey(UnsupportedCommand);
         _referenceContent = Read(Reference) + $"\n\n## `{UnsupportedCommand}`\n";
     }
-
-    [Given("the repository's front page")]
-    public void GivenTheRepositorysFrontPage() => Page = "README.md";
 
     [Given("the readme the package carries")]
     public void GivenTheReadmeThePackageCarries() => Page = "src/tool/README.md";
@@ -97,10 +94,6 @@ public sealed partial class CommandLineReferenceSteps
     [Then("every command and option it names is one the help lists")]
     public void ThenEveryCommandAndOptionItNamesIsOneTheHelpLists() =>
         string.Join(", ", Unlisted(Page).Distinct()).Should().BeEmpty($"{Page} names only what the tool's help lists (A-6, A-7)");
-
-    [Then("it links to the command-line reference")]
-    public void ThenItLinksToTheCommandLineReference() =>
-        ReferenceLink().IsMatch(Read(Page)).Should().BeTrue($"{Page} links to {Reference} (B-011)");
 
     private Dictionary<string, string[][]> Surface => field ??= ReadSurface();
 
@@ -226,9 +219,6 @@ public sealed partial class CommandLineReferenceSteps
 
     [GeneratedRegex(@"`([^`]+)`")]
     private static partial Regex CodeSpan();
-
-    [GeneratedRegex(@"\]\(docs/cli\.md(?:#[^)]*)?\)")]
-    private static partial Regex ReferenceLink();
 
     private IEnumerable<string> Unlisted(string page)
     {

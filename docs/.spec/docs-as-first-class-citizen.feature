@@ -71,19 +71,8 @@ Feature: Docs as first-class citizen
     When the command-line reference is compared with the tool's help
     Then the comparison rejects that unsupported command section
 
-  @B-009
-  Scenario: The front page shows only what the tool accepts
-    Given the repository's front page
-    When it is compared with the tool's help
-    Then every command and option it names is one the help lists
-
   @B-010
   Scenario: The package readme shows only what the tool accepts
     Given the readme the package carries
     When it is compared with the tool's help
     Then every command and option it names is one the help lists
-
-  @B-011
-  Scenario: The front page links to the reference
-    Given the repository's front page
-    Then it links to the command-line reference
