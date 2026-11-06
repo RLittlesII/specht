@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2", "F3", "F4", "F5", "F6", "F9", "0109/F1"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-11-03"
+updated: "2026-11-05"
 github_issue: null
 synced_at: null
 ---
@@ -57,7 +57,7 @@ The repository has a solution and central package versions but no build project,
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
+<!-- last written by: spec-author, 2026-11-05 (B-009 amended, `0055-F6` decision 0010; item 0363), 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                   | Source                                                                                                      | Status     |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- |
@@ -69,7 +69,7 @@ The repository has a solution and central package versions but no build project,
 | B-006 | Given the `UnitTest` target, only tests carrying the unit tier trait run.                                                                                                                                                                                                               | `specht-conventions` § Testing                                                                              | Active     |
 | B-007 | Given the `IntegrationTest` target, only tests carrying the integration tier trait run.                                                                                                                                                                                                 | `specht-conventions` § Testing                                                                              | Active     |
 | B-008 | Given the `AcceptanceTest` target, the scenarios of every `.feature` file the acceptance project links run.                                                                                                                                                                             | `specht-conventions` § Testing                                                                              | Active     |
-| B-009 | Given the `Pack` target, the tool and code analysis packages are written under `.artifacts/nupkg/`, each at the version the build computes for the commit.                                                                                                                              | AGENTS.md § Build and test; `0001-F2` C-5; `0201-F6` B-020                                                  | Amended    |
+| B-009 | Given the `Pack` target, the tool, code analysis and MCP packages are written under `.artifacts/nupkg/`, each at the version the build computes for the commit. Amended 2026-11-05 (`0055-F6` decision 0010): was the tool and code analysis packages.                                  | AGENTS.md § Build and test; `0001-F2` C-5; `0201-F6` B-020; `0132-F3` B-035, C-11                           | Amended    |
 | B-010 | Given a fresh clone and a token with package read for the committed published-consumer pin (0055-F7 B-003), dotnet tool restore installs the externally supplied dotnet tools at their committed manifest versions; Specht prepares its working checker separately under 0001-F2 B-014. | brief § 8 step 1; AGENTS.md § Setup; C-3                                                                    | Amended    |
 | B-011 | Given `dotnet husky install` has run in a clone, a commit runs the pre-commit hook.                                                                                                                                                                                                     | AGENTS.md § Setup; owner, 2026-10-08                                                                        | Active     |
 | B-012 | Given a staged C# file whose staged content differs from the repository's formatting rules, the hook refuses the commit and names that file.                                                                                                                                            | owner, 2026-10-08; A-4; B-021                                                                               | Amended    |
@@ -217,8 +217,9 @@ Delivered so far by items 0057, the scaffold, 0059, the `Format` target, 0060, t
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
+<!-- last written by: spec-author, 2026-11-05 (B-009 amended, `0055-F6` decision 0010; item 0363), 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
+- 2026-11-05, [`0055-F6` decision 0010](../Releasing/.spec/decisions/0010-the-mcp-package-is-packed-and-pushed-with-the-tool.md), item 0363: release 0.5.0 shipped without `specht.mcp`, which `Pack` did not write, though ADR-0031 and `0132-F3` C-11 version and tag it with the tool. B-009 now names three packages: the tool, code analysis and the MCP. Its scenario's title and steps change with it. Owed to the `test-writer`: § 9's B-009 row, whose scenario title still says "both".
 - 2026-11-01, B-024 is superseded by B-026 and B-027 under decision 0001, whose addendum extends it to B-024: item 0339 pins this repository to schema `0.3.0`, so its Given, a pin below `0.3.0`, no longer holds here. Its `@B-024` scenario is removed, as the 2026-10-16 entry below provided. Its § 9 row is test-writer's to mark. No other claim, constraint or scenario changed.
 - 2026-10-20, B-028 adds the standard package-fed analysis gate after the owner's build/CI decision. The two-stage bootstrap in `0201-F6` decision 0006 keeps local package production separate from its consumption. B-009 is corrected to include the analyzer package already released alongside the tool under `0201-F6` B-020.
 - 2026-10-16, from schema `0.3.0` `SPEC060` reports a `Missing` row once a Feature's delivery status is done, not once it is approved ([`0001-F7` decision 0015](../../src/tool/.spec/decisions/0015-missing-coverage-is-reported-once-a-feature-is-done.md)), and this repository drops its `SPEC060` warning in the change that pins `0.3.0`. B-024 amended to pins below `0.3.0`; its scenario stays until that change lands. B-026 and B-027 added with their scenarios and § 9 rows. C-6 and C-7 amended. `spec_status` returns to `in-review` for the delta.

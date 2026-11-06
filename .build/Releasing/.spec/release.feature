@@ -16,10 +16,10 @@ Feature: Release
     And no release is created
 
   @B-003
-  Scenario: A green tag publishes both packages
+  Scenario: A green tag publishes every package
     Given a tagged commit that passes every gate
     When its version tag is pushed
-    Then the tool and analysis packages are published to nuget.org
+    Then the tool, analysis and MCP packages are published to nuget.org
 
   @B-004
   Scenario: A published version gets a release
