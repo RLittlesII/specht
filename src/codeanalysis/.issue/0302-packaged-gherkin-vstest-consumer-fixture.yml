@@ -81,8 +81,8 @@ decisions:
     Rejected: building the three fixes here. The gate reads the native claims
     through the engine's Gherkin claim reader, not a catalogue in the evidence
     artifact (0201-F7 decision 0004). The "0201-F7 B-030 - the gate reads the
-    native claims" criterion therefore waits on item 0411, which withdraws or
-    amends B-030, and is proved through the 0201-F5 claim 0409 adds; those ids
+    native claims" criterion therefore waits on item 0411, which withdraws
+    B-030, and is proved through the 0201-F5 claim 0409 adds; those ids
     join the criterion once they exist.
 out_of_scope:
   - "Reqnroll and scenario records: 0201-F4 is an optional input this fixture does not use."
