@@ -1,0 +1,42 @@
+id: "0368"
+type: task
+title: The records beside a specification in the facts
+
+status: ready
+
+value: 3
+risk: 2
+
+parent: "0132"
+children: []
+
+depends_on: ["0364"]
+spikes: []
+
+spec: src/tool/Features/Facts/.spec/README.md
+
+claims:
+  - B-011
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As a maintainer I want the decision, ADR and lesson records beside each specification in the facts, by kind, number, title and status, so that I find a Feature's decisions without listing its folders.
+
+  A record's status is read on OQ-3's default: the first word of an ADR's `## Status` section, and no status for a decision or a lesson. OQ-3 stays open in § 11. Records are read in the engine, never inside `Features/Facts/` (C-4).
+
+  Waits on 0364: the command and the document it adds members to.
+
+acceptance_criteria:
+  - "B-011 — a record's kind, number, title, status on OQ-3's default, and root-relative path"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author's cut of the approved Feature. Rejected: the records with the § 10 and § 12 facts in 0367; they are files beside a specification, not sections of it, and rest on OQ-3 alone.
+
+out_of_scope:
+  - "A record's body — § 5 row 8; spike `0252`."
+  - "Comparing two facts documents — § 5 row 7; epic `0228` candidate B."

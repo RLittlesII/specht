@@ -20,7 +20,7 @@ depends_on: ["0001/F2", "0001/F5", "0001/F6"]
 blocks: ["F4"]
 spikes: []
 created: "2026-10-30"
-updated: "2026-10-31"
+updated: "2026-11-06"
 github_issue: null
 synced_at: null
 ---
@@ -204,7 +204,15 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+- `0364`: the command and its published facts schema, the document contract every later item adds to by addition (B-001 to B-004, B-014, B-017, B-021 to B-023, B-026).
+- `0365`: claims and constraints (B-005, B-006, B-012, B-013, B-025), waiting on `0364`.
+- `0366`: § 5 rows, open questions, and a missing section or unreadable table (B-007, B-008, B-015), waiting on `0364` and `0365`.
+- `0367`: § 10 entries, § 12 rows, and the sections, roles and tables the manifest names (B-009, B-010, B-016), waiting on `0364` and `0365`.
+- `0368`: the decision, ADR and lesson records beside a specification (B-011), waiting on `0364`.
+- `0369`: the path selector (B-018 to B-020), waiting on `0364`.
+- `0370`: the text form (B-024), waiting on `0365` and `0366`.
+
+OQ-1 to OQ-6 stay open; the items proceed on their recorded defaults.
 
 ## Scoring
 

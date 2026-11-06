@@ -1,0 +1,48 @@
+id: "0366"
+type: task
+title: Out-of-scope rows and open questions in the facts
+
+status: ready
+
+value: 3
+risk: 2
+
+parent: "0132"
+children: []
+
+depends_on: ["0364", "0365"]
+spikes: []
+
+spec: src/tool/Features/Facts/.spec/README.md
+
+claims:
+  - B-007
+  - B-008
+  - B-015
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  As a coding agent I want each Feature's § 5 rows and § 11 open questions in the facts, with whether each question is resolved, so that I know what not to build and what is still undecided.
+
+  Whether an open question is resolved is read on OQ-2's default: `0228-F1` B-009's reading, with `Open` in exact case where the pinned manifest declares no marker. OQ-2 stays open in § 11. Both tables' headers are the engine's (C-7). A missing section or a table the parse cannot read leaves out that section's facts only (B-015); its scenario drops § 5.
+
+  Waits on 0364: the command and the document it adds members to. Waits on 0365: B-015's scenario asserts the claims and constraints are still given.
+
+acceptance_criteria:
+  - "B-007 — a § 5 row's number, item, reason and line"
+  - "B-008 — an open question's id, question, Blocks, resolution, line and resolved state, on OQ-2's default"
+  - "B-015 — a missing section or an unreadable table leaves only its own facts out"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author's cut of the approved Feature. Rejected: B-015 with the command in 0364; its scenario drops the § 5 rows this item gives.
+
+out_of_scope:
+  - "Lessons and deltas entries, sign-off rows and the headings the manifest names — B-009, B-010, B-016; 0367."
+  - "A manifest key for the out-of-scope or open-questions table headers — C-7."
+  - "Their text-form lines — B-024; 0370."
+  - "Epic files — § 5 row 10; B-026 in 0364."
