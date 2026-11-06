@@ -1,0 +1,78 @@
+id: "0390"
+type: task
+title: Read native claims from the tags of a claim file set's .feature files
+
+status: ready
+
+risk: 4
+
+parent: "0387"
+children: []
+
+depends_on: ["0389"] # 0389 adds the claim members the reader selects on
+spikes: []
+
+spec: src/specht/Rules/NativeClaims/.spec/README.md
+
+claims:
+  - B-001
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-011
+  - B-012
+  - B-013
+  - B-025
+  - B-030
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  The reader: for each claim file set, the `.feature` files its glob
+  matches outside `exclusions`, read as text through `IFileSystem`
+  (C-2), and a claim for each claim tag on a Feature, Rule, Scenario or
+  Scenario Outline, with its lifecycle from the manifest's tag lists.
+  Its claims enter the one catalogue the claim rules, `0001-F12` and
+  `0001-F13` read (C-5), in place of the claims table for that Feature.
+
+  Risk 4: a tag has one reading, the companion reader's form and
+  grammar (C-1; `0001-F5` decision 0013), and the analyzer's reader
+  must give the same answer (A-3; § 5 row 2); the catalogue record is
+  fixed for three Features; and order is ordinal paths, document order
+  and line order, so the output is byte-identical (B-030).
+
+  Waits on 0389, for the members it reads.
+
+acceptance_criteria:
+  - "B-001 — under 0.3.1 and `gherkin`, a set's claims come from its .feature files; no claims table read"
+  - "B-004 — a claim tag declares one claim, its id as authored, at the keyword line"
+  - "B-005 — a tag failing the form or grammar declares nothing and draws nothing"
+  - "B-006 — a Scenario Outline declares one claim, located at the outline"
+  - "B-007 — a Rule declares once; its scenarios inherit and do not redeclare"
+  - "B-011 — reordering or retitling scenarios keeps the catalogue"
+  - "B-012 — withdrawn and superseded tags give Withdrawn and Superseded; none gives Active"
+  - "B-013 — a planned tag keeps the claim and marks the scenario or rows planned"
+  - "B-025 — the scenarios carrying a claim, as `0001-F12` A-1 and `0001-F13` B-001 count them"
+  - "B-030 — byte-identical output for the same tree"
+  - "One tag reading (C-1); text only, relative paths (C-2); every tag list from the manifest (C-4); one catalogue (C-5)"
+  - "`0001-F7` B-154 — same report under 0.3.0 and 0.3.1 for a tree without `claim.source: gherkin`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's rulings of
+    2026-11-06 (OQ-2 to OQ-9 accepted; OQ-5 "0.3.1 patch, amend C-11",
+    `0001-F7` decision 0022). B-001 moves here from the proposed 0391:
+    every scenario of this item runs the check over a claim file set,
+    so its § 9 gate needs B-001, and B-001 needs the reader - as
+    proposed, 0390 and 0391 waited on each other. Value omitted,
+    inheriting 0387's.
+
+out_of_scope:
+  - "A set's record, identity check and report entry - 0391."
+  - "How the analyzer and the engine share one reader - § 5 row 2."
+  - "A claim inferred from a title, step text or file name - § 5 row 6."
+  - "Reporting a mistyped claim tag - § 5 row 7."

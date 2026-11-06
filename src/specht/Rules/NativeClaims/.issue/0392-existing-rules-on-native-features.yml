@@ -1,0 +1,55 @@
+id: "0392"
+type: task
+title: Hold a native Feature to the existing claim and section rules
+
+status: ready
+
+risk: 2
+
+parent: "0387"
+children: []
+
+depends_on: ["0391"] # 0391 gives a set its record, which B-020 holds to its sections and B-021's companions sit beside
+spikes: []
+
+spec: src/specht/Rules/NativeClaims/.spec/README.md
+
+claims:
+  - B-008
+  - B-020
+  - B-021
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  The rules that exist, run on a native Feature: `SPEC4003` reports
+  one identifier on two elements (B-008); `SPEC2001` and `SPEC2002`
+  hold a record to every contracted section but the claims table
+  (B-020); and `SPEC4001` and `SPEC4002` report nothing, since its
+  claim files are its companions and every claim tag in them declares
+  (B-021). No rule id is added.
+
+  Risk 2: each rule reads the catalogue already built; the change is
+  which section a record may lack and which companions a Feature has.
+
+  Waits on 0391, for the record.
+
+acceptance_criteria:
+  - "B-008 — one identifier on two elements of one Feature: SPEC4003 at each"
+  - "B-020 — a record needs every contracted section and table but the claims table, SPEC2001 and SPEC2002"
+  - "B-021 — SPEC4001 and SPEC4002 silent for a Feature a set names"
+  - "No shipped rule id changes meaning (C-3); one catalogue (C-5)"
+  - "`0001-F7` B-154 — same report under 0.3.0 and 0.3.1 for a tree without `claim.source: gherkin`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut on the repository owner's rulings of
+    2026-11-06 (OQ-2 to OQ-9 accepted; OQ-5 "0.3.1 patch, amend C-11",
+    `0001-F7` decision 0022), as proposed. Value omitted, inheriting
+    0387's.
+
+out_of_scope:
+  - "The matrix of a record, B-023 - 0396."
