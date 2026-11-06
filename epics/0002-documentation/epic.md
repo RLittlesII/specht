@@ -1,14 +1,14 @@
 ---
 title: "Epic 0002: Documentation"
-description: "Documentation as a first-class deliverable of every change: generated and checked inside the build now, published as a static site once specht is built"
+description: "Documentation as a first-class deliverable of every change: generated and checked inside the build, and published as a DocFX site on GitHub Pages"
 id: "0002"
 type: epic
-status: needs-decomposition
+status: ready-for-architecture
 priority: med
 milestone: null
 children: ["0002-F1", "0002-F2"]
 created: "2026-10-07"
-updated: "2026-10-11"
+updated: "2026-11-06"
 github_issue: null
 ---
 
@@ -21,20 +21,20 @@ something bolted on once `specht` is feature-complete. Epic `0001` is silent on
 documentation as a delivery concern; this epic names it before the gap
 compounds.
 
-The owner requested this work on 2026-09-29. Two Features are deliberately
-sequenced:
+The owner requested this work on 2026-09-29. Two Features, the second built
+on the first's output:
 
-- **`0002-F1` (now)**: documentation generated and checked inside the build. An
+- **`0002-F1`**: documentation generated and checked inside the build. An
   XML doc comment on every public type and member, enforced as `CS1591`; an API
-  reference generated from them by a NUKE target as a build artifact; and one
+  reference generated from them by DocFX in a NUKE target as a build artifact
+  (`0002-F1` decision 0002); and one
   hand-written command-line reference page, `docs/cli.md`, held to the tool's
   own help by a test and changed with the commands (`0002-F1` decision 0001).
   This is mechanism, not a publishing surface.
-- **`0002-F2` (later, `status: blocked` on `0002-F1`)**: a static site that
-  publishes `0002-F1`'s output to a stable URL. **Deferred by the owner** until
-  `specht` itself (epic `0001`) is built. It exists now as a placeholder, so
-  `0002-F1`'s output is structured to be consumed by a site. Its framework is
-  undecided: astro.build is a candidate, not a decision.
+- **`0002-F2`**: a static site, built with DocFX from `0002-F1`'s generated
+  reference and the `docs/*.md` pages, and published from CI to GitHub Pages
+  at a stable URL. The owner lifted its deferral on 2026-11-06 (`0002-F2`
+  decision 0001).
 
 ## Business Value
 
@@ -55,12 +55,13 @@ Feature owns that today.
 
 ## Features
 
-| Feature   | Name                        | Specification               | Status                      |
-| --------- | --------------------------- | --------------------------- | --------------------------- |
-| `0002-F1` | Docs as first-class citizen | `docs/.spec/README.md`      | `needs-decomposition`, high |
-| `0002-F2` | Documentation site          | `docs/site/.spec/README.md` | `blocked` on `0002-F1`, med |
+| Feature   | Name                        | Specification               | Status                         |
+| --------- | --------------------------- | --------------------------- | ------------------------------ |
+| `0002-F1` | Docs as first-class citizen | `docs/.spec/README.md`      | `ready-for-architecture`, high |
+| `0002-F2` | Documentation site          | `docs/site/.spec/README.md` | `ready-for-architecture`, med  |
 
-The site name leaves the framework out, because the framework is `0002-F2` OQ-2.
+The site name leaves the framework out: the framework was `0002-F2` OQ-2,
+resolved as DocFX on 2026-11-06.
 
 ## Placement
 
@@ -73,22 +74,22 @@ specification's identity is its frontmatter `epic` and `id` (`SPEC012`).
 This epic file lives at `epics/0002-documentation/epic.md`, where schema
 version 1's epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
-## Candidate task cut
+## Work items
 
-Not filed. Tasks are GitHub issues, cut from § 3 after agreement, and this
-repository has no remote yet. The candidate tasks are listed in epic order:
+Cut from each Feature's § 3. Every claim not yet `Covered` or `Withdrawn` is in
+exactly one item:
 
-| Task      | Feature   | Summary                                                                             | Claims                            |
-| --------- | --------- | ----------------------------------------------------------------------------------- | --------------------------------- |
-| `0002-01` | `0002-F1` | XML doc-comment enforcement: `CS1591` as an error, scoped to the public surface     | B-001; C-3                        |
-| `0002-02` | `0002-F1` | API-reference generation: a NUKE target writing under `.artifacts/`                 | B-002, B-004                      |
-| `0002-03` | `0002-F1` | The command-line reference page, held to the tool's help; filed as item `0181`      | B-003, B-006 to B-011; C-5 to C-8 |
-| `0002-04` | `0002-F1` | Build verification: the default build runs both and fails on an undocumented member | B-001, B-005                      |
-| `0002-05` | `0002-F2` | Site scaffold over `0002-F1`'s output, after the framework ADR                      | B-001                             |
-| `0002-06` | `0002-F2` | CI publish pipeline to a stable public URL                                          | B-002                             |
+| Item                                                                                   | Feature   | Work                                                     | Claims                | Prerequisites |
+| -------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------- | --------------------- | ------------- |
+| [0181](../../docs/.issue/0181-cli-reference.yml)                                       | `0002-F1` | The command-line reference page, held to the tool's help | B-003, B-006 to B-011 | None; done    |
+| [0404](../../docs/.issue/0404-fail-the-build-on-an-undocumented-public-member.yml)     | `0002-F1` | `CS1591` as an error on the public surface               | B-001                 | None          |
+| [0405](../../docs/.issue/0405-generate-the-api-reference-with-docfx.yml)               | `0002-F1` | The API reference by DocFX in a NUKE target, and its ADR | B-002, B-004          | None          |
+| [0406](../../docs/.issue/0406-run-documentation-in-the-default-build.yml)              | `0002-F1` | The default build runs enforcement and generation        | B-005                 | 0404, 0405    |
+| [0407](../../docs/site/.issue/0407-build-the-documentation-site-with-docfx.yml)        | `0002-F2` | The DocFX site over the reference and `docs/*.md`        | B-001                 | 0405          |
+| [0408](../../docs/site/.issue/0408-publish-the-documentation-site-to-github-pages.yml) | `0002-F2` | CI publishes the site to GitHub Pages                    | B-002                 | 0407          |
 
-`0002-05` and `0002-06` are not cut until the deferral is lifted (`0002-F2`
-B-003).
+`0002-F2` B-003, the deferral, is withdrawn (`0002-F2` decision 0001). Item
+`0362`, the front page and documentation index, carries no claim.
 
 ## Cross-epic notes
 

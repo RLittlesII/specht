@@ -1,0 +1,74 @@
+id: "0407"
+type: task
+title: Build the documentation site with DocFX
+
+status: ready-for-architecture
+
+value: 3
+risk: 2
+
+parent: "0002"
+children: []
+
+depends_on: ["0405"]
+spikes: []
+
+spec: docs/site/.spec/README.md
+
+claims:
+  - B-001
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  A NUKE target builds a static site with DocFX from the API reference
+  `0405` generates and the `docs/*.md` pages, under `.artifacts/`, and
+  publishes nothing. DocFX is the repository owner's ruling (`0002-F1`
+  decision 0002; decision 0001).
+
+  It waits on `0405`: the site's API reference is that target's output
+  (C-1), and the ADR `0002-F2` C-2 asks for is written there. This item
+  cites that ADR before § 7's design, and adds an ADR of its own only for a
+  site decision the first one does not cover.
+
+  Hazards for `implementer`:
+  - B-001 allows no page written by hand in place of the content. A table of
+    contents or a landing page DocFX needs is configuration; § 7 says which
+    file is which. The documentation index, `docs/README.md`, is one of the
+    pages (`0002-F1` C-6).
+  - A specification under `docs/` is not content (§ 5 row 2).
+  - Whether the site target joins the default build, or runs only in CI
+    for `0408`, is `implementer`'s call in § 7; B-002 needs it to build in CI.
+  - ADR-0025 names lifting `0002-F2` B-003 as its revisit trigger, for
+    versioned rule pages. This item publishes the pages B-001 names and does
+    not revisit ADR-0025; whether a revisit is cut is the owner's.
+
+  Value 3 and risk 2 are spec-author's: the Feature's value, and a second
+  DocFX step over a configuration `0405` already proves.
+
+  Expected files: the DocFX site configuration under `docs/site/`, or where
+  § 7 places it; `.build/`; the tests and step definitions for B-001; § 6 to
+  § 9 of the specification by their owners.
+
+acceptance_criteria:
+  - "B-001 — a DocFX site from the reference and `docs/*.md` alone"
+  - "Constraints preserved: 0002-F2 C-1, C-2; 0002-F1 C-4."
+  - "`./build.sh Format`, `./build.sh Specht` and `./build.sh` pass."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, the repository owner: the deferral is lifted, and DocFX
+    builds the site from `docs/*.md` (decision 0001; 0002-F1 decision 0002).
+  - |
+    2026-11-06, spec-author: cut following epic `0002`'s former candidate
+    task `0002-05`; the framework ADR it waited on moved to `0405`, the
+    first item to use DocFX. Not an owner ruling.
+
+out_of_scope:
+  - "Generating the API reference or writing usage pages — § 5 row 1; 0405 and 0002-F1."
+  - "Specifications as site content — § 5 row 2."
+  - "Publishing the site — 0408."
+  - "Rule pages under `docs/rules/` and their versioning — 0001-F3 and ADR-0025."

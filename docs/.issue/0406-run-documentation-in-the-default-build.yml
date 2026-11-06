@@ -1,0 +1,60 @@
+id: "0406"
+type: task
+title: Run documentation enforcement and generation in the default build
+
+status: ready-for-architecture
+
+value: 3
+risk: 1
+
+parent: "0002"
+children: []
+
+depends_on: ["0404", "0405"]
+spikes: []
+
+spec: docs/.spec/README.md
+
+claims:
+  - B-005
+
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+
+summary: |
+  `./build.sh` with no target runs the documentation enforcement of `0404`
+  and the API-reference target of `0405`, with no separate manual step, so an
+  undocumented public member fails the default build, as B-001's scenario
+  reads it.
+
+  It waits on `0404` and `0405`: the enforcement and the target it puts on
+  the default path must exist first.
+
+  If the change moves a target CI runs, `.github/workflows/ci.yml` is
+  generated: regenerate it with `./build.sh Compile`, commit the
+  regeneration, and diff the step order. Never edit it by hand.
+
+  Value 3 and risk 1 are spec-author's: a dependency edge in the build graph.
+
+  Expected files: `.build/SpechtBuild.cs`; `.github/workflows/ci.yml` if
+  regenerated; the tests and step definitions for B-005; § 6 to § 9 of the
+  specification by their owners.
+
+acceptance_criteria:
+  - "B-005 — the default target runs enforcement and generation"
+  - "The default `./build.sh` fails on an undocumented public member of `src/specht` or `src/tool` (B-001's scenario, delivered by 0404)."
+  - "Constraints preserved: 0002-F1 C-1."
+  - "`./build.sh Format`, `./build.sh Specht` and `./build.sh` pass."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-06, spec-author: cut beside `0404` and `0405`, following epic
+    `0002`'s former candidate task `0002-04`; B-001 is `0404`'s alone, so
+    this item carries only B-005. Not an owner ruling.
+
+out_of_scope:
+  - "The enforcement itself — 0404."
+  - "The documentation target itself — 0405."
+  - "Building the site in the default build — 0407 decides where the site target runs."
