@@ -82,8 +82,10 @@ the epic schema and its manifest settings.
 
 ## Manifest
 
-This example is a complete `.specht/manifest.json` for a tool that ships
-schema `0.3.0`. Keys starting with `$` are comments that Specht ignores.
+For the `specht.tool` 0.5.0 release, `dotnet specht init` pins schema `0.3.0`
+in a new `.specht/manifest.json`. The package and schema have independent
+versions. The sample below uses that schema pin and shows how to change
+settings. Specht ignores keys starting with `$`, so they can hold comments.
 
 ```json
 {
@@ -100,9 +102,9 @@ schema `0.3.0`. Keys starting with `$` are comments that Specht ignores.
 }
 ```
 
-Run `dotnet specht schema list` to see the schema versions your installed tool
-ships. Run `dotnet specht manifest` to see the settings in effect, including
-defaults filled in for omitted keys.
+Run `dotnet specht manifest` to see your effective settings, including defaults
+for omitted keys. Run `dotnet specht manifest --defaults --json` to see the
+manifest for the newest schema shipped by your installed tool.
 
 ## Documentation
 

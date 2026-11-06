@@ -18,4 +18,4 @@ type: reference
 | Use Gherkin claims and collect test evidence               | [Native Gherkin claims](native-gherkin-claims.md)                                              |
 | Connect an MCP client                                      | [MCP](mcp.md)                                                                                  |
 | Mirror work items to GitHub                                | [Reusable mirror action](../.github/actions/mirror/README.md)                                  |
-| Build, release, or see planned work                        | [Building](building.md), [Releasing](releasing.md), [Roadmap](roadmap.md)                      |
+| Build or release Specht                                    | [Building](building.md), [Releasing](releasing.md)                                             |
