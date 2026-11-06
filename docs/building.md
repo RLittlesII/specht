@@ -11,7 +11,7 @@ Requires the .NET SDK pinned in [`global.json`](../global.json).
 ```sh
 dotnet tool restore
 ./build.sh             # compile and test
-./build.sh Pack        # specht.tool.<version>.nupkg
+./build.sh Pack        # specht.tool, Specht.CodeAnalysis and specht.mcp nupkg
 ./build.sh Benchmark --benchmark-job Short # every benchmark, Release
 ./build.sh Benchmark --benchmark-filter '*CheckBenchmarks*' --benchmark-job Short
 ./build.sh Specht   # run specht on this repository's own specifications

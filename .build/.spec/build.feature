@@ -67,10 +67,10 @@ Feature: The build
     Then the scenarios of every linked specification companion run
 
   @B-009
-  Scenario: Packing writes both release packages
+  Scenario: Packing writes every release package
     When the pack target runs
-    Then the tool and code analysis packages are written to the build's package output
-    And both names carry the version computed for the commit
+    Then the tool, code analysis and MCP packages are written to the build's package output
+    And every name carries the version computed for the commit
 
   @B-010
   Scenario: A fresh clone restores every tool the build needs

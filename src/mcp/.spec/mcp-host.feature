@@ -258,3 +258,10 @@ Feature: The MCP host
     When the client sends it
     Then the server answers with an error
     And the error names the protocol revision the server supports
+
+  @B-035
+  Scenario: A repository release publishes the MCP package with the tool
+    Given a repository release
+    When its packages are published
+    Then the MCP package is published to nuget.org with the tool and analysis packages
+    And the three carry the repository release version

@@ -36,6 +36,14 @@ public sealed class PackedTool : IDisposable
         return Directory.GetFiles(_packages!, "Specht.CodeAnalysis.*.nupkg").Should().ContainSingle().Subject;
     }
 
+    /// <summary>Gets the MCP package produced by the same solution pack.</summary>
+    /// <returns>The path of the one <c>specht.mcp</c> package.</returns>
+    public async Task<string> McpPackageAsync()
+    {
+        _ = await _package.Value;
+        return Directory.GetFiles(_packages!, "specht.mcp.*.nupkg").Should().ContainSingle().Subject;
+    }
+
     /// <summary>Reads what the package says about itself.</summary>
     /// <returns>The <c>metadata</c> element of the package's manifest.</returns>
     public async Task<XElement> MetadataAsync()

@@ -45,8 +45,8 @@ minor. Replace `<run-id>` and `<tag>` below with the values GitHub and `nbgv` pr
    every shipped schema is locked and a `0.x` version is a prerelease.
 
 4. **Verify publication.** Watch the tag's `release` workflow to completion.
-   Confirm `specht.tool` and `Specht.CodeAnalysis` are on nuget.org at the same
-   computed version, and the GitHub Release has generated notes and the correct
+   Confirm `specht.tool`, `Specht.CodeAnalysis` and `specht.mcp` are on nuget.org
+   at the same computed version, and the GitHub Release has generated notes and the correct
    prerelease flag. Packages are on nuget.org; the GitHub Release attaches
    neither package. Review the advisory release-comparison report; an
    incomplete comparison is retried by rerunning all jobs.

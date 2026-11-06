@@ -37,8 +37,7 @@ own, not a `specht` command, and runs the repository's pinned `specht`
 Built: the host over standard input and output (`0329`), the pinned-tool
 resolution (`0361`), the `check` tool (`0330`) and the rule, rule-list and
 manifest tools, `explain`, `rules` and `manifest` (`0331`), and the page,
-`docs/mcp.md` (`0332`). It is not yet in the `Pack` or release targets and is not released; it
-will release on the tool's one `v<version>` tag.
+`docs/mcp.md` (`0332`).
 
 `README.md` is the public front page: what the tool is, why, how to install and
 use it, and the layout; the reference pages are under `docs/`. The design
@@ -77,7 +76,7 @@ NUKE drives everything. `specht.slnx` is the solution.
 ./build.sh             # Default = Compile + CodeAnalysis + Test
 ./build.sh Format      # verify-only - fails on a diff
 ./build.sh CodeAnalysis # pack the current analyzer and check all three source projects
-./build.sh Pack        # specht.tool and Specht.CodeAnalysis packages (specht.mcp is not yet in Pack)
+./build.sh Pack        # specht.tool, Specht.CodeAnalysis and specht.mcp packages
 ./build.sh Specht   # specht, on this repository's own .spec/ tree
 ```
 

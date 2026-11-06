@@ -219,6 +219,46 @@ public sealed class CodeAnalysisPackageIntegrationTests
     }
 
     [Fact]
+    public async Task McpProject_WhenPacked_ShouldCarryTheSpechtMcpToolSettingsAtTheVersionOfTheToolAndTheAnalyzerPackages()
+    {
+        if (!AppContext.TargetFrameworkName!.EndsWith("v10.0", StringComparison.Ordinal))
+        {
+            Assert.Skip("The package integration test runs once against the repository's .NET 10 consumer runtime.");
+        }
+
+        // Given
+        var root = FindRepositoryRoot();
+        var output = Path.Combine(root, ".artifacts", "codeanalysis-package-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(output);
+
+        try
+        {
+            // When
+            var mcp = await Pack(root, "src/mcp/mcp.csproj", output, "specht.mcp");
+            var tool = await Pack(root, "src/tool/tool.csproj", output, "specht.tool");
+            var analysis = await Pack(root, "src/codeanalysis/codeanalysis.csproj", output, "Specht.CodeAnalysis");
+
+            // Then
+            var version = Path.GetFileNameWithoutExtension(mcp)["specht.mcp.".Length..];
+            Path.GetFileNameWithoutExtension(tool)["specht.tool.".Length..].Should().Be(version);
+            Path.GetFileNameWithoutExtension(analysis)["Specht.CodeAnalysis.".Length..].Should().Be(version);
+            using var archive = ZipFile.OpenRead(mcp);
+            var settings = archive.Entries.Where(static entry => entry.Name == "DotnetToolSettings.xml").ToArray();
+            settings.Should().NotBeEmpty();
+            foreach (var entry in settings)
+            {
+                using var stream = entry.Open();
+                XDocument.Load(stream).Descendants().Single(static element => element.Name.LocalName == "Command")
+                    .Attribute("Name")!.Value.Should().Be("specht-mcp");
+            }
+        }
+        finally
+        {
+            Directory.Delete(output, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ConsumerRoot_WhenItSetsNoScenarioInputProperty_ShouldDeliverTheCentralFeatureTreeAsScenarioInputs()
     {
         // Given

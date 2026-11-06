@@ -60,7 +60,7 @@ src/
   analyzers/                   Specht.Analysis source analyzer (epic 0201)
   codefixes/                   Specht.Codefixes source code fixes (epic 0201)
   codeanalysis/                Specht.CodeAnalysis package deployment (epic 0201)
-  mcp/                         specht.mcp - the MCP server, command `specht-mcp` (0132-F3); host, pinned-tool resolution and `check` built
+  mcp/                         specht.mcp - the MCP server, command `specht-mcp` (0132-F3)
 
 test/
   tests/                       specht.tests - unit and integration tests
@@ -227,7 +227,7 @@ none.
 ./build.sh UnitTest         # --filter-trait "Tier=Unit"
 ./build.sh IntegrationTest  # --filter-trait "Tier=Integration"
 ./build.sh AcceptanceTest   # test/acceptance, Reqnroll, no filter
-./build.sh Pack             # specht.tool and Specht.CodeAnalysis packages into .artifacts/nupkg (specht.mcp is not yet in Pack)
+./build.sh Pack             # specht.tool, Specht.CodeAnalysis and specht.mcp packages into .artifacts/nupkg
 ./build.sh Specht           # the tool checking this repository's own .spec/ tree
 ./build.sh MirrorTest       # legacy Python mirror tests, manual only; new action coverage runs in the C# integration tier
 ./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version> on a commit of main; skipped otherwise

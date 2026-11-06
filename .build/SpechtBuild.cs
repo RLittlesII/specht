@@ -34,6 +34,13 @@ internal partial class SpechtBuild : NukeBuild
 
     private static string PythonPath => ToolPathResolver.GetPathExecutable("python3");
 
+    private static string[] ReleaseProjects =>
+    [
+        "src/tool/tool.csproj",
+        "src/codeanalysis/codeanalysis.csproj",
+        "src/mcp/mcp.csproj",
+    ];
+
     private AbsolutePath ArtifactsDirectory => RootDirectory / ".artifacts";
 
     private AbsolutePath PackageDirectory => ArtifactsDirectory / "nupkg";
@@ -145,7 +152,7 @@ internal partial class SpechtBuild : NukeBuild
     private Target Build => definition => definition
         .DependsOn(Test);
 
-    // 0055-F1 B-009 and 0201-F6 B-020: pack the tool and analysis packages at one version.
+    // 0055-F1 B-009 and 0201-F6 B-020: pack the tool, analysis and MCP packages at one version.
     private Target Pack => definition => definition
         .DependsOn(Build)
         .Produces(PackageDirectory / "*.nupkg")
@@ -221,12 +228,15 @@ internal partial class SpechtBuild : NukeBuild
 
     private void PackReleasePackages(string configuration)
     {
-        PackTool(configuration);
-        DotNetPack(settings => settings
-            .SetProject(RootDirectory / "src" / "codeanalysis" / "codeanalysis.csproj")
-            .SetConfiguration(configuration)
-            .SetOutputDirectory(PackageDirectory)
-            .EnableNoBuild());
+        PackageDirectory.CreateOrCleanDirectory();
+        foreach (var project in ReleaseProjects)
+        {
+            DotNetPack(settings => settings
+                .SetProject(RootDirectory / project)
+                .SetConfiguration(configuration)
+                .SetOutputDirectory(PackageDirectory)
+                .EnableNoBuild());
+        }
     }
 
     private AbsolutePath TierCoverageDirectory(string tier)
