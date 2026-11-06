@@ -87,20 +87,52 @@ in a new `.specht/manifest.json`. The package and schema have independent
 versions. The sample below uses that schema pin and shows how to change
 settings. Specht ignores keys starting with `$`, so they can hold comments.
 
+After running `dotnet specht init --all` in a fresh repository, this example
+uses the frontmatter schemas written to disk and checks specifications under
+`src/`.
+
 ```json
 {
-  "$comment.schemaVersion": "Selects the schema and rule IDs independently of the installed tool version.",
   "schemaVersion": "0.3.0",
-  "$comment.pinPolicy": "Use the exact pin. Use latest-patch to allow newer shipped patches in the same minor.",
+  "$comment.pinPolicy": "Use the exact pin. Set latest-patch to allow newer shipped patches in the same minor.",
   "pinPolicy": "exact",
-  "$comment.schemaSource": "Use the tool's bundled frontmatter schemas. Set disk to read schemas from .specht/schema/frontmatter/.",
-  "schemaSource": "embedded",
-  "$comment.rules": "Report traceability-row violations as warnings. Levels are error, warning, and off. Omitted rules keep their default levels.",
+  "$comment.layouts": "Find feature specifications beside the code under src/.",
+  "layouts": [{ "name": "features", "glob": "src/**/.spec/README.md" }],
+  "$comment.exclusions": "This replaces the default list. Bare names match at any depth. A leading slash anchors a path to the repository root.",
+  "exclusions": [
+    ".git",
+    ".artifacts",
+    ".skillfile",
+    ".claude",
+    "graphify-out",
+    "bin",
+    "obj",
+    "node_modules",
+    "/.spec",
+    "/src/checkout/generated"
+  ],
+  "$comment.schemaSource": "Read local frontmatter schemas. Omit this setting to use the bundled schemas when there is no recorded upstream.",
+  "schemaSource": "disk",
+  "$comment.frontmatterSchemas": "Names are relative to .specht/schema/frontmatter/. Rename these entries if you rename the files.",
+  "frontmatterSchemas": {
+    "feature": "feature.schema.json",
+    "task": "task.schema.json"
+  },
+  "$comment.rules": "Report traceability-row violations as warnings. Rule levels are error, warning, and off.",
   "rules": {
     "SPEC4004": "warning"
-  }
+  },
+  "$comment.matrix": "Check that each traceability row's scenario title resolves to a tagged companion scenario.",
+  "matrix": { "scenarioTitles": true },
+  "$comment.tests": "Resolve named tests in the traceability matrix against these files. Adjust the glob to your test tree.",
+  "tests": { "files": ["test/**/*.cs"] }
 }
 ```
+
+Use `spechtSchema` to share frontmatter schemas across repositories with a
+recorded source and hashes. For .NET projects, `codeAnalysis` selects the
+projects and features whose code is checked against the specifications. The
+Configuration guide in the documentation index has examples of both.
 
 Run `dotnet specht manifest` to see your effective settings, including defaults
 for omitted keys. Run `dotnet specht manifest --defaults --json` to see the
