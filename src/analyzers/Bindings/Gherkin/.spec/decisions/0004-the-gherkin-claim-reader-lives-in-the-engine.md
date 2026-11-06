@@ -19,6 +19,8 @@ The owner's words, verbatim:
 - Asked where the Gherkin claim reader should live so the tool can use it: "In
   the specht engine".
 - Then: "same place as the yaml ... and markdown readers ... right?!"
+- Asked "What happens to the released catalog field in the evidence file?":
+  "Withdraw it in 0411".
 
 The recorder reads those words as follows. The placement, the link and the
 reading path below are that reading, not the owner's wording.
@@ -30,11 +32,12 @@ reading path below are that reading, not the owner's wording.
    as `src/analyzers/analyzers.csproj` already compiles those four files. No
    assembly and no package is added.
 3. `specht evidence` reads claim files through the engine's reader. The
-   test-evidence artifact need not carry a claim catalogue.
+   `catalog` member of the test-evidence artifact is withdrawn by item 0411,
+   on the owner's answer "Withdraw it in 0411".
 4. This supersedes [decision 0003](0003-the-analyzer-exports-the-native-claim-catalogue.md).
-5. Item 0411 moves the reader and writes the § 3 change: B-030 withdrawn or
-   amended, and every section that rests on decision 0003. This decision
-   changes no claim.
+5. Item 0411 moves the reader and writes the § 3 change: B-030 withdrawn,
+   and every section that rests on decision 0003. This decision changes no
+   claim.
 
 ## Why
 

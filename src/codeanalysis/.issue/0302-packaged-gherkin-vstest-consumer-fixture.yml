@@ -42,7 +42,7 @@ acceptance_criteria:
   - "0201-F3 B-017, B-019 - the clean-checkout sequence builds first and then holds current passing evidence"
   - "0201-F3 B-018, 0201-F5 B-012 - stale evidence is reported and excluded"
   - "0201-F3 B-022, 0201-F5 B-022 - the declared test project with no evidence fails as incomplete input"
-  - "0201-F7 B-030 - the gate reads the native claims from the catalogue in the evidence artifact"
+  - "The gate reads the native claims through the engine's Gherkin claim reader, not a catalogue in the evidence artifact; 0201-F7 B-030 is withdrawn by 0411, and the 0201-F5 claim 0409 adds joins this criterion once it exists"
   - "0201-F5 B-017 - the valid fixture passes the default gate; a failed or skipped owned case fails it"
   - "B-002 - the same configuration gives the same verdicts in the local build and in the build target CI runs, with no CI-only property or file"
   - "No Reqnroll package, generated test or scenario record appears in the fixture, and none is needed to pass."
