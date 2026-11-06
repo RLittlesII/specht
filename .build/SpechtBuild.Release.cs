@@ -113,11 +113,7 @@ internal sealed partial class SpechtBuild
     private string[] ReleasePackages()
     {
         var version = ReleaseTag()[1..];
-        var packages = new[]
-        {
-            PackageFile("src/tool/tool.csproj"),
-            PackageFile("src/codeanalysis/codeanalysis.csproj"),
-        };
+        var packages = ReleaseProjects.Select(PackageFile).ToArray();
         foreach (var package in packages)
         {
             Assert.True(File.Exists(package), $"Missing release package {Path.GetFileName(package)}.");
