@@ -1,7 +1,7 @@
 id: "0363"
 type: bug
 title: Pack and release specht.mcp with the tool
-status: in-progress
+status: done
 value: 4
 risk: 2
 parent: null
@@ -12,7 +12,7 @@ spec: null
 claims: []
 created: "2026-11-05"
 updated: "2026-11-05"
-closed: null
+closed: "2026-11-05"
 summary: |
   Release 0.5.0 shipped without the MCP package. The Pack target writes only
   specht.tool and Specht.CodeAnalysis, the release package list names only
