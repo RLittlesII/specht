@@ -54,6 +54,13 @@ decisions:
     2026-11-06, spec-author: homed in 0201-F6, not 0201-F3 or 0201-F7. 0201-F6
     owns mandatory enforcement and its violated claims; 0201-F3 B-017 is not
     violated, and 0201-F7 B-017 delegates to the Markdown behaviour.
+  - |
+    2026-11-06, repository owner, recorded by spec-author: asked "Which set
+    should be recognised test methods?", chose "Cases ∪ bound (Recommended)",
+    which the option described as "Methods named by a discovered case, plus
+    today's eligible-bound methods. Fixes the bug; a bound method the runner
+    never discovered keeps today's verdict and stays reconciliation's
+    missingResult." Rejected: "Discovered cases only".
 out_of_scope:
   - "Reading native claims in `specht evidence` and the gate's project set: 0409."
   - "The packaged consumer fixture itself: 0302."
