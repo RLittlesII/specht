@@ -578,8 +578,9 @@ Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 
 2026-11-06: B-001 and B-005 were inert for a discovered test method with no
 `verifies`: authoritative recognition required an eligible binding, so the
 mandatory role never reached the method it exists for. 0201-F3 § 7 now states
-that recognition includes every method a discovery case names. The claims are
-unchanged. [Lesson 0002](lessons/0002-recognition-reads-the-runners-discovered-cases.md)
+that recognition includes every method a discovery case names. The claims and
+the scenarios are unchanged: B-005's outline already lists a missing required
+binding, and B-005 stays Partial while its steps are unbound. [Lesson 0002](lessons/0002-recognition-reads-the-runners-discovered-cases.md)
 records the finding.
 
 2026-11-01: B-020 and its scenario no longer attach the packages to the GitHub

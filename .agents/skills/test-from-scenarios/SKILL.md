@@ -55,6 +55,10 @@ Invented data, committed beside the test, preserving the exact wire format that
 matters — header casing, timestamp format, byte-for-byte body. Never real personal
 data and never a captured payload from a real sender, scrubbed or not.
 
+A fixture that stands in for another component's output is one that component
+could produce from the same input. Where the producer exists, derive the fixture
+from it; never plant a field the input would not yield.
+
 ## What is worth testing
 
 Where bugs actually live: differs and derivations, converters and mappers,

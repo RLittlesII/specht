@@ -2,13 +2,13 @@
 title: "Lesson 0002: Recognition reads the runner's discovered cases"
 description: "Authoritative recognition required an eligible binding, so a discovered test method with no verifies was never a recognised test and mandatory enforcement could not report it"
 type: lesson
-kind: product
+kind: process
 ---
 
 # Lesson 0002: Recognition reads the runner's discovered cases
 
 **Date:** 2026-11-06
-**Kind:** product
+**Kind:** process
 
 ## Symptom
 
@@ -43,3 +43,10 @@ their artifact the way the runner's logger does, from the compilation export.
 - [0201-F6 B-001 and B-005](../README.md#9-traceability-matrix) — § 9 names
   the tests that drive recognition from a faithful artifact in mandatory
   scope; B-005 is Partial until its scenario's steps are bound.
+
+## Skill
+
+`test-from-scenarios` § "Fixtures are synthetic" gains the rule that a fixture
+standing in for another component's output is one that component could
+produce from the same input, derived from the producer where it exists, never
+with a field the input would not yield.

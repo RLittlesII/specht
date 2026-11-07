@@ -61,6 +61,12 @@ decisions:
     today's eligible-bound methods. Fixes the bug; a bound method the runner
     never discovered keeps today's verdict and stays reconciliation's
     missingResult." Rejected: "Discovered cases only".
+  - |
+    2026-11-06, spec-author: this item restores the SPCT0007 case B-005 names,
+    a missing required binding, and its unit test; the `@B-005` outline already
+    lists that example. B-005 stays Partial because its scenario steps are
+    unbound, a gap that predates this item. Binding them remains open and is
+    not this item's scope.
 out_of_scope:
   - "Reading native claims in `specht evidence` and the gate's project set: 0409."
   - "The packaged consumer fixture itself: 0302."
