@@ -583,8 +583,14 @@ by `DocumentationBindingAnalyzer` and `DocumentationRepairs` in `src/codefixes`)
 - Authoritative: a valid artifact whose `project`, `targetFramework`,
   `configuration.name` equal `SpechtProjectPath`, `TargetFramework` and
   `Configuration` of the compilation, whose discovery is `complete`, and whose
-  `sourceFingerprint` and `policyFingerprint` equal the compilation's. Behaviour
-  is today's: recognition is the artifact's eligible resolved methods.
+  `sourceFingerprint` and `policyFingerprint` equal the compilation's.
+  Recognition is the methods the runner discovered, each named by a discovery
+  case's `methodSymbolId`, together with the eligible resolved bound methods
+  the artifact's discovery `methods` lists. Discovery `methods` is the compiled
+  method inventory, helpers included, not the discovered set. So a discovered
+  method with no `verifies` is recognised, and the mandatory
+  `testMethod`/`verifies` role reports SPCT0007 on it (0201-F6 B-001, B-005;
+  item 0410).
 - Provisional: anything else - no artifact, invalid, another configuration,
   incomplete discovery, or stale. `DocumentationBindingReader.Read` accepts
   `<verifies>` on any ordinary method (the shape test only), and no declaration
