@@ -1,7 +1,7 @@
 id: "0411"
 type: task
 title: "Put the Gherkin claim reader in the engine"
-status: in-progress
+status: done
 value: 4
 risk: 5
 parent: "0201"
@@ -11,8 +11,8 @@ spikes: []
 spec: src/analyzers/Bindings/Gherkin/.spec/README.md
 claims: ["B-030"]
 created: "2026-11-06"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-07"
+closed: "2026-11-07"
 summary: |
   0201-F7 decision 0004 supersedes decision 0003. The Gherkin claim reader
   moves from `src/analyzers/Bindings/Gherkin/` into `src/specht/Model/`, beside

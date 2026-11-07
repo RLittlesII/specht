@@ -114,8 +114,8 @@ and comment handling not to misread their content.
   reading the analyzer can do in one class.
 - A keyword table for every Gherkin language: no consumer has asked for one.
 - Linking `FeatureTagParser.cs` into the analyzer: it needs `SpecStructure` and
-  the manifest types behind it, and the owner has directed against new MSBuild
-  links.
+  the manifest types behind it, and decision 0004 covers only the Gherkin claim
+  reader beside the four text readers.
 - A shared library for the tag rule: withdrawn by the owner (ADR-0021).
 - A candidate prefix or a `/claimTag` mapping target: decision 0002; a second
   name for a setting the manifest already has.
