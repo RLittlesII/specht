@@ -1,6 +1,6 @@
 ---
 title: "ADR-0033: Hand-cited ids are minted by Nano ID; Snowflake is the second strategy, with random fields"
-description: "Item 0256's proposal, carrying its own evidence. The sequence, Snowflake as supplied and with derived or random fields, and Nano ID at four sizes were run through a collision simulation of parallel branches cut from one main, per record kind, on an unmerged trial of the owner's Strategy/Decorator design. Proposed: Nano ID in lower-case base32 for every hand-cited type, Snowflake with random datacenter, worker and sequence start as the second built-in, item 0128 kept as the backstop, and online allocation left to ADR-0028. The record adopts nothing."
+description: "Item 0256's proposal, carrying its own evidence. The sequence, Snowflake as supplied and with derived or random fields, and Nano ID at four sizes were run through a collision simulation of parallel branches cut from one main, per record kind, on an unmerged trial of the owner's Strategy/Decorator design. Proposed: Nano ID in lower-case base32 for every hand-cited type, Snowflake with random datacenter, worker and sequence start as the second built-in, item 0128 kept as the backstop, and online allocation left to ADR-0028. Accepted on the owner's ruling of 2026-11-07."
 type: adr
 ---
 
@@ -8,16 +8,18 @@ type: adr
 
 ## Status
 
-proposed - 2026-11-07. Decider: the repository owner. Item `0256`
+accepted - 2026-11-07, by the owner, in session, selecting the option "Accept
+as proposed". Recorded by spec-author. Decider: the repository owner. Item `0256`
 ([`.issue/0256-evaluate-snowflake-record-ids.yml`](../../.issue/0256-evaluate-snowflake-record-ids.yml)),
 which quotes the owner's request of 2026-10-23 and direction of 2026-11-06.
 The design trialled is the owner's, recorded in `0001-F19`
 [decision 0001](../../src/specht/IdGeneration/.spec/decisions/0001-ids-are-minted-by-a-strategy-with-decorators-opted-in-per-type.md).
-Every recommendation below is this record's proposal, not the owner's. The
-record adopts nothing, amends no claim, renumbers nothing and edits no
-accepted record. It answers `0001-F19` OQ-1 to OQ-10 and OQ-12
+Every recommendation below is this record's, not the owner's. The record
+amends no claim, renumbers nothing and edits no accepted record. It answers
+`0001-F19` OQ-1 to OQ-10 and OQ-12
 ([`src/specht/IdGeneration/.spec/README.md`](../../src/specht/IdGeneration/.spec/README.md)
-§ 11) as proposals; OQ-11 is not this spike's.
+§ 11); settling them in that specification is a separate change. OQ-11 is not
+this spike's.
 
 ## Context
 
