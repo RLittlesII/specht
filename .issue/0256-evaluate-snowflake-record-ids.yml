@@ -2,7 +2,7 @@ id: "0256"
 type: spike
 title: Weigh Snowflake and other collision-free ids for records claimed across branches
 
-status: ready
+status: done
 
 value: 3
 risk: 3
@@ -18,8 +18,8 @@ spec: null
 claims: []
 
 created: "2026-10-23"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-07"
+closed: "2026-11-07"
 
 summary: |
   2026-10-23, the repository owner: "This is snowflake. It is supposedly an
@@ -206,6 +206,13 @@ decisions:
     `0132-F4` B-023. This spike's ADR answers `0001-F19` OQ-1 to OQ-10 and
     OQ-12; OQ-11 is not this spike's. Status unchanged, `ready`; scope,
     criteria and out-of-scope unchanged.
+  - |
+    2026-11-07, spec-author: the spike delivered its product, the proposed
+    ADR-0033 in `.spec/adr/`, with the repository owner as decider, and the
+    trial branch `0256/trial-strategy-decorator` at `cf626a3a`, cut from
+    `f8817170` and left unmerged. The ADR adopts nothing; it answers `0001-F19` OQ-1 to
+    OQ-10 and OQ-12 as proposals for the owner's ruling. Status `done`;
+    scope, criteria and out-of-scope unchanged.
 
 out_of_scope:
   - "Renumbering any existing id - AGENTS.md § Stable IDs; lesson 0005 records the one exception and does not widen it."
