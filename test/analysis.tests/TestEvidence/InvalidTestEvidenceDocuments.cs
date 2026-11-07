@@ -41,6 +41,14 @@ internal sealed class InvalidTestEvidenceDocuments : TheoryData<string, string>
         laterVersion["formatVersion"] = 4;
         Add(laterVersion.ToJsonString(), "unsupportedContract");
 
+        var retiredVersion = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.Valid)!;
+        retiredVersion["formatVersion"] = 2;
+        Add(retiredVersion.ToJsonString(), "unsupportedContract");
+
+        Add(WithCatalog(TestEvidenceJson.Valid, 2), "unsupportedContract");
+        Add(WithCatalog(TestEvidenceJson.Valid, 1), "invalidContract");
+        Add(WithCatalog(TestEvidenceJson.VersionThree, 3), "invalidContract");
+
         var unsupportedVersion = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.Valid)!;
         unsupportedVersion["formatVersion"] = 0;
         Add(unsupportedVersion.ToJsonString(), "unsupportedContract");
@@ -83,4 +91,38 @@ internal sealed class InvalidTestEvidenceDocuments : TheoryData<string, string>
             "\"feature\":\"0201-F3\",", "\"feature\":\"0201-F3\",\"feature\":\"other\",");
         Add(duplicateBindingAttribute, "invalidContract");
     }
+
+    private static string WithCatalog(string json, int version)
+    {
+        var artifact = System.Text.Json.Nodes.JsonNode.Parse(json)!;
+        artifact["formatVersion"] = version;
+        artifact["catalog"] = System.Text.Json.Nodes.JsonNode.Parse(CatalogJson);
+        return artifact.ToJsonString();
+    }
+
+    private const string CatalogJson = """
+        {
+          "features": [
+            {
+              "epic": null,
+              "feature": "arithmetic",
+              "state": "current",
+              "path": ".spec/features/arithmetic/arithmetic.feature",
+              "claims": [
+                {
+                  "id": "REQ-FIX-001",
+                  "state": "Active",
+                  "element": "scenarioOutline",
+                  "path": ".spec/features/arithmetic/arithmetic.feature",
+                  "line": 7,
+                  "cases": [
+                    { "line": 13, "planned": false },
+                    { "line": 14, "planned": false }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """;
 }

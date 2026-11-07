@@ -187,8 +187,9 @@ stays provisional; rebuild, discover and run again to refresh it.
 `specht evidence` is the reconciliation gate for current required links and
 passing outcomes. Before evidence exists it reports incomplete and names the
 build, discovery and run steps; a successful first build alone does not prove a
-claim passed. The native catalogue is exported with the evidence so reconciliation
-can resolve the claims. No claims-table adapter is generated.
+claim passed. The evidence carries no claim catalogue, and `specht evidence`
+does not yet reconcile claims declared only in Gherkin. No claims-table adapter
+is generated.
 
 For diagnostic conditions and remedies, see [SPCT0001](../src/codeanalysis/docs/SPCT0001.md),
 [SPCT0010](../src/codeanalysis/docs/SPCT0010.md),

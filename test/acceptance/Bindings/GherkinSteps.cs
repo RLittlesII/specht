@@ -12,7 +12,6 @@ using Specht.Acceptance.Documentation;
 using Specht.Analysis.Bindings;
 using Specht.Analysis.Documentation;
 using Specht.Analysis.Policy;
-using Specht.Analysis.TestEvidence;
 
 namespace Specht.Acceptance.Bindings;
 
@@ -199,13 +198,6 @@ public sealed class GherkinSteps
         _snapshot = Read(Build());
         _verifiesFeature = feature;
         _verifiesClaim = claim;
-    }
-
-    [When("the analyzer writes the test evidence")]
-    public void WhenEvidence()
-    {
-        _snapshot = Read(Build());
-        _exported = new TestEvidenceCatalogExporter().Project(_snapshot.Catalog!);
     }
 
     [Then("the catalogue for Feature {string} holds claim {string} read from the claim file")]
@@ -402,13 +394,6 @@ public sealed class GherkinSteps
         finding.Line.Should().Be(LineOf(tag));
     }
 
-    [Then("the evidence holds claim {string} of Feature {string} with its two example rows")]
-    public void ThenEvidence(string claim, string feature)
-    {
-        var held = _exported.Should().ContainSingle(item => item.Feature == feature).Subject;
-        held.Claims.Single(item => item.Id == claim).Cases.Should().HaveCount(2);
-    }
-
     private static string ExamplesBlock(string tag) => "\n      " + tag + "\n      Examples:\n        | a | b | sum |\n        | 5 | 5 | 10 |\n";
 
     private static string Describe(AnalysisInput input) => input.Kind + "|" + input.RelativePath + "|" + input.Text;
@@ -567,7 +552,6 @@ public sealed class GherkinSteps
     private AnalysisSnapshot? _snapshot;
     private AnalysisSnapshot? _otherProject;
     private IReadOnlyList<Diagnostic> _diagnostics = Array.Empty<Diagnostic>();
-    private IReadOnlyList<TestEvidenceCatalogFeature> _exported = Array.Empty<TestEvidenceCatalogFeature>();
     private string[] _before = Array.Empty<string>();
     private List<AnalysisInput> _given = new();
 }

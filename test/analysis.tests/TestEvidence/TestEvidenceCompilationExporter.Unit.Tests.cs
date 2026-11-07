@@ -4,12 +4,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.Policy;
 using Specht.Analysis.TestEvidence;
-using Specht.Analysis.Tests.Gherkin;
 using Specht.Analysis.Tests.Policy;
 
 namespace Specht.Analysis.Tests.TestEvidence;
 
-/// <summary>The compiler export's method locations and required-case scope (0201-F3 B-012, B-025).</summary>
+/// <summary>The compiler export's method locations, required-case scope and absent catalogue (0201-F3 B-012, B-025; decision 0010).</summary>
 [Trait("Tier", "Unit")]
 public sealed class TestEvidenceCompilationExporterUnitTests
 {
@@ -46,24 +45,11 @@ public sealed class TestEvidenceCompilationExporterUnitTests
         export["requiredCaseScope"]!.GetValue<string>().Should().Be("not @visual");
     }
 
-    [Fact]
-    public async Task NativeClaimInput_WhenExported_ShouldCarryTheCatalogMember()
+    [Theory]
+    [ClassData(typeof(ClaimSourceInputs))]
+    public async Task ClaimInputFromEitherSource_WhenExported_ShouldCarryNoCatalogMember(List<AnalysisInput> inputs)
     {
         // Given
-        var inputs = new GherkinInputs().Inputs;
-
-        // When
-        var export = await Export(inputs);
-
-        // Then
-        JsonNode.DeepEquals(export["catalog"], JsonNode.Parse(TestEvidenceJson.CatalogJson)).Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task MarkdownClaimInput_WhenExported_ShouldCarryNoCatalogMember()
-    {
-        // Given
-        var inputs = new AnalysisInputs().Inputs;
 
         // When
         var export = await Export(inputs);
