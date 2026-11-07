@@ -8,8 +8,6 @@
 # delivery summaries so newly cut children do not silently enlarge a release.
 
 0.6.0
-# Pull-request surface: epic 0142, whose Features are not yet specified; a
-# Feature's items join this list once cut.
 0289
 0128
 # Collision-free record ids, moved from 0.7.0 by the owner, 2026-11-06.
