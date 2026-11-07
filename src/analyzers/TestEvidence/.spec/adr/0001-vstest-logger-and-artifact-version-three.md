@@ -114,3 +114,14 @@ item 0260 built. The body above is unedited.
   methods ([decision 0003](../decisions/0003-fully-qualified-name-fallback.md)).
   The last consequence above, that adapters setting no managed-name properties
   leave cases unresolved, holds only when that match fails.
+
+## Amendment 2026-11-06
+
+Recorded by `spec-author` from item 0411. The body and the amendment above are
+unedited.
+
+- Version 2 is retired ([decision 0010](../decisions/0010-format-version-two-is-retired.md)).
+  Writers emit `formatVersion` 1 or 3; readers report 2 as
+  `unsupportedContract`; `catalog` is an unknown member at every version, so
+  "version 2 plus" in the decision now reads as version 1 plus the three case
+  members, and the earlier amendment's "until that item lands" no longer holds.

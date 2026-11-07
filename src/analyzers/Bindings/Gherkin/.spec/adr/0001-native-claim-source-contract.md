@@ -1,6 +1,6 @@
 ---
 title: "ADR-0001: Native claim source contract"
-description: "The manifest keys, the analyzer's Gherkin reader, the element rules, the diagnostic identities and the artifact export by which tagged Gherkin becomes the claim catalogue"
+description: "The manifest keys, the Gherkin claim reader, the element rules and the diagnostic identities by which tagged Gherkin becomes the claim catalogue"
 type: adr
 ---
 
@@ -17,10 +17,11 @@ ADR-0014. Section 7 states the keys and rules in full.
 
 Revised 2026-11-06 by `spec-author`, after
 [decision 0004](../decisions/0004-the-gherkin-claim-reader-lives-in-the-engine.md)
-superseded decision 0003: the parser of item 2 lives in the engine
-(`src/specht/Model/`) and the analyzer compiles it through a source link; item
-0411 moves it. Items 3 and 10, and the text below that rests on decision 0003,
-stand as written until that item revises them.
+superseded decision 0003. Item 0411 revised items 2, 3 and 10 and the
+consequences resting on them: the parser lives in the engine
+(`src/specht/Model/`), the analyzer compiles it through a source link, and the
+catalogue is not exported. Context and "Why the parser choice" keep the
+reasoning as first written.
 
 ## Context
 
@@ -40,16 +41,20 @@ Item 0259 builds against one answer.
    separate keys beside them. The claim tag encoding is read through one
    explicit mapping, `"/claim": "/claim"`, as `/identifiers` is read; no key
    restates it.
-2. **The parser is a narrow hand-written reader in the analyzer.** It reads the
+2. **The parser is a narrow hand-written reader in the engine.** It sits in
+   `src/specht/Model/` beside the engine's text readers, and the analyzer
+   compiles it through a `<Compile Include … Link="Text/…">` link; no project,
+   assembly or package is added (decision 0004; ADR-0017). It reads the
    English keywords `Feature`, `Rule`, `Background`, `Scenario`, `Example`,
    `Scenario Outline`, `Scenario Template`, `Examples` and `Scenarios`, tag
    lines, table rows, doc strings and comments, line by line, and nothing else.
    No Gherkin package is referenced. A claim file with a `# language:` header
    other than `en` is an input failure (B-029).
-3. **One tag rule, two implementations, one test.** The analyzer implements the
-   form-and-grammar rule of decision 0002 itself. A characterization case list
-   runs against the engine's `FeatureTagParser` and the analyzer's reader and
-   holds them to one answer (C-1).
+3. **One tag rule, one source file, one test.** The form-and-grammar rule of
+   decision 0002 is one engine file, compiled into the engine and the
+   analyzer. The engine's `FeatureTagParser` still carries its own token rule,
+   so a characterization case list runs against it and the reader and holds
+   them to one answer (C-1).
 4. **Tag lists are exact tags.** Entries are `@`-led strings compared ordinally
    with Gherkin tag names. Only claim tags honour `claim.tagIgnoreCase`.
 5. **What declares.** A Feature, a Rule, a Scenario or a Scenario Outline
@@ -67,10 +72,10 @@ Item 0259 builds against one answer.
    ids**: SPCT0010 duplicate claim, SPCT0011 claim tag where no claim can be
    declared, SPCT0012 scenario without a claim, each at warning (0201-F6
    decision 0001).
-10. **The catalogue is exported as `catalog`, at `formatVersion: 2`.** An
-    artifact built under native input carries a top-level `catalog` member and
-    declares format version 2; every other artifact stays version 1, unchanged.
-    The producer's and the tool's artifact readers accept both.
+10. **The catalogue is not exported.** Item 0411 withdrew the `catalog`
+    member with B-030 (decision 0004): no artifact carries it, and 0201-F3
+    decision 0010 retires format version 2. `specht evidence` reads claim
+    files through the engine's reader (item 0409).
 11. **Incomplete runs are not SPCT diagnostics.** A run happens after the build
     that reports SPCT diagnostics; the incomplete-run diagnosis is a typed finding
     in the evidence artifact and report (0201-F5 § 7).
@@ -95,12 +100,13 @@ and comment handling not to misread their content.
   causes § 7 lists; a file the reference parser rejects for another reason,
   such as a step before any scenario, may still read. The test fixtures and the
   acceptance tree are what hold the reader to the language it accepts.
-- C-1 is held by a test, not by structure. A change to `FeatureTagParser`'s token
-  rule that the analyzer does not follow fails the characterization test; a rule
-  change nobody adds a case for is not caught.
+- C-1 is held by one source file between the engine's reader and the analyzer,
+  and by a test between that file and `FeatureTagParser`. A change to
+  `FeatureTagParser`'s token rule that the reader does not follow fails the
+  characterization test; a rule change nobody adds a case for is not caught.
 - The analyzer's closure gains no assembly.
-- An older tool reading a version-2 artifact reports `unsupportedContract`
-  rather than rejecting an unknown member as invalid.
+- A version-2 artifact a released analyzer wrote reads as
+  `unsupportedContract`; the consumer rebuilds (0201-F3 decision 0010).
 
 ## Rejected
 
@@ -108,9 +114,9 @@ and comment handling not to misread their content.
   reading the analyzer can do in one class.
 - A keyword table for every Gherkin language: no consumer has asked for one.
 - Linking `FeatureTagParser.cs` into the analyzer: it needs `SpecStructure` and
-  the manifest types behind it, and the owner has directed against new MSBuild
-  links.
-- A shared library for the tag rule: withdrawn by the owner (decision 0003).
+  the manifest types behind it, and decision 0004 covers only the Gherkin claim
+  reader beside the four text readers.
+- A shared library for the tag rule: withdrawn by the owner (ADR-0021).
 - A candidate prefix or a `/claimTag` mapping target: decision 0002; a second
   name for a setting the manifest already has.
 - `catalog` as an optional member of version 1: version-1 objects are closed, so

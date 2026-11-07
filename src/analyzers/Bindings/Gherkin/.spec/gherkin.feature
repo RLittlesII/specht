@@ -233,9 +233,3 @@ Feature: Native Gherkin claim catalogue
     And the configured claim file declares the Gherkin language "fr"
     When the declared analysis is requested
     Then an input failure names the claim file
-
-  @B-030
-  Scenario: Catalogue exported with the evidence
-    Given the manifest selects native Gherkin claim input
-    When the analyzer writes the test evidence
-    Then the evidence holds claim "REQ-FIX-001" of Feature "arithmetic" with its two example rows

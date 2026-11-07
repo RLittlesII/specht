@@ -1,7 +1,7 @@
 id: "0411"
 type: task
 title: "Put the Gherkin claim reader in the engine"
-status: ready-for-architecture
+status: done
 value: 4
 risk: 5
 parent: "0201"
@@ -9,10 +9,10 @@ children: []
 depends_on: []
 spikes: []
 spec: src/analyzers/Bindings/Gherkin/.spec/README.md
-claims: []
+claims: ["B-030"]
 created: "2026-11-06"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-07"
+closed: "2026-11-07"
 summary: |
   0201-F7 decision 0004 supersedes decision 0003. The Gherkin claim reader
   moves from `src/analyzers/Bindings/Gherkin/` into `src/specht/Model/`, beside
@@ -88,6 +88,15 @@ decisions:
     "Withdraw it in 0411". B-030 is withdrawn in place, and the `catalog`
     member leaves the artifact contract, its writers and the tool's reader in
     this item.
+  - |
+    2026-11-06, repository owner, recorded by spec-author. Asked "Item 0411
+    withdraws the `catalog` member of the test-evidence artifact. It shipped in
+    v0.3.0 and v0.4.0 ... What should a newer `specht evidence` (and the
+    analyzer's reader) do with those older artifacts?", the owner chose the
+    option labelled "Retire version 2 (Recommended)". The option's wording was
+    the recorder's: writers emit 1 or 3 only; readers report version 2 as
+    `unsupportedContract`; `catalog` at version 3 is an unknown member, so the
+    artifact is invalid; the number 2 is never reused. 0201-F3 decision 0010.
 out_of_scope:
   - "Reconciling native claims in `specht evidence`, and the gate's project set: 0409."
   - "Teaching the standalone `specht` checker to read claims from Gherkin: 0201-F7 § 5 row 7."

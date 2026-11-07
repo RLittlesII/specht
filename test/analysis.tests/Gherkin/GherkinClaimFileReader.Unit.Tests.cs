@@ -58,6 +58,56 @@ public sealed class GherkinClaimFileReaderUnitTests
     }
 
     [Fact]
+    public void ExamplesCellHoldingAnEscapedPipe_WhenRead_ShouldCountItAsOneCell()
+    {
+        // Given
+        var text = """
+            Feature: Arithmetic
+
+              @REQ-FIX-001
+              Scenario Outline: Join
+                Given <a>
+
+                Examples:
+                  | a     |
+                  | x\|y  |
+            """;
+
+        // When
+        var claim = Reader().Read(Path, text).Claims.Should().ContainSingle().Subject;
+
+        // Then
+        claim.Cases.Should().Equal(new BindingClaimCase(9, false));
+    }
+
+    [Fact]
+    public void FindingsRaisedOutOfLineOrder_WhenRead_ShouldBeOrderedByLine()
+    {
+        // Given
+        var text = """
+            Feature: Arithmetic
+
+              Scenario: Unclaimed
+                Given a number
+
+              @REQ-FIX-001
+              Scenario Outline: Add
+                Given <a>
+
+                @REQ-FIX-009
+                Examples:
+                  | a |
+                  | 1 |
+            """;
+
+        // When
+        var findings = Reader().Read(Path, text).Findings;
+
+        // Then
+        findings.Select(static finding => (finding.DiagnosticId, finding.Line)).Should().Equal(("SPCT0012", 3), ("SPCT0011", 10));
+    }
+
+    [Fact]
     public void OutlineWithHeaderOnlyExamples_WhenRead_ShouldHaveNoCases()
     {
         // Given

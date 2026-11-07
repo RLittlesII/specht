@@ -47,7 +47,9 @@ Superseded 2026-11-06 by the repository owner in
 [decision 0004](0004-the-gherkin-claim-reader-lives-in-the-engine.md): the
 Gherkin claim reader lives in the engine, the analyzer compiles it through a
 source link, and `specht evidence` reads claim files through it. The reasoning
-above is kept as it was at the time.
+above is kept as it was at the time. Item 0411 withdrew B-030 and the `catalog`
+member on 2026-11-06; 0201-F3 decision 0010 retires the format version it
+introduced.
 
 ## Correction - 2026-11-06
 
@@ -63,5 +65,5 @@ posted through the owner's GitHub account. The quoted chat ("withdraw ADR-0021,
 repository record. On 2026-11-06 the owner said of the export: "This sounds like
 uncessary coupling. It does not sounds like what I would ask you to do."
 "Decided by" above is therefore wrong; the export was an agent proposal recorded
-as a decision. B-030 and the sections that cite this record rest on it until
-item 0411 amends them.
+as a decision. B-030 and the sections that cited this record rested on it
+until item 0411 amended them.
