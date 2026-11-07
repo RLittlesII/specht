@@ -199,6 +199,13 @@ decisions:
     "I'm ready to move forward on this and put it in 0.6.0", the spike moves
     from milestone 0.7.0 to 0.6.0 in `.issue/.goal`, listed after item 0128.
     Status unchanged, `ready`; scope, criteria and out-of-scope unchanged.
+  - |
+    2026-11-06, spec-author: on the repository owner's direction the same
+    day, the Feature this spike names is specified before its ADR, as
+    `0001-F19` at `src/specht/IdGeneration/.spec/`, with the MCP tool as
+    `0132-F4` B-023. This spike's ADR answers `0001-F19` OQ-1 to OQ-10 and
+    OQ-12; OQ-11 is not this spike's. Status unchanged, `ready`; scope,
+    criteria and out-of-scope unchanged.
 
 out_of_scope:
   - "Renumbering any existing id - AGENTS.md § Stable IDs; lesson 0005 records the one exception and does not widen it."

@@ -146,16 +146,22 @@ Feature: Reading through MCP
     When each answer is asked for
     Then no file under the root or elsewhere has been created, modified or deleted
 
-  @B-017 @boundary
+  @B-024 @boundary
   Scenario: The server offers only answers the command line gives
     When the answers the server offers are listed
-    Then each is one of the verdict, a rule's text, the rule list, the manifest, the tree's facts, claim coverage, the shipped schema versions, and the frontmatter schemas and templates
+    Then each is one of the verdict, a rule's text, the rule list, the manifest, the tree's facts, claim coverage, the shipped schema versions, the frontmatter schemas and templates, and a minted id
 
-  @B-017 @boundary
+  @B-024 @boundary
   Scenario: The server offers no write and no work queue
     When the answers the server offers are listed
     Then none initialises, upgrades, pins, formats, sets a rule's level or writes a report
     And none answers for the work queue
+
+  @B-023
+  Scenario: A minted id is what the mint command printed for the call
+    Given the repository's manifest opts claim ids in
+    When a new claim id is asked for
+    Then the answer is exactly what the pinned tool's mint command printed for that call
 
   @B-018
   Scenario: A Feature specification built from the answers alone passes
