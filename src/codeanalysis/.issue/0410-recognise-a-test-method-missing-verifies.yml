@@ -1,7 +1,7 @@
 id: "0410"
 type: bug
 title: "Recognise a discovered test method that carries no verifies"
-status: in-progress
+status: done
 value: 4
 risk: 2
 parent: "0201"
@@ -12,7 +12,7 @@ spec: src/codeanalysis/.spec/README.md
 claims: ["B-001", "B-005"]
 created: "2026-11-06"
 updated: "2026-11-06"
-closed: null
+closed: "2026-11-06"
 summary: |
   Found by item 0302's packaged consumer fixture (branch
   `0302/packaged-gherkin-vstest-fixture`, commit `38670c0d`): with complete,
