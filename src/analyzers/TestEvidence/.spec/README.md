@@ -792,7 +792,7 @@ Testability findings for `implementer`:
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-23 -->
+<!-- last written by: spec-author, 2026-11-06 -->
 
 2026-10-18: completed the version-one envelope, deterministic identity encoding,
 producer boundary and stale-evidence behavior under decision 0001. No claim IDs
@@ -826,6 +826,11 @@ adds ownership and B-026 the incomplete-run diagnosis.
 categories, `owned`, `selected`) and the VSTest logger (ADR-0001, accepted).
 OQ-4 and OQ-5 are resolved; decision 0003 adds the FullyQualifiedName fallback.
 No claim changed.
+
+2026-11-06: item 0411 withdraws the `catalog` member (0201-F7 B-030,
+decision 0004). Decision 0010 retires format version 2: writers emit 1 or 3,
+readers report 2 as `unsupportedContract`, and `catalog` is an unknown member
+at every version. No claim changed; B-009 covers the reader.
 
 ## 11. Open Questions
 
