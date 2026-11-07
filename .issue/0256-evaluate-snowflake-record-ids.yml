@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-23"
-updated: "2026-11-01"
+updated: "2026-11-06"
 closed: null
 
 summary: |
@@ -93,6 +93,10 @@ summary: |
        the pull request - the shape item 0128 proposes.
      - (f) Online allocation from one shared sequence, the allocation
        analysis of spike 0252.
+     - (g) Nano ID: random ids from a configured alphabet and size.
+     The owner's direction, 2026-11-06, is (b) and (g) behind the
+     Strategy/Decorator design below, with (a) kept only as the measured
+     baseline it replaces. (c) to (f) stay as comparisons.
   6. Which record kinds collide. Repository-wide kinds - items and epics
      through `.issue/.sequence`, root ADRs, lessons - against per-Feature
      kinds - claims, constraints, open questions, decisions, a Feature's
@@ -111,8 +115,55 @@ summary: |
   `spec: null`. Item 0128 and spike 0252 overlap it: neither waits on it and
   this item edits neither.
 
+  2026-11-06, the repository owner: "I want this done as a Strategy with a
+  Decorator. I want to support nanoid AND Snowflake and allow them both their
+  own configuration for the bits they need to configure. I want it to have an
+  option to opt in for each id type (spec, adr, lessons, claims, scenarios,
+  etc.)"
+
+  On whether a type not opted in gets a default: "If they bring their own
+  strategy, we want them to keep it. Opt in means opt in, not opt in AND get
+  a default ..."
+
+  On a fallback to today's sequence: "We are creating this to replace the
+  current system because it's flawed."
+
+  On what "their own strategy" means: "Existing numbering, keep pluggable
+  strategy open for a future option."
+
+  Among the options put to them the same day, the owner selected: the spike
+  stays a spike, and a Feature specification follows once the owner rules on
+  its ADR; an id is minted through a `specht` CLI command and a `specht-mcp`
+  tool; the decorators are formatting, collision guard and validation. A
+  fallback-to-sequence decorator was selected and then withdrawn by the
+  "replace the current system" answer.
+
+  The design the spike now trials:
+  - A Strategy: an id-generator interface with two built-ins. Nano ID, with
+    its own settings, the alphabet and the size. Snowflake, with its own
+    settings, the epoch, the datacenter and worker bits and the sequence
+    bits - the generator described above.
+  - Decorators around a Strategy. Formatting: a prefix and an encoding per
+    id type, such as `ADR-`. Collision guard: checks the tree for an
+    existing id before handing one out. Validation: checks the minted id
+    against the manifest's `identifiers` grammar for that type.
+  - Opt-in per id type: items and epics, Features, ADRs, lessons, claims,
+    constraints, open questions, decisions and scenarios. Scenarios carry no
+    id today; the spike states what one would be, and epic `0324`'s scenario
+    key (`epics/0324-specht-service/epic.md` § "Service mode") is the
+    related record. A type not opted in is untouched: the tool mints nothing
+    for it and never rewrites an existing id. There is no sequence default
+    and no sequence fallback - this replaces the sequence.
+  - Surface: the generators live in the engine, because the MCP holds no
+    engine (`0132-F3`, ADR-0031). A `specht` command mints an id, and
+    `specht-mcp` exposes a tool that runs the repository's pinned `specht`.
+  - Configuration: a top-level manifest key the checker owns (ADR-0023), per
+    id type, carrying each strategy's own settings. An opt-in key is a
+    schema patch (`0001-F7` decision 0022); the `identifiers` grammars it
+    would widen fall under question 4.
+
 acceptance_criteria:
-  - "A proposed ADR in the repository-wide `.spec/adr/`, with the owner as decider, weighs directions (a) to (f) and any the trials add. It recommends one, or recommends keeping (a). If it adopts anything it names the specification deltas owed and the records it would amend - including item 0128, the delivery reference's reservation rule and lesson 0005's remedy - and edits no accepted record."
+  - "A proposed ADR in the repository-wide `.spec/adr/`, with the owner as decider, weighs directions (a) to (g) and any the trials add. It recommends one, or recommends keeping (a). If it adopts anything it names the specification deltas owed and the records it would amend - including item 0128, the delivery reference's reservation rule and lesson 0005's remedy - and edits no accepted record."
   - "Each finding is traced to a command run on a named commit: of `main` for the baseline, of a branch `0256/trial-<candidate>` that is never merged for each candidate."
   - "1. Collisions: a simulated trial cuts N parallel branches from one `main`, each allocating ids under each candidate, merges them, and reports the collisions found per candidate and per record kind, against lesson 0005's incidents."
   - "2. Worker ids: an explicit analysis of how a worker id is assigned with no central coordinator - by machine, branch hash, author or worktree - what collides when two worktrees or agents on one machine share one, and what a clock moved backwards does."
@@ -121,6 +172,9 @@ acceptance_criteria:
   - "5. The tool: the effect of each candidate on the shipped frontmatter schemas, the manifest's `identifiers` grammars, the engine's own patterns and `SPEC030`, whether consumers are affected, and the schema version a change would need (`0001-F7` C-11)."
   - "6. Online allocation: a cross-reference to spike 0252's allocation analysis, stating whether direction (f) is answered there or here."
   - "A candidate that cannot be made to build or to pass is recorded as a finding, with the reason."
+  - "The trial branch `0256/trial-strategy-decorator`, never merged, builds the Strategy/Decorator design with both strategies, Nano ID and Snowflake, and the three decorators, formatting, collision guard and validation; the collision simulation of criterion 1 runs it per id type."
+  - "The ADR names the Feature to specify next: its home (epic `0001` for the tool's command, epic `0132` for the MCP tool), the command and MCP tool shape, the manifest key and the schema version it needs, and each id type's opt-in."
+  - "Nano ID's collision probability at the configured size, against the repository's expected id volume, is stated with the arithmetic."
 
 decisions:
   - |
@@ -132,10 +186,33 @@ decisions:
     2026-11-01, spec-author: question 4 names the engine's task-id pattern
     in `src/specht/Rules/ItemSequenceRule.cs`, where item 0161 moved it
     when it split `ChildItemRule`. No scope, criterion or status changes.
+  - |
+    2026-11-06, spec-author: scope amended on the repository owner's
+    direction the same day, quoted in the summary's 2026-11-06 paragraphs:
+    a Strategy with Decorators, Nano ID and Snowflake each with its own
+    settings, opt-in per id type, no sequence default or fallback, and a
+    consumer-supplied Strategy kept open as a future option. Direction (g)
+    and three criteria added; the out-of-scope entries on building and on
+    rewriting ids replace the allocator entry. Status unchanged, `ready`.
+  - |
+    2026-11-06, spec-author: on the repository owner's word the same day,
+    "I'm ready to move forward on this and put it in 0.6.0", the spike moves
+    from milestone 0.7.0 to 0.6.0 in `.issue/.goal`, listed after item 0128.
+    Status unchanged, `ready`; scope, criteria and out-of-scope unchanged.
+  - |
+    2026-11-06, spec-author: on the repository owner's direction the same
+    day, the Feature this spike names is specified before its ADR, as
+    `0001-F19` at `src/specht/IdGeneration/.spec/`, with the MCP tool as
+    `0132-F4` B-023. This spike's ADR answers `0001-F19` OQ-1 to OQ-10 and
+    OQ-12; OQ-11 is not this spike's. Status unchanged, `ready`; scope,
+    criteria and out-of-scope unchanged.
 
 out_of_scope:
   - "Renumbering any existing id - AGENTS.md § Stable IDs; lesson 0005 records the one exception and does not widen it."
+  - "Rewriting any existing id under a new strategy - a type not opted in is untouched, and an opted-in type mints only new ids."
   - "Changing id grammars, the frontmatter schemas, `.issue/.sequence` handling or the queue script on `main` - a follow-up item cut after the owner rules on the ADR."
   - "Building a duplicate-id check - item 0128."
-  - "Building an allocator or an MCP service - spike 0252 and epic 0132."
+  - "Building any generator, command or MCP tool on `main` - the Feature cut after the owner rules on the ADR."
+  - "A consumer-supplied pluggable Strategy - kept open as a future option on the owner's word, not designed here."
+  - "A fallback to the sequence - the design replaces the sequence."
   - "Editing an accepted ADR or decision record - a new record answers it."

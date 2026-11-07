@@ -23,9 +23,10 @@ children:
     "0001-F13",
     "0001-F14",
     "0001-F17",
+    "0001-F19",
   ]
 created: "2026-10-07"
-updated: "2026-10-29"
+updated: "2026-11-06"
 github_issue: null
 ---
 
@@ -79,6 +80,7 @@ request; a Feature is a thing the tool does, with its own invariant.
 | `0001-F13` | The trace command               | `src/tool/Features/Trace/.spec/README.md`          | after 6        |
 | `0001-F14` | The schema folder               | `src/specht/Manifest/SchemaFolder/.spec/README.md` | after 6        |
 | `0001-F17` | Output verbosity                | `src/tool/Features/Verbosity/.spec/README.md`      | after 6        |
+| `0001-F19` | Id generation                   | `src/specht/IdGeneration/.spec/README.md`          | after 6        |
 
 The initial draft bundled the command, `init`, the manifest roles, discovery and the baseline in
 one Feature. Each of those has a different invariant - the command never
@@ -114,6 +116,12 @@ literal says, and the default manifest changes no verdict.
 people want the tool quiet. Its invariant: a verbosity level changes only what
 a command prints on stdout, never the verdict, the report or a rule's level
 (`0001-F17` decision 0001). Its need is open (`0001-F17` OQ-5).
+
+`0001-F19` joined on 2026-11-06 from the owner's direction for ids no two
+branches can take (item `0256`). Its invariant: the tool mints an id only for
+a type the manifest opts in, and only prints it, so every other type keeps its
+own numbering and nothing in the tree is written (`0001-F19` decisions 0001
+and 0002). Spike `0256` answers its open questions.
 
 Dependencies are declared in each Feature's frontmatter and checked by the tool
 (`SPEC050`-`SPEC052`). The order they imply is brief § 8's.
