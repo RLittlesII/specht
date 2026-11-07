@@ -110,7 +110,7 @@ Map explicit test-method bindings to discovered and executed test cases across .
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-23 -->
+<!-- last written by: implementer, 2026-10-23, 2026-11-06 (decision 0010) -->
 
 | Concern                                              | Classification | Owner and boundary                                                                                                      |
 | ---------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -119,14 +119,14 @@ Map explicit test-method bindings to discovered and executed test cases across .
 | Runner outcomes and run separation                   | Business       | F3 retains each supplied run and outcome; F5 decides how selected evidence contributes to reconciliation.               |
 | Source, assembly, configuration and policy freshness | Both           | F3 records identities; 0201-F6 owns current-input scope and 0201-F5 excludes stale artifacts from current evidence.     |
 | Scenario-to-case metadata                            | Both           | F3 carries the common case identity; 0201-F4 defines scenario scope and producer metadata mapping.                      |
-| Evidence serialization and versioning                | Technical      | F3 owns the closed version-one to version-three JSON envelopes and their deterministic identity encoding.               |
+| Evidence serialization and versioning                | Technical      | F3 owns the closed version-one and version-three JSON envelopes and their deterministic identity encoding.              |
 | Case categories, selection and ownership             | Both           | F3 records runner categories and selection and evaluates 0201-F6's `CaseScope`; 0201-F5 reports and gates on them.      |
 | Runner collection and producer compatibility         | Technical      | First-party adapters normalize runner metadata; custom producers may submit the same contract without framework gating. |
 | Diagnostic and filesystem boundary                   | Technical      | DiagnosticAnalyzer remains read-only; explicit build/runner collection writes artifacts to the selected output folder.  |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-24 -->
+<!-- last written by: implementer, 2026-10-24, 2026-11-06 (decision 0010: version 2 retired, `catalog` removed) -->
 
 The version-one artifact implements decision 0001 and 0201-F6 decision 0004.
 Adapters produce it during normal build, discovery or execution workflows. The
@@ -137,13 +137,13 @@ accepted.
 ### Envelope
 
 Use UTF-8 JSON with `format: "specht.test-evidence"` and integer
-`formatVersion` 1 or 3; the readers report version 2 as unsupported. Every
-top-level property is required except `scenarios`. Version 2 is specified for
-item 0259 and not built: it differs from version 1 only by an optional `catalog`
-member (0201-F7 ADR-0001, proposed), which 0259 also permits at version 3; until
-then `catalog` is an unknown member at every version. Version 3 differs from
-version 2 only by three required members on every case record, so as built it
-differs from version 1 by those members alone (below;
+`formatVersion` 1 or 3. Every top-level property is required except
+`scenarios`. Version 2 is retired
+([decision 0010](decisions/0010-format-version-two-is-retired.md)): the readers
+report it as `unsupportedContract`, no writer emits it, and the number is never
+reused. `catalog` is an unknown member at every version, so an artifact carrying
+it is invalid. Version 3 differs from version 1 only by three required members
+on every case record (below;
 [ADR-0001](adr/0001-vstest-logger-and-artifact-version-three.md), accepted).
 Objects are closed: unknown properties and enum values are invalid. An unknown
 format version is `unsupportedContract`. This contract version is independent of
@@ -156,7 +156,7 @@ artifact, while `adapter.contractVersion` versions the producer integration.
 | Property            | Contract                                                                                                                                        |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `format`            | Exact string `specht.test-evidence`.                                                                                                            |
-| `formatVersion`     | Integer `3` when case records carry categories, ownership and selection; otherwise `2` when `catalog` is present, otherwise `1`.                |
+| `formatVersion`     | Integer `3` when case records carry categories, ownership and selection; otherwise `1`.                                                         |
 | `project`           | Repository-relative project file path and exact declared target framework.                                                                      |
 | `configuration`     | Build configuration name and digest of compiler options and resolved reference identities.                                                      |
 | `assembly`          | Assembly name and SHA-256 content hash; optional assembly path is repository-relative.                                                          |
@@ -168,7 +168,6 @@ artifact, while `adapter.contractVersion` versions the producer integration.
 | `results`           | Either `absent` or an opaque run ID and outcomes keyed by stable case ID. Absence is not a passing result.                                      |
 | `inputs`            | Sorted `{ path, sha256, kind }` entries for the source, manifest, schema and record inputs represented by the artifact.                         |
 | `scenarios`         | Optional F4 scenario records. When present, they follow the F4 contract and do not alter F3 case identity.                                      |
-| `catalog`           | Versions 2 and 3. The native claim catalogue the analyzer read from Gherkin claim files (0201-F7 B-030); absent under Markdown claim input.     |
 
 The nested shapes are fixed: `project` is `{ path, targetFramework }`;
 `configuration` is `{ name, fingerprint }`; `assembly` is
@@ -197,20 +196,6 @@ relativePath, line }`. `inputs` is an array of `{ path, sha256, kind }`; `kind`
 is `source`, `generated-source`, `manifest`, `schema` or `record`. `scenarios`,
 when present, is an array in the F4-defined shape.
 
-`catalog` is `{ features }`. A feature is
-`{ epic, feature, state, path, claims }`, sorted by `epic` (null first) then
-`feature`, ordinal; `epic` is null when the consumer declares no epic grammar,
-`state` is the Feature lifecycle or `current`, and `path` is the record path or
-the ordinal-first claim file. A claim is
-`{ id, state, element, path, line, cases }` in the reader's document order;
-`element` is `feature`, `rule`, `scenario` or `scenarioOutline`, and `state` is
-the claim lifecycle. A case is `{ line, planned }` with a Boolean `planned`.
-Paths are repository-relative and lines one-based. Every claim file is already a
-`record` entry of `inputs`, so `policyFingerprint` covers the catalogue's
-sources. `TestEvidenceCatalogFeature`, `TestEvidenceCatalogClaim` and
-`TestEvidenceCatalogCase` declare the records, and `TestEvidenceCatalogExporter`
-projects them from the analyzer's `BindingCatalog` (0201-F7 § 7).
-
 Hash input contents as SHA-256 over the exact bytes supplied to compilation or
 collection. Build each fingerprint by sorting entries by ordinal path then kind
 and appending each UTF-8 value (`path`, `kind`, lowercase hexadecimal content
@@ -222,11 +207,11 @@ same fingerprints.
 ### Version three
 
 At version 3 a case is `{ caseId, methodSymbolId, rowId, displayName,
-categories, owned, selected }`; at versions 1 and 2 the three new members are
-invalid, as any unknown member is. Every other object is as at version 1:
-version 2 and its `catalog` member are item 0259 and not built, so the readers
-accept `formatVersion` 1 and 3 only, and a `catalog` member at version 3 is
-rejected as an unknown member of the closed root object.
+categories, owned, selected }`; at version 1 the three new members are
+invalid, as any unknown member is. Every other object is as at version 1.
+Version 2 is retired (decision 0010): the readers report it as
+`unsupportedContract`, and a `catalog` member at version 1 or 3 is rejected as an
+unknown member of the closed root object.
 
 | Member       | Contract                                                                                                                                        |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -238,7 +223,7 @@ A case with an entry in `results.cases` has `selected: true`; an entry for an
 unselected case invalidates the artifact. A selected case may have no entry,
 which is never a passing result. Ownership and selection are facts about the
 case and the run; neither changes the case key, and the artifact records no
-diagnosis derived from them. The reader returns all three; at versions 1 and 2
+diagnosis derived from them. The reader returns all three; at version 1
 they are unknown, not empty, false or owned. `TestEvidenceCase` carries them as
 nullable members, and the writer emits version 3 only for a producer that
 states them.
@@ -494,7 +479,7 @@ with `results` `available` and at least one case with `owned: true` and
 `selected: false`. Its path is the evidence label, its identity the project and
 target framework, and its message the number of owned case keys the run did not
 select. In this item it is reported and does not change the exit code; gating on
-owned keys is item 0262 (0201-F5 decision 0003). A version-1 or version-2
+owned keys is item 0262 (0201-F5 decision 0003). A version-1
 artifact records no ownership, so it gets no such finding.
 
 ### Several projects' evidence

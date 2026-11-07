@@ -187,7 +187,7 @@ specht evidence [--root <DIR>] [<PATH>...] [--run <ID>] [--json] [--report <PATH
 ```
 
 Reconciles the current claims selected by `.specht/manifest.json`'s `codeAnalysis`
-policy against explicitly supplied `specht.test-evidence` exports of `formatVersion` 1, 2 or 3. It
+policy against explicitly supplied `specht.test-evidence` exports of `formatVersion` 1 or 3. It
 checks declared project and target-framework combinations, current input hashes,
 resolved bindings, discovered cases and their selected run outcomes. It is offline
 and does not build a project or start tests. The command reads each named file or

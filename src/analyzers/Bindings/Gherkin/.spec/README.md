@@ -120,50 +120,53 @@ A consumer whose claims are authored only as tagged Gherkin scenarios cannot use
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-23 -->
+<!-- last written by: implementer, 2026-10-23, 2026-11-06 (item 0411: the reader is the engine's; the catalogue export is withdrawn) -->
 
-| Concern                                         | Classification | Responsibility                                                                                                                                                                                         |
-| ----------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Claim identity and tag encoding                 | Business       | The consumer's existing `claim.tag`, `claim.tagIgnoreCase` and `identifiers.claim` decide what a tag means (C-1, decision 0002). The analyzer reads them through a mapping and adds no key of its own. |
-| Claim file to Feature mapping and lifecycle     | Business       | A claim file set maps files to a Feature identity and may name a record that supplies lifecycle. Nothing is inferred from file names, titles or steps (C-3).                                           |
-| Planned, ignored and lifecycle tags             | Business       | Consumer-configured tag lists. Planned state belongs to a case; lifecycle belongs to a claim.                                                                                                          |
-| Gherkin reading and element location            | Technical      | A narrow line reader in the analyzer yields elements, tags, rows and lines for English keywords only (ADR-0001, proposed). No Gherkin package; no I/O.                                                 |
-| One reading of a claim tag                      | Technical      | The engine's `FeatureTagParser` and the analyzer's `GherkinTagForm` implement one rule; a shared characterization case list holds them to one answer.                                                  |
-| Catalogue assembly, input failures and findings | Both           | The analyzer builds the same `BindingFeature` and `BindingClaim` records Markdown claims produce (C-2). A failure is SPCT0001 with a stated cause; a finding is SPCT0010 to SPCT0012.                  |
-| Catalogue export                                | Technical      | The analyzer writes the native catalogue into the test-evidence artifact (decision 0003); `specht evidence` reads it there and parses no Gherkin (0201-F5 § 7).                                        |
-| Diagnostic identity and severity                | Technical      | Append-only `SPCT####` ids, defaulted under 0201-F6 decision 0001 and changed only through standard Roslyn severity controls.                                                                          |
+| Concern                                         | Classification | Responsibility                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claim identity and tag encoding                 | Business       | The consumer's existing `claim.tag`, `claim.tagIgnoreCase` and `identifiers.claim` decide what a tag means (C-1, decision 0002). The analyzer reads them through a mapping and adds no key of its own.                                                                                                                       |
+| Claim file to Feature mapping and lifecycle     | Business       | A claim file set maps files to a Feature identity and may name a record that supplies lifecycle. Nothing is inferred from file names, titles or steps (C-3).                                                                                                                                                                 |
+| Planned, ignored and lifecycle tags             | Business       | Consumer-configured tag lists. Planned state belongs to a case; lifecycle belongs to a claim.                                                                                                                                                                                                                                |
+| Gherkin reading and element location            | Technical      | The engine's `GherkinClaimTextReader` (`src/specht/Model/`, [decision 0004](decisions/0004-the-gherkin-claim-reader-lives-in-the-engine.md)), compiled into the analyzer by source link, is a narrow line reader: elements, tags, rows and lines for English keywords only (ADR-0001, proposed). No Gherkin package; no I/O. |
+| One reading of a claim tag                      | Technical      | The engine's `FeatureTagParser` and `GherkinClaimTagForm`, one source file compiled into the engine and the analyzer, implement one rule; the analyzer's `GherkinTagForm` delegates to it, and a shared characterization case list holds the two to one answer.                                                              |
+| Catalogue assembly, input failures and findings | Both           | The analyzer builds the same `BindingFeature` and `BindingClaim` records Markdown claims produce (C-2). A failure is SPCT0001 with a stated cause; a finding is SPCT0010 to SPCT0012.                                                                                                                                        |
+| Catalogue export                                | Technical      | None: withdrawn with B-030 (decision 0004). `specht evidence` reads claim files through the engine's reader (item 0409).                                                                                                                                                                                                     |
+| Diagnostic identity and severity                | Technical      | Append-only `SPCT####` ids, defaulted under 0201-F6 decision 0001 and changed only through standard Roslyn severity controls.                                                                                                                                                                                                |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-23 -->
+<!-- last written by: implementer, 2026-10-23, 2026-11-06 (item 0411: the reader moves into the engine; the catalogue export is withdrawn) -->
 
 Records: [decision 0002](decisions/0002-a-claim-tag-is-the-existing-claim-tag-form.md)
-(what a claim tag is), [decision 0003](decisions/0003-the-analyzer-exports-the-native-claim-catalogue.md)
-(the analyzer exports the catalogue) and
+(what a claim tag is), [decision 0004](decisions/0004-the-gherkin-claim-reader-lives-in-the-engine.md)
+(the reader lives in the engine; the catalogue is not exported) and
 [ADR-0001](adr/0001-native-claim-source-contract.md) (the keys, the parser, the
-element rules, the diagnostic identities and the export), which is proposed and
-waits on the owner. [Decision 0001](decisions/0001-claim-candidates-carry-the-encoding-prefix.md)
-is superseded. The required-case scope key and its grammar are in
+element rules and the diagnostic identities), which is proposed and waits on the
+owner. Decisions [0001](decisions/0001-claim-candidates-carry-the-encoding-prefix.md)
+and [0003](decisions/0003-the-analyzer-exports-the-native-claim-catalogue.md) are
+superseded. The required-case scope key and its grammar are in
 [0201-F6 § 7](../../../../codeanalysis/.spec/README.md). No new architecture is
-adopted (ADR-0014) and no project is added (ADR-0017): every type below is an
-instance class or record in an existing assembly, the catalogue records are the
-existing ones, and nothing is static. The engine does not change.
+adopted (ADR-0014) and no project or assembly is added (ADR-0017): every type
+below is an instance class or record in an existing assembly, the catalogue
+records are the existing ones, and nothing is static. The engine gains the
+reader's types beside its other text readers and changes nothing else.
 
 ### Where the code lives
 
-| Project, folder and namespace                                         | Holds                                                                                                                                                                                                                                                                       |
-| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/analyzers/Bindings/Gherkin/`, `Specht.Analysis.Bindings.Gherkin` | New: `GherkinTagForm`, `GherkinClaimPolicy`, `GherkinClaimFileSet`, `GherkinClaimPolicyReader`, `GherkinClaimFileReader`, `GherkinClaimFile`, `GherkinCatalogReader`, `GherkinInputException`, `GherkinDiagnostics`, `GherkinClaimAnalyzer`.                                |
-| `src/analyzers/Bindings/`, `Specht.Analysis.Bindings`                 | `BindingClaim` gains optional trailing `RelativePath`, `Element` and `Cases`; new `BindingClaimElement`, `BindingClaimCase` and `BindingFinding`; `BindingCatalog` gains `Findings`; `BindingResolver` takes a claim's own provenance. `BindingFeatureReader` is unchanged. |
-| `src/analyzers/Policy/`, `Specht.Analysis.Policy`                     | `AnalysisPolicyReader` reads the mapped `claim` object and calls `GherkinClaimPolicyReader`; `AnalysisPolicy.Gherkin` holds the result; `AnalysisInputReader` reads claim files under it and reports a `GherkinInputException`'s path and message.                          |
-| `src/analyzers/TestEvidence/`, `Specht.Analysis.TestEvidence`         | New: `TestEvidenceCatalogFeature`, `TestEvidenceCatalogClaim`, `TestEvidenceCatalogCase`, `TestEvidenceCatalogExporter`. `TestEvidenceCompilationExporter`, `TestEvidenceArtifact`, `TestEvidenceArtifactWriter` and `TestEvidenceArtifactReader` carry `catalog`.          |
-| `src/testevidence.mtp/TestEvidenceMtpCollector.cs`                    | Passes the compiler payload's `catalog` into the artifact it writes.                                                                                                                                                                                                        |
-| `src/tool/Features/Evidence/`, `Specht.Tool.Features.Evidence`        | The tool-owned `Contract/` copies of the three catalog records and the reader change; `EvidencePolicy` reads `records.claimSource`; `EvidenceReconciler` takes native claims from `catalog` (0201-F5 § 7).                                                                  |
+| Project, folder and namespace                                         | Holds                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/specht/Model/`, `Specht.Model`                                   | `internal`, one per file, beside `FrontmatterTextReader` and `MarkdownTextReader`, and linked into the analyzer under `Text/` (decision 0004): `GherkinClaimTextReader`, `GherkinClaimTagForm`, `GherkinClaimTags`, and the results `GherkinClaimText`, `GherkinClaimDeclaration`, `GherkinClaimElement`, `GherkinClaimCaseLine`, `GherkinClaimTextFinding` and `GherkinClaimTextException`. |
+| `src/analyzers/Bindings/Gherkin/`, `Specht.Analysis.Bindings.Gherkin` | `GherkinTagForm`, `GherkinClaimPolicy`, `GherkinClaimFileSet`, `GherkinClaimPolicyReader`, `GherkinClaimFileReader`, `GherkinClaimFile`, `GherkinCatalogReader`, `GherkinInputException`, `GherkinDiagnostics`, `GherkinClaimAnalyzer`. `GherkinTagForm` and `GherkinClaimFileReader` adapt the engine's types.                                                                              |
+| `src/analyzers/Bindings/`, `Specht.Analysis.Bindings`                 | `BindingClaim` gains optional trailing `RelativePath`, `Element` and `Cases`; new `BindingClaimElement`, `BindingClaimCase` and `BindingFinding`; `BindingCatalog` gains `Findings`; `BindingResolver` takes a claim's own provenance. `BindingFeatureReader` is unchanged.                                                                                                                  |
+| `src/analyzers/Policy/`, `Specht.Analysis.Policy`                     | `AnalysisPolicyReader` reads the mapped `claim` object and calls `GherkinClaimPolicyReader`; `AnalysisPolicy.Gherkin` holds the result; `AnalysisInputReader` reads claim files under it and reports a `GherkinInputException`'s path and message.                                                                                                                                           |
 
 A `BindingClaim` read from a Markdown table leaves the three new members `null`,
 so the Markdown path's records, diagnostics and artifacts are unchanged (B-002).
 The analyzer's dependency closure gains no assembly, so its closure test is
-unchanged.
+unchanged: the linked files use only what the analyzer already references. The
+test-evidence artifact carries no catalogue (0201-F3 decision 0010), and
+`specht evidence` reading the claim files through the engine's reader is item
+0409's (0201-F5).
 
 ### One reading of a claim tag (C-1)
 
@@ -185,13 +188,16 @@ zero is tested against the grammar like any other. The claim tag is
 its captured text is the claim identifier, exactly as authored (B-004). A tag for
 which it returns `null` is ordinary (B-025).
 
-This is the token rule of `FeatureTagParser.Parse` given a `SpechtStructure` that
-carries a claim tag form, written a second time. The owner withdrew the shared
-library and an MSBuild link is ruled out, so the rule has two
-implementations and one test holds them together: a characterization case list
-in `test/analysis.tests/`, which references both the engine and the analyzer,
-runs every case through `FeatureTagParser.Parse` (one token on one line) and
-through `GherkinTagForm.Read`, and asserts the same answer from both. Each case
+The rule is `GherkinClaimTagForm` in `src/specht/Model/`, one source file the
+engine compiles and the analyzer compiles through its `Text/` link (decision
+0004); `GherkinTagForm.Read` delegates to it, and a form without one placeholder
+raises `GherkinClaimTextException`, which `GherkinTagForm` rethrows as
+`GherkinInputException` with the same path and message. It is the token rule of
+`FeatureTagParser.Parse` given a `SpechtStructure` that carries a claim tag form,
+written a second time, so one test holds the two together: a characterization
+case list in `test/analysis.tests/`, which references both the engine and the
+analyzer, runs every case through `FeatureTagParser.Parse` (one token on one
+line) and through `GherkinTagForm.Read`, and asserts the same answer from both. Each case
 is a form, a case flag, a grammar, a token and the expected identifier or none.
 The list covers a literal prefix, a literal suffix, the form `{claim}` alone, a
 case flag folding both literal and identifier, a grammar mismatch, a token equal
@@ -201,10 +207,17 @@ caught.
 
 ### Reading Gherkin
 
-`GherkinClaimFileReader(GherkinClaimPolicy policy)` has one method,
-`Read(relativePath, text)`, returning a `GherkinClaimFile`. It reads the text
-line by line, one-based, with no Gherkin package (ADR-0001), and throws
-`GherkinInputException(relativePath, message)` for the input failures below. A
+`GherkinClaimTextReader(GherkinClaimTags tags)` in `src/specht/Model/` has one
+method, `Read(relativePath, text)`, returning a `GherkinClaimText`. It reads the
+text line by line, one-based, with no Gherkin package (ADR-0001), and throws
+`GherkinClaimTextException(relativePath, message)` for the input failures below.
+The analyzer's `GherkinClaimFileReader(GherkinClaimPolicy policy)` builds the
+`GherkinClaimTags` from the policy's forms and tag lists, calls it, and maps the
+result: each `GherkinClaimDeclaration` to a `BindingClaim`, each
+`GherkinClaimElement` and `GherkinClaimCaseLine` to a `BindingClaimElement` and
+`BindingClaimCase`, each `GherkinClaimTextFinding` to a `BindingFinding` at the
+file's path, and the exception to `GherkinInputException` with the same path and
+message. The members below are named as the analyzer sees them. A
 line's trimmed text is classified in this order:
 
 | Trimmed line                              | Meaning                                                                                                                             |
@@ -445,8 +458,8 @@ existing `BindingProvenanceGuard`. Everything after the catalogue is the existin
 code: `AnalysisPolicy.Select`, `RequiredLinks` and `BindingResolver` are
 unchanged, so B-017 and B-018 give the Markdown path's diagnostics (SPCT0007,
 SPCT0004). Planned cases are visible through `Cases` to the scenario bridge
-(0201-F4), and through the export below to reconciliation (0201-F5); this
-Feature counts nothing.
+(0201-F4); reconciliation (0201-F5) reads the claim files through the engine's
+reader (item 0409). This Feature counts nothing.
 
 A claim keeps its identity through reordering or retitling because the identity
 is the Feature identity and `Id` (C-3, B-011); path and line are provenance.
@@ -456,61 +469,6 @@ catalogue keeps both, so a reference to it is ambiguous as for a Markdown
 duplicate. The findings of every file and the duplicates go to
 `BindingCatalog.Findings`, sorted by path (ordinal), line, id; the Markdown path
 gives none. No member reads the file system.
-
-### Export in the test-evidence artifact
-
-Under native input the catalogue leaves the build in the artifact the analyzer
-already writes, and nowhere else (decision 0003, B-030):
-
-1. `TestEvidenceCompilationExporter` already reads the snapshot. When
-   `snapshot.Policy.Gherkin` is set, `TestEvidenceCatalogExporter` projects
-   `snapshot.Catalog.Features` into `TestEvidenceCatalogFeature` records, and the
-   compiler payload (`CompilationEvidence`) carries them as `catalog`. Under the
-   Markdown path the payload has no `catalog` member.
-2. `TestEvidenceMtpCollector` reads `catalog` from the payload when present and
-   passes it to `TestEvidenceArtifact.Catalog`. The payload member is an object
-   with a `features` array, as in the artifact. `TestEvidenceVsTestLogger` makes
-   the same pass-through for the identity artifact it writes.
-3. `TestEvidenceArtifactWriter` writes a top-level `catalog` and
-   `formatVersion: 2` when `Catalog` is set, and otherwise the version-1 artifact
-   it writes today, byte for byte.
-
-The member's contract is 0201-F3 § 7's; for the fixture it is:
-
-```json
-{
-  "catalog": {
-    "features": [
-      {
-        "epic": null,
-        "feature": "arithmetic",
-        "state": "current",
-        "path": ".spec/features/arithmetic/arithmetic.feature",
-        "claims": [
-          {
-            "id": "REQ-FIX-001",
-            "state": "Active",
-            "element": "scenarioOutline",
-            "path": ".spec/features/arithmetic/arithmetic.feature",
-            "line": 7,
-            "cases": [
-              { "line": 13, "planned": false },
-              { "line": 14, "planned": false }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Findings are not exported: they are build diagnostics, which reconciliation does
-not re-ingest (0201-F5 § 5 row 4). The claim files are already `record` entries
-of the artifact's `inputs`, so `policyFingerprint` covers them, and the tool's
-hash check of `inputs` is what makes an exported catalogue current or stale. The
-tool reads `catalog` with its own `Contract/` reader and never references the
-analyzer (0201-F5 § 7).
 
 ### Input failures
 
@@ -569,8 +527,9 @@ a finding leaves the catalogue unchanged.
 
 ### What the later items follow
 
-- **0259** builds everything above, the version-2 artifact and both readers of
-  it included, and gives each claim of § 3 the assertion in the table below.
+- **0259** builds everything above and gives each claim of § 3 the assertion in
+  the table below. **0411** moves the line reader and the tag form into the
+  engine and withdraws the export 0259 built (decision 0004).
 - **0245** (the scenario bridge) reads claims only through the claim
   `GherkinTagForm` and the Feature and epic scope forms, and joins a runner case
   to a catalogue case by path and line; the producer's own row identity stays
@@ -580,39 +539,40 @@ a finding leaves the catalogue unchanged.
   artifact; the incomplete-run diagnosis is a typed finding in the evidence
   artifact and report (0201-F5 `findings`), not an SPCT diagnostic, because it
   exists only after a run. The case record's new fields are 0260's.
-- **0262** gates on the `planned` flag of `catalog` cases and on owned keys, both
-  read from the artifact. The tool takes no new reference.
+- **0262** gates on owned keys read from the artifact and on the `planned` flag
+  of the cases the engine's reader gives for the claim files. The tool takes no
+  new reference.
 
-| Claim | The test asserts, at `AnalysisInputReader.Read` unless stated                                                                                                                                                          |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B-001 | With `claimSource: "gherkin"`, the snapshot catalogue holds `REQ-FIX-001` for Feature `arithmetic` and a `feature` input's claims table is not read.                                                                   |
-| B-002 | With no `claimSource` and a record with a claims table, the catalogue is the table's claims, and a present `claimFileSets` changes nothing.                                                                            |
-| B-003 | A claim in a file matched by the set belongs to that set's identity.                                                                                                                                                   |
-| B-004 | The claim's `Id` is `REQ-FIX-001`; with `tagIgnoreCase` true, `@req-fix-001` reads as `req-fix-001`, as authored.                                                                                                      |
-| B-005 | A set whose `record` has no claims table yields no failure; so does a set with no `record`.                                                                                                                            |
-| B-006 | The same inputs with two different selected project paths give equal catalogues; a glob outside every project directory resolves.                                                                                      |
-| B-007 | With no `identifiers.epic`, a claim resolves from a reference with no epic, and an `epic` in a set is a failure.                                                                                                       |
-| B-008 | A Scenario's claim has `Element` `Scenario`, its path, and the keyword line, not the tag line.                                                                                                                         |
-| B-009 | An Outline with two rows gives one claim and two cases.                                                                                                                                                                |
-| B-010 | A Rule tag gives one claim at the Rule line, its scenarios' cases, and no SPCT0010.                                                                                                                                    |
-| B-011 | Reordered and retitled elements give claims equal in `Id` and Feature identity.                                                                                                                                        |
-| B-012 | The same `Id` on two elements gives two SPCT0010 findings, one per path and line.                                                                                                                                      |
-| B-014 | A `null` text and a text with no `Feature:` line each give one failure whose path is the file and whose message is the stated one.                                                                                     |
-| B-015 | A Scenario with no claim from itself, its Rule or the Feature gives SPCT0012 at its keyword line; with a Rule claim it gives none.                                                                                     |
-| B-016 | A case under a planned tag, itself or through its `Examples` block, has `Planned` true.                                                                                                                                |
-| B-017 | A native claim with no `verifies` method gives the same SPCT0007 as a Markdown claim; the existing resolver and policy are used unchanged.                                                                             |
-| B-018 | A `verifies` naming `REQ-FIX-999` gives the same SPCT0004 as a Markdown claim.                                                                                                                                         |
-| B-019 | `Read` takes texts and returns records; no member writes. The test supplies no file system.                                                                                                                            |
-| B-020 | A claim with no lifecycle tag has `State` `Active`.                                                                                                                                                                    |
-| B-021 | A configured withdrawn tag gives `Withdrawn`, a superseded tag `Superseded`; both together give `Superseded`.                                                                                                          |
-| B-022 | A `record` with `spec_status: draft` gives Feature state `draft`; none gives `current`; both are eligible targets.                                                                                                     |
-| B-023 | `@spec.feature:billing` on a file mapped to `arithmetic` gives one failure at that file; `@spec.feature:arithmetic`, or no Feature tag, gives none.                                                                    |
-| B-024 | An `@ignore` scenario still declares its claim, and the claim's required links are as for an unplanned one.                                                                                                            |
-| B-025 | `@visual`, `@ignore`, `@boundary`, `@issue-42` and `@REQ-FIX-5` give no claim and no finding; under the form `@req:{claim}`, `@REQ-FIX-001` gives none.                                                                |
-| B-026 | An Outline with one ignored Examples block has `Planned` true only for that block's rows; the claim and the other rows are unchanged.                                                                                  |
-| B-028 | An `Examples` block tagged `@REQ-FIX-006` gives one SPCT0011 at that tag's line and no claim `REQ-FIX-006`.                                                                                                            |
-| B-029 | `# language: fr` gives one failure at that file with the stated message; `# language: en`, and no header, give none.                                                                                                   |
-| B-030 | At `TestEvidenceArtifactWriter` and the tool's `Contract/` reader: the fixture's artifact has `formatVersion` 2 and the `catalog` above and reads back equal; a Markdown-path artifact is version 1 with no `catalog`. |
+| Claim | The test asserts, at `AnalysisInputReader.Read` unless stated                                                                                           |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | With `claimSource: "gherkin"`, the snapshot catalogue holds `REQ-FIX-001` for Feature `arithmetic` and a `feature` input's claims table is not read.    |
+| B-002 | With no `claimSource` and a record with a claims table, the catalogue is the table's claims, and a present `claimFileSets` changes nothing.             |
+| B-003 | A claim in a file matched by the set belongs to that set's identity.                                                                                    |
+| B-004 | The claim's `Id` is `REQ-FIX-001`; with `tagIgnoreCase` true, `@req-fix-001` reads as `req-fix-001`, as authored.                                       |
+| B-005 | A set whose `record` has no claims table yields no failure; so does a set with no `record`.                                                             |
+| B-006 | The same inputs with two different selected project paths give equal catalogues; a glob outside every project directory resolves.                       |
+| B-007 | With no `identifiers.epic`, a claim resolves from a reference with no epic, and an `epic` in a set is a failure.                                        |
+| B-008 | A Scenario's claim has `Element` `Scenario`, its path, and the keyword line, not the tag line.                                                          |
+| B-009 | An Outline with two rows gives one claim and two cases.                                                                                                 |
+| B-010 | A Rule tag gives one claim at the Rule line, its scenarios' cases, and no SPCT0010.                                                                     |
+| B-011 | Reordered and retitled elements give claims equal in `Id` and Feature identity.                                                                         |
+| B-012 | The same `Id` on two elements gives two SPCT0010 findings, one per path and line.                                                                       |
+| B-014 | A `null` text and a text with no `Feature:` line each give one failure whose path is the file and whose message is the stated one.                      |
+| B-015 | A Scenario with no claim from itself, its Rule or the Feature gives SPCT0012 at its keyword line; with a Rule claim it gives none.                      |
+| B-016 | A case under a planned tag, itself or through its `Examples` block, has `Planned` true.                                                                 |
+| B-017 | A native claim with no `verifies` method gives the same SPCT0007 as a Markdown claim; the existing resolver and policy are used unchanged.              |
+| B-018 | A `verifies` naming `REQ-FIX-999` gives the same SPCT0004 as a Markdown claim.                                                                          |
+| B-019 | `Read` takes texts and returns records; no member writes. The test supplies no file system.                                                             |
+| B-020 | A claim with no lifecycle tag has `State` `Active`.                                                                                                     |
+| B-021 | A configured withdrawn tag gives `Withdrawn`, a superseded tag `Superseded`; both together give `Superseded`.                                           |
+| B-022 | A `record` with `spec_status: draft` gives Feature state `draft`; none gives `current`; both are eligible targets.                                      |
+| B-023 | `@spec.feature:billing` on a file mapped to `arithmetic` gives one failure at that file; `@spec.feature:arithmetic`, or no Feature tag, gives none.     |
+| B-024 | An `@ignore` scenario still declares its claim, and the claim's required links are as for an unplanned one.                                             |
+| B-025 | `@visual`, `@ignore`, `@boundary`, `@issue-42` and `@REQ-FIX-5` give no claim and no finding; under the form `@req:{claim}`, `@REQ-FIX-001` gives none. |
+| B-026 | An Outline with one ignored Examples block has `Planned` true only for that block's rows; the claim and the other rows are unchanged.                   |
+| B-028 | An `Examples` block tagged `@REQ-FIX-006` gives one SPCT0011 at that tag's line and no claim `REQ-FIX-006`.                                             |
+| B-029 | `# language: fr` gives one failure at that file with the stated message; `# language: en`, and no header, give none.                                    |
+| B-030 | Withdrawn (decision 0004): no test.                                                                                                                     |
 
 ## 8. Testing Strategy
 
