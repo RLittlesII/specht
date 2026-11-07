@@ -58,6 +58,11 @@ public sealed class DocumentationTestMethods
                     methods.Add(method.SymbolId);
                 }
             }
+
+            foreach (var testCase in artifact.Discovery.Cases)
+            {
+                methods.Add(testCase.MethodSymbolId);
+            }
         }
 
         return new TestMethodRecognition(methods, authoritative);

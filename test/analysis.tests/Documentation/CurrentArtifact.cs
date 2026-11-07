@@ -9,7 +9,11 @@ using Specht.Analysis.Tests.TestEvidence;
 
 namespace Specht.Analysis.Tests.Documentation;
 
-/// <summary>An evidence artifact that names the compilation it was exported from, so recognition is authoritative.</summary>
+/// <summary>
+/// An evidence artifact that names the compilation it was exported from, so recognition is authoritative. Its methods and
+/// bindings are the compilation export's, as a runner's logger copies them; one discovered case names the given method
+/// when the compilation declares it, and none otherwise.
+/// </summary>
 internal sealed class CurrentArtifact
 {
     public static readonly string Root = Path.GetFullPath(".");
@@ -45,6 +49,17 @@ internal sealed class CurrentArtifact
         artifact["sourceFingerprint"] = export["sourceFingerprint"]!.DeepClone();
         artifact["policyFingerprint"] = export["policyFingerprint"]!.DeepClone();
         artifact["inputs"] = export["inputs"]!.DeepClone();
-        return artifact.ToJsonString();
+        var methods = export["methods"]!.AsArray();
+        artifact["discovery"]!["methods"] = methods.DeepClone();
+        if (!methods.Any(method => method!["symbolId"]!.GetValue<string>() == symbolId))
+        {
+            artifact["discovery"]!["cases"] = new JsonArray();
+            artifact["results"]!["cases"] = new JsonArray();
+        }
+
+        artifact["bindings"] = export["bindings"]!.DeepClone();
+        var json = artifact.ToJsonString();
+        new TestEvidenceArtifactReader().Read(json).IsValid.Should().BeTrue();
+        return json;
     }
 }
