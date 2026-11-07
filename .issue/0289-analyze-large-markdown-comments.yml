@@ -1,7 +1,7 @@
 id: "0289"
 type: spike
 title: Analyze large HTML comment chunks in specification markdown
-status: ready
+status: done
 value: 2
 risk: 2
 parent: null
@@ -11,8 +11,8 @@ spikes: []
 spec: null
 claims: []
 created: "2026-10-24"
-updated: "2026-10-27"
-closed: null
+updated: "2026-11-06"
+closed: "2026-11-06"
 summary: |
   Specify opt-in detection of bulky amendment comments in specification
   Markdown. The owner wants concise current content, without decorative
@@ -33,6 +33,25 @@ acceptance_criteria:
 decisions:
   - "2026-10-24: Original intake requested large-comment analysis with extracted date, author, authorization and affected keys."
   - "2026-10-27, repository owner: revise the request to discourage bulky amendment comments; mandatory provenance extraction is superseded. Keep required stamps and generated markers."
+  - |
+    2026-11-06, spec-author: the agreement handoff is `0101-F10`
+    (`src/specht/Rules/Comments/.spec/README.md`, draft) with its decision
+    0001, which records the owner's revision of 2026-10-27; `spec-reviewer`
+    approved it in round 2 (🟢) after round 1's findings. The evidence is
+    counted at `5ad5a6fe` (`0101-F10` A-5): 907 comments outside code in
+    550 tracked Markdown files, 793 of them one-line stamps, 733 of those in
+    the 55 Feature specifications; the other 114 are 113 template guidance
+    comments and one prettier directive. No Feature specification holds a
+    comment that is not a stamp, so the rule reports nothing on this
+    repository at any limit; 62 stamps hold more than 200 characters
+    (`0101-F10` OQ-7). Schema version: the rule is reached only through an
+    optional key, an opt-in addition, so a patch (`0001-F7` C-11, decision
+    0022) - `0.3.1` if no package carries it when the rule lands, else the
+    next unpublished patch; the rule id waits on `0101-F10` OQ-6. Division
+    with item `0311`: `0101-F10` judges size and never a stamp (C-5); the
+    one-line amendment comment beside a stamp stays `0311`'s. The owner's
+    rulings are `0101-F10` OQ-1 to OQ-9; `spec` stays null, as a spike's
+    does.
 out_of_scope:
   - "Rule, engine or host implementation; rewriting existing comments."
   - "Automatic prose rewriting, a prose word-count gate or new check activation in agents."

@@ -17,9 +17,10 @@ children:
     "0101-F7",
     "0101-F8",
     "0101-F9",
+    "0101-F10",
   ]
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-11-06"
 github_issue: null
 ---
 
@@ -35,9 +36,10 @@ row grows an empty trailing cell, frontmatter keys wander. Each is harmless to
 the verdict and costly to the reader and to every diff that follows.
 
 This epic adds those checks as rules of schema version 2, each of these style
-and ordering rules a warning by default, and adds `specht format`, a separate
-command that fixes the ordering findings by moving whole table rows and
-frontmatter keys. The check stays read-only.
+and ordering rules a warning by default - `0101-F10`'s comment size rule runs
+only where the manifest sets its key (`0101-F10` decision 0001) - and adds
+`specht format`, a separate command that fixes the ordering findings by
+moving whole table rows and frontmatter keys. The check stays read-only.
 
 It also holds the uniqueness rules: an id declared twice is not harmless to
 the verdict, because a citation of it names two rows. Those rules are errors
@@ -50,7 +52,9 @@ they bind (`0101-F1` decisions 0001 and 0002, `0101-F5` decision 0001).
 Uniqueness was added by the owner on 2026-10-09 (`0101-F6` decisions 0001
 and 0002; `0101-F7` decisions 0001 and 0002; `0101-F8` decisions 0001 to
 0003). The section stamp rule was added by the owner on 2026-10-11
-(`0101-F9` decisions 0001 to 0003).
+(`0101-F9` decisions 0001 to 0003). The comment size rule, off unless the manifest sets its
+key, follows the owner's revision of 2026-10-27 to item `0289` (`0101-F10`
+decision 0001).
 
 ## Business Value
 
@@ -66,21 +70,22 @@ disables that rule.
 
 ## Features
 
-Decomposed by capability dimension: five style and ordering rule Features
+Decomposed by capability dimension: six style and ordering rule Features
 and three uniqueness rule Features, each with its own finding, and the one
 command that writes.
 
-| Feature   | Name                           | Specification                                       |
-| --------- | ------------------------------ | --------------------------------------------------- |
-| `0101-F1` | Row ordering rules             | `src/specht/Rules/Ordering/.spec/README.md`         |
-| `0101-F2` | Retired-id rule                | `src/specht/Rules/RetiredIds/.spec/README.md`       |
-| `0101-F3` | Heading and table form         | `src/specht/Rules/Form/.spec/README.md`             |
-| `0101-F4` | Frontmatter key order          | `src/specht/Rules/FrontmatterOrder/.spec/README.md` |
-| `0101-F5` | The format command             | `src/tool/Features/Format/.spec/README.md`          |
-| `0101-F6` | In-specification id uniqueness | `src/specht/Rules/DuplicateIds/.spec/README.md`     |
-| `0101-F7` | Record number uniqueness       | `src/specht/Rules/RecordNumbers/.spec/README.md`    |
-| `0101-F8` | Work-item id allocation        | `src/specht/Rules/WorkItemIds/.spec/README.md`      |
-| `0101-F9` | Section stamp form             | `src/specht/Rules/Stamps/.spec/README.md`           |
+| Feature    | Name                           | Specification                                       |
+| ---------- | ------------------------------ | --------------------------------------------------- |
+| `0101-F1`  | Row ordering rules             | `src/specht/Rules/Ordering/.spec/README.md`         |
+| `0101-F2`  | Retired-id rule                | `src/specht/Rules/RetiredIds/.spec/README.md`       |
+| `0101-F3`  | Heading and table form         | `src/specht/Rules/Form/.spec/README.md`             |
+| `0101-F4`  | Frontmatter key order          | `src/specht/Rules/FrontmatterOrder/.spec/README.md` |
+| `0101-F5`  | The format command             | `src/tool/Features/Format/.spec/README.md`          |
+| `0101-F6`  | In-specification id uniqueness | `src/specht/Rules/DuplicateIds/.spec/README.md`     |
+| `0101-F7`  | Record number uniqueness       | `src/specht/Rules/RecordNumbers/.spec/README.md`    |
+| `0101-F8`  | Work-item id allocation        | `src/specht/Rules/WorkItemIds/.spec/README.md`      |
+| `0101-F9`  | Section stamp form             | `src/specht/Rules/Stamps/.spec/README.md`           |
+| `0101-F10` | Comment size                   | `src/specht/Rules/Comments/.spec/README.md`         |
 
 Where the invariant changes, the Feature is cut:
 
@@ -109,6 +114,11 @@ Where the invariant changes, the Feature is cut:
   It is cut from `0101-F3` because it reads what no other rule reads, the
   comment under a heading, and judges a count where `0101-F3` judges
   written form.
+- `0101-F10` judges a comment's size, not its text: a comment in a Feature
+  specification that spans more lines or holds more characters than the
+  manifest's limits. It runs only where the manifest sets its key
+  (`0101-F10` decision 0001), and it never judges a stamp, which is
+  `0101-F9`'s. Like `0101-F3`, it is report-only.
 
 The AGENTS.md "&" heuristic was applied to `0101-F3`, "Heading and table
 form". Both halves share one invariant - a finding about the text of the
@@ -117,7 +127,7 @@ version 1 rules already cover most of the ground (`0101-F3` OQ-1). They stay
 one Feature; if OQ-1 drops the heading half, the name drops with it.
 
 Every Feature depends on `0001-F7`: a new rule is a new schema version
-(brief § 9; `0001-F1` C-5). The eight rule Features also depend on `0001-F5`,
+(brief § 9; `0001-F1` C-5). The nine rule Features also depend on `0001-F5`,
 whose per-rule severity and disable they are defaulted and switched off by
 (`0101-F1` decision 0001; `0101-F6` decision 0001; `0101-F7` decision 0001;
 `0101-F8` decision 0001; `0101-F9` decision 0002). `0101-F7` and `0101-F8` also depend on `0001-F6`,
