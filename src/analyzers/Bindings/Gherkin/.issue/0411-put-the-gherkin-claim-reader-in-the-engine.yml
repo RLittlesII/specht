@@ -1,0 +1,96 @@
+id: "0411"
+type: task
+title: "Put the Gherkin claim reader in the engine"
+status: ready-for-architecture
+value: 4
+risk: 5
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/analyzers/Bindings/Gherkin/.spec/README.md
+claims: []
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+summary: |
+  0201-F7 decision 0004 supersedes decision 0003. The Gherkin claim reader
+  moves from `src/analyzers/Bindings/Gherkin/` into `src/specht/Model/`, beside
+  `FrontmatterTextReader`, `FrontmatterText`, `MarkdownTextReader` and
+  `MarkdownTextSection`. `src/analyzers/analyzers.csproj` compiles it through a
+  `<Compile Include … Link="Text/…">` link, as it compiles those four. No
+  project, assembly or package is added. `specht evidence` then reads claim
+  files through the same reader (item 0409).
+
+  The § 3 claims do not exist yet. The first commit is spec-author's amendment
+  of 0201-F7: B-030, the catalogue export, is withdrawn in place, and every
+  section that rests on decision 0003 changes with it: § 5 row 11, § 6
+  "Catalogue export", § 7 "Export in the test-evidence artifact", the B-030
+  scenario, and ADR-0001 items 2, 3 and 10. Tests and code follow in the same
+  pull request (AGENTS.md rule 1). Then `claims:` lists the changed ids.
+
+  The owner withdrew the `catalog` member of the test-evidence artifact in this
+  item (decision below). The member is built (item 0259): the 0201-F3 artifact
+  contract defines it at `formatVersion` 2 and 3, the analyzer exporter writes
+  it, the MTP collector and VSTest logger pass it through, and the tool's
+  `Contract/` reader reads it. This item removes it from all of them. What that
+  removal means for `formatVersion` is 0201-F3's to decide, in its owner
+  sections, within this item.
+
+  The reader today builds the analyzer's `BindingClaim`, `BindingClaimElement`,
+  `BindingClaimCase` and `BindingFinding`. A linked engine file cannot name
+  them, so the design gives the moved reader its own result types and the
+  analyzer maps them. That design is the implementer's.
+
+  Other records that cite decision 0003 and need their owner's rewording: the
+  0201-F6 § 7 paragraph saying claim-tag reading lives in the analyzer and that
+  the tool reads the catalogue from the artifact; 0201-F3 § 7 `catalog`; and
+  `docs/native-gherkin-claims.md`, which says the catalogue is exported with
+  the evidence.
+
+  Value 4: it blocks 0409 and therefore 0302, milestone 0.6.0. Risk 5: one
+  reader shared by two projects' compiles, result types tied to the analyzer's
+  records, and the removal of a released artifact member from its contract,
+  one exporter, two pass-through writers and the tool's reader, with a
+  `formatVersion` consequence still to decide. Raised from 4 because the
+  withdrawal turned an open ruling into a change to a released wire contract
+  across four more components.
+acceptance_criteria:
+  - "0201-F7 B-030 is marked Withdrawn in place in § 3, in this item's first commit."
+  - "0201-F7 § 5 row 11, § 6, § 7, the B-030 scenario and ADR-0001 no longer rest on decision 0003."
+  - "The `catalog` member is removed from the 0201-F3 artifact contract, from the analyzer exporter, the MTP collector and the VSTest logger, and from the tool's `Contract/` reader."
+  - "The `formatVersion` consequence of removing `catalog` is decided in 0201-F3's owner sections within this item, and is not assumed by it."
+  - "The Gherkin claim reader lives in `src/specht/Model/`; `src/analyzers/analyzers.csproj` compiles it through a `<Compile Include>` link under `Text/`; no project, assembly or package is added."
+  - "0201-F7 C-1 - one reading of a claim tag holds across the engine and the analyzer."
+  - "Every 0201-F7 claim not Withdrawn keeps its § 9 tests green: the analyzer's in-compilation claim catalogue and its diagnostics are unchanged."
+  - "The engine's golden baseline report is unchanged (0001-F1 B-004)."
+  - "The analyzer's compiler-loaded dependency closure gains no assembly (ADR-0017)."
+  - "§ 9 carries a row naming a test for each changed claim id."
+decisions:
+  - "0201-F7 decision 0004"
+  - |
+    2026-11-06, repository owner, recorded by spec-author. On the catalogue
+    export: "This sounds like uncessary coupling. It does not sounds like what I
+    would ask you to do." Asked where the Gherkin claim reader should live so
+    the tool can use it: "In the specht engine". Then: "same place as the yaml
+    ... and markdown readers ... right?!" Asked whether to rework PR #767 on
+    that basis: "Yes." The move into `src/specht/Model/` and the source link
+    are spec-author's reading of those words (decision 0004). Rejected: the
+    catalogue export, a shared assembly (ADR-0021), and a second reader in the
+    tool.
+  - |
+    2026-11-06, spec-author: homed in 0201-F7, which owns the reader and B-030.
+    0409 waits on it. Rejected: folding it into 0409, which amends 0201-F5;
+    each item amends one Feature's § 3.
+  - |
+    2026-11-06, repository owner, recorded by spec-author. Asked "What happens
+    to the released catalog field in the evidence file?", the owner answered:
+    "Withdraw it in 0411". B-030 is withdrawn in place, and the `catalog`
+    member leaves the artifact contract, its writers and the tool's reader in
+    this item.
+out_of_scope:
+  - "Reconciling native claims in `specht evidence`, and the gate's project set: 0409."
+  - "Teaching the standalone `specht` checker to read claims from Gherkin: 0201-F7 § 5 row 7."
+  - "Replacing the four existing source links with a project reference: decision 0004 covers the Gherkin claim reader beside them, and nothing else."
+  - "Recognising a test method missing `verifies`: 0410."
+  - "The packaged consumer fixture: 0302."

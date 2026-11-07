@@ -1,0 +1,60 @@
+id: "0410"
+type: bug
+title: "Recognise a discovered test method that carries no verifies"
+status: ready
+value: 4
+risk: 2
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-001", "B-005"]
+created: "2026-11-06"
+updated: "2026-11-06"
+closed: null
+summary: |
+  Found by item 0302's packaged consumer fixture (branch
+  `0302/packaged-gherkin-vstest-fixture`, commit `38670c0d`): with complete,
+  current evidence and mandatory `testMethod`/`verifies` enforcement, a test
+  method stripped of its `verifies` builds with no SPCT0007.
+
+  `DocumentationTestMethods.Read` (`src/analyzers/Documentation/`) recognises,
+  in authoritative mode, only the discovered methods that already carry an
+  eligible resolved binding. A test method with no `verifies` has no binding,
+  so it is never a recognised test, and the mandatory role cannot report on
+  the one method it exists for. TestEvidence § 7 "Recognition has two modes"
+  states that rule, so the design text is wrong too. The analyzer unit tests
+  pass because they set recognition directly; nothing drove recognition from
+  a real artifact in mandatory scope.
+
+  Home: this Feature, 0201-F6. Its B-001 and B-005 are the claims violated:
+  the selected enforcement scope must carry bindings, and a missing required
+  binding there is reported. The same defect breaks 0201-F7 B-017, which
+  promises native claims the diagnostic a Markdown claim receives, and a
+  Markdown claim does not receive it either. 0201-F3 B-017 holds: it relaxes
+  the role only while recognition is provisional. The recognition mechanism is
+  0201-F3's § 7 design, and its implementer rewrites the authoritative-mode
+  paragraph with the fix.
+
+  Value 4: it blocks 0302, milestone 0.6.0, and mandatory `verifies`
+  enforcement is inert for every consumer. Risk 2: one recognition rule in
+  one reader, shared with `DocumentationRepairs`.
+acceptance_criteria:
+  - "B-001, B-005 - in authoritative recognition, a discovered test method in mandatory `testMethod`/`verifies` scope with no `verifies` reports SPCT0007, driven from a supplied artifact, not set directly."
+  - "0201-F7 B-017 - the same holds for a native Gherkin claim."
+  - "0201-F3 B-017, B-018 - provisional recognition still does not require the role."
+  - "TestEvidence § 7's authoritative-mode paragraph states the corrected recognition rule."
+  - "§ 9 carries a row naming the new test for B-001 and B-005."
+decisions:
+  - |
+    2026-11-06, repository owner, recorded by spec-author: chose "Cut items,
+    block 0302". This bug is cut from 0302; 0302 waits on it.
+  - |
+    2026-11-06, spec-author: homed in 0201-F6, not 0201-F3 or 0201-F7. 0201-F6
+    owns mandatory enforcement and its violated claims; 0201-F3 B-017 is not
+    violated, and 0201-F7 B-017 delegates to the Markdown behaviour.
+out_of_scope:
+  - "Reading native claims in `specht evidence` and the gate's project set: 0409."
+  - "The packaged consumer fixture itself: 0302."
+  - "Recognition by test-framework attribute: rejected in TestEvidence § 7 (Bindings C-1)."

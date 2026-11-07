@@ -633,6 +633,7 @@ OQ-1 records explicit mappings over existing consumer configuration as the polic
 - [0251: Adopt Specht.CodeAnalysis in the engine and CLI](../.issue/0251-analyze-engine-cli.yml)
 - [0263: Deliver a central .spec/features tree as scenario inputs by default](../.issue/0263-central-feature-tree-default-scenario-input.yml)
 - [0302: Prove native Gherkin claims with xUnit v2 VSTest evidence in one packaged consumer](../.issue/0302-packaged-gherkin-vstest-consumer-fixture.yml)
+- [0410: Recognise a discovered test method that carries no verifies](../.issue/0410-recognise-a-test-method-missing-verifies.yml)
 
 ## Scoring
 
