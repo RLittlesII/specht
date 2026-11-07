@@ -27,23 +27,6 @@ public sealed class DocumentationTestMethodsUnitTests
     }
 
     [Fact]
-    public async Task AnArtifactMatchingTheCompilation_WhenARecognizedMethodLacksVerifies_ShouldRequireIt()
-    {
-        // Given
-        var source = "public class Example\n{\n    public void Run() { }\n}";
-        var inputs = new AnalysisInputs().Inputs;
-        var artifact = await Artifact(source, inputs);
-
-        // When
-        var diagnostics = await Analyze(source, inputs, artifact, "Debug");
-
-        // Then
-        var required = diagnostics.Should().ContainSingle().Subject;
-        required.Id.Should().Be("SPCT0007");
-        required.GetMessage().Should().Contain("Example.Run");
-    }
-
-    [Fact]
     public async Task ADiscoveredTestMethodWithNoVerifies_WhenAnalyzedInMandatoryScope_ShouldReportSPCT0007AsAWarning()
     {
         // Given
@@ -73,7 +56,27 @@ public sealed class DocumentationTestMethodsUnitTests
         var diagnostics = await Analyze(source, inputs, artifact, "Debug");
 
         // Then
-        diagnostics.Should().NotContain(static diagnostic => diagnostic.GetMessage().Contains("Example.Helper", StringComparison.Ordinal));
+        var required = diagnostics.Should().ContainSingle().Subject;
+        required.Id.Should().Be("SPCT0007");
+        required.GetMessage().Should().Contain("Example.Run");
+    }
+
+    [Fact]
+    public async Task AnEligibleBoundMethodNamedByNoDiscoveredCase_WhenAnalyzedInMandatoryScope_ShouldRecognizeItAndReportNothingOnIt()
+    {
+        // Given
+        var source = "public class Example\n{\n    public void Run() { }\n"
+            + "    /// <verifies feature=\"cap:read\" claim=\"need/7\" />\n    public void Bound() { }\n}";
+        var inputs = new AnalysisInputs().Inputs;
+        var artifact = await Artifact(source, inputs);
+
+        // When
+        var diagnostics = await Analyze(source, inputs, artifact, "Debug");
+
+        // Then
+        var required = diagnostics.Should().ContainSingle().Subject;
+        required.Id.Should().Be("SPCT0007");
+        required.GetMessage().Should().Contain("Example.Run");
     }
 
     [Theory]
