@@ -194,6 +194,11 @@ decisions:
     consumer-supplied Strategy kept open as a future option. Direction (g)
     and three criteria added; the out-of-scope entries on building and on
     rewriting ids replace the allocator entry. Status unchanged, `ready`.
+  - |
+    2026-11-06, spec-author: on the repository owner's word the same day,
+    "I'm ready to move forward on this and put it in 0.6.0", the spike moves
+    from milestone 0.7.0 to 0.6.0 in `.issue/.goal`, listed after item 0128.
+    Status unchanged, `ready`; scope, criteria and out-of-scope unchanged.
 
 out_of_scope:
   - "Renumbering any existing id - AGENTS.md § Stable IDs; lesson 0005 records the one exception and does not widen it."

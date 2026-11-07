@@ -12,6 +12,8 @@
 # Feature's items join this list once cut.
 0289
 0128
+# Collision-free record ids, moved from 0.7.0 by the owner, 2026-11-06.
+0256
 # Epic 0201 for consumer request #256: native Gherkin claims with xUnit v2
 # VSTest evidence, proven end to end in one packaged consumer.
 0302
@@ -38,7 +40,6 @@
 0369
 0370
 0252
-0256
 # Remaining matrix validation, moved from 0.4.0 beside facts and coverage.
 0335
 0336
