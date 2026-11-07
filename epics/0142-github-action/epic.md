@@ -3,12 +3,12 @@ title: "Epic 0142: a GitHub Action that runs specht"
 description: "A GitHub Action, shipped from this repository, that runs specht in any repository, writes its violations onto the pull request diff and into the step summary, and exits with the tool's own exit code; this repository's CI adopts it, so one implementation of the annotation remains"
 id: "0142"
 type: epic
-status: needs-decomposition
+status: deferred
 priority: med
 milestone: null
 children: []
 created: "2026-10-10"
-updated: "2026-10-30"
+updated: "2026-11-06"
 github_issue: null
 ---
 
@@ -31,7 +31,8 @@ This file is the record of that decision. Nothing here is designed: the
 action's form, its folder and its inputs' final names are not chosen. The
 split into Features is a candidate the owner has not confirmed, and no
 Feature specification exists yet. 2026-10-30, the owner: F3 merges into F2;
-the rest of the cut is not confirmed ("Features").
+the rest of the cut is not confirmed ("Features"). 2026-11-06, the owner
+deferred the epic ("Status").
 
 ## Business Value
 
@@ -84,6 +85,12 @@ F3 into one candidate, F2. The owner changed nothing else: F1, F4 and F5
 stand as written and remain unconfirmed beyond that call. F3 keeps its row,
 marked merged, and no candidate is renumbered.
 
+**2026-11-06, the owner.** Asked to confirm the candidate cut F1, F2 (with F3
+merged in), F4 and F5, the owner answered: "Let's actually defer this. I
+think we want to focus on the other features more than this. This is likely
+the last feature we deliver." The epic is deferred ("Status"). The cut stays a
+candidate, unconfirmed, and no Feature is specified.
+
 | Candidate | Name                              | Covers                                                                                                                                                                               | Serves     |
 | --------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
 | F1        | Run and verdict                   | The inputs (`root`, `strict`, `command`), the restore from the manifest, the run, and passing the exit code on                                                                       | R4, R5, R7 |
@@ -101,7 +108,8 @@ What the owner is asked to confirm:
 - **F4 is cut from F1 to F3.** It changes this repository's build and three
   recorded specifications, and delivers nothing to a consumer.
 - **F1 names `command`**, an input that exists only on OQ-2's default. If
-  OQ-2 is answered otherwise, F1 loses it.
+  OQ-2 is answered otherwise, F1 loses it. OQ-2 resolved 2026-11-06 to its
+  default, so F1 keeps it.
 - **The AGENTS.md "&" heuristic.** "Run and verdict" joins two nouns. They are
   kept together because the verdict is the run's exit code and cannot fail
   with the run correct; the owner may still cut them.
@@ -111,12 +119,12 @@ What the owner is asked to confirm:
 None of these stops a Feature specification being written. Each stops a
 consumer using the action.
 
-| Waits on                                                                                                                                        | Recorded in                      | Blocks              |
-| ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------- |
-| A first release. Resolved 2026-10-15: tags `v0.1.90` and `v0.1.131` exist, so a consumer has a `<ref>` to pin                                   | `0055-F6`; `0055-F5` B-007       | Nothing; was R6, R8 |
-| The package id. Resolved 2026-10-15: `src/tool/tool.csproj` sets `PackageId` to `specht.tool`, the id `README.md`, `0055-F6` and `0055-F7` name | `0055-F6` B-003; `0055-F7` B-001 | Nothing; was R4     |
-| The feed token scope a consumer's CI supplies                                                                                                   | `0055-F7` B-005                  | R4                  |
-| Access to the action from another repository while this one is private                                                                          | Nowhere yet (OQ-10)              | R6                  |
+| Waits on                                                                                                                                                                                                                                        | Recorded in                              | Blocks              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------- |
+| A first release. Resolved 2026-10-15: tags `v0.1.90` and `v0.1.131` exist, so a consumer has a `<ref>` to pin                                                                                                                                   | `0055-F6`; `0055-F5` B-007               | Nothing; was R6, R8 |
+| The package id. Resolved 2026-10-15: `src/tool/tool.csproj` sets `PackageId` to `specht.tool`, the id `README.md`, `0055-F6` and `0055-F7` name                                                                                                 | `0055-F6` B-003; `0055-F7` B-001         | Nothing; was R4     |
+| The feed token scope a consumer's CI supplies. Ended 2026-11-01: since `0055-F6` decision 0007 the package publishes to nuget.org, a consumer carries no package source or credential, and `0055-F7` B-005 is withdrawn. R4's text is unchanged | `0055-F7` B-005; `0055-F6` decision 0007 | Nothing; was R4     |
+| Access to the action from another repository while this one is private. Ended: on 2026-11-06 `gh repo view` reports the repository `PUBLIC`, so a consumer needs no access grant                                                                | OQ-10                                    | Nothing; was R6     |
 
 ## Constraints
 
@@ -150,25 +158,26 @@ Feature that owns the change.
 
 ## Open questions
 
-None is resolved here. Each carries its default where one was given, and
-travels to the Feature specification it binds, where it is resolved in place.
-OQ-1 to OQ-7 were recorded on 2026-10-10 with their defaults. OQ-8 to OQ-11
-were raised while writing this file, were not asked on 2026-10-10, and carry
-no default.
+Each carries its default where one was given, and an open one travels to the
+Feature specification it binds, where it is resolved in place. OQ-1 to OQ-7
+were recorded on 2026-10-10 with their defaults. OQ-8 to OQ-11 were raised
+while writing this file, were not asked on 2026-10-10, and carry no default.
+On 2026-11-06 the owner resolved OQ-1, OQ-2 and OQ-5 to their defaults, in
+place below; the rest are open.
 
-| OQ    | Question                                                                                                                                                                                                                                                                              | Default                                                                                                                       | Who answers |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| OQ-1  | What is the action's folder named?                                                                                                                                                                                                                                                    | `.github/actions/specht/`: epic `0055` § Placement puts hand-written GitHub configuration under `.github/`                    | The owner   |
-| OQ-2  | This repository runs the tool from source (`dotnet run --project src/tool`), and its local tool manifest does not name the tool. How does it use the action under R4?                                                                                                                 | A `command` input that defaults to `dotnet specht`; this repository passes its from-source command                            | The owner   |
-| OQ-3  | What form does the action take, given R7 rules out bash alone?                                                                                                                                                                                                                        | None: left to the design. The candidates are a JavaScript action and a composite action over `pwsh`                           | The design  |
-| OQ-4  | Does the action read the tool's stdout lines or the report document?                                                                                                                                                                                                                  | The report document from `--json` (`docs/schema/report.schema.json`); `--report` is specified and not built (`0001-F3` B-002) | The design  |
-| OQ-5  | What does the action do on a push event?                                                                                                                                                                                                                                              | The step summary only, and no diff annotation (`0055-F2` decision 0002)                                                       | The owner   |
-| OQ-6  | How does this repository's generated workflow gain the `uses:` step?                                                                                                                                                                                                                  | Declared in `.build/` and regenerated; never a hand edit (`0055-F2` C-1)                                                      | The design  |
-| OQ-7  | When R3 is widened, does the action annotate past GitHub's cap, or stop?                                                                                                                                                                                                              | Stop at the cap and write one `::notice` naming the summary                                                                   | The owner   |
-| OQ-8  | R5 exits with the tool's exit code, and `0055-F2` C-4 says this repository's `Specht` step reports and passes until `0001-F5`'s rule settings exist. When this repository adopts the action before then, which holds?                                                                 | None                                                                                                                          | The owner   |
-| OQ-9  | R7 runs the action on three operating systems, and only one leg may annotate. In a consumer's matrix, which leg annotates, and who chooses it?                                                                                                                                        | None                                                                                                                          | The owner   |
-| OQ-10 | A consumer can use an action from a private repository only when that repository grants access in its settings. `0055-F8` B-010 sets this repository's visibility to public, and no checklist row names that access. Does the checklist gain the row, or does the wait end at public? | None                                                                                                                          | The owner   |
-| OQ-11 | R7 names macOS, and this repository's CI runs on Linux and Windows only (`0055-F2` B-003). What proves the action on macOS?                                                                                                                                                           | None                                                                                                                          | The owner   |
+| OQ    | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Default                                                                                                                       | Who answers |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| OQ-1  | What is the action's folder named? RESOLVED, 2026-11-06, the owner: the default, `.github/actions/specht/`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `.github/actions/specht/`: epic `0055` § Placement puts hand-written GitHub configuration under `.github/`                    | The owner   |
+| OQ-2  | This repository runs the tool from source (`dotnet run --project src/tool`), and its local tool manifest does not name the tool. How does it use the action under R4? RESOLVED, 2026-11-06, the owner: the default. A `command` input defaults to `dotnet specht`, and this repository passes its working-build command. Fact, 2026-11-06: the premise is stale; `.config/dotnet-tools.json` now names `specht.tool` `0.1.131`, and `./build.sh Specht` runs a packed working build from an isolated local tool manifest (`0001-F2` decision 0014)                           | A `command` input that defaults to `dotnet specht`; this repository passes its from-source command                            | The owner   |
+| OQ-3  | What form does the action take, given R7 rules out bash alone?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | None: left to the design. The candidates are a JavaScript action and a composite action over `pwsh`                           | The design  |
+| OQ-4  | Does the action read the tool's stdout lines or the report document?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | The report document from `--json` (`docs/schema/report.schema.json`); `--report` is specified and not built (`0001-F3` B-002) | The design  |
+| OQ-5  | What does the action do on a push event? RESOLVED, 2026-11-06, the owner: the default. On a push event the action writes the step summary only, with no diff annotation.                                                                                                                                                                                                                                                                                                                                                                                                     | The step summary only, and no diff annotation (`0055-F2` decision 0002)                                                       | The owner   |
+| OQ-6  | How does this repository's generated workflow gain the `uses:` step?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Declared in `.build/` and regenerated; never a hand edit (`0055-F2` C-1)                                                      | The design  |
+| OQ-7  | When R3 is widened, does the action annotate past GitHub's cap, or stop?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Stop at the cap and write one `::notice` naming the summary                                                                   | The owner   |
+| OQ-8  | R5 exits with the tool's exit code, and `0055-F2` C-4 says this repository's `Specht` step reports and passes until `0001-F5`'s rule settings exist. When this repository adopts the action before then, which holds?                                                                                                                                                                                                                                                                                                                                                        | None                                                                                                                          | The owner   |
+| OQ-9  | R7 runs the action on three operating systems, and only one leg may annotate. In a consumer's matrix, which leg annotates, and who chooses it?                                                                                                                                                                                                                                                                                                                                                                                                                               | None                                                                                                                          | The owner   |
+| OQ-10 | A consumer can use an action from a private repository only when that repository grants access in its settings. `0055-F8` B-010 sets this repository's visibility to public, and no checklist row names that access. Does the checklist gain the row, or does the wait end at public? Fact, 2026-11-06: `gh repo view` reports the repository `PUBLIC`, so the access wait has ended. `0055-F8` and its settings checklist were dropped in #604 (commit `d9f993a6`), so the checklist and B-010 this question cites no longer exist. Not answered by the owner, so left open | None                                                                                                                          | The owner   |
+| OQ-11 | R7 names Linux, and this repository's CI runs on macOS and Windows only, with no Linux runner (`0055-F2` B-003, decision 0005). What proves the action on Linux? Corrected 2026-11-06: was "R7 names macOS, and this repository's CI runs on Linux and Windows only"; B-003 was amended from ubuntu and windows to the macOS pool and windows on 2026-10-23 (`0055-F2` decision 0005)                                                                                                                                                                                        | None                                                                                                                          | The owner   |
 
 ## Placement
 
@@ -182,13 +191,19 @@ version 1's epic glob `epics/**/epic.md` discovers it (`0001-F6` decision
 
 ## Status
 
-`needs-decomposition`: the candidate cut is not confirmed and no child
-exists. The epic is not `blocked`: nothing in "What this epic waits on" stops
-a Feature specification being written, and the owner did not decide that the
-epic waits. The next step is the owner's: confirm or change the candidate
-cut, and each confirmed Feature then begins with its own specification.
-2026-10-30: the owner merged F3 into F2 and confirmed nothing else; the rest
-of the cut still awaits the owner, and no child exists.
+`deferred`, since 2026-11-06. Asked to confirm the candidate cut F1, F2 (with
+F3 merged in), F4 and F5, the owner answered: "Let's actually defer this. I
+think we want to focus on the other features more than this. This is likely
+the last feature we deliver." The cut stays a candidate, unconfirmed; no
+Feature is specified and no child exists. The epic is in no milestone of
+`.issue/.goal`. The same day the owner resolved OQ-1, OQ-2 and OQ-5 to their
+defaults ("Open questions").
+
+Until 2026-11-06 the status was `needs-decomposition`: the candidate cut was
+not confirmed and no child existed. The epic was not `blocked`: nothing in
+"What this epic waits on" stopped a Feature specification being written, and
+the owner did not decide that the epic waits. 2026-10-30: the owner merged F3
+into F2 and confirmed nothing else.
 
 ## Out of this epic
 
