@@ -1,13 +1,10 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.Documentation;
 using Specht.Analysis.Policy;
-using Specht.Analysis.TestEvidence;
 using Specht.Analysis.Tests.Policy;
-using Specht.Analysis.Tests.TestEvidence;
 
 namespace Specht.Analysis.Tests.Documentation;
 
@@ -35,7 +32,7 @@ public sealed class DocumentationTestMethodsUnitTests
         // Given
         var source = "public class Example\n{\n    public void Run() { }\n}";
         var inputs = new AnalysisInputs().Inputs;
-        var artifact = await Artifact(source, inputs, "Debug");
+        var artifact = await Artifact(source, inputs);
 
         // When
         var diagnostics = await Analyze(source, inputs, artifact, "Debug");
@@ -46,6 +43,39 @@ public sealed class DocumentationTestMethodsUnitTests
         required.GetMessage().Should().Contain("Example.Run");
     }
 
+    [Fact]
+    public async Task ADiscoveredTestMethodWithNoVerifies_WhenAnalyzedInMandatoryScope_ShouldReportSPCT0007AsAWarning()
+    {
+        // Given
+        var source = "public class Example\n{\n    public void Run() { }\n}";
+        var inputs = new AnalysisInputs().Inputs;
+        var artifact = await Artifact(source, inputs);
+
+        // When
+        var diagnostics = await Analyze(source, inputs, artifact, "Debug");
+
+        // Then
+        var required = diagnostics.Should().ContainSingle().Subject;
+        required.Id.Should().Be("SPCT0007");
+        required.Severity.Should().Be(DiagnosticSeverity.Warning);
+        required.GetMessage().Should().Contain("Example.Run");
+    }
+
+    [Fact]
+    public async Task AnExportedMethodNamedByNoDiscoveredCase_WhenAnalyzedInMandatoryScope_ShouldNotRequireVerifies()
+    {
+        // Given
+        var source = "public class Example\n{\n    public void Run() { }\n    public void Helper() { }\n}";
+        var inputs = new AnalysisInputs().Inputs;
+        var artifact = await Artifact(source, inputs);
+
+        // When
+        var diagnostics = await Analyze(source, inputs, artifact, "Debug");
+
+        // Then
+        diagnostics.Should().NotContain(static diagnostic => diagnostic.GetMessage().Contains("Example.Helper", StringComparison.Ordinal));
+    }
+
     [Theory]
     [ClassData(typeof(ProvisionalArtifactCases))]
     public async Task AnArtifactThatNoLongerMatchesTheCompilation_WhenARecognizedMethodLacksVerifies_ShouldNotRequireIt(
@@ -54,7 +84,7 @@ public sealed class DocumentationTestMethodsUnitTests
         // Given
         var source = "public class Example\n{\n    public void Run() { }\n}";
         var exported = new AnalysisInputs().Inputs;
-        var artifact = Edited(await Artifact(source, exported, "Debug"), artifactEdit);
+        var artifact = Edited(await Artifact(source, exported), artifactEdit);
         var current = new AnalysisInputs().Inputs;
         if (policyEdited)
         {
@@ -137,22 +167,8 @@ public sealed class DocumentationTestMethodsUnitTests
         return result.AnalyzerResults[typeof(DocumentationBindingAnalyzer)].Diagnostics;
     }
 
-    private static async Task<string> Artifact(string source, IEnumerable<AnalysisInput> inputs, string configuration)
-    {
-        var builder = Configure(GeneratorTestContextBuilder.Create().WithGenerator<TestEvidenceCompilationExporter>(), source, inputs, configuration);
-        var result = await builder.GenerateAsync(TestContext.Current.CancellationToken);
-        var literal = result.Results[typeof(TestEvidenceCompilationExporter)].SyntaxTrees.Should().ContainSingle().Subject
-            .GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<LiteralExpressionSyntax>().Single();
-        var export = JsonNode.Parse(literal.Token.ValueText)!;
-        var artifact = JsonNode.Parse(TestEvidenceJson.ForMethod("M:Example.Run"))!;
-        artifact["project"] = new JsonObject { ["path"] = export["projectPath"]!.DeepClone(), ["targetFramework"] = export["targetFramework"]!.DeepClone() };
-        artifact["configuration"]!["name"] = export["configurationName"]!.DeepClone();
-        artifact["configuration"]!["fingerprint"] = export["configurationFingerprint"]!.DeepClone();
-        artifact["sourceFingerprint"] = export["sourceFingerprint"]!.DeepClone();
-        artifact["policyFingerprint"] = export["policyFingerprint"]!.DeepClone();
-        artifact["inputs"] = export["inputs"]!.DeepClone();
-        return artifact.ToJsonString();
-    }
+    private static Task<string> Artifact(string source, IEnumerable<AnalysisInput> inputs) =>
+        new CurrentArtifact().For("M:Example.Run", [(Path.Combine(Root, "test", "Example.cs"), source)], inputs);
 
-    private static readonly string Root = Path.GetFullPath("consumer");
+    private static readonly string Root = CurrentArtifact.Root;
 }
