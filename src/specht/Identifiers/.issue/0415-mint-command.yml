@@ -12,7 +12,7 @@ children: []
 depends_on: ["0414"] # 0414 is the engine pipeline the command calls
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-001

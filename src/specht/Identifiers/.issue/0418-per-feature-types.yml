@@ -12,7 +12,7 @@ children: []
 depends_on: ["0416", "0417"] # 0416 is the guard these places join; 0417 gives the per-Feature prefixes
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-010
@@ -22,7 +22,7 @@ claims:
   - B-042
 
 created: "2026-11-07"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: null
 
 summary: |

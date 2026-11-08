@@ -20,7 +20,7 @@ depends_on: ["F5", "F7"]
 blocks: ["0132/F4"]
 spikes: []
 created: "2026-11-06"
-updated: "2026-11-07"
+updated: "2026-11-08"
 github_issue: null
 synced_at: null
 ---
@@ -170,7 +170,7 @@ Item `0413` builds the first three rows and item `0414` the next seven; every la
 | An absent alphabet is lower-case base32 (B-019); an absent `adr` or `lesson` size is 8 (B-020)                  | Business       | `IdMinter.NanoId` fills the alphabet with `NanoIdSettings.Base32` and the size from `IdMinter.DefaultSize`                                                                        |
 | A request the minter cannot answer gives no id and a reason with no absolute path in it                         | Technical      | `IdRefusedException`, thrown by `IdMinter.Mint`; what the command does with it is item `0415`'s (B-001, B-002)                                                                    |
 | A draw is uniform, needs no network and keeps no state between requests (C-1, C-7)                              | Technical      | `CryptographicRandomSource` over `RandomNumberGenerator.GetInt32`, behind `IRandomSource`, which a test replaces                                                                  |
-| The strategy lives in the engine, and no command or `src/mcp` holds one (C-9)                                   | Technical      | `src/specht/IdGeneration/`; `AddSpechtEngine` registers `IRandomSource` (kept when registered earlier) and `IdMinter`                                                             |
+| The strategy lives in the engine, and no command or `src/mcp` holds one (C-9)                                   | Technical      | `src/specht/Identifiers/`; `AddSpechtEngine` registers `IRandomSource` (kept when registered earlier) and `IdMinter`                                                              |
 
 ## 7. Technical Design
 
@@ -194,7 +194,7 @@ Rejected:
 
 ### The minting pipeline and Nano ID (item `0414`)
 
-Seven types under `src/specht/IdGeneration/`, namespace `Specht.IdGeneration`, each in its own file:
+Seven types under `src/specht/Identifiers/`, namespace `Specht.IdGeneration`, each in its own file:
 
 | Type                        | File                                                              | What it is                                                                                            |
 | --------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |

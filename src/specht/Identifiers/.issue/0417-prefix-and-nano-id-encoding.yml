@@ -12,14 +12,14 @@ children: []
 depends_on: ["0415"] # 0415 is the request whose output carries the prefix
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-009
   - B-033
 
 created: "2026-11-07"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: null
 
 summary: |

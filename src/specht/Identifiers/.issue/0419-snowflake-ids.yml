@@ -12,7 +12,7 @@ children: []
 depends_on: ["0416", "0417"] # 0416 is the guard B-029 draws through; 0417 is the formatting decorator the encodings join
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-007
@@ -30,7 +30,7 @@ claims:
   - B-032
 
 created: "2026-11-07"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: null
 
 summary: |

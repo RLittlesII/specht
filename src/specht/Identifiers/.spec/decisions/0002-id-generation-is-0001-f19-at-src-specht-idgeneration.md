@@ -37,4 +37,8 @@ type: decision
 
 ## Reversal
 
-None.
+Superseded in part, 2026-11-08, by the repository owner in
+[decision 0004](0004-id-generation-lives-at-src-specht-identifiers.md), on the
+location in call 2 only: the engine folder, the specification and the items
+are at `src/specht/Identifiers/`. Everything else above stands, and the
+reasoning is kept as it was at the time.
