@@ -155,19 +155,26 @@ An author on a branch takes the next free number from their own copy of the tree
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`) -->
+<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`); implementer, 2026-11-08 (item `0414`: the minting pipeline and Nano ID) -->
 
-Item `0413` builds the first three rows; every later item extends the table.
+Item `0413` builds the first three rows and item `0414` the next seven; every later item extends the table.
 
 | Concern                                                                                                         | Classification | Where                                                                                                                                                                             |
 | --------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A manifest pinned to `0.3.1` or later may carry the top-level key `mint` (B-044; C-5, C-12, C-17)               | Business       | `SpechtManifestParser.Parse`, its unknown-key gate admitting `mint` when the pin is shipped and at least `MintVersion`                                                            |
 | The check reads nothing from `mint`, so its verdicts are the ones the tree gets without it (B-014; C-6, C-8)    | Business       | `SpechtStructure` has no member for the key; no rule, loader or runner sees it                                                                                                    |
 | A grammar for `adr`, `lesson`, `decision` or `scenario` in `identifiers`, with no shipped default (B-045; C-14) | Business       | `SpechtManifestParser.Filled` lays declared members over the pin's defaults and `GrammarFaults` compiles each; `src/tool/manifest/v0.3.1/manifest.json` declares none of the four |
+| Each type is minted from its own `mint` entry, through the strategy that entry names (B-008; C-3, C-12)         | Business       | `IdMinter.Mint` selects `mint[type]` and builds the strategy from that entry alone, per request                                                                                   |
+| A Nano ID holds the configured number of characters, each from the configured alphabet (B-005, B-006)           | Business       | `NanoIdStrategy.Next`                                                                                                                                                             |
+| Nano ID reads only its own `nanoid` sub-object (C-3)                                                            | Business       | `IdMinter.NanoId` is handed `entry["nanoid"]` and nothing else of the entry                                                                                                       |
+| An absent alphabet is lower-case base32 (B-019); an absent `adr` or `lesson` size is 8 (B-020)                  | Business       | `IdMinter.NanoId` fills the alphabet with `NanoIdSettings.Base32` and the size from `IdMinter.DefaultSize`                                                                        |
+| A request the minter cannot answer gives no id and a reason with no absolute path in it                         | Technical      | `IdRefusedException`, thrown by `IdMinter.Mint`; what the command does with it is item `0415`'s (B-001, B-002)                                                                    |
+| A draw is uniform, needs no network and keeps no state between requests (C-1, C-7)                              | Technical      | `CryptographicRandomSource` over `RandomNumberGenerator.GetInt32`, behind `IRandomSource`, which a test replaces                                                                  |
+| The strategy lives in the engine, and no command or `src/mcp` holds one (C-9)                                   | Technical      | `src/specht/IdGeneration/`; `AddSpechtEngine` registers `IRandomSource` (kept when registered earlier) and `IdMinter`                                                             |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`; ADR-0033's shipped-manifest consequence reconciled, review round 1) -->
+<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`; ADR-0033's shipped-manifest consequence reconciled, review round 1); implementer, 2026-11-08 (item `0414`: the minting pipeline and Nano ID) -->
 
 ### The key at this step: acceptance, no model
 
@@ -184,6 +191,49 @@ Rejected:
 - **`mint` in `KnownKeys`.** That list holds the keys every pin accepts, so `0.3.0` and lower would accept `mint`, against C-17 and B-015.
 - **A JSON Schema for the manifest that describes `mint`.** No JSON Schema describes the manifest. It is configuration, and the parser is where its keys are checked.
 - **A default `mint` entry, or a default grammar for the four new `identifiers` keys, in the shipped `0.3.1` manifest.** [ADR-0033](../../../../.spec/adr/0033-hand-cited-ids-are-minted-by-nano-id-and-snowflake-takes-random-fields.md) § Consequences lists "the shipped manifests" as carrying "the optional `mint` key and the four optional `identifiers` keys". The delivered shape departs from that reading, because "optional" keeps them out of the shipped defaults. C-14 rules out a shipped grammar for the four keys. A `mint` default would make the key no longer opt-in (C-6), and `upgrade` would add it to every consumer's manifest. `pinPolicy` set the precedent: schema `0.3.0` defines it in the engine's gate, and no shipped default manifest gains it ([`0001-F7` decision 0021](../../../tool/.spec/decisions/0021-pinpolicy-enters-schema-0-3-0-and-upgrade-names-the-version-in-use.md)). So the version defines the keys, and the shipped files stay as they were.
+
+### The minting pipeline and Nano ID (item `0414`)
+
+Seven types under `src/specht/IdGeneration/`, namespace `Specht.IdGeneration`, each in its own file:
+
+| Type                        | File                                                              | What it is                                                                                            |
+| --------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `IIdStrategy`               | [`IIdStrategy.cs`](../IIdStrategy.cs)                             | The Strategy, `string Next()`. A later decorator implements it and wraps another `IIdStrategy` (C-4). |
+| `NanoIdStrategy`            | [`NanoIdStrategy.cs`](../NanoIdStrategy.cs)                       | `Size` characters, each `Alphabet[random.Next(Alphabet.Length)]` (B-005, B-006).                      |
+| `NanoIdSettings`            | [`NanoIdSettings.cs`](../NanoIdSettings.cs)                       | The record of `Alphabet` and `Size`, and the constant `Base32` (B-019).                               |
+| `IRandomSource`             | [`IRandomSource.cs`](../IRandomSource.cs)                         | `int Next(int maxExclusive)`, uniform in `[0, maxExclusive)`.                                         |
+| `CryptographicRandomSource` | [`CryptographicRandomSource.cs`](../CryptographicRandomSource.cs) | `RandomNumberGenerator.GetInt32`, offline and stateless (C-7).                                        |
+| `IdMinter`                  | [`IdMinter.cs`](../IdMinter.cs)                                   | An instance over an `IRandomSource`; `Mint(JsonObject manifest, string type)` returns one id.         |
+| `IdRefusedException`        | [`IdRefusedException.cs`](../IdRefusedException.cs)               | The refusal. Its message names the type and the key path, never a file path.                          |
+
+```mermaid
+flowchart LR
+    A["Mint(manifest, type)"] --> B{"mint[type] an object?"}
+    B -- no --> R[IdRefusedException]
+    B -- yes --> C{strategy}
+    C -- nanoid --> D["NanoIdSettings from entry.nanoid alone, defaults filled"]
+    C -- absent, snowflake or other --> R
+    D -- unreadable --> R
+    D --> E["new NanoIdStrategy(settings, random).Next()"]
+```
+
+`Mint` builds the strategy on every call from that type's entry, so two types never share settings (B-008) and nothing survives between requests (C-1). The Nano ID settings come from `entry["nanoid"]` only, so a `snowflake` sub-object beside it is never read (C-3). An absent `nanoid` sub-object names no alphabet and no size, so both defaults apply. An absent `alphabet` is `NanoIdSettings.Base32` (B-019). An absent `size` is 8 for `adr` and `lesson`, from `DefaultSize` (B-020). Any other type with no size is refused until item `0418` adds B-021's 6.
+
+The minter refuses only what it cannot draw from. That is a type `mint` does not name, a `strategy` that is absent or not built (`snowflake` until item `0419`), a `nanoid` member that is not an object, an `alphabet` that is not a non-empty string, and a `size` that is not a positive integer. No claim this item cites states a refusal. The command maps a refusal to its output and exit code (item `0415`; B-001, B-002, B-015, B-043; C-10).
+
+The minter takes the manifest as a `JsonObject` and holds no file system and no root. It cannot write (C-1) and has no path to put in a message. Reading the manifest from the tree is the caller's job, item `0415`. No decorator exists at this step, so the strategy is the whole pipeline and the id is the part after the type's prefix. Items `0416`, `0417` and `0420` wrap it in `Mint`.
+
+`AddSpechtEngine` ([`SpechtEngineServiceCollectionExtensions.cs`](../../Composition/SpechtEngineServiceCollectionExtensions.cs)) registers `CryptographicRandomSource` as `IRandomSource` with `TryAddSingleton`, as it does `IFileSystem`, so a source registered earlier is kept. It registers `IdMinter` as a singleton. Neither has a caller yet; the command is item `0415`. Reuse: `IdMinter` pattern-matches `JsonNode` members where they stand, as `EffectiveManifestReader` does with `rules`. No engine type parses the `mint` key, and none should (C-8).
+
+Rejected:
+
+- **A decorator interface or base class now**, an `IIdDecorator` beside `IIdStrategy`. No decorator exists at this step. Each one, from item `0416`, is an `IIdStrategy` that wraps an `IIdStrategy`, and the strategy's own interface already gives that shape.
+- **A parsed `mint` model on `SpechtStructure` or in `SpechtManifestParser`.** The check must not read the key (B-014, C-8; item `0413`'s § 7). The minter is its only reader, and it reads the type's JSON entry where it stands.
+- **A static `IdMinter`**, as the trial at commit `cf626a3a` built it, with the clock, the random source and the held-ids lookup passed on every call. State lives in objects. The random source is a constructor dependency the engine's composition supplies and a test replaces.
+- **Reading the manifest file in the minter**, from an `IFileSystem` and a root. That gives the minter a way to reach the tree and a path to leak. Loading the manifest is the command's job, through the engine's manifest store.
+- **Validating the settings in `NanoIdSettings`**, as the trial's `Validate` did: 2 to 256 distinct characters, and the `UrlSafe` and `Bits` members. No cited claim states them. Checking the minted id against the type's grammar is item `0420`'s decorator (C-4).
+- **A seeded random source in the engine**, the trial's `SeededRandomSource`. Only its simulation used one. A test supplies its own fixed source.
+- **A default-size table or options object keyed by type.** Two types share one value. B-021's six-character default enters with item `0418`, the third case.
 
 ## 8. Testing Strategy
 

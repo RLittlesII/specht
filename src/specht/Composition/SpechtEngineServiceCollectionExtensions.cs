@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Specht.Discovery;
 using Specht.Evaluation;
+using Specht.IdGeneration;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -21,7 +22,7 @@ public static class SpechtEngineServiceCollectionExtensions
     /// <summary>
     /// Registers every engine type as a singleton, each rule by name in ordinal order of its <see cref="ISpechtRule.Id"/>,
     /// the order the report's violations are collected in (<c>0001-F1</c> B-004, C-9). A rule that is not registered
-    /// here does not run, and a file system registered earlier is kept.
+    /// here does not run, and a file system or random source registered earlier is kept.
     /// </summary>
     /// <param name="services">The collection the engine joins.</param>
     /// <returns><paramref name="services"/>.</returns>
@@ -56,6 +57,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<SpechtTreeStore>();
         services.AddSingleton<SpechtTreeGenerator>();
         services.AddSingleton<FrontmatterSchemaCheck>();
+        services.TryAddSingleton<IRandomSource, CryptographicRandomSource>();
+        services.AddSingleton<IdMinter>();
         services.AddSingleton<ISpechtRule, FrontmatterPresentRule>();
         services.AddSingleton<ISpechtRule, FeatureFrontmatterRule>();
         services.AddSingleton<ISpechtRule, ItemFrontmatterRule>();
