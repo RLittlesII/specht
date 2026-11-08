@@ -9,7 +9,7 @@ namespace Specht.Tests.Identifiers;
 /// reads the requested type's entry under the manifest's top-level <c>mint</c> key and builds the Nano ID strategy from that
 /// entry's own <c>nanoid</c> sub-object and the type alone, absent or not, and returns one id. No prefix decorator exists at
 /// this step, so the whole id is the part after the type's prefix. It mints no id for a type <c>mint</c> does not name
-/// (B-046), an entry naming no strategy (B-047), or a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048): it
+/// (B-001), an entry naming no strategy (B-047), or a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048): it
 /// refuses, and draws nothing. Each manifest is written in memory, and the draws come from a
 /// <see cref="FixedRandomSource"/>.
 /// </summary>

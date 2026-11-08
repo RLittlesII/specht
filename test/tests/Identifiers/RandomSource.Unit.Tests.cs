@@ -4,9 +4,9 @@ using Specht.Identifiers;
 namespace Specht.Tests.Identifiers;
 
 /// <summary>
-/// The random source beneath <c>0001-F19</c> B-006 and C-7: <see cref="RandomSource"/> answers each request with a whole
-/// number from zero to below the bound it is given, so the Nano ID strategy's index into its alphabet never falls outside it.
-/// It draws from the platform's generator in memory, with no network. Only the range is asserted, not how the draws spread.
+/// The random source beneath <c>0001-F19</c> B-006: <see cref="RandomSource"/> answers each request with a whole number
+/// from zero to below the bound it is given, so the Nano ID strategy's index into its alphabet never falls outside it. Only
+/// the range is asserted, not how the draws spread.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class RandomSourceUnitTests
