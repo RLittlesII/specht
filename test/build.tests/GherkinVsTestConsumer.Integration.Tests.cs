@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -47,6 +48,7 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
 
         // Then
         build.ExitCode.Should().Be(0, evidence.Because);
+        build.Compiled.Should().Equal(["Ledger.Tests.dll", "Ledger.dll"], evidence.Because);
         build.Output.Should().NotContain("SPCT", evidence.Because);
     }
 
@@ -261,6 +263,7 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
     {
         // Given
         var evidence = await Collected();
+        evidence.Builds["unscoped"].ExitCode.Should().Be(0, evidence.Because);
         var executed = evidence.Artifact("unscoped-run");
         var notPassed = new[] { SkippedFact, FailingFact }.SelectMany(symbolId => CaseIds(executed, symbolId)).ToArray();
         notPassed.Should().HaveCount(2, evidence.Because);
@@ -450,7 +453,7 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
         }
     }
 
-    public sealed record BuildStep(int ExitCode, string Output);
+    public sealed record BuildStep(int ExitCode, string Output, string[] Compiled);
 
     public sealed record ConsumerEvidence(IReadOnlyDictionary<string, JsonElement?> Artifacts, IReadOnlyDictionary<string, BuildStep> Builds,
         IReadOnlyDictionary<string, EvidenceResult> Reconciliations, IReadOnlyDictionary<string, string[]> Inputs, ConsumerFiles Consumer,
@@ -515,7 +518,7 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
                 process.StartInfo.ArgumentList.Add(argument);
             }
 
-            foreach (var (name, value) in environment ?? new Dictionary<string, string>())
+            foreach (var (name, value) in Local.Concat(environment ?? new Dictionary<string, string>()))
             {
                 process.StartInfo.Environment[name] = value;
             }
@@ -583,8 +586,9 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
                 inputs[project] = await Inputs(log, project);
             }
 
-            builds["clean-ci"] = await Step(log, ContinuousIntegration, "build", TestProject, "--no-restore", "-p:ContinuousIntegrationBuild=true");
-            builds["clean"] = await Step(log, null, "build", TestProject, "--no-restore");
+            builds["clean-ci"] = await Step(log, ContinuousIntegration, "build", TestProject, "--no-restore", "--no-incremental",
+                "-p:ContinuousIntegrationBuild=true");
+            builds["clean"] = await Step(log, null, "build", TestProject, "--no-restore", "--no-incremental");
             reconciliations["empty"] = Reconcile([]);
             artifacts["list"] = await Discover(log);
             artifacts["run"] = await Execute(log);
@@ -603,7 +607,7 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
                     .Replace("    [Fact]\n", "    /// <verifies feature=\"ledger\" claim=\"REQ-LED-002\" />\n    [Fact]\n", StringComparison.Ordinal),
                 async () =>
                 {
-                    await Step(log, null, "build", TestProject, "--no-restore");
+                    builds["unscoped"] = await Step(log, null, "build", TestProject, "--no-restore");
                     await Discover(log);
                     artifacts["unscoped-run"] = await Execute(log);
                     reconciliations["unscoped"] = Reconcile([EvidenceFolder]);
@@ -622,9 +626,9 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
                 "    /// <implements feature=\"ledger\" claim=\"REQ-LED-001\" />\n    public static int Post", "    public static int Post",
                 StringComparison.Ordinal), async () =>
             {
-                builds["missing-implements"] = await Step(log, null, "build", ProductionProject, "--no-restore");
+                builds["missing-implements"] = await Step(log, null, "build", ProductionProject, "--no-restore", "--no-incremental");
                 builds["missing-implements-ci"] = await Step(log, ContinuousIntegration, "build", ProductionProject, "--no-restore",
-                    "-p:ContinuousIntegrationBuild=true");
+                    "--no-incremental", "-p:ContinuousIntegrationBuild=true");
             });
 
             await Mutate(ProductionSource, static text => text.Replace("claim=\"REQ-LED-002\"", "claim=\"REQ-LED-009\"", StringComparison.Ordinal),
@@ -782,9 +786,17 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
 
         private async Task<BuildStep> Step(StringBuilder log, IReadOnlyDictionary<string, string>? environment, params string[] arguments)
         {
+            var file = Path.Combine(_consumer, ".probe", $"build-{++_builds}.log");
+            Directory.CreateDirectory(Path.GetDirectoryName(file)!);
             var before = log.Length;
-            var exit = await Run(log, _consumer, environment, arguments);
-            return new BuildStep(exit, log.ToString(before, log.Length - before));
+            var exit = await Run(log, _consumer, environment, [.. arguments, "-fileLogger", $"-fileLoggerParameters:LogFile={file};Verbosity=normal"]);
+            var compiled = File.Exists(file)
+                ? CompilerOutput().Matches(await File.ReadAllTextAsync(file, TestContext.Current.CancellationToken))
+                    .Select(static match => Path.GetFileName(match.Groups["assembly"].Value)).Distinct(StringComparer.Ordinal)
+                    .Order(StringComparer.Ordinal).ToArray()
+                : [];
+            log.AppendLine($"== compiled: {string.Join(' ', compiled)}");
+            return new BuildStep(exit, log.ToString(before, log.Length - before), compiled);
         }
 
         private async Task<JsonElement?> Discover(StringBuilder log)
@@ -853,7 +865,8 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
         private string Relativized(string text)
         {
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            foreach (var (path, placeholder) in new[] { (_consumer, "<consumer>"), (_root, "<repository>"), (home, "<home>") })
+            var dotnet = new DirectoryInfo(RuntimeEnvironment.GetRuntimeDirectory()).Parent!.Parent!.Parent!.FullName;
+            foreach (var (path, placeholder) in new[] { (_consumer, "<consumer>"), (_root, "<repository>"), (dotnet, "<dotnet>"), (home, "<home>") })
             {
                 foreach (var form in new[] { "/private" + path, path, path.Replace('\\', '/') })
                 {
@@ -869,6 +882,7 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
         private readonly string _probe;
         private readonly string _feed;
         private readonly Lazy<Task<ConsumerEvidence>> _evidence;
+        private int _builds;
     }
 
     private static string[] CaseIds(JsonElement artifact, string symbolId) =>
@@ -887,6 +901,9 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
     private static string[] Diagnostics(string output) => DiagnosticPattern().Matches(output)
         .Select(static match => match.Groups["id"].Value + "|" + Path.GetFileName(match.Groups["file"].Value) + "|" + match.Groups["line"].Value)
         .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+
+    [GeneratedRegex("[/-]out:(?<assembly>[^\\s\"]+\\.dll)")]
+    private static partial Regex CompilerOutput();
 
     [GeneratedRegex("(?:(?<file>[^\\s()]+)\\((?<line>\\d+),\\d+(?:,\\d+,\\d+)?\\))?\\s*:\\s*(?:error|warning) (?<id>SPCT\\d{4})")]
     private static partial Regex DiagnosticPattern();
@@ -917,4 +934,10 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
     private const string FailingFact = "M:Consumer.Ledger.Tests.PendingTests.ReversalBelowZeroIsPending";
 
     private static readonly IReadOnlyDictionary<string, string> ContinuousIntegration = new Dictionary<string, string> { ["CI"] = "true" };
+
+    private static readonly IReadOnlyDictionary<string, string> Local = new Dictionary<string, string>
+    {
+        ["CI"] = string.Empty,
+        ["GITHUB_ACTIONS"] = string.Empty,
+    };
 }

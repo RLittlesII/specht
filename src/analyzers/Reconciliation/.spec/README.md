@@ -470,7 +470,7 @@ modified.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer); test-writer, 2026-11-08 (item 0409, round 2 finding 2: the gate's `.feature` listing pinned at the integration tier; `RepositoryPaths` in the evidence slice; § 5 rows 11 to 13 cited); test-writer, 2026-11-08 (item 0409: B-038 record-directory example resolved; differences kept by design); test-writer, 2026-11-08 (item 0409: B-038 parity cases in both test projects and the acceptance steps; the record-directory `**` case Partial); test-writer, 2026-11-08 (item 0409, review round 1 finding 4: `ReadNativeClaims` named; claim file set path reading pinned); test-writer, 2026-11-08 (item 0409: the `RequiresExport` unit theory, B-035 re-checked); test-writer, 2026-11-07 (item 0409: native Gherkin claims and the gate's project set); test-writer, 2026-11-02 (item `0166`: the model reader, builder, compiler and parser tests); test-writer, 2026-10-25 -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer, each compared build from a clean output) -->
 
 `test/acceptance/Reconciliation/ReconciliationSteps.cs` runs B-001 to B-038
 through the actual CLI over an isolated synthetic consumer; `EvidenceTree.cs`
@@ -759,8 +759,11 @@ writes its manifest, a Feature record with no claims table and a central
 whose code carries `implements` and a plain xUnit v2 VSTest test project whose
 methods carry `verifies`, under mandatory enforcement and warnings-as-errors.
 The test runs the build, discovery, run and reconciliation steps once for the
-class and writes its probe log under `.artifacts/gherkin-vstest/` with every
-path relative. The two pending methods carry no `verifies` and sit in
+class and writes its probe log under `.artifacts/gherkin-vstest/` with no absolute path: the consumer, the
+repository, the .NET installation and the home folder each stand as a
+placeholder. Each build records the assemblies its compiler wrote, and the
+local and continuous-integration builds compared use `--no-incremental`, so
+each compiles from a clean output. The two pending methods carry no `verifies` and sit in
 `test/shared/PendingTests.cs`, which the test project's `verifies` enforcement
 entry lists under `exclude`, a declared scope (item 0302 decision of
 2026-11-08); the unscoped variant adds `verifies` back. The fixture carries no
@@ -771,8 +774,8 @@ Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
   binding is not current and every case outcome `absent`.
 - B-017: mechanism as above. Integration: `DocumentedSequence_*` passes the
   default gate with exit 0, and `FixtureWithoutItsRequiredCaseScopeAndWithItsPendingMethodsBound_*`
-  fails it with one "did not pass" `missingResult` each for the failed and the
-  skipped owned case.
+  fails it, after a rebuild that exits 0, with one "did not pass"
+  `missingResult` each for the failed and the skipped owned case.
 - B-022: mechanism as above. Integration: `CleanCheckout_WhenReconciledBeforeAnyEvidence_*`
   is exit 2 with `missingCompilation` naming the test project.
 - B-028: mechanism as above. Integration: `NativeClaimsInTheClaimFileSet_*`
@@ -784,7 +787,7 @@ Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named); test-writer, 2026-11-08 (item 0409, round 2 finding 2: B-038 names the record-directory integration row); test-writer, 2026-11-08 (item 0409: B-038 Covered, the record-directory example named); test-writer, 2026-11-08 (item 0409: B-038 Partial, a final `**` over the record directory a defect; earlier, its parity and acceptance tests named); test-writer, 2026-11-08 (item 0409, review round 1: B-028 and B-035 name the claim file set path tests); test-writer, 2026-11-08 (item 0409: B-011, B-022 and B-028 to B-037 Covered, the `RequiresExport` unit theory named); test-writer, 2026-11-07 (item 0409: B-011, B-022 and B-028 to B-037 name their tests, Partial until green); spec-author, 2026-11-07 (item 0409: Missing rows for B-028 to B-037 until test-writer names tests); test-writer, 2026-11-02 (item `0166`: the model reader, builder, compiler and parser tests); test-writer, 2026-10-25, 2026-11-02 (item 0334: scenario titles in the Test cells are no longer inline code, which names only tests) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named) -->
 
 | Claim ID | Scenario                                                                                                                                     | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Status    |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |

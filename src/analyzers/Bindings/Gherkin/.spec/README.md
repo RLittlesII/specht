@@ -577,7 +577,7 @@ a finding leaves the catalogue unchanged.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer); test-writer, 2026-10-24, 2026-11-06 (item 0411: B-030 withdrawn) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer, each compared build from a clean output) -->
 
 Two tiers. Reqnroll covers acceptance only: every scenario in
 `gherkin.feature` is bound by `test/acceptance/Bindings/GherkinSteps.cs`
@@ -638,8 +638,11 @@ writes its manifest, a Feature record with no claims table and a central
 whose code carries `implements` and a plain xUnit v2 VSTest test project whose
 methods carry `verifies`, under mandatory enforcement and warnings-as-errors.
 The test runs the build, discovery, run and reconciliation steps once for the
-class and writes its probe log under `.artifacts/gherkin-vstest/` with every
-path relative. The two pending methods carry no `verifies` and sit in
+class and writes its probe log under `.artifacts/gherkin-vstest/` with no absolute path: the consumer, the
+repository, the .NET installation and the home folder each stand as a
+placeholder. Each build records the assemblies its compiler wrote, and the
+local and continuous-integration builds compared use `--no-incremental`, so
+each compiles from a clean output. The two pending methods carry no `verifies` and sit in
 `test/shared/PendingTests.cs`, which the test project's `verifies` enforcement
 entry lists under `exclude`, a declared scope (item 0302 decision of
 2026-11-08); the unscoped variant adds `verifies` back. The fixture carries no
@@ -650,7 +653,8 @@ Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
   `NativeClaimsInACentralTree_*`, where every binding resolves to a claim in
   the claim file.
 - B-005: mechanism and unit tests as above. Integration: `CleanCheckoutWithMandatoryEnforcementAndWarningsAsErrors_*`,
-  over a Feature record with no table, builds with no `SPCT` diagnostic.
+  over a Feature record with no table, compiles both projects from a clean
+  output with no `SPCT` diagnostic.
 - B-006: mechanism and unit tests as above. Integration: `ClaimFilesInACentralSpecFeaturesTree_*`
   delivers the central claim file to both projects, and
   `NativeClaimsInACentralTree_*` resolves the same claims from the test
@@ -665,7 +669,7 @@ Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named); test-writer, 2026-10-24, 2026-11-06 (item 0411: B-030 withdrawn; B-002 no longer cites the deleted catalogue-export test) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named) -->
 
 | Claim ID | Scenario                                               | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Status    |
 | -------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |

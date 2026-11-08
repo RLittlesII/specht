@@ -652,7 +652,7 @@ artifact. Reconciliation runs in process through `EvidenceReconciler`.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer); test-writer, 2026-10-24, 2026-11-06 (decision 0010) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer, each compared build from a clean output) -->
 
 The B-001 to B-009 scenarios exercise the artifact reader and the common runner
 normalizer with synthetic xUnit fact/theory, Playwright .NET and custom producer
@@ -768,8 +768,11 @@ writes its manifest, a Feature record with no claims table and a central
 whose code carries `implements` and a plain xUnit v2 VSTest test project whose
 methods carry `verifies`, under mandatory enforcement and warnings-as-errors.
 The test runs the build, discovery, run and reconciliation steps once for the
-class and writes its probe log under `.artifacts/gherkin-vstest/` with every
-path relative. The two pending methods carry no `verifies` and sit in
+class and writes its probe log under `.artifacts/gherkin-vstest/` with no absolute path: the consumer, the
+repository, the .NET installation and the home folder each stand as a
+placeholder. Each build records the assemblies its compiler wrote, and the
+local and continuous-integration builds compared use `--no-incremental`, so
+each compiles from a clean output. The two pending methods carry no `verifies` and sit in
 `test/shared/PendingTests.cs`, which the test project's `verifies` enforcement
 entry lists under `exclude`, a declared scope (item 0302 decision of
 2026-11-08); the unscoped variant adds `verifies` back. The fixture carries no
@@ -782,7 +785,8 @@ Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
 - B-012: mechanism and unit tests as above. Integration: `TestMethodCompiledFromOutsideTheTestProject_*`
   resolves `test/shared/ReversalTests.cs`, linked into the test project.
 - B-017: mechanism and unit tests as above. Integration: `CleanCheckoutWithMandatoryEnforcementAndWarningsAsErrors_*`
-  builds before any evidence with no `SPCT` diagnostic, and
+  compiles both projects from a clean output before any evidence with no
+  `SPCT` diagnostic, and
   `TestMethodMissingVerifiesWithOnlyStaleEvidence_*` builds clean while the only
   artifact is stale, so recognition is provisional.
 - B-018: mechanism and unit tests as above. Integration: `SourceEditedAfterTheRun_*` reports the
@@ -797,7 +801,7 @@ Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named); test-writer, 2026-10-24, 2026-11-02 (item 0334: scenario titles in the Test cells are no longer inline code, which names only tests; B-001 to B-003 name the runner fixture's cases `RunnerCases.FactCase`, `RunnerCases.TheoryCase` and `PlaywrightRunnerCase.PlaywrightDotNetCase` by class and method), 2026-11-06 (item 0410: B-017 names the discovered-test-method and eligible-bound-method tests in place of the removed duplicate; decision 0010: B-009 names the retired-version and catalog-member tests) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named) -->
 
 | Claim ID | Scenario                                   | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Status  |
 | -------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
