@@ -19,12 +19,13 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>Each specification, carrying its root-relative path and directory and the layout it was found in.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-006" />
     public IReadOnlyList<SpechtLocation> FindSpecifications(string root, SpechtDiscoveryInputs inputs)
     {
-        var files = Files(root);
+        var files = Files(root, inputs.Exclusions);
 
         return inputs.Layouts
-            .SelectMany(layout => Matching(files, [layout.Glob], inputs.Exclusions)
+            .SelectMany(layout => Matching(files, [layout.Glob])
                 .Select(file => new SpechtLocation(file.Relative, layout, DirectoryOf(file.Relative))))
             .ToList();
     }
@@ -58,8 +59,9 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The root-relative path of each epic file, in ordinal order.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-006" />
     public IReadOnlyList<string> FindEpics(string root, SpechtDiscoveryInputs inputs) =>
-        Matching(Files(root), inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Relative).ToList();
+        Matching(Files(root, inputs.Exclusions), inputs.EpicFiles).Select(static file => file.Relative).ToList();
 
     /// <summary>
     /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches one of the
@@ -82,11 +84,12 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     /// <param name="exclusions">The selected manifest's directory exclusions.</param>
     /// <returns>The root-relative path of each selected file.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-006" />
     public IReadOnlyList<string> FindTestFiles(
         string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
         globs.Count == 0
             ? []
-            : Matching(Files(root), globs, exclusions).Select(static file => file.Relative).ToArray();
+            : Matching(Files(root, exclusions), globs).Select(static file => file.Relative).ToArray();
 
     /// <summary>The anchored expression a glob is read as, <c>**</c> spanning directories and <c>*</c> matching within one.</summary>
     /// <param name="glob">The glob.</param>
@@ -101,28 +104,21 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
-    private static IEnumerable<(string Path, string Relative)> Matching(
-        List<(string Path, string Relative)> files,
-        IReadOnlyList<string> globs,
-        IReadOnlyList<string> exclusions)
+    private static IEnumerable<(string Path, string Relative)> Matching(List<(string Path, string Relative)> files, IReadOnlyList<string> globs)
     {
         var expressions = globs.Select(static glob => new Regex(Pattern(glob))).ToList();
 
         return files
-            .Where(file => expressions.Any(expression => expression.IsMatch(file.Relative)) && !IsExcluded(file.Relative, exclusions))
+            .Where(file => expressions.Any(expression => expression.IsMatch(file.Relative)))
             .OrderBy(static file => file.Relative, StringComparer.Ordinal);
     }
 
-    /// <implements epic="0001" feature="F6" claim="B-001" />
-    private static bool IsExcluded(string relative, IReadOnlyList<string> exclusions)
-    {
-        var directories = relative.Split('/')[..^1];
-        var anchored = $"/{string.Join('/', directories)}/";
-
-        return exclusions.Any(entry => entry.StartsWith('/')
-            ? anchored.StartsWith(entry + "/", StringComparison.Ordinal)
-            : directories.Contains(entry, StringComparer.Ordinal));
-    }
+    /// <implements epic="0001" feature="F6" claim="B-002" />
+    /// <implements epic="0001" feature="F6" claim="B-006" />
+    private static bool Skips(string relative, IReadOnlyList<string> exclusions) =>
+        exclusions.Any(entry => entry.StartsWith('/')
+            ? entry.AsSpan(1).SequenceEqual(relative)
+            : relative.Length > 0 && entry == relative[(relative.LastIndexOf('/') + 1)..]);
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
     private static string DirectoryOf(string relative) =>
@@ -137,14 +133,30 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
-    private List<(string Path, string Relative)> Files(string root)
+    /// <implements epic="0001" feature="F6" claim="B-006" />
+    private List<(string Path, string Relative)> Files(string root, IReadOnlyList<string> exclusions)
     {
         var origin = fileSystem.Path.GetFullPath(root);
         var separator = fileSystem.Path.DirectorySeparatorChar;
+        var files = new List<(string Path, string Relative)>();
+        var pending = new Stack<(string Directory, bool Skipped)>([(root, Skips(string.Empty, exclusions))]);
 
-        return fileSystem.Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
-            .Select(path => (path, fileSystem.Path.GetRelativePath(origin, fileSystem.Path.GetFullPath(path)).Replace(separator, '/')))
-            .ToList();
+        while (pending.TryPop(out var next))
+        {
+            if (!next.Skipped)
+            {
+                files.AddRange(fileSystem.Directory.EnumerateFiles(next.Directory).Select(path => (path, Relative(path))));
+            }
+
+            foreach (var child in fileSystem.Directory.EnumerateDirectories(next.Directory).Where(child => !Skips(Relative(child), exclusions)))
+            {
+                pending.Push((child, false));
+            }
+        }
+
+        return files;
+
+        string Relative(string path) => fileSystem.Path.GetRelativePath(origin, fileSystem.Path.GetFullPath(path)).Replace(separator, '/');
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
