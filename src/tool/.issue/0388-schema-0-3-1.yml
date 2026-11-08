@@ -2,7 +2,7 @@ id: "0388"
 type: task
 title: Cut schema 0.3.1, where an opt-in addition is a patch
 
-status: ready
+status: done
 
 value: 4
 risk: 3
@@ -21,7 +21,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-07"
-closed: null
+closed: "2026-11-07"
 
 summary: |
   As the maintainer of `0001-F16`, I want a schema version above the

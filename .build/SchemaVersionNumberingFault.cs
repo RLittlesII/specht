@@ -6,7 +6,10 @@ public enum SchemaVersionNumberingFault
     /// <summary>The higher holds a rule id the lower, 1.0.0 or higher, lacks, and its major is not greater (B-040).</summary>
     NewRuleWithoutHigherMajor,
 
-    /// <summary>The higher holds a rule id the lower lacks, both below 1.0.0, and its minor is not greater (B-066).</summary>
+    /// <summary>
+    /// The higher holds a rule id the lower lacks, both below 1.0.0, its minor is not greater, and not every added id is an
+    /// opt-in addition (B-066, C-11).
+    /// </summary>
     NewRuleWithoutHigherMinor,
 
     /// <summary>The two differ only in a template or a rule page's text, and not in their patch alone (B-088).</summary>

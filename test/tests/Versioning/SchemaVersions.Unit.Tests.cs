@@ -11,13 +11,14 @@ using Specht.Versioning;
 namespace Specht.Tests.Versioning;
 
 /// <summary>
-/// The schema version set (<c>0001-F7</c> B-003, B-004, B-014, B-022, B-023, B-055, B-127, B-151, B-152; C-6): the embedded set names its
+/// The schema version set (<c>0001-F7</c> B-003, B-004, B-014, B-022, B-023, B-055, B-127, B-151, B-152, B-154; C-6): the embedded set names its
 /// versions as <c>major.minor.patch</c> and holds <c>0.1.0</c>, a set given its versions out of order holds them ascending
 /// by major, then minor, then patch, each frontmatter schema sits in its own slot, each version names the templates the
 /// tool ships for it, version 0.1.0's epic schema accepts a
 /// non-empty title and description and rejects an empty one, version 0.1.0's vocabulary is the twenty-one rule ids,
 /// versions 0.2.0 and 0.2.1 name each rule by its three-digit id and 0.3.0 by its four-digit id, 0.3.0 pairs each
-/// rule key with the four-digit id ADR-0029's map gives it, a pin
+/// rule key with the four-digit id ADR-0029's map gives it, a version's patch neighbour names every rule the lower holds by
+/// the lower's id (B-154), a pin
 /// selects exactly the version it names although a later patch and a later minor are held, and selecting a version the set
 /// does not hold is a rejected manifest naming the pin and the set.
 /// </summary>
@@ -164,6 +165,24 @@ public sealed class SchemaVersionsUnitTests
 
         // Then
         ids.Should().BeEquivalentTo(expected);
+    }
+
+    [Theory]
+    [ClassData(typeof(ShippedPatchNeighbours))]
+    public void AShippedVersionsPatchNeighbour_WhenItsRulesAreNamed_ShouldNameEveryRuleTheLowerHoldsByTheLowersId(string lower, string higher)
+    {
+        // Given
+        var embedded = EngineServices.Versions();
+        SemanticVersion.TryParse(lower, out var lowerNumber).Should().BeTrue();
+        SemanticVersion.TryParse(higher, out var higherNumber).Should().BeTrue();
+        var held = embedded.Find(lowerNumber)!;
+
+        // When
+        var neighbour = embedded.Find(higherNumber);
+
+        // Then
+        neighbour.Should().NotBeNull("the tool ships {0}", higher);
+        neighbour!.RuleNames.Should().Contain(held.RuleNames);
     }
 
     [Theory]
