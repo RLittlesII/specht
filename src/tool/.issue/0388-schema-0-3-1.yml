@@ -2,7 +2,7 @@ id: "0388"
 type: task
 title: Cut schema 0.3.1, where an opt-in addition is a patch
 
-status: ready
+status: in-progress
 
 value: 4
 risk: 3
