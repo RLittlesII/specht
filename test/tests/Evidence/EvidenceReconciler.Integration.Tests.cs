@@ -522,6 +522,24 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
     }
 
     [Theory]
+    [ClassData(typeof(AnalyzerClaimFileGlobs))]
+    public void AClaimFileSetGlobTheAnalyzerReadsAsNamingAClaimFile_WhenReconciled_ShouldSelectTheClaimsOfThatFile(string glob, string claimFile)
+    {
+        // Given
+        Native.Write(claimFile, BoundClaimFile);
+        Native.Configure(analysis => analysis["records"]!["claimFileSets"]![0]!["glob"] = glob);
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.Report["claims"]!.AsArray()
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["path"]!.GetValue<string>()))
+            .Should().Equal([("need/7", claimFile)]);
+        Kinds(result.Report).Should().NotContain("invalidInput");
+    }
+
+    [Theory]
     [ClassData(typeof(RetiringClaimTags))]
     public void ANativeClaimTaggedWithdrawnOrSuperseded_WhenNoTestIsBoundToIt_ShouldNotBeSelectedOrRequireEvidence(string tag)
     {
@@ -646,6 +664,11 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
                 analysis["records"]!["claimFileSets"]!.AsArray().Add(new JsonObject { ["glob"] = glob, ["feature"] = "cap:list" });
             }
         });
+        Native.Write("obj/list.feature", "Feature: List\n\n  @need/9\n  Scenario: Lists a value\n    Then it is listed\n");
+        var manifest = Path.Combine(Native.Root, ".specht", "manifest.json");
+        var configuration = JsonNode.Parse(File.ReadAllText(manifest))!.AsObject();
+        configuration["exclusions"] = new JsonArray("obj");
+        File.WriteAllText(manifest, configuration.ToJsonString());
 
         // When
         var result = Native.Reconcile();

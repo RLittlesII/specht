@@ -8,5 +8,6 @@ public sealed class ClaimFileSetGaps : TheoryData<string?>
     {
         Add((string?) null);
         Add("src/list/.spec/*.feature");
+        Add("obj/*.feature");
     }
 }

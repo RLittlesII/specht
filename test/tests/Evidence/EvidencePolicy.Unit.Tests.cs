@@ -5,7 +5,7 @@ using Specht.Tool.Features.Evidence;
 namespace Specht.Tests.Evidence;
 
 /// <summary>
-/// The normalized consumer policy decisions used by 0201-F5 B-008 to B-010, native claim input (B-028) and the declared
+/// The normalized consumer policy decisions used by 0201-F5 B-008 to B-010, native claim input and its claim file set paths (B-028, B-035) and the declared
 /// projects that need an export (B-036).
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -116,30 +116,45 @@ public sealed class EvidencePolicyUnitTests
     public void ANativeClaimManifestWithNoMappedClaimsSection_WhenProjected_ShouldSelectItsFeatures()
     {
         // Given
-        var configuration = JsonNode.Parse("""
-            {
-              "revision":"0.1.0",
-              "idPatterns":{"feature":"^cap:[a-z]+$","claim":"^need/[0-9]+$"},
-              "claimTag":{"tag":"@{claim}","tagIgnoreCase":false},
-              "codeAnalysis":{
-                "mappings":{"/schemaVersion":"/revision","/identifiers":"/idPatterns","/claim":"/claimTag","/policy":"/codeAnalysis"},
-                "projects":[{"path":"test/tests.csproj","targetFrameworks":["net10.0"]}],
-                "features":[{"feature":"cap:read"}],
-                "requiredLinks":{"test":true},
-                "exemptions":[],
-                "records":{
-                  "claimSource":"gherkin",
-                  "claimFileSets":[{"glob":"src/read/.spec/*.feature","feature":"cap:read","record":"src/read/.spec/README.md"}]
-                }
-              }
-            }
-            """)!.AsObject();
+        var configuration = JsonNode.Parse(NativeManifest)!.AsObject();
 
         // When
         var policy = EvidencePolicy.Read(configuration);
 
         // Then
         policy.Features.Should().Equal(new EvidencePolicy.FeatureEntry(null, "cap:read"));
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimFileSetSpellings))]
+    public void AClaimFileSetSpelledAsTheAnalyzerReadsIt_WhenProjected_ShouldHoldItsGlobAndRecordNormalised(string glob, string record)
+    {
+        // Given
+        var configuration = JsonNode.Parse(NativeManifest)!.AsObject();
+        configuration["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["glob"] = glob;
+        configuration["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["record"] = record;
+
+        // When
+        var policy = EvidencePolicy.Read(configuration);
+
+        // Then
+        policy.ClaimFileSets.Should().Equal(new EvidencePolicy.ClaimFileSet("src/read/.spec/*.feature", "cap:read", null, "src/read/.spec/README.md"));
+    }
+
+    [Theory]
+    [ClassData(typeof(UnsafeClaimFileSetPaths))]
+    public void AClaimFileSetPathRootedEscapingOrNamingNothing_WhenProjected_ShouldBeRejected(string glob, string record)
+    {
+        // Given
+        var configuration = JsonNode.Parse(NativeManifest)!.AsObject();
+        configuration["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["glob"] = glob;
+        configuration["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["record"] = record;
+
+        // When
+        var read = () => EvidencePolicy.Read(configuration);
+
+        // Then
+        read.Should().Throw<EvidenceConfigurationException>();
     }
 
     private static JsonObject Configuration() => JsonNode.Parse("""
@@ -157,4 +172,23 @@ public sealed class EvidencePolicyUnitTests
           }
         }
         """)!.AsObject();
+
+    private const string NativeManifest = """
+        {
+          "revision":"0.1.0",
+          "idPatterns":{"feature":"^cap:[a-z]+$","claim":"^need/[0-9]+$"},
+          "claimTag":{"tag":"@{claim}","tagIgnoreCase":false},
+          "codeAnalysis":{
+            "mappings":{"/schemaVersion":"/revision","/identifiers":"/idPatterns","/claim":"/claimTag","/policy":"/codeAnalysis"},
+            "projects":[{"path":"test/tests.csproj","targetFrameworks":["net10.0"]}],
+            "features":[{"feature":"cap:read"}],
+            "requiredLinks":{"test":true},
+            "exemptions":[],
+            "records":{
+              "claimSource":"gherkin",
+              "claimFileSets":[{"glob":"src/read/.spec/*.feature","feature":"cap:read","record":"src/read/.spec/README.md"}]
+            }
+          }
+        }
+        """;
 }
