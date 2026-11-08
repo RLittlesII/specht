@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using AwesomeAssertions;
 using Specht.Mcp.Features.PinnedTool;
 
@@ -14,7 +15,7 @@ public sealed class SystemProcessRunIntegrationTests
 {
     public static bool IsWindows => OperatingSystem.IsWindows();
 
-    [Fact(Skip = "The fixture program is a shell script.", SkipWhen = nameof(IsWindows))]
+    [Fact(Skip = "The fixture program is a shell script.", SkipWhen = nameof(IsWindows), Timeout = 30_000)]
     public async Task AProgramThatWrites_WhenItEnds_ShouldGiveBackItsCodeAndBothStreamsUnchanged()
     {
         // Given
@@ -40,7 +41,7 @@ public sealed class SystemProcessRunIntegrationTests
         result.Should().Be(new ProcessResult(0, "ended", string.Empty));
     }
 
-    [Fact]
+    [Fact(Timeout = 30_000)]
     public async Task AProgramThatDoesNotExist_WhenItRuns_ShouldGiveBackNothing()
     {
         // Given
@@ -57,46 +58,62 @@ public sealed class SystemProcessRunIntegrationTests
     public async Task AProgramThatIsRunning_WhenTheRunIsCancelled_ShouldThrowCancelledAndLeaveNoProgramAlive()
     {
         // Given
+        var token = TestContext.Current.CancellationToken;
         var directory = Directory.CreateTempSubdirectory("specht-process-").FullName;
         var pids = Path.Combine(directory, "pids");
-        using (var made = Process.Start("mkfifo", pids))
-        {
-            await made.WaitForExitAsync(TestContext.Current.CancellationToken);
-        }
-
-        var opening = Task.Run(() => new StreamReader(File.OpenRead(pids)), TestContext.Current.CancellationToken);
         using var cancel = new CancellationTokenSource();
-        var request = new ProcessRequest("sh", ["-c", "exec 3>\"$1\"; echo $$ >&3; sleep 300 & echo $! >&3; wait", "sh", pids], directory);
+        var request = new ProcessRequest("sh", ["-c", "sleep 300 & printf '%s\\n%s\\n' \"$$\" \"$!\" >pids.next && mv pids.next pids; wait"], directory);
         var run = new SystemProcessRun().RunAsync(request, cancel.Token);
-        var token = TestContext.Current.CancellationToken;
-        using var reader = await opening;
-        var shell = int.Parse((await reader.ReadLineAsync(token))!);
-        var sleeper = int.Parse((await reader.ReadLineAsync(token))!);
-
-        // When
-        await cancel.CancelAsync();
-        var thrown = await Record.ExceptionAsync(() => run);
-        var survivors = new List<int>();
-        foreach (var pid in new[] { shell, sleeper })
+        try
         {
-            try
+            using (var waiting = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                using var program = Process.GetProcessById(pid);
-                if (!program.WaitForExit(TimeSpan.FromSeconds(30)))
+                waiting.CancelAfter(TimeSpan.FromSeconds(10));
+                while (!File.Exists(pids))
                 {
-                    survivors.Add(pid);
-                    program.Kill();
+                    await Task.Delay(TimeSpan.FromMilliseconds(20), waiting.Token);
                 }
             }
-            catch (ArgumentException)
+
+            var written = await File.ReadAllLinesAsync(pids, token);
+            var shell = int.Parse(written[0], CultureInfo.InvariantCulture);
+            var sleeper = int.Parse(written[1], CultureInfo.InvariantCulture);
+
+            // When
+            await cancel.CancelAsync();
+            var thrown = await Record.ExceptionAsync(() => run);
+            var survivors = new List<int>();
+            using var exiting = CancellationTokenSource.CreateLinkedTokenSource(token);
+            exiting.CancelAfter(TimeSpan.FromSeconds(10));
+            foreach (var pid in new[] { shell, sleeper })
             {
+                try
+                {
+                    using var program = Process.GetProcessById(pid);
+                    try
+                    {
+                        await program.WaitForExitAsync(exiting.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        survivors.Add(pid);
+                        program.Kill();
+                    }
+                }
+                catch (ArgumentException)
+                {
+                }
             }
+
+            // Then
+            thrown.Should().BeAssignableTo<OperationCanceledException>();
+            survivors.Should().BeEmpty();
         }
-
-        Directory.Delete(directory, recursive: true);
-
-        // Then
-        thrown.Should().BeAssignableTo<OperationCanceledException>();
-        survivors.Should().BeEmpty();
+        finally
+        {
+            await cancel.CancelAsync();
+            await run.ContinueWith(static _ => { }, TaskScheduler.Default);
+            Directory.Delete(directory, recursive: true);
+        }
     }
 }
