@@ -124,20 +124,20 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-08 (item 0409: two claim file set path readings, decision 0009); implementer, 2026-11-08 (item 0409); implementer, 2026-11-07 (item 0409); implementer, 2026-10-25 -->
+<!-- last written by: implementer, 2026-11-08 (item 0409: claim file candidates are `.feature` files, B-038); implementer, 2026-11-08 (item 0409: two claim file set path readings, decision 0009); implementer, 2026-11-08 (item 0409); implementer, 2026-11-07 (item 0409); implementer, 2026-10-25 -->
 
-| Concern                                    | Classification | Owner and boundary                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Selected current claims and required links | Business       | 0201-F6 defines selection, link policy and reasoned exemptions; F5 starts reconciliation from every selected eligible claim.                                                                                                                                                                                                                                                                                                       |
-| Binding and case identity                  | Both           | 0201-F2 resolves targets and lifecycle; 0201-F3 exports method, case and run identities. F5 joins those records without re-resolving source symbols.                                                                                                                                                                                                                                                                               |
-| Completeness, freshness and outcome gate   | Business       | F5 evaluates declared project/TFM inputs, required links and passing current results as independent states, gating only owned cases that are not planned.                                                                                                                                                                                                                                                                          |
-| Evidence collection and scenario mapping   | Both           | 0201-F3 collects runner evidence; optional 0201-F4 records add scenario links. F5 consumes their exported contracts.                                                                                                                                                                                                                                                                                                               |
-| Artifact reading and report serialization  | Technical      | The tool's reconciliation slice reads explicit files and emits its own versioned report; it reads native claim files through the engine's Gherkin claim reader, the file the analyzer links, matches claim file sets with the engine's unlinked `RepositoryPaths`, a second copy of the analyzer's `AnalysisPaths` held to it by tests (decision 0009), does not load the analyzer assembly and does not alter the checker report. |
-| Filesystem and process boundary            | Technical      | F5 reads current repository records and supplied artifacts offline. Only the caller-named report path is written.                                                                                                                                                                                                                                                                                                                  |
+| Concern                                    | Classification | Owner and boundary                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Selected current claims and required links | Business       | 0201-F6 defines selection, link policy and reasoned exemptions; F5 starts reconciliation from every selected eligible claim.                                                                                                                                                                                                                                                                                                                                           |
+| Binding and case identity                  | Both           | 0201-F2 resolves targets and lifecycle; 0201-F3 exports method, case and run identities. F5 joins those records without re-resolving source symbols.                                                                                                                                                                                                                                                                                                                   |
+| Completeness, freshness and outcome gate   | Business       | F5 evaluates declared project/TFM inputs, required links and passing current results as independent states, gating only owned cases that are not planned.                                                                                                                                                                                                                                                                                                              |
+| Evidence collection and scenario mapping   | Both           | 0201-F3 collects runner evidence; optional 0201-F4 records add scenario links. F5 consumes their exported contracts.                                                                                                                                                                                                                                                                                                                                                   |
+| Artifact reading and report serialization  | Technical      | The tool's reconciliation slice reads explicit files and emits its own versioned report; it reads native claim files through the engine's Gherkin claim reader, the file the analyzer links, matches claim file sets against the root's `.feature` files with the engine's unlinked `RepositoryPaths`, a second copy of the analyzer's `AnalysisPaths` held to it by tests (decision 0009), does not load the analyzer assembly and does not alter the checker report. |
+| Filesystem and process boundary            | Technical      | F5 reads current repository records and supplied artifacts offline. Only the caller-named report path is written.                                                                                                                                                                                                                                                                                                                                                      |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-08 (item 0409: two claim file set readings held to one list of cases, decision 0009); implementer, 2026-11-08 (item 0409: one claim file set reading); implementer, 2026-11-07 (item 0409: native Gherkin claims, the declared test projects, the reader's visibility); implementer, 2026-11-02 (item `0166`: root-relative locations, the instance parser); implementer, 2026-10-25 -->
+<!-- last written by: implementer, 2026-11-08 (item 0409: the gate's claim file candidates are `.feature` files, B-038); implementer, 2026-11-08 (item 0409: two claim file set readings held to one list of cases, decision 0009); implementer, 2026-11-08 (item 0409: one claim file set reading); implementer, 2026-11-07 (item 0409: native Gherkin claims, the declared test projects, the reader's visibility); implementer, 2026-11-02 (item `0166`: root-relative locations, the instance parser); implementer, 2026-10-25 -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -315,14 +315,29 @@ the same list of cases in each (B-038). `EvidencePolicy` stores each `glob` and
 `record` normalised; a project `path` keeps its stricter `IsRelative` check,
 which is not a claim file set.
 
-`EvidenceReconciler.ReadNativeClaims` lists the root's files once with
-`SpechtDiscovery.FindTestFiles` under the manifest's exclusions, the glob `**/*`
-standing for every file, in root-relative ordinal order, and keeps for each set
-the files `RepositoryPaths.Matches` matches to its glob. The exclusions are the
-one difference the two readings keep (decision 0009, § 5 row 11): the analyzer
-matches the scenario inputs the build delivers and applies no manifest
-exclusion, so a claim file under an excluded directory is in the analyzer's
-catalogue and not in the evidence gate's. A file two sets match is an
+`EvidenceReconciler.ReadNativeClaims` lists the root's `.feature` files once
+with `SpechtDiscovery.FindTestFiles` under the manifest's exclusions, the glob
+`**/*.feature`, in root-relative ordinal order, and keeps for each set the files
+`RepositoryPaths.Matches` matches to its glob. The candidates are `.feature`
+files because the analyzer matches a set only against inputs of kind
+`scenario`, which `Specht.CodeAnalysis.props` delivers from
+`SpechtScenarioInputs`, `.feature` files by default. A Feature record or any
+other file under a set's directory is never a claim file to either reading, so
+`src/read/.spec/**` selects `src/read/.spec/read.feature` and not
+`src/read/.spec/README.md`. The gate does not read the props' three default
+patterns: a consumer's `SpechtScenarioInputs` override lives in its own MSBuild
+files, which the gate cannot evaluate offline, and a copy of the defaults would
+reject a set over a `.feature` tree such an override delivers.
+
+The two readings keep these differences. The exclusions (decision 0009, § 5
+row 11): the analyzer matches the scenario inputs the build delivers and applies
+no manifest exclusion, so a claim file under an excluded directory is in the
+analyzer's catalogue and not in the evidence gate's; the build's default leaves
+out only the `SpechtInputExclude` directories. A `.feature` file a set matches
+outside the delivered scenario inputs, such as `src/read/claims/read.feature`
+under the default `SpechtScenarioInputs`, is a claim file to the gate and not to
+the analyzer. A non-`.feature` file a consumer delivers by overriding
+`SpechtScenarioInputs` is a claim file to the analyzer and not to the gate. A file two sets match is an
 `invalidInput` finding at that file and contributes no claim. A selected Feature with no set,
 or whose set matches no file, is an `invalidInput` finding at
 `.specht/manifest.json` (B-035). A set's `record` is parsed with the

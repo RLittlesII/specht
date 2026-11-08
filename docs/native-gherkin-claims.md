@@ -193,10 +193,13 @@ build, discovery and run steps; a successful first build alone does not prove a
 claim passed. The evidence carries no claim catalogue: `specht evidence` reads
 each selected Feature's claims from its claim file set, with the same tag
 settings and the same glob reading as the build, and a claim file it cannot
-read is invalid input (exit `3`). It matches the set against the files under
-the root, not the delivered inputs, and skips the manifest's `exclusions`, so a
-claim file in an excluded directory is a claim to the build and not to the
-gate. Planned
+read is invalid input (exit `3`). It matches the set against the `.feature`
+files under the root, not the delivered inputs, so a Feature record beside them
+is never a claim file, and skips the manifest's `exclusions`. A claim file in an
+excluded directory, or a non-`.feature` file delivered through
+`SpechtScenarioInputs`, is a claim to the build and not to the gate; a
+`.feature` file the set matches that the build does not deliver is a claim to
+the gate and not to the build. Planned
 tags in a claim file mark no discovered case planned. No claims-table adapter
 is generated.
 
