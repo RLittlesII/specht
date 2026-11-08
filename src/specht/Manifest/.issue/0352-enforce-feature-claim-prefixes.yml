@@ -30,6 +30,7 @@ acceptance_criteria:
 
 decisions:
   - "2026-11-03: Manifest decision 0022 resolves OQ-29 and OQ-30."
+  - "2026-11-08: Manifest decision 0023, the owner's rule: B-076 to B-080 stay in schema 0.3.1, which no NuGet package carries."
 
 out_of_scope:
   - "Standalone Gherkin declarations (0001-F5 § 5)."
