@@ -1,0 +1,47 @@
+id: "0421"
+type: task
+title: Mint no epic, Feature or task id
+
+status: blocked
+
+risk: 1
+
+parent: "0412"
+children: []
+
+depends_on: ["0415"] # 0415 is the request B-018 makes
+spikes: []
+
+spec: src/specht/IdGeneration/.spec/README.md
+
+claims:
+  - B-018
+
+created: "2026-11-07"
+updated: "2026-11-07"
+closed: null
+
+summary: |
+  A request for an `epic`, `feature` or `task` id writes nothing on
+  standard output (B-018; C-13).
+
+  Risk 1: B-018 holds under either reading. Blocked on OQ-17, which
+  records no default: a `mint` entry naming one of the three types is
+  either an invalid manifest under the pinned schema, exiting `3`
+  (B-015), or a request the command refuses. The answer decides
+  whether `0.3.1`'s `mint` key, 0413's, admits the three names, so
+  this item settles that key in place while no package carries
+  `0.3.1` (C-17).
+
+acceptance_criteria:
+  - "B-018 — epic, Feature and task ids, nothing on standard output"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-07, spec-author: cut on decision 0003; `blocked`, not
+    proceeding, because OQ-17 records no default. Value omitted,
+    inheriting 0412's.
+
+out_of_scope:
+  - "Minting the three types, and widening their frontmatter id patterns - § 5 row 10."

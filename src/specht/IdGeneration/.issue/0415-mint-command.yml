@@ -1,0 +1,70 @@
+id: "0415"
+type: task
+title: Add the specht mint command
+
+status: ready
+
+risk: 2
+
+parent: "0412"
+children: []
+
+depends_on: ["0414"] # 0414 is the engine pipeline the command calls
+spikes: []
+
+spec: src/specht/IdGeneration/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-015
+  - B-016
+  - B-043
+
+created: "2026-11-07"
+updated: "2026-11-07"
+closed: null
+
+summary: |
+  `specht mint <type> [--feature <dir>] [--root <dir>]` (A-2), a
+  command folder `src/tool/Features/Mint/` (decision 0002) that
+  parses, calls 0414's pipeline, prints the one id and folds a refusal
+  into an exit code; it holds no strategy and no decorator (C-9). A
+  type not opted in gets no id (C-2), and a manifest whose id settings
+  its pin does not accept, or that opts in a type with no grammar,
+  exits `3` (B-015, B-043). `--feature` is refused for `adr` and
+  `lesson` whatever folder it names, so B-016 holds under every answer
+  to OQ-16. `docs/cli.md` gains the command, as its test requires
+  (`0002-F1`).
+
+  Risk 2: a thin command; the hazard is writing anything but the id
+  on standard output, or any file (C-1).
+
+  Proceeds on OQ-11's recorded default: a refusal exits one of `2`,
+  `3` and `4`, with the reason on standard error and no absolute path
+  (C-10). Waits on 0414 alone.
+
+acceptance_criteria:
+  - "B-001 — a type not opted in, nothing on standard output"
+  - "B-002 — a type not opted in, exit 2, 3 or 4 (OQ-11's default)"
+  - "B-003 — one line, the id alone"
+  - "B-004 — a printed id exits 0"
+  - "B-015 — id settings the pin does not accept, exit 3"
+  - "B-016 — `--feature` for adr or lesson, nothing on standard output"
+  - "B-043 — an opted-in type with no grammar, exit 3"
+  - "No absolute path in any output (AGENTS.md § Invariants)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-07, spec-author: cut on ADR-0033 and decisions 0002 and
+    0003. Value omitted, inheriting 0412's. B-013's rows include a
+    Snowflake request, so it goes to 0419; B-017's include the
+    guard's exhaustion, so it goes to 0416.
+
+out_of_scope:
+  - "The MCP tool - § 5 row 5; `0132-F4` B-023."
+  - "A per-Feature type with `--feature` - 0418; without it - OQ-15, 0418."
+  - "Writing the id anywhere - § 5 row 3."

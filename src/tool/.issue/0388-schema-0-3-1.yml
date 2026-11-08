@@ -20,7 +20,7 @@ claims:
   - B-154
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-07"
 closed: null
 
 summary: |
@@ -31,8 +31,10 @@ summary: |
 
   The cut copies `0.3.0` through 0189's target (B-094 to B-100) and
   locks it through 0188's. `0.3.1` adds no key and no rule id at the
-  cut; `0001-F16`'s items add them, each with a relock, while no
-  published package carries `0.3.1` (C-17; decision 0014). This item
+  cut; `0001-F16`'s items add them, and `0001-F19`'s item 0413 adds the
+  `mint` key and four `identifiers` grammars (`0001-F19` decision
+  0003), each with a relock, while no published package carries
+  `0.3.1` (C-17; decision 0014). This item
   also lands B-066 as amended and B-154, the version-number checks the
   ruling changes.
 

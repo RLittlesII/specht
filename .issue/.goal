@@ -12,6 +12,16 @@
 0128
 # Collision-free record ids, moved from 0.7.0 by the owner, 2026-11-06.
 0256
+# 0001-F19, id generation, added by the owner's selection, 2026-11-07.
+0413
+0414
+0415
+0416
+0417
+0418
+0419
+0420
+0421
 # Epic 0201 for consumer request #256: native Gherkin claims with xUnit v2
 # VSTest evidence, proven end to end in one packaged consumer.
 0302
