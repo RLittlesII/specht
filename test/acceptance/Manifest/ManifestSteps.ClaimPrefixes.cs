@@ -8,8 +8,8 @@ namespace Specht.Acceptance.Manifest;
 
 /// <summary>
 /// Steps for a Feature's own claim prefix (<c>0001-F5</c> B-004, B-037, B-049, B-076 to B-080; decision 0022). A schema
-/// supporting Feature claim prefixes is the pin <c>0.3.1</c> (A-7): <c>0.3.0</c> is published, so the prefix enters the
-/// next eligible version. CI, Release and the other Feature are co-located specifications under <c>ci</c>,
+/// supporting Feature claim prefixes is the pin <c>0.3.1</c> (A-7). CI, Release and the other Feature are co-located
+/// specifications under <c>ci</c>,
 /// <c>release</c> and <c>other</c>, each rewritten whenever a step changes it: its frontmatter carries the prefix under the
 /// key the step names, its claims section the claims in order, its matrix the cited ids, or else one row per claim, and
 /// its companion one scenario per tag, or else one tagged with each claim. "The claim ID check" is the rule the pin

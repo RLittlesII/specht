@@ -2207,9 +2207,70 @@ The accepted B-066 row and its scenario were written after the mark was built at
 
 **Open, item `0388`.** B-154 compares the whole report, `rulesEvaluated` included, so the first `0001-F16` rule id in `0.3.1` fails its tests on every tree until OQ-75 is answered.
 
+### B-154's optional-field exception, item `0352`
+
+<!-- last written by: test-writer, 2026-11-08 (item `0352`: B-154 as amended by decision 0023, the `claim_prefix` exception bound and tested) -->
+
+B-154 as amended (decision 0023) sets aside a tree in which a document sets an
+optional frontmatter field that the higher version's shipped frontmatter
+schema defines and the lower version rejects. `claim_prefix` is the shipped
+case, between `0.3.0` and `0.3.1`.
+
+The mechanism is not one this Feature adds. The `0.3.1` Feature schema
+defines `claim_prefix` and the `0.3.0` schema closes its properties, which
+`FrontmatterSchemaCheck` reports as `SPEC1002`. The model reads the prefix by
+`keys.feature.claimPrefix` from `0.3.1`, and `SPEC4003` checks the Feature's
+claims against it. `0001-F5` B-076 to B-079 pin each of those at the Unit tier,
+in `SpechtModelReaderClaimPrefixUnitTests` and
+`SpechtManifestParserClaimPrefixUnitTests`. What B-154 adds is the contrast
+between the two pins over one tree, so its test is an integration test of
+the runner over a tree on disk.
+
+| Claim                  | Mechanism                                                                                                                                                          | Integration test                                                                                                                                                                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-154, the exception   | The pinned version's Feature schema and claim grammar: `0.3.0` rejects `claim_prefix` as an undefined property, and `0.3.1` reads it as the Feature's claim prefix | `SpechtRunnerVersionsIntegrationTests.ATreeSettingAnOptionalFieldOnlyThePatchDefines_WhenCheckedUnderAShippedVersionAndItsPatchNeighbour_ShouldReportItUnderEachVersionsOwnRule`: one co-located Feature declaring `claim_prefix: "CI-AC-"` and the claim `B-001`, checked under `0.3.0` and then `0.3.1` |
+| B-154, the same report | Unchanged from item `0388`                                                                                                                                         | `SpechtRunnerVersionsIntegrationTests.TheBaselineTreePinnedToAShippedVersionAndToItsPatchNeighbour_WhenChecked_ShouldGiveTheSameReportTheSchemaVersionAside`, unchanged: the baseline tree sets no `claim_prefix`, so the `0.3.0`/`0.3.1` row still compares the same report                              |
+
+The exception test asserts each pin's own rule. Under `0.3.0`, the Feature's
+findings hold a `SPEC1002` whose identifier is `claim_prefix` and no
+`SPEC4003`. Under `0.3.1` they hold no `SPEC1002` and exactly one `SPEC4003`,
+identifier `B-001`, whose message quotes `'B-001'` and `'CI-AC-'`. The run
+completing is the integration tier's "not `2` or `3`": the runner raises the
+manifest and root rejections those codes fold. The acceptance step asserts
+the codes themselves.
+
+**Acceptance binding.** The `@B-154 @boundary` scenario "A patch changes the
+report of a tree that writes an optional field only the patch defines" binds
+in `VersioningSteps`:
+
+- "the root is pinned to version 0.3.0 with the embedded source" is one more
+  phrasing on the existing embedded-source pin step;
+- the Feature is written co-located under `src/ci` with the default sections
+  and the named claim;
+- the built tool checks the tree with `--json` under each pin;
+- the Then steps read the Feature's violations from each document;
+- the last step asserts both exit codes are `0` or `1`.
+
+**Green when written**, since the behaviour is built (item `0352`, at
+`986712ee`). Run on `net11.0` at `3ae60879` with this change:
+
+- `SpechtRunnerVersionsIntegrationTests` passes 13 of 13;
+- `SchemaVersioningFeature` passes 217 of 217, both `@B-154` scenarios among
+  them;
+- `TheManifestCarriesTheRolesFeature` passes 171 of 171.
+
+To show the exception test can fail, its second pin was changed to `0.3.0`
+and the test was run. It failed on "Expected higher" not to contain a
+`SPEC1002`, because `0.3.0` rejects the field under both pins. The test was
+then restored.
+
+**Not asserted.** The case OQ-76 raises: a root that selects its frontmatter
+schemas from disk, which may already permit the field under `0.3.0`. Both runs
+here use the embedded source.
+
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-07 (item `0388`: the B-066 and B-154 rows, Covered) -->
+<!-- last written by: test-writer, 2026-11-08 (item `0352`: the B-154 row, the optional-field exception); test-writer, 2026-11-07 (item `0388`: the B-066 and B-154 rows, Covered) -->
 
 | Claim ID | Scenario                                                                                                                                   | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Status    |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -2366,7 +2427,7 @@ The accepted B-066 row and its scenario were written after the mark was built at
 | B-151    | Under 0.3.0 a rule reports its four-digit id                                                                                               | `VersioningSteps` (@B-151); `SpechtEvaluatorVersionsUnitTests.AMissingTraceabilityRow_WhenEvaluatedUnderAPinnedVersion_ShouldBeReportedUnderThatVersionsIdForTheRule` (row `0.3.0`); `SchemaVersionsUnitTests.AnEmbeddedVersion_WhenItsVocabularyIsRead_ShouldNameEachRuleByThatVersionsId` over `ShippedVocabularies` (row `0.3.0`); `SchemaVersionsUnitTests.ARuleKey_WhenNamedUnderVersionZeroThreeZero_ShouldTakeTheFourDigitIdTheMapPairsItWith` over `ZeroThreeZeroRuleNames`, all 24 pairs of ADR-0029's map, `SPEC032` to `SPEC4009` among them; `FaultIsolatedRuleUnitTests.ARuleThatThrowsUnderAPinnedVersion_WhenEvaluated_ShouldNameTheRuleByThatVersionsIdInItsError` over `ClaimRowIdsByVersion` (row `0.3.0`), the id a rule's failure is reported under; `UnresolvedTestRuleUnitTests.ATestCell_WhenEvaluated_ShouldReportAnUnresolvedNameOrACellWithoutInlineCodeAtItsRow` over `UnresolvedTestCells`, the `SPEC032` finding stamped `SPEC4009` by the evaluator under `0.3.0`; `SpechtRunnerVersionsIntegrationTests.TheBaselineTreePinnedToAShippedVersion_WhenChecked_ShouldReportEveryViolationUnderAnIdOfThatVersionsVocabulary` (row `0.3.0`); red before `SchemaVersion.RuleId` mapped the key, except the pair, failure and unresolved-test assertions, added after the map and the failure message were built and green when first run | Covered   |
 | B-152    | Under a published version a rule reports its three-digit id                                                                                | `VersioningSteps` (@B-152, every example); `SpechtEvaluatorVersionsUnitTests.AMissingTraceabilityRow_WhenEvaluatedUnderAPinnedVersion_ShouldBeReportedUnderThatVersionsIdForTheRule` (rows `0.1.0`, `0.2.0`, `0.2.1`); `SchemaVersionsUnitTests.AnEmbeddedVersion_WhenItsVocabularyIsRead_ShouldNameEachRuleByThatVersionsId` over `ShippedVocabularies` (rows `0.2.0`, `0.2.1`); `FaultIsolatedRuleUnitTests.ARuleThatThrowsUnderAPinnedVersion_WhenEvaluated_ShouldNameTheRuleByThatVersionsIdInItsError` over `ClaimRowIdsByVersion` (rows `0.1.0`, `0.2.0`, `0.2.1`); `SpechtRunnerVersionsIntegrationTests.TheBaselineTreePinnedToAShippedVersion_WhenChecked_ShouldReportEveryViolationUnderAnIdOfThatVersionsVocabulary` (rows `0.2.0`, `0.2.1`). Green before the change, and held green through it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Covered   |
 | B-153    | Pins below 0.3.0 reject the pin policy key                                                                                                 | `VersioningSteps`; `SpechtManifestParserPinPolicyUnitTests.APinBelowZeroThreeZeroDeclaringAPinPolicy_WhenParsed_ShouldRejectTheKeyAsOneTheEngineDoesNotKnow`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Covered   |
-| B-154    | An opt-in addition in a patch changes no report                                                                                            | `VersioningSteps` (@B-154); `SpechtRunnerVersionsIntegrationTests.TheBaselineTreePinnedToAShippedVersionAndToItsPatchNeighbour_WhenChecked_ShouldGiveTheSameReportTheSchemaVersionAside`; `SchemaVersionsUnitTests.AShippedVersionsPatchNeighbour_WhenItsRulesAreNamed_ShouldNameEveryRuleTheLowerHoldsByTheLowersId`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Covered   |
+| B-154    | An opt-in addition in a patch changes no report; A patch changes the report of a tree that writes an optional field only the patch defines | `VersioningSteps` (@B-154); `SpechtRunnerVersionsIntegrationTests.TheBaselineTreePinnedToAShippedVersionAndToItsPatchNeighbour_WhenChecked_ShouldGiveTheSameReportTheSchemaVersionAside`; `SchemaVersionsUnitTests.AShippedVersionsPatchNeighbour_WhenItsRulesAreNamed_ShouldNameEveryRuleTheLowerHoldsByTheLowersId`; the optional-field exception (item 0352): `SpechtRunnerVersionsIntegrationTests.ATreeSettingAnOptionalFieldOnlyThePatchDefines_WhenCheckedUnderAShippedVersionAndItsPatchNeighbour_ShouldReportItUnderEachVersionsOwnRule`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Covered   |
 
 ## 10. Lessons / Spec Deltas
 
