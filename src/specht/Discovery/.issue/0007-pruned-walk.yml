@@ -2,7 +2,7 @@ id: "0007"
 type: task
 title: Walk the tree without entering an excluded directory
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -19,7 +19,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-11-08"
-closed: null
+closed: "2026-11-08"
 
 summary: |
   The mode used outside a git work tree or with no git on PATH: a walk that
