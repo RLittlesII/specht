@@ -73,6 +73,9 @@ Paths are relative to the repository root.
 
 Each `claimFileSets` entry maps a root-relative `glob` to one Feature identity.
 It must match delivered scenario inputs; every selected Feature needs a set.
+`*` matches within one directory and `**` across directories; a final `**`
+matches every file beneath. A `.` or empty segment is dropped, `\` reads as
+`/`, and a glob or `record` that is rooted or leaves the root is invalid.
 Use one set per Feature identity, and keep sets from matching the same file.
 Add `epic` to the file set and Feature selection exactly when
 `identifiers.epic` declares an epic grammar; omit it otherwise. Identities must
@@ -187,8 +190,17 @@ stays provisional; rebuild, discover and run again to refresh it.
 `specht evidence` is the reconciliation gate for current required links and
 passing outcomes. Before evidence exists it reports incomplete and names the
 build, discovery and run steps; a successful first build alone does not prove a
-claim passed. The evidence carries no claim catalogue, and `specht evidence`
-does not yet reconcile claims declared only in Gherkin. No claims-table adapter
+claim passed. The evidence carries no claim catalogue: `specht evidence` reads
+each selected Feature's claims from its claim file set, with the same tag
+settings and the same glob reading as the build, and a claim file it cannot
+read is invalid input (exit `3`). It matches the set against the `.feature`
+files under the root, not the delivered inputs, so a Feature record beside them
+is never a claim file, and skips the manifest's `exclusions`. A claim file in an
+excluded directory, or a non-`.feature` file delivered through
+`SpechtScenarioInputs`, is a claim to the build and not to the gate; a
+`.feature` file the set matches that the build does not deliver is a claim to
+the gate and not to the build. Planned
+tags in a claim file mark no discovered case planned. No claims-table adapter
 is generated.
 
 For diagnostic conditions and remedies, see [SPCT0001](../src/codeanalysis/docs/SPCT0001.md),

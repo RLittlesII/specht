@@ -6,10 +6,10 @@ using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.Reconciliation;
 
-/// <summary>The public evidence gate over a synthetic consumer tree (0201-F5 B-001 to B-022).</summary>
+/// <summary>The public evidence gate over a synthetic consumer tree (0201-F5 B-001 to B-038).</summary>
 [Binding]
 [Scope(Tag = "0201-F5")]
-public sealed class ReconciliationSteps
+public sealed partial class ReconciliationSteps
 {
     [Given("a claim bound to a discovered test through the common runner-evidence contract and a matching result with no scenario policy")]
     public void GivenDirectChain() { }
@@ -581,6 +581,7 @@ public sealed class ReconciliationSteps
     [AfterScenario]
     public void Dispose()
     {
+        _claimFileLock?.Dispose();
         _tree.Dispose();
         _checker?.Dispose();
     }
@@ -625,6 +626,11 @@ public sealed class ReconciliationSteps
         else if (_mismatched)
         {
             _tree.EditAssembly();
+        }
+
+        if (_lockClaimFile)
+        {
+            _claimFileLock = _tree.LockClaimFile();
         }
 
         _fileCount = Directory.EnumerateFiles(_tree.Root, "*", SearchOption.AllDirectories).Count();

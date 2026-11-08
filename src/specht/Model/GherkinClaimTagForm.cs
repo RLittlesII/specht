@@ -5,7 +5,7 @@ namespace Specht.Model;
 
 /// <summary>One reading of a tag form: a literal with exactly one placeholder, tested the way the engine tests companion tags.</summary>
 /// <implements epic="0201" feature="F7" claim="B-004" />
-internal sealed record GherkinClaimTagForm(string Form, string Placeholder, bool IgnoreCase, string? Grammar)
+public sealed record GherkinClaimTagForm(string Form, string Placeholder, bool IgnoreCase, string? Grammar)
 {
     /// <summary>Returns the text the placeholder captures, or null when the tag does not match the form and the grammar.</summary>
     /// <implements epic="0201" feature="F7" claim="B-004" />

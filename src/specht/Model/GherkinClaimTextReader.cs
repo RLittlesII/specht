@@ -7,7 +7,7 @@ namespace Specht.Model;
 
 /// <summary>Reads claim declarations, cases and findings from English Gherkin text, line by line, with no I/O.</summary>
 /// <implements epic="0201" feature="F7" claim="B-008" />
-internal sealed class GherkinClaimTextReader
+public sealed class GherkinClaimTextReader
 {
     /// <implements epic="0201" feature="F7" claim="B-008" />
     public GherkinClaimTextReader(GherkinClaimTags tags) => Tags = tags;

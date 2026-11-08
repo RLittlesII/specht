@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+using Specht.Analysis.Policy;
 
 namespace Specht.Acceptance.Reconciliation;
 
@@ -48,12 +49,14 @@ internal sealed class EvidenceTree : IDisposable
                 ["projects"] = new JsonArray(new JsonObject { ["path"] = "test/tests.csproj", ["targetFrameworks"] = new JsonArray("net10.0") }),
                 ["features"] = new JsonArray(new JsonObject { ["feature"] = "cap:read" }),
                 ["requiredLinks"] = new JsonObject { ["test"] = true },
-                ["enforcement"] = new JsonArray(),
+                ["enforcement"] = new JsonArray(Verifies("test/tests.csproj")),
                 ["exemptions"] = new JsonArray(),
             },
         };
         File.WriteAllText(Path.Combine(Root, ".specht", "manifest.json"), configuration.ToJsonString());
     }
+
+    public const string ClaimFilePath = "src/read/.spec/read.feature";
 
     public string Root { get; }
 
@@ -89,8 +92,97 @@ internal sealed class EvidenceTree : IDisposable
             ["path"] = project,
             ["targetFrameworks"] = new JsonArray("net10.0"),
         });
+        manifest["codeAnalysis"]!["enforcement"]!.AsArray().Add(Verifies(project));
         File.WriteAllText(path, manifest.ToJsonString());
     }
+
+    public void DeclareProduction(string project)
+    {
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!;
+        manifest["codeAnalysis"]!["projects"]!.AsArray().Add(new JsonObject
+        {
+            ["path"] = project,
+            ["targetFrameworks"] = new JsonArray("net10.0"),
+        });
+        manifest["codeAnalysis"]!["enforcement"]!.AsArray().Add(new JsonObject
+        {
+            ["project"] = project,
+            ["include"] = new JsonArray("src/**/*.cs"),
+            ["exclude"] = new JsonArray(),
+            ["role"] = "implements",
+            ["declarationKinds"] = new JsonArray("method"),
+        });
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
+    public void UseNativeClaims(string claimFile, string status = "approved")
+    {
+        File.WriteAllText(Path.Combine(Root, RecordPath), $"---\nid: cap:read\nspec_status: {status}\n---\n# Read\n");
+        File.WriteAllText(Path.Combine(Root, ClaimFilePath), claimFile);
+        var lines = claimFile.Split('\n');
+        var tag = Array.FindIndex(lines, static line => line.Contains("@need/7", StringComparison.Ordinal));
+        _claimLine = Array.FindIndex(lines, Math.Max(tag, 0), static line => line.TrimStart().StartsWith("Scenario", StringComparison.Ordinal)) + 1;
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        manifest.Remove("claimHeading");
+        manifest["claimTag"] = new JsonObject { ["tag"] = "@{claim}", ["tagIgnoreCase"] = false };
+        var analysis = manifest["codeAnalysis"]!.AsObject();
+        analysis["mappings"]!.AsObject().Remove("/claimsSection");
+        analysis["mappings"]!["/claim"] = "/claimTag";
+        analysis["records"] = new JsonObject
+        {
+            ["claimSource"] = "gherkin",
+            ["claimFileSets"] = new JsonArray(new JsonObject { ["glob"] = "src/read/.spec/*.feature", ["feature"] = "cap:read", ["record"] = RecordPath }),
+            ["plannedTags"] = new JsonArray("@ignore"),
+            ["withdrawnTags"] = new JsonArray("@withdrawn"),
+            ["supersededTags"] = new JsonArray("@superseded"),
+        };
+        File.WriteAllText(path, manifest.ToJsonString());
+        _native = true;
+    }
+
+    public void SpellClaimFileSet(string glob, IReadOnlyDictionary<string, string> claimFiles)
+    {
+        foreach (var (file, text) in claimFiles)
+        {
+            var full = Path.Combine(Root, file.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+            File.WriteAllText(full, text);
+        }
+
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!;
+        manifest["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["glob"] = glob;
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
+    public IReadOnlyList<AnalysisInput> AnalyzerInputs() =>
+    [
+        new("configuration", ".specht/manifest.json", File.ReadAllText(Path.Combine(Root, ".specht", "manifest.json"))),
+        new("schema:feature", ".specht/schema/frontmatter/feature.schema.json", """{"type":"object"}"""),
+        new("feature", RecordPath, File.ReadAllText(Path.Combine(Root, RecordPath))),
+        .. Directory.EnumerateFiles(Root, "*.feature", SearchOption.AllDirectories)
+            .Select(file => new AnalysisInput("scenario", Path.GetRelativePath(Root, file).Replace(Path.DirectorySeparatorChar, '/'),
+                File.ReadAllText(file)))
+            .OrderBy(static input => input.RelativePath, StringComparer.Ordinal),
+    ];
+
+    public void SelectFeature(string feature, string? glob)
+    {
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!;
+        manifest["codeAnalysis"]!["features"]!.AsArray().Add(new JsonObject { ["feature"] = feature });
+        if (glob is not null)
+        {
+            manifest["codeAnalysis"]!["records"]!["claimFileSets"]!.AsArray().Add(new JsonObject { ["glob"] = glob, ["feature"] = feature });
+        }
+
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
+    public FileStream LockClaimFile() =>
+        new(Path.Combine(Root, ClaimFilePath), FileMode.Open, FileAccess.Read, FileShare.None);
 
     public void Require(string kind, bool enabled)
     {
@@ -129,12 +221,15 @@ internal sealed class EvidenceTree : IDisposable
         var path = Path.Combine(Root, ".specht", "manifest.json");
         var manifest = JsonNode.Parse(File.ReadAllText(path))!;
         var projects = manifest["codeAnalysis"]!["projects"]!.AsArray();
+        var enforcement = manifest["codeAnalysis"]!["enforcement"]!.AsArray();
         projects.Clear();
+        enforcement.Clear();
         foreach (var name in names)
         {
             Directory.CreateDirectory(Path.Combine(Root, "test", name));
             File.WriteAllBytes(Path.Combine(Root, "test", name, name + ".dll"), [(byte) name[0], 9]);
             projects.Add(new JsonObject { ["path"] = ProjectPath(name), ["targetFrameworks"] = new JsonArray("net10.0") });
+            enforcement.Add(Verifies(ProjectPath(name)));
         }
 
         File.WriteAllText(path, manifest.ToJsonString());
@@ -236,6 +331,15 @@ internal sealed class EvidenceTree : IDisposable
         }
     }
 
+    private static JsonObject Verifies(string project) => new()
+    {
+        ["project"] = project,
+        ["include"] = new JsonArray("test/**/*.cs"),
+        ["exclude"] = new JsonArray(),
+        ["role"] = "verifies",
+        ["declarationKinds"] = new JsonArray("testMethod"),
+    };
+
     private static string ProjectPath(string name) => name == "tests" ? "test/tests.csproj" : $"test/{name}/{name}.csproj";
 
     private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
@@ -262,7 +366,7 @@ internal sealed class EvidenceTree : IDisposable
 
     private JsonObject BuildEvidence(string? outcome = "passed", bool binding = true, bool historicalBinding = false, bool scenario = false)
     {
-        var recordPath = "src/read/.spec/README.md";
+        var recordPath = RecordPath;
         if (historicalBinding)
         {
             AppendToRecord("| need/8 | A past need | Agreement | Withdrawn |\n");
@@ -273,10 +377,16 @@ internal sealed class EvidenceTree : IDisposable
         var manifestHash = Hash(File.ReadAllBytes(Path.Combine(Root, manifestPath)));
         var sourcePath = "test/Tests.cs";
         var sourceHash = Hash(File.ReadAllBytes(Path.Combine(Root, sourcePath)));
+        var claimHash = _native ? Hash(File.ReadAllBytes(Path.Combine(Root, ClaimFilePath))) : string.Empty;
         var inputs = new JsonArray(
             new JsonObject { ["path"] = manifestPath, ["sha256"] = manifestHash, ["kind"] = "manifest" },
             new JsonObject { ["path"] = recordPath, ["sha256"] = inputHash, ["kind"] = "record" },
             new JsonObject { ["path"] = sourcePath, ["sha256"] = sourceHash, ["kind"] = "source" });
+        if (_native)
+        {
+            inputs.Insert(2, new JsonObject { ["path"] = ClaimFilePath, ["sha256"] = claimHash, ["kind"] = "record" });
+        }
+
         var target = new JsonObject
         {
             ["kind"] = "claim",
@@ -285,8 +395,8 @@ internal sealed class EvidenceTree : IDisposable
             ["id"] = historicalBinding ? "need/8" : "need/7",
             ["state"] = historicalBinding ? "Withdrawn" : "Active",
             ["featureState"] = "approved",
-            ["relativePath"] = recordPath,
-            ["line"] = historicalBinding ? 8 : 7,
+            ["relativePath"] = _native ? ClaimFilePath : recordPath,
+            ["line"] = _native ? _claimLine : historicalBinding ? 8 : 7,
         };
         var evidence = new JsonObject
         {
@@ -301,7 +411,9 @@ internal sealed class EvidenceTree : IDisposable
                 ["path"] = "test/tests.dll",
             },
             ["sourceFingerprint"] = Fingerprint((sourcePath, "source", sourceHash)),
-            ["policyFingerprint"] = Fingerprint((manifestPath, "manifest", manifestHash), (recordPath, "record", inputHash)),
+            ["policyFingerprint"] = _native
+                ? Fingerprint((manifestPath, "manifest", manifestHash), (recordPath, "record", inputHash), (ClaimFilePath, "record", claimHash))
+                : Fingerprint((manifestPath, "manifest", manifestHash), (recordPath, "record", inputHash)),
             ["adapter"] = new JsonObject { ["id"] = "xunit", ["version"] = "1", ["contractVersion"] = "1" },
             ["discovery"] = new JsonObject
             {
@@ -390,5 +502,9 @@ internal sealed class EvidenceTree : IDisposable
         return evidence;
     }
 
+    private const string RecordPath = "src/read/.spec/README.md";
+
     private string? _externalDirectory;
+    private bool _native;
+    private int _claimLine;
 }
