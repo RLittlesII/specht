@@ -492,6 +492,17 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | `pinPolicy` is in no shipped default manifest, so `upgrade` never adds it and no shipped file or lock entry changes (decision 0021; C-1, C-17)                                                                           | Business       | `src/tool/manifest/v0.3.0/manifest.json` and `src/tool/schema/versions.lock.json`, unchanged                                                                                                   |
 | A policy is one of a closed set of three values                                                                                                                                                                          | Technical      | The `PinPolicy` enum in `src/specht/Versioning/`, one switch in `InUse`; no interface and no type per policy                                                                                   |
 
+<!-- last written by: implementer, 2026-11-07 (item `0388`: schema `0.3.1` cut and the opt-in mark built) -->
+
+| Concern                                                                                                                                         | Classification | Where                                                                                                                                            |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A rule id new in a step below `1.0.0` whose minor is not greater is accepted when every added id is an opt-in addition (B-066 as amended; C-11) | Business       | `SchemaVersionNumbering.VerifyAsync`, calling `AllOptInAsync` before it reports `NewRuleWithoutHigherMinor`                                      |
+| Which manifest key reaches a rule id: the `opt_in` field of its rule page's frontmatter, a dotted key path such as `claim.source`               | Both           | `docs/rules/v<version>/<id>.md`, read by `SchemaVersionNumbering.OptInKeyAsync`                                                                  |
+| A key a version defines is a key path its shipped default manifest holds; the higher must hold it and the lower must not                        | Business       | `SchemaVersionNumbering.Defines`, over `src/tool/manifest/v<version>/manifest.json`                                                              |
+| `0.3.1`'s rule vocabulary is `0.3.0`'s, each rule under the same id (B-154; B-014)                                                              | Business       | `SchemaVersions.Shipped`, the `0.3.0` arm widened to `Patch: 0 or 1`                                                                             |
+| `0.3.1` is cut from `0.3.0` and locked; the four published versions and their lock entries stay as they are (B-094 to B-100; C-1, C-17)         | Business       | `src/tool/schema/v0.3.1/`, `src/tool/manifest/v0.3.1/`, `src/tool/templates/v0.3.1/`, `docs/rules/v0.3.1/`; `src/tool/schema/versions.lock.json` |
+| This repository's pin and live `.specht/` follow the newest shipped version (`0001-F4` B-004)                                                   | Business       | `.specht/manifest.json`, `.specht/schema/frontmatter/`, written by `specht schema pin 0.3.1` and `specht upgrade`                                |
+
 ## 7. Technical Design
 
 ### Schema command boundary
@@ -785,11 +796,11 @@ Passing over an entry below `1.0.0` is OQ-55 reading (a), the owner's ruling of 
 
 [`SchemaVersionNumbering`](../../../.build/SchemaVersionNumbering.cs) is `public sealed class SchemaVersionNumbering(IFileSystem fileSystem, string root)` with the one member `VerifyAsync`. It takes the shipped versions from `new SchemaVersionLock(fileSystem, root).ReadVersions()` and the trees from `SchemaVersionLock.ShippingTrees`, as the cut does, and walks each version against the next higher by `System.Version` precedence. A version's rule ids are the `*.md` names directly under `docs/rules/v<version>/`, since the build references no application project.
 
-| Neighbours                                                                                                          | Finding                             | Claim |
-| ------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ----- |
-| A rule id the higher holds and the lower lacks; the lower `1.0.0` or higher; the higher's major not greater         | `NewRuleWithoutHigherMajor`         | B-040 |
-| A rule id the higher holds and the lower lacks; the higher below `1.0.0`; its minor not greater                     | `NewRuleWithoutHigherMinor`         | B-066 |
-| The same rule ids; every schema and manifest file equal; some template or rule page different; major or minor moved | `TemplateOrRulePageChangeNotAPatch` | B-088 |
+| Neighbours                                                                                                                               | Finding                             | Claim |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ----- |
+| A rule id the higher holds and the lower lacks; the lower `1.0.0` or higher; the higher's major not greater                              | `NewRuleWithoutHigherMajor`         | B-040 |
+| A rule id the higher holds and the lower lacks; the higher below `1.0.0`; its minor not greater; not every added id opt-in (item `0388`) | `NewRuleWithoutHigherMinor`         | B-066 |
+| The same rule ids; every schema and manifest file equal; some template or rule page different; major or minor moved                      | `TemplateOrRulePageChangeNotAPatch` | B-088 |
 
 For B-088 each file of both versions is read as text, split on `\n`, and the line in which it states its own version is dropped before comparing: in `src/tool/schema/` a line holding `"$id"` and `/v<version>/` (B-087), in `src/tool/manifest/` a line holding `"schemaVersion"` and `"<version>"`, in `docs/rules/` a line beginning `| Schema version ` and holding the version with a space either side (`0001-F3` B-033). Dropping the line rather than substituting the number keeps the cell padding, which a number of another length changes, out of the comparison, and treats `0.1.0`'s manifest, which states no `schemaVersion`, alike. A file on one side only is a difference: in the schema or manifest tree it rules B-088 out; among the templates or rule pages it is a template or rule-page change. Neighbours identical once the statements are dropped are not reported, since they differ in nothing; § 8 lists that case as unclaimed. A pair either side of `1.0.0` with a new rule id is neither B-040's nor B-066's and is not reported.
 
@@ -1565,6 +1576,78 @@ three values, `exact` the default, from schema `0.3.0`, `latest-minor` from
 No ADR: the key, its first version and the selection are decisions 0020 and
 0021, and the enum and the members add no seam. No ADR-0010 structural
 stage is touched, so ADR-0014 and ADR-0027 are not engaged.
+
+### Schema 0.3.1 (item `0388`)
+
+<!-- last written by: implementer, 2026-11-07 (item `0388`: the cut, the lock, the opt-in mark and the pin move) -->
+
+**The cut.** `./build.sh CutSchemaVersion --cut-version 0.3.1` copied
+`0.3.0`'s four folders, splicing each frontmatter schema's `$id` and each rule
+page's Schema version row (B-096 to B-099). The one hand edit after it is
+`src/tool/manifest/v0.3.1/manifest.json`'s `schemaVersion`, set to `0.3.1`,
+which the cut copies unchanged (OQ-67 (a)). No key and no rule id is added:
+`0001-F16`'s items and `0001-F19`'s item `0413` add them, each with a relock
+while no published package carries `0.3.1` (C-17, decision 0014).
+`./build.sh LockSchemaVersion` then recorded `0.3.1`'s digest; the `0.1.0`,
+`0.2.0`, `0.2.1` and `0.3.0` entries are byte-for-byte unchanged (C-1).
+
+**The vocabulary.** `SchemaVersions.Shipped` widens the `0.3.0` arm to
+`{ Major: 0, Minor: 3, Patch: 0 or 1 }`, as `0.2.1` joined `0.2.0`'s, so
+`0.3.1` names every rule by `0.3.0`'s four-digit id (B-154). The first
+`0001-F16` item that adds a rule id gives `0.3.1` an arm of its own.
+
+**The opt-in mark (B-066 as amended).** An opt-in rule page states the
+manifest key that reaches it in its frontmatter, as one line
+`opt_in: <key path>`, the path dotted through nested objects:
+
+```markdown
+---
+title: "SPEC4010: ..."
+description: ...
+type: rule
+opt_in: claim.source
+---
+```
+
+[`SchemaVersionNumbering.VerifyAsync`](../../../.build/SchemaVersionNumbering.cs)
+reports `NewRuleWithoutHigherMinor` for a step below `1.0.0` whose minor is not
+greater only when `AllOptInAsync` is false. It is true when, for every rule id
+the higher holds and the lower lacks, `OptInKeyAsync` reads a non-empty
+`opt_in` value from the frontmatter of `docs/rules/v<higher>/<id>.md`, and
+`Defines` finds that key path in the higher's
+`src/tool/manifest/v<higher>/manifest.json` and not in the lower's. The
+frontmatter is the lines between a first line `---` and the next `---`; the
+value is trimmed and loses one pair of quotes. A page with no frontmatter, no
+`opt_in` line, or a key the lower version defines or the higher does not is
+not opt-in, so the step is reported (C-11's Rules Out: a rule a tree can meet
+without setting the new key). B-040 is untouched: from `1.0.0` on the mark is
+not read (OQ-74).
+
+Why the rule page. The build references no application project, so the mark
+must sit in a shipping tree; the rule page is the one file per rule id, it is
+already where `VerifyAsync` reads the vocabulary, and the cut copies it.
+Frontmatter leaves the Metadata table, which `specht rules` reads, as it is;
+`--explain` prints the whole page, so a reader sees the rule's gate. A key "the lower version does not define" is a
+key path absent from its shipped default manifest, since that file is what
+`upgrade` and the parser's fill take a version's keys from (B-016;
+`0001-F5` B-048). Rejected: a list of opt-in ids in the manifest, which every
+consumer would carry; a table in `SchemaVersions`, which the build cannot read.
+
+The mark is a declaration. That the rule reports only when a manifest sets the
+key is the rule's own claim and test, and B-154's report comparison over the
+patch pair; `VerifyAsync` checks only that the key is new, and does not read
+what value sets it.
+
+**The pin move.** `specht schema pin 0.3.1` and `specht upgrade`, run from the
+working tool, moved `.specht/manifest.json` to `0.3.1` and rewrote the three
+frontmatter schemas' `$id`; the templates were already `0.3.1`'s bytes
+(`0001-F4` B-004). `docs/README.md`, `docs/what-it-checks.md`,
+`docs/configuration.md` and the `docs/cli.md` schema list example name
+`0.3.1`.
+
+No ADR: the cut and the lock are `0189`'s and `0188`'s procedures, the version
+is decision 0022, and decision 0022 puts the opt-in mark in § 7. No ADR-0010
+structural stage is touched.
 
 ## 8. Testing Strategy
 
