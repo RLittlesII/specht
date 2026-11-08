@@ -13,6 +13,9 @@ namespace Specht.Acceptance.Versioning;
 /// Steps for <c>src/tool/.spec/versioning.feature</c> (0001-F7) that read this repository's own shipped versions, item
 /// 0044: B-004, B-013, B-015, B-040, B-066 and B-088. What a published package shipped is read from the committed version lock,
 /// since every published version is locked (A-4); the shipped files are the repository's shipping trees the tool embeds.
+/// Item 0388 binds B-066's patch scenarios over a synthetic shipping tree on disk instead: 0.1.0 and 0.1.1, the higher's
+/// manifest defining a key the lower's does not. Its opt-in premise stays unbound until 0001-F7 section 7 states how a
+/// shipped file marks a rule reached only under that key.
 /// </summary>
 [Binding]
 [Scope(Feature = "Schema versioning")]
@@ -83,9 +86,38 @@ public sealed class ShippedVersionSteps(PackedTool tool)
     {
     }
 
+    [Given("two schema versions the tool ships, both below version 1.0.0, the higher one greater in its patch alone")]
+    public void GivenTwoShippedVersionsBelowOneZeroZeroDifferingInTheirPatchAlone()
+    {
+        _numberingRoot = Path.Combine(".artifacts", "schema-numbering-tests", Guid.NewGuid().ToString("N"));
+        foreach (var version in new[] { PatchLower, PatchHigher })
+        {
+            Write($"src/tool/schema/v{version}/frontmatter/feature.schema.json",
+                $"{{\n  \"$id\": \"https://github.com/rlittlesii/specht/schema/v{version}/frontmatter/feature.schema.json\"\n}}\n");
+            Write($"src/tool/templates/v{version}/feature.md", "synthetic template\n");
+            Write($"docs/rules/v{version}/SPEC001.md", $"# SPEC001: Synthetic rule\n\n| Schema version | {version} |\n");
+        }
+
+        Write($"src/tool/manifest/v{PatchLower}/manifest.json", $"{{\n  \"schemaVersion\": \"{PatchLower}\"\n}}\n");
+        Write(
+            $"src/tool/manifest/v{PatchHigher}/manifest.json",
+            $"{{\n  \"schemaVersion\": \"{PatchHigher}\",\n  \"optional\": {{ \"source\": \"none\" }}\n}}\n");
+    }
+
+    [Given("the higher one holds a rule that reports on a tree whose manifest sets no key the lower one does not define")]
+    public void GivenTheHigherOneHoldsARuleATreeCanMeetWithoutTheNewKey() =>
+        Write($"docs/rules/v{PatchHigher}/SPEC002.md", $"# SPEC002: Synthetic rule\n\n| Schema version | {PatchHigher} |\n");
+
     [When("their numbers are compared")]
     public async Task WhenTheirNumbersAreCompared() =>
-        _numbering = await new SchemaVersionNumbering(new FileSystem(), tool.Repository).VerifyAsync();
+        _numbering = await new SchemaVersionNumbering(new FileSystem(), _numberingRoot ?? tool.Repository).VerifyAsync();
+
+    [Then("the numbers are accepted")]
+    public void ThenTheNumbersAreAccepted() => _numbering.Should().BeEmpty();
+
+    [Then("the numbers are refused")]
+    public void ThenTheNumbersAreRefused() =>
+        _numbering.Should().Contain(new SchemaVersionNumberingFinding(PatchLower, PatchHigher, SchemaVersionNumberingFault.NewRuleWithoutHigherMinor));
 
     [Then("the higher one's major is greater than the lower one's")]
     public void ThenTheHigherOnesMajorIsGreater() =>
@@ -99,10 +131,31 @@ public sealed class ShippedVersionSteps(PackedTool tool)
     public void ThenTheyDifferInTheirPatchAlone() =>
         _numbering.Should().NotContain(static finding => finding.Fault == SchemaVersionNumberingFault.TemplateOrRulePageChangeNotAPatch);
 
+    [AfterScenario]
+    public void DeleteNumberingTree()
+    {
+        if (_numberingRoot is not null)
+        {
+            Directory.Delete(_numberingRoot, recursive: true);
+        }
+    }
+
+    private void Write(string path, string content)
+    {
+        var fullPath = Path.Combine(_numberingRoot!, path);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        File.WriteAllText(fullPath, content);
+    }
+
     private async Task<Dictionary<string, string>> ReadLockAsync() =>
         JsonSerializer.Deserialize<Dictionary<string, string>>(
             await File.ReadAllTextAsync(Path.Combine(tool.Repository, SchemaVersionLock.RelativePath)))!;
 
+    private const string PatchLower = "0.1.0";
+
+    private const string PatchHigher = "0.1.1";
+
+    private string? _numberingRoot;
     private List<string> _published = [];
     private List<string> _embedded = [];
     private string? _version;

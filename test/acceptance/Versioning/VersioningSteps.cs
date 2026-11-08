@@ -63,7 +63,9 @@ namespace Specht.Acceptance.Versioning;
 /// scenario, B-053, B-054, B-056, B-145 to B-150 and B-153: a set whose lowest number is 0.3.0 or above is built from the
 /// embedded 0.3.0, with a shipping copy adding each number the tool does not ship, that version's files renumbered or
 /// changed by a line feed; a check over a built set that throws a manifest rejection gives the command's standard error
-/// line and exit code 3, and an upgrade over that copy runs in process. The
+/// line and exit code 3, and an upgrade over that copy runs in process. Item 0388 binds B-154 over the versions the tool
+/// ships: the built tool checks the baseline tree with <c>--json</c> under each shipped version below 1.0.0 and each shipped
+/// version higher than it in its patch alone, and the documents are compared with their <c>schemaVersion</c> removed. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>

@@ -36,9 +36,11 @@ public sealed class SchemaVersionNumberingUnitTests
     }
 
     [Theory]
-    [InlineData("0.2.0", false)]
-    [InlineData("0.1.1", true)]
-    public async Task ANewRuleIdBelowOneZeroZero_WhenTheNumbersAreVerified_ShouldBeReportedUnlessTheMinorIsHigher(string higher, bool reported)
+    [InlineData("0.2.0", false, false)]
+    [InlineData("0.1.1", false, true)]
+    [InlineData("0.1.1", true, true)]
+    public async Task ANewRuleIdBelowOneZeroZero_WhenTheNumbersAreVerified_ShouldBeReportedUnlessTheMinorIsHigher(
+        string higher, bool keyTheLowerDoesNotDefine, bool reported)
     {
         // Given
         var fileSystem = new MockFileSystem();
@@ -53,6 +55,12 @@ public sealed class SchemaVersionNumberingUnitTests
         }
 
         fileSystem.AddFile($"repo/docs/rules/v{higher}/SPEC002.md", new MockFileData($"# SPEC002\n\n| Schema version | {higher} |\n"));
+        if (keyTheLowerDoesNotDefine)
+        {
+            fileSystem.AddFile(
+                $"repo/src/tool/manifest/v{higher}/manifest.json",
+                new MockFileData($"{{\n  \"schemaVersion\": \"{higher}\",\n  \"optional\": {{ \"source\": \"none\" }}\n}}\n"));
+        }
 
         // When
         var findings = await new SchemaVersionNumbering(fileSystem, "repo").VerifyAsync();
