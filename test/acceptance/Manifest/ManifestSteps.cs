@@ -90,6 +90,7 @@ public sealed partial class ManifestSteps
         Manifest[key] = key is "claimTagForm" or "tag" ? JsonValue.Create("@{claim}") : JsonValue.Create(true);
 
     [Given("the manifest reads claim tags ignoring letter case")]
+    [Given("the manifest reads claim tags ignoring case")]
     public void GivenIgnoringClaimTagCase() => Named("claim")["tagIgnoreCase"] = true;
 
     [Given("its companion carries a scenario tagged {string}")]

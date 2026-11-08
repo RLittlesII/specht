@@ -15,7 +15,9 @@ namespace Specht.Tests.Engine;
 /// <c>.specht/schema/frontmatter/</c> holds. On the shipped versions, the baseline tree pinned to 0.2.0 or 0.2.1 is
 /// reported under three-digit ids and pinned to 0.3.0 under four-digit ids, each in that version's vocabulary (B-151,
 /// B-152). Pinned to a shipped version and then to the shipped version higher than it in its patch alone, the baseline
-/// tree gets the same report document but for the schema version it names (B-154).
+/// tree gets the same report document but for the schema version it names (B-154). A tree setting an optional frontmatter
+/// field the higher version's schema defines and the lower one rejects is the exception (decision 0023): <c>claim_prefix</c>
+/// is reported by <c>SPEC1002</c> under 0.3.0 and selects the claim grammar <c>SPEC4003</c> checks under 0.3.1.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerVersionsIntegrationTests
@@ -152,6 +154,28 @@ public sealed class SpechtRunnerVersionsIntegrationTests
 
         // Then
         reports[1].Should().Be(reports[0]);
+    }
+
+    [Fact]
+    public void ATreeSettingAnOptionalFieldOnlyThePatchDefines_WhenCheckedUnderAShippedVersionAndItsPatchNeighbour_ShouldReportItUnderEachVersionsOwnRule()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteCoLocatedFeature("src/ci", "0001", "F1", new Dictionary<string, string> { ["claim_prefix"] = "\"CI-AC-\"" });
+
+        // When
+        tree.Pin("0.3.0");
+        var lower = tree.Run().Violations.Where(static violation => violation.File == "src/ci/.spec/README.md").ToList();
+        tree.Pin("0.3.1");
+        var higher = tree.Run().Violations.Where(static violation => violation.File == "src/ci/.spec/README.md").ToList();
+
+        // Then
+        lower.Should().Contain(static violation => violation.RuleId == "SPEC1002" && violation.Identifier == "claim_prefix");
+        lower.Should().NotContain(static violation => violation.RuleId == "SPEC4003");
+        higher.Should().NotContain(static violation => violation.RuleId == "SPEC1002");
+        var finding = higher.Where(static violation => violation.RuleId == "SPEC4003").Should().ContainSingle().Subject;
+        finding.Identifier.Should().Be("B-001");
+        finding.Message.Should().Contain("'B-001'").And.Contain("'CI-AC-'");
     }
 
     private static void Pin(SpechtTree tree, string? version)

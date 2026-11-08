@@ -184,6 +184,11 @@
       "type": "integer",
       "minimum": 0,
       "description": "How many times the Feature's implementation PR was rejected for drifting from this specification. Optional: only specs that have been through review carry it; absent means zero."
+    },
+    "claim_prefix": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "The Feature's own claim prefix: each claim id is this literal text, three ASCII digits and an optional lowercase letter, in place of the manifest's identifiers.claim. Optional: absent, the manifest's grammar applies."
     }
   },
   "allOf": [

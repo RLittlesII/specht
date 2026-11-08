@@ -52,6 +52,8 @@ Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `with
 
 Schema `0.3.1` reads every key and reports every rule `0.3.0` does. It also accepts `mint`, the id settings, an object keyed by record type, and older pins reject it. The check reads nothing from it, so a manifest with it gets the report it gets without it.
 
+Schema `0.3.1` also names `keys.feature.claimPrefix`, default `claim_prefix`: the Feature frontmatter field holding the Feature's own claim prefix, text with at least one non-white-space character, which `SPEC1002` checks. A Feature that declares one, such as `claim_prefix: CI-AC-`, reads its claim ids as that literal, case-sensitive prefix, three ASCII digits and an optional lowercase letter, `CI-AC-001a`; the declaration takes precedence over `identifiers.claim`, which still governs every Feature that declares none. Its matrix and companion tags resolve the complete id under `claim.tag` and `claim.tagIgnoreCase`. Older pins give the field no meaning.
+
 Under schema `0.3.0`, `markers` also names `done`, default `done`: the delivery `status` at which `SPEC7001` reports a `Missing` cell. An empty one exits `3`. From schema `0.3.0` any marker of white space alone exits `3` too.
 
 Under schema `0.3.0`, two more keys are filled name by name from the pinned default manifest, and older pins reject them:

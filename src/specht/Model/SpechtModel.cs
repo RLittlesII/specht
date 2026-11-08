@@ -13,6 +13,7 @@ public sealed class SpechtModel
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-027" />
     /// <implements epic="0001" feature="F5" claim="B-069" />
+    /// <implements epic="0001" feature="F5" claim="B-079" />
     public SpechtModel(
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
@@ -36,7 +37,11 @@ public sealed class SpechtModel
         }
 
         Claims = new ReadOnlyDictionary<FeatureSpec, SpechtClaims>(Features.ToDictionary(
-            static feature => feature, feature => new SpechtClaims(feature.Document, schemas.Structure, grammar)));
+            static feature => feature,
+            feature => new SpechtClaims(
+                feature.Document,
+                schemas.Structure,
+                feature.ClaimGrammar is { Prefix: not null } own ? new Regex(own.Pattern, RegexOptions.CultureInvariant) : grammar)));
         MatrixSections = new ReadOnlyDictionary<FeatureSpec, SpechtSection?>(Features.ToDictionary(
             static feature => feature, feature => feature.Document.Section(schemas.Structure.Roles["matrix"])));
         FeaturesWithIdentity = Array.AsReadOnly(Features

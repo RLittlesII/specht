@@ -13,15 +13,18 @@ public sealed class ClaimIdRule : ISpechtRule
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
     /// <implements epic="0001" feature="F5" claim="B-009" />
+    /// <implements epic="0001" feature="F5" claim="B-076" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
-        var grammar = model.Schemas.Structure.Identifiers["claim"];
+        var manifestGrammar = model.Schemas.Structure.ClaimGrammar(null);
         var claimsReference = model.Schemas.Structure.SectionReference("claims");
 
         foreach (var feature in model.Features)
         {
             var claims = model.Claims[feature];
+            var (grammar, prefix) = feature.ClaimGrammar ?? manifestGrammar;
+            var form = prefix is null ? grammar : $"the claim prefix '{prefix}' followed by three digits and an optional lowercase letter";
 
             if (claims.Section is null)
             {
@@ -44,7 +47,7 @@ public sealed class ClaimIdRule : ISpechtRule
                         feature.RelativePath,
                         line,
                         id,
-                        $"claim id '{id}' does not match {grammar} - claim ids are permanent, so the form is fixed")
+                        $"claim id '{id}' does not match {form} - claim ids are permanent, so the form is fixed")
                     {
                         Expected = new JsonObject { ["grammar"] = grammar },
                     };

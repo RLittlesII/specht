@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Specht.Discovery;
 using Specht.Versioning;
 
@@ -93,6 +94,20 @@ public sealed record SpechtStructure(
     /// decision 0020).
     /// </summary>
     public bool EpicLess => Forms is not null && !DeclaresEpicGrammar;
+
+    /// <summary>
+    /// The grammar a Feature's claim ids are read with: a declared prefix, escaped so it matches only itself, followed by
+    /// three ASCII digits and an optional lowercase ASCII letter (B-079, decision 0022); for a Feature declaring none, or
+    /// only white space, the manifest's <c>identifiers.claim</c> (B-077).
+    /// </summary>
+    /// <param name="prefix">The value the Feature writes under its claim prefix key, or null.</param>
+    /// <returns>The Feature's claim grammar.</returns>
+    /// <implements epic="0001" feature="F5" claim="B-077" />
+    /// <implements epic="0001" feature="F5" claim="B-079" />
+    public SpechtClaimGrammar ClaimGrammar(string? prefix) =>
+        string.IsNullOrWhiteSpace(prefix)
+            ? new SpechtClaimGrammar(Identifiers["claim"], null)
+            : new SpechtClaimGrammar($"^{Regex.Escape(prefix)}[0-9]{{3}}[a-z]?$", prefix);
 
     /// <summary>
     /// How a message cites the section a role names: <c>§ N</c> by the leading number of the role's title, or
