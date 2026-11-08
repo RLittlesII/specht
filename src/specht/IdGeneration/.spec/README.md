@@ -167,7 +167,7 @@ Item `0413` builds the first three rows; every later item extends the table.
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`) -->
+<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`; ADR-0033's shipped-manifest consequence reconciled, review round 1) -->
 
 ### The key at this step: acceptance, no model
 
@@ -183,7 +183,7 @@ Rejected:
 - **Checking C-12's shape in the parser now**, for example the `strategy` value or the members of a sub-object. No cited claim says a malformed entry is refused, and refusal on a mint request is a later item's claim (B-015, B-043).
 - **`mint` in `KnownKeys`.** That list holds the keys every pin accepts, so `0.3.0` and lower would accept `mint`, against C-17 and B-015.
 - **A JSON Schema for the manifest that describes `mint`.** No JSON Schema describes the manifest. It is configuration, and the parser is where its keys are checked.
-- **A default `mint` entry in the shipped `0.3.1` manifest.** The key is opt-in (C-6), and `upgrade` would add the entry to every consumer's manifest.
+- **A default `mint` entry, or a default grammar for the four new `identifiers` keys, in the shipped `0.3.1` manifest.** [ADR-0033](../../../../.spec/adr/0033-hand-cited-ids-are-minted-by-nano-id-and-snowflake-takes-random-fields.md) § Consequences lists "the shipped manifests" as carrying "the optional `mint` key and the four optional `identifiers` keys". The delivered shape departs from that reading, because "optional" keeps them out of the shipped defaults. C-14 rules out a shipped grammar for the four keys. A `mint` default would make the key no longer opt-in (C-6), and `upgrade` would add it to every consumer's manifest. `pinPolicy` set the precedent: schema `0.3.0` defines it in the engine's gate, and no shipped default manifest gains it ([`0001-F7` decision 0021](../../../tool/.spec/decisions/0021-pinpolicy-enters-schema-0-3-0-and-upgrade-names-the-version-in-use.md)). So the version defines the keys, and the shipped files stay as they were.
 
 ## 8. Testing Strategy
 
