@@ -6,7 +6,7 @@ using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.Reconciliation;
 
-/// <summary>The public evidence gate over a synthetic consumer tree (0201-F5 B-001 to B-037).</summary>
+/// <summary>The public evidence gate over a synthetic consumer tree (0201-F5 B-001 to B-038).</summary>
 [Binding]
 [Scope(Tag = "0201-F5")]
 public sealed partial class ReconciliationSteps

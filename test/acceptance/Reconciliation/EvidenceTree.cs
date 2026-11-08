@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+using Specht.Analysis.Policy;
 
 namespace Specht.Acceptance.Reconciliation;
 
@@ -140,6 +141,32 @@ internal sealed class EvidenceTree : IDisposable
         File.WriteAllText(path, manifest.ToJsonString());
         _native = true;
     }
+
+    public void SpellClaimFileSet(string glob, IReadOnlyDictionary<string, string> claimFiles)
+    {
+        foreach (var (file, text) in claimFiles)
+        {
+            var full = Path.Combine(Root, file.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+            File.WriteAllText(full, text);
+        }
+
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!;
+        manifest["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["glob"] = glob;
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
+    public IReadOnlyList<AnalysisInput> AnalyzerInputs() =>
+    [
+        new("configuration", ".specht/manifest.json", File.ReadAllText(Path.Combine(Root, ".specht", "manifest.json"))),
+        new("schema:feature", ".specht/schema/frontmatter/feature.schema.json", """{"type":"object"}"""),
+        new("feature", RecordPath, File.ReadAllText(Path.Combine(Root, RecordPath))),
+        .. Directory.EnumerateFiles(Root, "*.feature", SearchOption.AllDirectories)
+            .Select(file => new AnalysisInput("scenario", Path.GetRelativePath(Root, file).Replace(Path.DirectorySeparatorChar, '/'),
+                File.ReadAllText(file)))
+            .OrderBy(static input => input.RelativePath, StringComparer.Ordinal),
+    ];
 
     public void SelectFeature(string feature, string? glob)
     {
