@@ -1,4 +1,4 @@
-namespace Specht.IdGeneration;
+namespace Specht.Identifiers;
 
 /// <summary>A uniform random source the strategies draw from, injected so a test can fix the draws.</summary>
 /// <implements epic="0001" feature="F19" claim="B-006" />

@@ -1,4 +1,4 @@
-namespace Specht.IdGeneration;
+namespace Specht.Identifiers;
 
 /// <summary>A request the minter gives no id for. The message names the type and the key, with no absolute path in it.</summary>
 /// <param name="message">Why no id is given.</param>

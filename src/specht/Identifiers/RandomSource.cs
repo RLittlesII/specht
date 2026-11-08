@@ -1,10 +1,10 @@
 using System.Security.Cryptography;
 
-namespace Specht.IdGeneration;
+namespace Specht.Identifiers;
 
-/// <summary>Draws from <see cref="RandomNumberGenerator"/>, holding no state between draws and needing no network (<c>0001-F19</c> C-7).</summary>
+/// <summary>Draws each integer from <see cref="RandomNumberGenerator.GetInt32(int)"/>, keeping no state and needing no network (C-7).</summary>
 /// <implements epic="0001" feature="F19" claim="B-006" />
-public sealed class CryptographicRandomSource : IRandomSource
+public sealed class RandomSource : IRandomSource
 {
     /// <inheritdoc />
     /// <implements epic="0001" feature="F19" claim="B-006" />
