@@ -30,7 +30,7 @@ depends_on:
 blocks: []
 spikes: []
 created: "2026-10-31"
-updated: "2026-11-06"
+updated: "2026-11-07"
 github_issue: null
 synced_at: null
 ---
@@ -45,7 +45,7 @@ An agent that asks about a repository through MCP has no `specht` answer to rece
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-11-06 (row 5, A-5) -->
+<!-- last written by: spec-author, 2026-11-07 (A-5: the settled mint command) -->
 
 | #   | Persona                                                           | Need                                                                                  | Pain Point Today                                                          |
 | --- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -63,7 +63,7 @@ An agent that asks about a repository through MCP has no `specht` answer to rece
 | A-2 | The shipped schema versions as JSON and the printer for the frontmatter schemas and the templates are epic `0001`'s Feature `0001-F18`, reserved and not yet specified (owner, 2026-10-30). B-008 and B-009 cite it; `depends_on` gains it when its specification exists.              |
 | A-3 | The host, its transport, its root, how it finds the pinned `specht` and its own version are `0132-F3`'s; this Feature registers answers with it.                                                                                                                                       |
 | A-4 | A call's result may carry a second part beside the one holding the command's output: the host's report that the answer is unpinned (`0132-F3` B-024, ADR-0031). That part is the host's, not an answer; the part holding the command's output stays what B-001 to B-009 and B-023 say. |
-| A-5 | The mint command, its name, its arguments and what it prints are `0001-F19`'s; its working name is `specht mint <type>` (`0001-F19` OQ-8), so the tool's working name is `mint` (C-7).                                                                                                 |
+| A-5 | The mint command, its arguments and what it prints are `0001-F19`'s: `specht mint <type> [--feature <dir>] [--root <dir>]` (`0001-F19` OQ-8, resolved 2026-11-07; ADR-0033), so the tool is `mint` (C-7), with the arguments `type` and `feature` (ADR-0033).                          |
 
 ## 3. Acceptance Criteria
 
@@ -239,7 +239,7 @@ Focused verification selects `net11.0`; the required gates keep their configured
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-06 (B-023, B-024; B-017 superseded) -->
+<!-- last written by: spec-author, 2026-11-07 (A-5 amended) -->
 
 2026-11-04, by the owner in session: the MCP is a program of its own that runs the repository's pinned `specht` (ADR-0031; `0132-F3`). No answer claim changes.
 
@@ -274,6 +274,10 @@ Focused verification selects `net11.0`; the required gates keep their configured
 - Amended: C-7 names the mint tool from `0001-F19`'s command (`0001-F19` OQ-8). B-019 is unchanged: its list names the reading answers, and the mint tool's name follows C-7.
 - Read for the mint: a run of the mint command prints a new id each time, so "its command's stdout" in B-013 and B-014 is the stdout of the run the call makes (B-023), never a second run compared with it. A refusal exits `2`, `3` or `4` (`0001-F19` C-10), so B-012 marks it as an error, and B-020 never reads it as a tool no longer restored. B-016 holds: the mint writes nothing (`0001-F19` C-1). The pinned-tool minimum rises with the first tool that ships the mint command (`0132-F3` OQ-9).
 - `spec_status` moves from `approved` to `in-review` until the reviewer re-signs § 12.
+
+2026-11-07: `0001-F19` OQ-8 is resolved from ADR-0033, which the owner accepted: the command is `specht mint <type> [--feature <dir>] [--root <dir>]`, and the tool `mint`, with the arguments `type` and `feature`.
+
+- Amended: A-5 names the settled command, the tool and its arguments in place of the working names. B-023 and C-7 hold as written: C-7's rule gives `mint` from the command's words, and B-023 relays whatever the run prints.
 
 ## 11. Open Questions
 

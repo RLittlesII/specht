@@ -71,9 +71,9 @@ Feature: Id generation
   @B-010
   Scenario: An id the tree already holds is never handed out
     Given a manifest that opts claim ids in to Nano ID
-    And a specification already holding the claim id that would be minted first
-    When a claim id is requested
-    Then the minted id is one no specification in the tree holds
+    And a Feature whose specification already holds the claim id that would be minted first
+    When a claim id is requested for that Feature
+    Then the minted id is one that Feature's specification does not hold
 
   @B-011 @boundary
   Scenario: An id its type's grammar rejects is not printed
@@ -115,3 +115,246 @@ Feature: Id generation
     And the manifest sets them
     When a claim id is requested
     Then the request ends as it does for an invalid manifest
+
+  @B-016 @boundary
+  Scenario Outline: A repository-wide type is refused a Feature
+    Given a manifest that opts <type> in to Nano ID
+    When <a type id> is requested for a Feature
+    Then nothing is written on standard output
+
+    Examples:
+      | type           | a type id       |
+      | ADR numbers    | an ADR number   |
+      | lesson numbers | a lesson number |
+
+  @B-017 @boundary
+  Scenario Outline: A request that prints no id ends in failure
+    Given <a request that prints no id>
+    When the request ends
+    Then it ends with a failure code the check already gives
+
+    Examples:
+      | a request that prints no id                                     |
+      | a claim id requested of a manifest that opts no type in         |
+      | an ADR number requested for a Feature                           |
+      | a claim id requested of a tree holding every candidate it tries |
+
+  @B-018 @boundary
+  Scenario Outline: Epic, Feature and task ids are not minted
+    Given a manifest that opts claim ids in to Nano ID
+    When <an id> is requested
+    Then nothing is written on standard output
+
+    Examples:
+      | an id        |
+      | an epic id   |
+      | a Feature id |
+      | a task id    |
+
+  @B-019
+  Scenario: A Nano ID with no alphabet draws from lower-case base32
+    Given a manifest that opts claim ids in to Nano ID with no alphabet
+    When a claim id is requested for a Feature
+    Then every character of the minted id after its prefix is a digit or a lower-case letter other than i, l, o and u
+
+  @B-020
+  Scenario Outline: A repository-wide Nano ID with no size is 8 characters
+    Given a manifest that opts <type> in to Nano ID with no size
+    When <a type id> is requested
+    Then the minted id is 8 characters long after its prefix
+
+    Examples:
+      | type           | a type id       |
+      | ADR numbers    | an ADR number   |
+      | lesson numbers | a lesson number |
+
+  @B-021
+  Scenario Outline: A per-Feature Nano ID with no size is 6 characters
+    Given a manifest that opts <type> in to Nano ID with no size
+    When <a type id> is requested for a Feature
+    Then the minted id is 6 characters long after its prefix
+
+    Examples:
+      | type              | a type id           |
+      | decision numbers  | a decision number   |
+      | claim ids         | a claim id          |
+      | constraint ids    | a constraint id     |
+      | open question ids | an open question id |
+      | scenario ids      | a scenario id       |
+
+  @B-022
+  Scenario: A Snowflake id with no epoch counts from 2026
+    Given a manifest that opts ADR numbers in to Snowflake with no epoch
+    And the time is noon on 2026-11-07, universal time
+    When an ADR number is requested
+    Then the minted number, decoded, holds the milliseconds from midnight on 2026-01-01, universal time, to noon on 2026-11-07
+
+  @B-023
+  Scenario: A Snowflake id with no widths has the default layout
+    Given a manifest that opts ADR numbers in to Snowflake with a datacenter of 3, a worker of 9 and no field widths
+    When an ADR number is requested
+    Then the minted number's lowest 12 bits are its sequence
+    And the 5 bits above them hold the worker 9
+    And the 5 bits above those hold the datacenter 3
+
+  @B-024
+  Scenario: A Snowflake datacenter left unnamed is random
+    Given a manifest that opts ADR numbers in to Snowflake with no datacenter
+    And the random draw for the datacenter is 17
+    When an ADR number is requested
+    Then the minted number, decoded, holds the datacenter 17
+
+  @B-025
+  Scenario: A Snowflake worker left unnamed is random
+    Given a manifest that opts ADR numbers in to Snowflake with no worker
+    And the random draw for the worker is 22
+    When an ADR number is requested
+    Then the minted number, decoded, holds the worker 22
+
+  @B-026
+  Scenario: A Snowflake sequence start left unnamed is random
+    Given a manifest that opts ADR numbers in to Snowflake with no sequence start
+    And the random draw for the sequence start is 3001
+    When an ADR number is requested
+    Then the minted number, decoded, holds the sequence 3001
+
+  @B-027
+  Scenario: A named Snowflake datacenter is the one minted
+    Given a manifest that opts ADR numbers in to Snowflake with a datacenter of 3
+    When an ADR number is requested
+    Then the minted number, decoded, holds the datacenter 3
+
+  @B-028
+  Scenario: A named Snowflake worker is the one minted
+    Given a manifest that opts ADR numbers in to Snowflake with a worker of 9
+    When an ADR number is requested
+    Then the minted number, decoded, holds the worker 9
+
+  @B-029 @boundary
+  Scenario: A clock moving back during a request mints nothing
+    Given a manifest that opts ADR numbers in to Snowflake
+    And an ADR already numbered with the ADR number that would be minted first
+    And the clock reads earlier for the second ADR number than for the first
+    When an ADR number is requested
+    Then nothing is written on standard output
+
+  @B-030
+  Scenario: A base32 Snowflake id is the number in base32
+    Given a manifest that opts ADR numbers in to Snowflake with the encoding "base32"
+    When an ADR number is requested
+    Then the minted number after its prefix, read as lower-case base32, is the Snowflake number
+
+  @B-031
+  Scenario: A base32 Snowflake id is 13 characters
+    Given a manifest that opts ADR numbers in to Snowflake with the encoding "base32"
+    When an ADR number is requested
+    Then the minted number is 13 characters long after its prefix
+
+  @B-032
+  Scenario: An unencoded Snowflake id is decimal
+    Given a manifest that opts ADR numbers in to Snowflake with the encoding "none"
+    When an ADR number is requested
+    Then the minted number after its prefix is the Snowflake number in decimal digits
+
+  @B-033 @boundary
+  Scenario: A Nano ID is not encoded in base32
+    Given a manifest that opts ADR numbers in to Nano ID with the encoding "base32"
+    When an ADR number is requested
+    Then nothing is written on standard output
+
+  @B-034
+  Scenario: An id held in another letter case is never handed out
+    Given a manifest that opts ADR numbers in to Nano ID
+    And an ADR already numbered with the ADR number that would be minted first, in capital letters
+    When an ADR number is requested
+    Then the minted number is one no ADR in the tree is numbered with, in any letter case
+
+  @B-035
+  Scenario: The guard tries eight candidates by default
+    Given a manifest that opts ADR numbers in to Nano ID with no number of attempts
+    And ADRs already numbered with each of the first seven ADR numbers that would be minted
+    When an ADR number is requested
+    Then the minted number is the eighth that would be minted
+
+  @B-036 @boundary
+  Scenario: Eight held candidates refuse the request by default
+    Given a manifest that opts ADR numbers in to Nano ID with no number of attempts
+    And ADRs already numbered with each of the first eight ADR numbers that would be minted
+    When an ADR number is requested
+    Then nothing is written on standard output
+
+  @B-037 @boundary
+  Scenario: A type's own number of attempts bounds the guard
+    Given a manifest that opts ADR numbers in to Nano ID with 3 attempts
+    And ADRs already numbered with each of the first three ADR numbers that would be minted
+    When an ADR number is requested
+    Then nothing is written on standard output
+
+  @B-038
+  Scenario: An ADR number is checked against every ADR folder
+    Given a manifest that opts ADR numbers in to Nano ID
+    And a Feature's own ADR already numbered with the ADR number that would be minted first
+    When an ADR number is requested
+    Then the minted number is one no ADR in the tree is numbered with
+
+  @B-039
+  Scenario: A lesson number is checked against every lessons folder
+    Given a manifest that opts lesson numbers in to Nano ID
+    And a Feature's own lesson already numbered with the lesson number that would be minted first
+    When a lesson number is requested
+    Then the minted number is one no lesson in the tree is numbered with
+
+  @B-040
+  Scenario: A decision number is checked against the Feature's decisions
+    Given a manifest that opts decision numbers in to Nano ID
+    And a Feature with a decision already numbered with the decision number that would be minted first
+    When a decision number is requested for that Feature
+    Then the minted number is one no decision of that Feature is numbered with
+
+  @B-041
+  Scenario Outline: A claim, constraint or question id is checked against its Feature
+    Given a manifest that opts <type> in to Nano ID
+    And a Feature whose specification already holds the <one id> that would be minted first
+    When <a type id> is requested for that Feature
+    Then the minted id is one that Feature's specification does not hold
+
+    Examples:
+      | type              | one id           | a type id           |
+      | claim ids         | claim id         | a claim id          |
+      | constraint ids    | constraint id    | a constraint id     |
+      | open question ids | open question id | an open question id |
+
+  @B-042
+  Scenario: A scenario id is checked against the Feature's scenario tags
+    Given a manifest that opts scenario ids in to Nano ID with the prefix "S-"
+    And a Feature with a scenario already tagged with the scenario id that would be minted first
+    When a scenario id is requested for that Feature
+    Then the minted id is one no scenario of that Feature is tagged with
+
+  @B-043 @boundary
+  Scenario: A type opted in with no grammar is an invalid manifest
+    Given a manifest that opts ADR numbers in to Nano ID
+    And it declares no grammar for ADR numbers
+    When an ADR number is requested
+    Then the request ends as it does for an invalid manifest
+
+  @B-044
+  Scenario: Schema 0.3.1 accepts the id settings
+    Given a manifest pinned to schema 0.3.1
+    And it opts claim ids in to Nano ID
+    When the tree is checked
+    Then the check does not end as it does for an invalid manifest
+
+  @B-045
+  Scenario Outline: Schema 0.3.1 accepts the four new grammars
+    Given a manifest pinned to schema 0.3.1
+    And it declares a grammar for <type>
+    When the tree is checked
+    Then the check does not end as it does for an invalid manifest
+
+    Examples:
+      | type             |
+      | ADR numbers      |
+      | lesson numbers   |
+      | decision numbers |
+      | scenario ids     |
