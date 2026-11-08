@@ -797,7 +797,7 @@ B-006's record parse is pinned by `SpechtDocumentParserUnitTests`
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-08 (item 0302) -->
+<!-- last written by: spec-author, 2026-11-08 (item 0409 review round 3); spec-author, 2026-11-08 (item 0409 review round 2); spec-author, 2026-11-08 (decision 0009, item 0409); spec-author, 2026-11-08 (item 0409); spec-author, 2026-11-07 (item 0409); spec-author, 2026-10-25 -->
 
 The 2026-10-19 owner decision moved the evidence gate from `specht trace` to
 `specht evidence` after the approved `0001-F13` command was found to own the
