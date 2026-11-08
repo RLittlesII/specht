@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,6 +57,18 @@ public sealed class SystemProcessRun : IProcessRun
         }
         catch (OperationCanceledException)
         {
+            Kill(process);
+            await Task.WhenAll(output, error).ContinueWith(static _ => { }, TaskScheduler.Default);
+            throw;
+        }
+
+        return new ProcessResult(process.ExitCode, await output, await error);
+    }
+
+    private static void Kill(Process process)
+    {
+        if (!OperatingSystem.IsMacOS() && !OperatingSystem.IsLinux())
+        {
             try
             {
                 process.Kill(entireProcessTree: true);
@@ -61,10 +77,99 @@ public sealed class SystemProcessRun : IProcessRun
             {
             }
 
-            await Task.WhenAll(output, error).ContinueWith(static _ => { }, TaskScheduler.Default);
-            throw;
+            return;
         }
 
-        return new ProcessResult(process.ExitCode, await output, await error);
+        var descendants = Descendants(process.Id);
+        for (var index = descendants.Count - 1; index >= 0; index--)
+        {
+            try
+            {
+                using var descendant = Process.GetProcessById(descendants[index]);
+                descendant.Kill();
+            }
+            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or Win32Exception)
+            {
+            }
+        }
+
+        try
+        {
+            process.Kill();
+        }
+        catch (InvalidOperationException)
+        {
+        }
     }
+
+    private static List<int> Descendants(int root)
+    {
+        Func<int, IEnumerable<int>> childrenOf = OperatingSystem.IsMacOS() ? ChildrenOnMacOS : ChildrenOnLinux();
+        var descendants = new List<int>();
+        var parents = new Queue<int>([root]);
+        while (parents.TryDequeue(out var parent))
+        {
+            foreach (var child in childrenOf(parent))
+            {
+                descendants.Add(child);
+                parents.Enqueue(child);
+            }
+        }
+
+        return descendants;
+    }
+
+    private static int[] ChildrenOnMacOS(int parent)
+    {
+        var buffer = new int[64];
+        while (true)
+        {
+            var count = ListChildProcessIds(parent, buffer, buffer.Length * sizeof(int));
+            if (count < buffer.Length)
+            {
+                return count <= 0 ? [] : buffer[..count];
+            }
+
+            buffer = new int[buffer.Length * 2];
+        }
+    }
+
+    private static Func<int, IEnumerable<int>> ChildrenOnLinux()
+    {
+        var children = new Dictionary<int, List<int>>();
+        foreach (var directory in Directory.EnumerateDirectories("/proc"))
+        {
+            if (!int.TryParse(Path.GetFileName(directory), NumberStyles.None, CultureInfo.InvariantCulture, out var pid))
+            {
+                continue;
+            }
+
+            string stat;
+            try
+            {
+                stat = File.ReadAllText(Path.Combine(directory, "stat"));
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            var fields = stat[(stat.LastIndexOf(')') + 2)..].Split(' ');
+            if (fields.Length > 1 && int.TryParse(fields[1], NumberStyles.None, CultureInfo.InvariantCulture, out var parent))
+            {
+                if (!children.TryGetValue(parent, out var siblings))
+                {
+                    siblings = [];
+                    children[parent] = siblings;
+                }
+
+                siblings.Add(pid);
+            }
+        }
+
+        return parent => children.TryGetValue(parent, out var siblings) ? siblings : [];
+    }
+
+    [DllImport("libproc", EntryPoint = "proc_listchildpids")]
+    private static extern int ListChildProcessIds(int parent, int[] buffer, int bufferSize);
 }
