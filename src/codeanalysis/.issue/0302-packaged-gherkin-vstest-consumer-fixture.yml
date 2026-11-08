@@ -118,6 +118,11 @@ decisions:
     amending 0201-F5 B-020 and decision 0004 item 5 so a bound method the
     declaring project's own scope leaves out is not "no owned case", a
     behaviour change this item does not add.
+  - |
+    2026-11-08, repository owner, recorded by spec-author: "Accept OQ-5
+    default". 0201-F5 OQ-5 is resolved in place on its proposed default, so
+    0201-F5 B-036, which the 2026-11-08 entry above calls still open, now
+    follows a resolved rule. No criterion of this item changes.
 out_of_scope:
   - "Reqnroll and scenario records: 0201-F4 is an optional input this fixture does not use."
   - "Planned scenarios and Examples blocks reaching the gate: 0201-F5 OQ-3."
