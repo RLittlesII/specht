@@ -1,0 +1,76 @@
+id: "0426"
+type: bug
+title: The process-run integration tests stall the net11.0 step
+
+status: in-progress
+
+value: 4
+risk: 2
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-11-08"
+updated: "2026-11-08"
+closed: null
+
+summary: |
+  The Integration Test step under net11.0 stalls in
+  `test/tests/Mcp/SystemProcessRun.Integration.Tests.cs`, the process
+  boundary beneath `0132-F3` B-017 (`src/mcp/.spec/README.md`), and never
+  ends. Seen on pull request #792, runs 42526206109 (runner vitruvius-3) and
+  42530364175 (runner vitruvius-2).
+
+  In both runs
+  `AProgramThatIsRunning_WhenTheRunIsCancelled_ShouldThrowCancelledAndLeaveNoProgramAlive`
+  timed out at 30 seconds. In 42530364175
+  `AProgramThatReadsStandardInput_WhenItRuns_ShouldFindItClosedAndEnd` timed
+  out 30 seconds later. The net11.0 `specht.tests` run then reported nothing
+  more, and the step ran for 48 minutes until it was cancelled. net10.0
+  passed 641 tests in both runs.
+
+  Earlier CI runs on the same SDK, 11.0.100-rc.3.26522.148 (resolved by
+  `global.json`'s latestFeature roll-forward), passed, so the failure is
+  intermittent. It does not reproduce locally on rc.2.
+
+  A reading, not a confirmed cause: two 30-second timeouts followed by a
+  permanent stall fit a `Process.Start` that blocks and never returns. Every
+  later start in the test host would then block too, including
+  `AProgramThatWrites_WhenItEnds_ShouldGiveBackItsCodeAndBothStreamsUnchanged`,
+  which has no `Timeout`. The cancel test is the only one that adds a
+  blocking FIFO open on a thread-pool thread and an extra `mkfifo` process
+  right before the run starts.
+
+  No claim, scenario or `.feature` changes: the item preserves `0132-F3`
+  B-017 and delivers no claim, so it sits at the repository root with
+  `spec: null`.
+
+  Value 4: the pull-request build cannot finish while the step stalls, and a
+  48-minute stall holds a runner. Risk 2: test-only changes in one file,
+  against a cause not yet confirmed.
+
+acceptance_criteria:
+  - "The cancel test depends on neither a blocking FIFO open nor an extra `mkfifo` process."
+  - "Every test in `SystemProcessRunIntegrationTests` is bounded, so a stuck start fails that test instead of stalling the step."
+  - "CI passes the net11.0 Integration Test step, and the step ends on its own."
+  - "If the stall persists after the test change, it is recorded as a runtime finding in this item's decisions and is not masked."
+  - "No production behaviour changes unless a test shows a defect; `0132-F3` B-017 still holds."
+
+decisions:
+  - |
+    2026-11-08, spec-author: a root-level bug with `spec: null` and no claim.
+    The tests hold the process boundary beneath `0132-F3` B-017 and the item
+    preserves it; the stall is observed in tests, not in the host. Value and
+    risk are spec-author's scores, not an owner ruling.
+
+out_of_scope:
+  - "Changing `global.json`'s SDK pin or roll-forward policy."
+  - "Any change to the MCP host's process run under `src/mcp/` unless a test shows a defect."
+  - "Masking the stall by skipping a test or removing net11.0 from the Integration Test step."
