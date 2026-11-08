@@ -832,7 +832,7 @@ Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-08 (OQ-5 resolved, item 0302) -->
+<!-- last written by: spec-author, 2026-11-08 (item 0302) -->
 
 The 2026-10-19 owner decision moved the evidence gate from `specht trace` to
 `specht evidence` after the approved `0001-F13` command was found to own the
@@ -944,21 +944,6 @@ later, in commit `4306a6bc`. Both rows now cite § 7 and B-038 and state the
 boundary as this specification's own. OQ-6 asks the owner whether the gate
 should report a finding for a set matching files it does not read; its proposed
 default is no finding, as built. No claim or scenario changed.
-
-2026-11-08: item 0302. The owner resolved OQ-5: "Accept OQ-5 default". Its
-proposed default is the rule: the gate requires a current export only from a
-declared test project, one with a `requiredCaseScope` or named by a `verifies`
-enforcement entry; another declared project needs none, and an enabled
-`requiredLinks.implementation` with no export carrying its `implements` bindings
-stays a missing link (B-037). Consequence: a real test project with neither key
-needs no export, and when its export is missing the run exits 1, or 0 when
-another project's export covers the claims, instead of the earlier 2. The
-entries above that call OQ-5 open record the state before the ruling. The
-sources of B-011, B-022, B-036 and B-037 and C-3's citation now cite OQ-5 as
-resolved; no claim text, scenario or behaviour changed, and B-011's departure
-from 0201-F6 decision 0004 now stands on the ruling. OQ-6 stays open. § 7, § 8
-and § 9 text that still calls the rule OQ-5's default is for the implementer and
-test-writer.
 
 ## 11. Open Questions
 
