@@ -4,7 +4,10 @@ using Specht.Tool.Features.Evidence;
 
 namespace Specht.Tests.Evidence;
 
-/// <summary>The normalized consumer policy decisions used by 0201-F5 B-008 to B-010 and native claim input (B-028).</summary>
+/// <summary>
+/// The normalized consumer policy decisions used by 0201-F5 B-008 to B-010, native claim input (B-028) and the declared
+/// projects that need an export (B-036).
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class EvidencePolicyUnitTests
 {
@@ -76,6 +79,37 @@ public sealed class EvidencePolicyUnitTests
 
         // Then
         read.Should().Throw<EvidenceConfigurationException>();
+    }
+
+    [Theory]
+    [ClassData(typeof(ExportRequirements))]
+    public void ADeclaredProject_WhenProjected_ShouldRequireAnExportOnlyWithARequiredCaseScopeOrAVerifiesEntryNamingIt(
+        string? requiredCaseScope, string? role, string? enforcedProject, bool requiresExport)
+    {
+        // Given
+        var configuration = Configuration();
+        if (requiredCaseScope is not null)
+        {
+            configuration["codeAnalysis"]!["projects"]![0]!["requiredCaseScope"] = requiredCaseScope;
+        }
+
+        if (role is not null)
+        {
+            configuration["codeAnalysis"]!["enforcement"] = new JsonArray(new JsonObject
+            {
+                ["project"] = enforcedProject,
+                ["include"] = new JsonArray("test/**/*.cs"),
+                ["exclude"] = new JsonArray(),
+                ["role"] = role,
+                ["declarationKinds"] = new JsonArray("testMethod"),
+            });
+        }
+
+        // When
+        var policy = EvidencePolicy.Read(configuration);
+
+        // Then
+        policy.Projects.Should().ContainSingle().Which.RequiresExport.Should().Be(requiresExport);
     }
 
     [Fact]
