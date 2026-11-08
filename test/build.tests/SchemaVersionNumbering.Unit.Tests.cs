@@ -42,7 +42,7 @@ public sealed class SchemaVersionNumberingUnitTests
     [InlineData("0.1.1", false, true, true, false)]
     [InlineData("0.1.1", true, true, true, true)]
     [InlineData("0.1.1", false, false, true, true)]
-    public async Task ANewRuleIdBelowOneZeroZero_WhenTheNumbersAreVerified_ShouldBeReportedUnlessTheMinorIsHigher(
+    public async Task ANewRuleIdBelowOneZeroZero_WhenTheNumbersAreVerified_ShouldBeReportedUnlessTheMinorIsHigherOrEveryNewRuleIsOptIn(
         string higher, bool lowerDefinesKey, bool higherDefinesKey, bool pageNamesKey, bool reported)
     {
         // Given
