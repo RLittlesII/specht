@@ -470,7 +470,7 @@ modified.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0409: B-038 record-directory example resolved; differences kept by design); test-writer, 2026-11-08 (item 0409: B-038 parity cases in both test projects and the acceptance steps; the record-directory `**` case Partial); test-writer, 2026-11-08 (item 0409, review round 1 finding 4: `ReadNativeClaims` named; claim file set path reading pinned); test-writer, 2026-11-08 (item 0409: the `RequiresExport` unit theory, B-035 re-checked); test-writer, 2026-11-07 (item 0409: native Gherkin claims and the gate's project set); test-writer, 2026-11-02 (item `0166`: the model reader, builder, compiler and parser tests); test-writer, 2026-10-25 -->
+<!-- last written by: test-writer, 2026-11-08 (item 0409, round 2 finding 2: the gate's `.feature` listing pinned at the integration tier; `RepositoryPaths` in the evidence slice; § 5 rows 11 to 13 cited); test-writer, 2026-11-08 (item 0409: B-038 record-directory example resolved; differences kept by design); test-writer, 2026-11-08 (item 0409: B-038 parity cases in both test projects and the acceptance steps; the record-directory `**` case Partial); test-writer, 2026-11-08 (item 0409, review round 1 finding 4: `ReadNativeClaims` named; claim file set path reading pinned); test-writer, 2026-11-08 (item 0409: the `RequiresExport` unit theory, B-035 re-checked); test-writer, 2026-11-07 (item 0409: native Gherkin claims and the gate's project set); test-writer, 2026-11-02 (item `0166`: the model reader, builder, compiler and parser tests); test-writer, 2026-10-25 -->
 
 `test/acceptance/Reconciliation/ReconciliationSteps.cs` runs B-001 to B-038
 through the actual CLI over an isolated synthetic consumer; `EvidenceTree.cs`
@@ -657,13 +657,18 @@ indexed with kind `record`, as the F3 export indexes them.
   export. Unit: `EvidenceGateUnitTests.LinkInputs_WhenEvaluated_ShouldRetainTheirIndependentState`.
   Integration: `AnEnabledImplementationLinkWithNoExportCarryingItsImplementsBindings_*`.
   Acceptance: `Implementation link required without production evidence`.
-- B-038: mechanism is two copies of one reading (decision 0009): the engine's
-  `RepositoryPaths.Normalize` and `Matches`, which `EvidencePolicy` stores each
-  glob through and `ReadNativeClaims` matches with, and the analyzer's internal
-  `AnalysisPaths` with `BindingProvenanceGuard`, reached through the public
-  `AnalysisInputReader.Read`. Unit: one list of eight rows,
+- B-038: mechanism is two copies of one reading (decision 0009) and the
+  gate's candidate set. The tool's copy is the evidence slice's
+  `RepositoryPaths.Normalize` and `Matches`
+  (`src/tool/Features/Evidence/RepositoryPaths.cs`), which `EvidencePolicy`
+  stores each glob through and `ReadNativeClaims` matches with. The
+  analyzer's copy is its internal `AnalysisPaths` with
+  `BindingProvenanceGuard`, reached through the public
+  `AnalysisInputReader.Read`. The candidate set is `ReadNativeClaims`'
+  listing of the root's `.feature` files, the glob `**/*.feature`, beside the
+  analyzer's `scenario` inputs. Unit: one list of eight rows,
   `ClaimFileSetParityCases`, a copy in each test project and never linked. In
-  `test/tests`,
+  `test/tests/Evidence/`,
   `RepositoryPathsUnitTests.AClaimFileSetGlobSpelling_WhenNormalisedAndMatched_*`
   matches the claim file to the normalised glob, as the gate stores and reads
   it. In `test/analysis.tests`,
@@ -678,7 +683,15 @@ indexed with kind `record`, as the F3 export indexes them.
   `.` and empty segment, `..`, final `**` and root checks fails every row of
   each theory that runs that copy. `RepositoryGlobMatches` no longer carries
   its `./`-and-empty-segment row or its final-`**` row, since the cases hold
-  them. Acceptance, six examples:
+  them. The listing has no unit seam, since `ReadNativeClaims` lists files
+  over a real `FileSystem`. Integration:
+  `EvidenceReconcilerIntegrationTests.AClaimFileSetGlobTheAnalyzerReadsAsNamingAClaimFile_*`,
+  whose `AnalyzerClaimFileGlobs` row `src/read/.spec/**` sets a glob over the
+  native root's record `src/read/.spec/README.md` and claim file
+  `src/read/.spec/read.feature`. It asserts that file's claim and no
+  `invalidInput` finding. It passed on arrival, after 4306a6bc, and it fails
+  on that assertion when the listing glob goes back to `**/*`, which reads the
+  README as a claim file. Acceptance, six examples:
   `Claim file set read alike by the analyzer and specht evidence`,
   `ReconciliationSteps.ThenBothReadTheSameClaimFiles`.
   It reads one tree's manifest, record and every `.feature` file, which the
@@ -696,13 +709,15 @@ directory`, maps to `src/read/.spec/**`, over the record
   It failed on the last assertion, naming the README, while the gate listed
   every file and read the record as a claim file. It passes now that
   `ReadNativeClaims` lists only `.feature` files (§ 7), as the analyzer
-  matches only `scenario` inputs. Not covered, by design (decision 0009, § 7):
-  the differences the two readings keep. These are the manifest's exclusions,
-  which only the gate applies and B-035's excluded-directory row pins; a
+  matches only `scenario` inputs. B-038 claims the same reading among the
+  `.feature` files the build delivers as scenario inputs, outside the
+  manifest's exclusions. Not covered, by design (decision 0009, § 7, § 5 rows
+  11 to 13): the differences the two readings keep. Row 11 is the manifest's
+  exclusions, which only the gate applies; B-035's excluded-directory row pins
+  it. Row 12 is a non-`.feature` file a consumer delivers by overriding
+  `SpechtScenarioInputs`, which only the analyzer reads. Row 13 is a
   `.feature` file a set matches that the build does not deliver as a scenario
-  input, which only the gate reads; and a non-`.feature` file a consumer
-  delivers by overriding `SpechtScenarioInputs`, which only the analyzer
-  reads.
+  input, which only the gate reads.
 - B-011, amended: the derivation as B-036, beneath the complete-analysis
   state. Unit: `EvidencePolicyUnitTests.ADeclaredProject_*`, as B-036.
   Integration: `ADeclaredProjectThatIsNotATestProject_*`.
@@ -737,7 +752,7 @@ B-006's record parse is pinned by `SpechtDocumentParserUnitTests`
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-08 (item 0409: B-038 Covered, the record-directory example named); test-writer, 2026-11-08 (item 0409: B-038 Partial, a final `**` over the record directory a defect; earlier, its parity and acceptance tests named); test-writer, 2026-11-08 (item 0409, review round 1: B-028 and B-035 name the claim file set path tests); test-writer, 2026-11-08 (item 0409: B-011, B-022 and B-028 to B-037 Covered, the `RequiresExport` unit theory named); test-writer, 2026-11-07 (item 0409: B-011, B-022 and B-028 to B-037 name their tests, Partial until green); spec-author, 2026-11-07 (item 0409: Missing rows for B-028 to B-037 until test-writer names tests); test-writer, 2026-11-02 (item `0166`: the model reader, builder, compiler and parser tests); test-writer, 2026-10-25, 2026-11-02 (item 0334: scenario titles in the Test cells are no longer inline code, which names only tests) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0409, round 2 finding 2: B-038 names the record-directory integration row); test-writer, 2026-11-08 (item 0409: B-038 Covered, the record-directory example named); test-writer, 2026-11-08 (item 0409: B-038 Partial, a final `**` over the record directory a defect; earlier, its parity and acceptance tests named); test-writer, 2026-11-08 (item 0409, review round 1: B-028 and B-035 name the claim file set path tests); test-writer, 2026-11-08 (item 0409: B-011, B-022 and B-028 to B-037 Covered, the `RequiresExport` unit theory named); test-writer, 2026-11-07 (item 0409: B-011, B-022 and B-028 to B-037 name their tests, Partial until green); spec-author, 2026-11-07 (item 0409: Missing rows for B-028 to B-037 until test-writer names tests); test-writer, 2026-11-02 (item `0166`: the model reader, builder, compiler and parser tests); test-writer, 2026-10-25, 2026-11-02 (item 0334: scenario titles in the Test cells are no longer inline code, which names only tests) -->
 
 | Claim ID | Scenario                                                                                                                                     | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Status    |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -778,7 +793,7 @@ B-006's record parse is pinned by `SpechtDocumentParserUnitTests`
 | B-035    | Selected Feature without claim files                                                                                                         | Selected Feature without claim files; `ReconciliationSteps.ThenManifestRejected`; `EvidencePolicyUnitTests.AClaimFileSetPathRootedEscapingOrNamingNothing_WhenProjected_ShouldBeRejected`; `EvidenceReconcilerIntegrationTests.ASelectedFeatureWithoutClaimFiles_WhenReconciled_ShouldFailAsInvalidInputNamingTheManifest`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Covered   |
 | B-036    | Declared production project without evidence                                                                                                 | Declared production project without evidence; `ReconciliationSteps.ThenGateSucceeds`; `ReconciliationSteps.ThenProductionProjectNotMissing`; `EvidencePolicyUnitTests.ADeclaredProject_WhenProjected_ShouldRequireAnExportOnlyWithARequiredCaseScopeOrAVerifiesEntryNamingIt`; `EvidenceReconcilerIntegrationTests.ADeclaredProjectThatIsNotATestProject_WhenItHasNoExport_ShouldNeedNoneAndLetTheTestProjectsEvidenceSucceed`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered   |
 | B-037    | Implementation link required without production evidence                                                                                     | Implementation link required without production evidence; `ReconciliationSteps.ThenImplementationLinkGap`; `EvidenceGateUnitTests.LinkInputs_WhenEvaluated_ShouldRetainTheirIndependentState`; `EvidenceReconcilerIntegrationTests.AnEnabledImplementationLinkWithNoExportCarryingItsImplementsBindings_WhenReconciled_ShouldReportTheImplementationLinkMissing`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Covered   |
-| B-038    | Claim file set read alike by the analyzer and specht evidence                                                                                | Claim file set read alike by the analyzer and specht evidence, six examples including `ending in ** over the Feature record's directory`; `ReconciliationSteps.ThenBothReadTheSameClaimFiles`; `RepositoryPathsUnitTests.AClaimFileSetGlobSpelling_WhenNormalisedAndMatched_ShouldReadTheClaimFileOrRejectTheGlobAsTheAnalyzerDoes`; `ClaimFileSetParityUnitTests.AClaimFileSetGlobSpelling_WhenReadByTheAnalyzerAndTheEngine_ShouldCatalogueTheClaimFileOrRejectTheGlobInBoth`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Covered   |
+| B-038    | Claim file set read alike by the analyzer and specht evidence                                                                                | Claim file set read alike by the analyzer and specht evidence, six examples including `ending in ** over the Feature record's directory`; `ReconciliationSteps.ThenBothReadTheSameClaimFiles`; `RepositoryPathsUnitTests.AClaimFileSetGlobSpelling_WhenNormalisedAndMatched_ShouldReadTheClaimFileOrRejectTheGlobAsTheAnalyzerDoes`; `ClaimFileSetParityUnitTests.AClaimFileSetGlobSpelling_WhenReadByTheAnalyzerAndTheEngine_ShouldCatalogueTheClaimFileOrRejectTheGlobInBoth`; `EvidenceReconcilerIntegrationTests.AClaimFileSetGlobTheAnalyzerReadsAsNamingAClaimFile_WhenReconciled_ShouldSelectTheClaimsOfThatFile`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Covered   |
 
 ## 10. Lessons / Spec Deltas
 
