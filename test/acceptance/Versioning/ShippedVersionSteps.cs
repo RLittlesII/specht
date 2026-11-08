@@ -14,8 +14,9 @@ namespace Specht.Acceptance.Versioning;
 /// 0044: B-004, B-013, B-015, B-040, B-066 and B-088. What a published package shipped is read from the committed version lock,
 /// since every published version is locked (A-4); the shipped files are the repository's shipping trees the tool embeds.
 /// Item 0388 binds B-066's patch scenarios over a synthetic shipping tree on disk instead: 0.1.0 and 0.1.1, the higher's
-/// manifest defining a key the lower's does not. Its opt-in premise stays unbound until 0001-F7 section 7 states how a
-/// shipped file marks a rule reached only under that key.
+/// manifest defining a key the lower's does not; the opt-in premise gives the new rule page an <c>opt_in</c> frontmatter line
+/// naming that key, the mark 0001-F7 section 7 defines. The minor scenario's rule premise holds over the repository when
+/// some shipped step below 1.0.0 adds a rule page without that mark.
 /// </summary>
 [Binding]
 [Scope(Feature = "Schema versioning")]
@@ -107,6 +108,34 @@ public sealed class ShippedVersionSteps(PackedTool tool)
     [Given("the higher one holds a rule that reports on a tree whose manifest sets no key the lower one does not define")]
     public void GivenTheHigherOneHoldsARuleATreeCanMeetWithoutTheNewKey() =>
         Write($"docs/rules/v{PatchHigher}/SPEC002.md", $"# SPEC002: Synthetic rule\n\n| Schema version | {PatchHigher} |\n");
+
+    [Given("every rule the higher one holds and the lower one does not reports only when a manifest sets an optional key the lower one does not define")]
+    public void GivenEveryNewRuleIsReachedOnlyUnderAnOptionalKeyTheLowerDoesNotDefine() =>
+        Write(
+            $"docs/rules/v{PatchHigher}/SPEC002.md",
+            $"---\ntitle: \"SPEC002: Synthetic rule\"\nopt_in: optional.source\n---\n\n# SPEC002: Synthetic rule\n\n| Schema version | {PatchHigher} |\n");
+
+    [Given("that rule reports on a tree whose manifest sets no key the lower one does not define")]
+    public void GivenThatRuleReportsOnATreeWhoseManifestSetsNoNewKey()
+    {
+        var rules = Path.Combine(tool.Repository, "docs", "rules");
+        var versions = Directory.GetDirectories(rules, "v*")
+            .Select(static folder => System.Version.Parse(Path.GetFileName(folder)[1..]))
+            .Where(static version => version.Major < 1)
+            .Order()
+            .ToList();
+        HashSet<string> Pages(System.Version version) =>
+            [.. Directory.GetFiles(Path.Combine(rules, $"v{version.ToString(3)}"), "*.md").Select(static page => Path.GetFileName(page))];
+        bool OptIn(System.Version version, string page) =>
+            File.ReadLines(Path.Combine(rules, $"v{version.ToString(3)}", page))
+                .Skip(1)
+                .TakeWhile(static line => line != "---")
+                .Any(static line => line.StartsWith("opt_in:", StringComparison.Ordinal));
+        versions.Zip(versions.Skip(1))
+            .SelectMany(pair => Pages(pair.Second).Except(Pages(pair.First)).Where(page => !OptIn(pair.Second, page)))
+            .Should()
+            .NotBeEmpty("a shipped version below 1.0.0 adds a rule page with no opt_in mark");
+    }
 
     [When("their numbers are compared")]
     public async Task WhenTheirNumbersAreCompared() =>

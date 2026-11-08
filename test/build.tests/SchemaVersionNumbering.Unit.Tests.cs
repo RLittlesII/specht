@@ -36,31 +36,36 @@ public sealed class SchemaVersionNumberingUnitTests
     }
 
     [Theory]
-    [InlineData("0.2.0", false, false)]
-    [InlineData("0.1.1", false, true)]
-    [InlineData("0.1.1", true, true)]
+    [InlineData("0.2.0", false, false, false, false)]
+    [InlineData("0.1.1", false, false, false, true)]
+    [InlineData("0.1.1", false, true, false, true)]
+    [InlineData("0.1.1", false, true, true, false)]
+    [InlineData("0.1.1", true, true, true, true)]
+    [InlineData("0.1.1", false, false, true, true)]
     public async Task ANewRuleIdBelowOneZeroZero_WhenTheNumbersAreVerified_ShouldBeReportedUnlessTheMinorIsHigher(
-        string higher, bool keyTheLowerDoesNotDefine, bool reported)
+        string higher, bool lowerDefinesKey, bool higherDefinesKey, bool pageNamesKey, bool reported)
     {
         // Given
         var fileSystem = new MockFileSystem();
-        foreach (var version in new[] { "0.1.0", higher })
+        foreach (var (version, definesKey) in new[] { ("0.1.0", lowerDefinesKey), (higher, higherDefinesKey) })
         {
             fileSystem.AddFile(
                 $"repo/src/tool/schema/v{version}/frontmatter/feature.schema.json",
                 new MockFileData($"{{\n  \"$id\": \"https://github.com/rlittlesii/specht/schema/v{version}/frontmatter/feature.schema.json\"\n}}\n"));
-            fileSystem.AddFile($"repo/src/tool/manifest/v{version}/manifest.json", new MockFileData($"{{\n  \"schemaVersion\": \"{version}\"\n}}\n"));
+            fileSystem.AddFile(
+                $"repo/src/tool/manifest/v{version}/manifest.json",
+                new MockFileData(definesKey
+                    ? $"{{\n  \"schemaVersion\": \"{version}\",\n  \"optional\": {{ \"source\": \"none\" }}\n}}\n"
+                    : $"{{\n  \"schemaVersion\": \"{version}\"\n}}\n"));
             fileSystem.AddFile($"repo/src/tool/templates/v{version}/feature.md", new MockFileData("template\n"));
             fileSystem.AddFile($"repo/docs/rules/v{version}/SPEC001.md", new MockFileData($"# SPEC001\n\n| Schema version | {version} |\n"));
         }
 
-        fileSystem.AddFile($"repo/docs/rules/v{higher}/SPEC002.md", new MockFileData($"# SPEC002\n\n| Schema version | {higher} |\n"));
-        if (keyTheLowerDoesNotDefine)
-        {
-            fileSystem.AddFile(
-                $"repo/src/tool/manifest/v{higher}/manifest.json",
-                new MockFileData($"{{\n  \"schemaVersion\": \"{higher}\",\n  \"optional\": {{ \"source\": \"none\" }}\n}}\n"));
-        }
+        fileSystem.AddFile(
+            $"repo/docs/rules/v{higher}/SPEC002.md",
+            new MockFileData(
+                (pageNamesKey ? "---\ntitle: \"SPEC002\"\nopt_in: optional.source\n---\n\n" : string.Empty)
+                + $"# SPEC002\n\n| Schema version | {higher} |\n"));
 
         // When
         var findings = await new SchemaVersionNumbering(fileSystem, "repo").VerifyAsync();
