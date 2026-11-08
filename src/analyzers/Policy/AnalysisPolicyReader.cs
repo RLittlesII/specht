@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Specht.Analysis.Bindings;
 using Specht.Analysis.Bindings.Gherkin;
+using Specht.Model;
 
 namespace Specht.Analysis.Policy;
 
@@ -231,5 +232,5 @@ public sealed class AnalysisPolicyReader
         "property", "indexer", "field", "event", "operator", "conversion", "finalizer", "enumMember",
     };
 
-    private readonly AnalysisPaths _paths = new();
+    private readonly RepositoryPaths _paths = new();
 }

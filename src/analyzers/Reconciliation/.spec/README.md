@@ -121,20 +121,20 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-07 (item 0409); implementer, 2026-10-25 -->
+<!-- last written by: implementer, 2026-11-08 (item 0409); implementer, 2026-11-07 (item 0409); implementer, 2026-10-25 -->
 
-| Concern                                    | Classification | Owner and boundary                                                                                                                                                                                                                         |
-| ------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Selected current claims and required links | Business       | 0201-F6 defines selection, link policy and reasoned exemptions; F5 starts reconciliation from every selected eligible claim.                                                                                                               |
-| Binding and case identity                  | Both           | 0201-F2 resolves targets and lifecycle; 0201-F3 exports method, case and run identities. F5 joins those records without re-resolving source symbols.                                                                                       |
-| Completeness, freshness and outcome gate   | Business       | F5 evaluates declared project/TFM inputs, required links and passing current results as independent states, gating only owned cases that are not planned.                                                                                  |
-| Evidence collection and scenario mapping   | Both           | 0201-F3 collects runner evidence; optional 0201-F4 records add scenario links. F5 consumes their exported contracts.                                                                                                                       |
-| Artifact reading and report serialization  | Technical      | The tool's reconciliation slice reads explicit files and emits its own versioned report; it reads native claim files through the engine's Gherkin claim reader, does not load the analyzer assembly and does not alter the checker report. |
-| Filesystem and process boundary            | Technical      | F5 reads current repository records and supplied artifacts offline. Only the caller-named report path is written.                                                                                                                          |
+| Concern                                    | Classification | Owner and boundary                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Selected current claims and required links | Business       | 0201-F6 defines selection, link policy and reasoned exemptions; F5 starts reconciliation from every selected eligible claim.                                                                                                                                                                                                                |
+| Binding and case identity                  | Both           | 0201-F2 resolves targets and lifecycle; 0201-F3 exports method, case and run identities. F5 joins those records without re-resolving source symbols.                                                                                                                                                                                        |
+| Completeness, freshness and outcome gate   | Business       | F5 evaluates declared project/TFM inputs, required links and passing current results as independent states, gating only owned cases that are not planned.                                                                                                                                                                                   |
+| Evidence collection and scenario mapping   | Both           | 0201-F3 collects runner evidence; optional 0201-F4 records add scenario links. F5 consumes their exported contracts.                                                                                                                                                                                                                        |
+| Artifact reading and report serialization  | Technical      | The tool's reconciliation slice reads explicit files and emits its own versioned report; it reads native claim files through the engine's Gherkin claim reader and matches claim file sets through the engine's `RepositoryPaths`, the files the analyzer links, does not load the analyzer assembly and does not alter the checker report. |
+| Filesystem and process boundary            | Technical      | F5 reads current repository records and supplied artifacts offline. Only the caller-named report path is written.                                                                                                                                                                                                                           |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-07 (item 0409: native Gherkin claims, the declared test projects, the reader's visibility); implementer, 2026-11-02 (item `0166`: root-relative locations, the instance parser); implementer, 2026-10-25 -->
+<!-- last written by: implementer, 2026-11-08 (item 0409: one claim file set reading); implementer, 2026-11-07 (item 0409: native Gherkin claims, the declared test projects, the reader's visibility); implementer, 2026-11-02 (item `0166`: root-relative locations, the instance parser); implementer, 2026-10-25 -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -292,9 +292,27 @@ optional `record`. A malformed key is invalid configuration (exit 3). The policy
 holds them as `ClaimTags` and `ClaimFileSets`; `ClaimTags` is `null` on the
 Markdown path, which is unchanged.
 
-`EvidenceReconciler.ReadNativeClaims` lists each set's files with
-`SpechtDiscovery.FindTestFiles`, the set's glob under the manifest's exclusions,
-in root-relative ordinal order. A file two sets match is an `invalidInput`
+A set's `glob` and `record` are read by the one implementation both sides
+compile, [`RepositoryPaths`](../../../specht/Model/RepositoryPaths.cs), the
+engine's file the analyzer links under `Text/` (item 0409, review round 1,
+finding 3; it replaced the analyzer's `AnalysisPaths` and
+`BindingProvenanceGuard`, unchanged in behaviour). `Normalize` drops empty and
+`.` segments, reads a backslash as `/`, resolves `..` inside the root, and
+rejects a rooted, drive-qualified or escaping path, so
+`./src/read/.spec/*.feature` is the same set to the analyzer and to `specht
+evidence`, and an escaping one is invalid configuration to both. `Matches`
+normalises both sides and reads a final `**` as every file beneath, where the
+engine's discovery glob matches no file. `EvidencePolicy` stores each `glob` and
+`record` normalised; a project `path` keeps its stricter `IsRelative` check,
+which is not a claim file set.
+
+`EvidenceReconciler.ReadNativeClaims` lists the root's files once with
+`SpechtDiscovery.FindTestFiles` under the manifest's exclusions, the glob `**/*`
+standing for every file, in root-relative ordinal order, and keeps for each set
+the files `RepositoryPaths.Matches` matches to its glob. The exclusions are the
+one remaining difference: the analyzer matches the scenario inputs the build
+delivers and applies no manifest exclusion, so a claim file under an excluded
+directory is in the analyzer's catalogue and not in the evidence gate's. A file two sets match is an `invalidInput`
 finding at that file and contributes no claim. A selected Feature with no set,
 or whose set matches no file, is an `invalidInput` finding at
 `.specht/manifest.json` (B-035). A set's `record` is parsed with the
@@ -322,13 +340,14 @@ The nine reader types in `src/specht/Model/` (`GherkinClaimTextReader`,
 0409, so the tool reaches them through its existing reference. `InternalsVisibleTo`
 on the engine is rejected (ADR-0001), and the reader's public members expose the
 result types, so all nine change together. The analyzer's `Text/` links compile
-the same files, so its copies are public in `Specht.Analysis` too. Neither
+the same files, so its copies are public in `Specht.Analysis` too. `RepositoryPaths`
+is a tenth, public for the same reason. Neither
 assembly is a compile-time library to anyone outside this repository:
 `specht.dll` ships in the tool package and `Specht.Analysis.dll` under
 `analyzers/` and `build/` of `Specht.CodeAnalysis`, and no public API file or
 dependency closure test changes. The one cost: a project referencing both
 assemblies, `test/analysis.tests` and `test/acceptance`, gets CS0433 if it names
-one of the nine types; none does, and the analyzer's tests reach them through its
+one of these ten types; none does, and the analyzer's tests reach them through its
 adapters. Rejected: per-assembly accessibility through a preprocessor symbol or
 partial declarations, which puts conditional compilation in nine files and cannot
 cover the enum, and a public engine facade, which would need a second set of

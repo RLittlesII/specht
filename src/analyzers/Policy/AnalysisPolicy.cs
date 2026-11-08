@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using Specht.Analysis.Bindings;
 using Specht.Analysis.Bindings.Gherkin;
+using Specht.Model;
 
 namespace Specht.Analysis.Policy;
 
@@ -85,5 +86,5 @@ public sealed class AnalysisPolicy
 
     private static readonly string[] TypeKinds = { "class", "record", "struct", "interface", "enum", "delegate" };
     private readonly JsonObject _policy;
-    private readonly AnalysisPaths _paths = new();
+    private readonly RepositoryPaths _paths = new();
 }

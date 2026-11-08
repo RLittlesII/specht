@@ -73,6 +73,9 @@ Paths are relative to the repository root.
 
 Each `claimFileSets` entry maps a root-relative `glob` to one Feature identity.
 It must match delivered scenario inputs; every selected Feature needs a set.
+`*` matches within one directory and `**` across directories; a final `**`
+matches every file beneath. A `.` or empty segment is dropped, `\` reads as
+`/`, and a glob or `record` that is rooted or leaves the root is invalid.
 Use one set per Feature identity, and keep sets from matching the same file.
 Add `epic` to the file set and Feature selection exactly when
 `identifiers.epic` declares an epic grammar; omit it otherwise. Identities must
@@ -189,7 +192,11 @@ passing outcomes. Before evidence exists it reports incomplete and names the
 build, discovery and run steps; a successful first build alone does not prove a
 claim passed. The evidence carries no claim catalogue: `specht evidence` reads
 each selected Feature's claims from its claim file set, with the same tag
-settings, and a claim file it cannot read is invalid input (exit `3`). Planned
+settings and the same glob reading as the build, and a claim file it cannot
+read is invalid input (exit `3`). It matches the set against the files under
+the root, not the delivered inputs, and skips the manifest's `exclusions`, so a
+claim file in an excluded directory is a claim to the build and not to the
+gate. Planned
 tags in a claim file mark no discovered case planned. No claims-table adapter
 is generated.
 

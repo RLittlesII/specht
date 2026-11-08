@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Specht.Model;
 
 namespace Specht.Analysis.Bindings;
 
@@ -17,7 +18,7 @@ public sealed class BindingCatalog
         Findings = Array.AsReadOnly(findings.ToArray());
         Features = Array.AsReadOnly(features.ToArray());
         Adrs = Array.AsReadOnly(adrs.ToArray());
-        var guard = new BindingProvenanceGuard();
+        var guard = new RepositoryPaths();
         foreach (var path in Features.Select(static feature => feature.RelativePath).Concat(Adrs.Select(static adr => adr.RelativePath))
             .Concat(Features.SelectMany(static feature => feature.Claims).Select(static claim => claim.RelativePath).OfType<string>()))
         {

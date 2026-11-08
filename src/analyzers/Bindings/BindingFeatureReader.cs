@@ -16,7 +16,7 @@ public sealed class BindingFeatureReader
         string text, string relativePath, BindingPolicy policy, string? statusColumn, string lifecycleKey,
         string identityKey, string epicKey, string? claimIdColumn)
     {
-        new BindingProvenanceGuard().Validate(relativePath);
+        new RepositoryPaths().Validate(relativePath);
         var frontmatter = new FrontmatterTextReader().Read(text);
         var section = new MarkdownTextReader().Read(text, _pipeline)
             .FirstOrDefault(section => string.Equals(section.Title, policy.ClaimsSection, StringComparison.Ordinal));

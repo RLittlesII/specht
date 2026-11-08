@@ -135,7 +135,7 @@ A consumer whose claims are authored only as tagged Gherkin scenarios cannot use
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-07 (item 0409: the reader types are public); implementer, 2026-10-23, 2026-11-06 (item 0411: the reader moves into the engine; the catalogue export is withdrawn) -->
+<!-- last written by: implementer, 2026-11-08 (item 0409: `RepositoryPaths`); implementer, 2026-11-07 (item 0409: the reader types are public); implementer, 2026-10-23, 2026-11-06 (item 0411: the reader moves into the engine; the catalogue export is withdrawn) -->
 
 Records: [decision 0002](decisions/0002-a-claim-tag-is-the-existing-claim-tag-form.md)
 (what a claim tag is), [decision 0004](decisions/0004-the-gherkin-claim-reader-lives-in-the-engine.md)
@@ -333,7 +333,8 @@ Tag lists are compared ordinally with tag text; only claim tags honour
 
 A **claim file set** is `{ glob, feature, epic?, record? }`:
 
-- `glob` is root-relative with the checker's segment semantics (`AnalysisPaths`)
+- `glob` is root-relative with the checker's segment semantics (`RepositoryPaths`,
+  [`RepositoryPaths.cs`](../../../../specht/Model/RepositoryPaths.cs), linked under `Text/`)
   and is matched against the delivered inputs of kind `scenario`.
 - `feature` must match `identifiers.feature`. `epic` is required exactly when
   `identifiers.epic` is declared and must then match it; with no epic grammar
@@ -455,7 +456,7 @@ the record or `current`, `RelativePath` the record's path or else the ordinal-fi
 claim file, and the `BindingClaim`s of its files. `BindingResolver` uses
 `claim.RelativePath ?? feature.RelativePath` and `claim.Line` as the target's
 provenance (B-008, C-2), and `BindingCatalog` validates every claim path with the
-existing `BindingProvenanceGuard`. Everything after the catalogue is the existing
+existing provenance guard, `RepositoryPaths.Validate`. Everything after the catalogue is the existing
 code: `AnalysisPolicy.Select`, `RequiredLinks` and `BindingResolver` are
 unchanged, so B-017 and B-018 give the Markdown path's diagnostics (SPCT0007,
 SPCT0004). Planned cases are visible through `Cases` to the scenario bridge

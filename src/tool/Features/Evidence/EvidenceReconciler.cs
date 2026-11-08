@@ -657,7 +657,9 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
         var exclusions = configuration["exclusions"] is JsonArray excluded
             ? excluded.Select(static item => item!.GetValue<string>()).ToArray() : System.Array.Empty<string>();
         var discovery = new SpechtDiscovery(new FileSystem());
-        var matched = policy.ClaimFileSets.ToDictionary(static set => set, set => discovery.FindTestFiles(root, [set.Glob], exclusions));
+        var files = discovery.FindTestFiles(root, ["**/*"], exclusions);
+        var paths = new RepositoryPaths();
+        var matched = policy.ClaimFileSets.ToDictionary(static set => set, set => files.Where(file => paths.Matches(file, set.Glob)).ToList());
         var shared = matched.Values.SelectMany(static files => files).GroupBy(static file => file, StringComparer.Ordinal)
             .Where(static group => group.Count() > 1).Select(static group => group.Key).ToHashSet(StringComparer.Ordinal);
         foreach (var file in shared.Order(StringComparer.Ordinal))

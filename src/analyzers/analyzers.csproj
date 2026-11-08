@@ -31,5 +31,6 @@
     <Compile Include="../specht/Model/GherkinClaimCaseLine.cs" Link="Text/GherkinClaimCaseLine.cs" />
     <Compile Include="../specht/Model/GherkinClaimTextFinding.cs" Link="Text/GherkinClaimTextFinding.cs" />
     <Compile Include="../specht/Model/GherkinClaimTextException.cs" Link="Text/GherkinClaimTextException.cs" />
+    <Compile Include="../specht/Model/RepositoryPaths.cs" Link="Text/RepositoryPaths.cs" />
   </ItemGroup>
 </Project>

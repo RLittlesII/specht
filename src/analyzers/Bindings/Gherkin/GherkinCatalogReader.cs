@@ -101,5 +101,5 @@ public sealed class GherkinCatalogReader
         return (input.RelativePath, state);
     }
 
-    private readonly AnalysisPaths _paths = new();
+    private readonly RepositoryPaths _paths = new();
 }

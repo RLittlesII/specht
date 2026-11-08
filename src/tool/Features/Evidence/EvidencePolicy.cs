@@ -52,8 +52,8 @@ internal sealed class EvidencePolicy
             || Projects.Any(static project => !IsRelative(project.Path))
             || Features.Any(feature => !Matches("feature", feature.Feature) || HasEpic && (feature.Epic is null || !Matches("epic", feature.Epic)))
             || Features.Distinct().Count() != Features.Length
-            || ClaimFileSets.Any(set => !IsRelative(set.Glob) || set.Record is not null && !IsRelative(set.Record)
-                || !Matches("feature", set.Feature) || HasEpic != (set.Epic is not null) || set.Epic is not null && !Matches("epic", set.Epic))
+            || ClaimFileSets.Any(set => !Matches("feature", set.Feature) || HasEpic != (set.Epic is not null)
+                || set.Epic is not null && !Matches("epic", set.Epic))
             || ClaimFileSets.DistinctBy(static set => (set.Epic, set.Feature)).Count() != ClaimFileSets.Length
             || !identifiers.ContainsKey("claim") || policy["requiredLinks"]?["test"]?.GetValue<bool>() == false)
         {
@@ -183,9 +183,22 @@ internal sealed class EvidencePolicy
 
     /// <implements epic="0201" feature="F5" claim="B-035" />
     private static ClaimFileSet[] FileSets(JsonNode? node) => node is JsonArray { Count: > 0 } sets
-        ? sets.Select(static entry => new ClaimFileSet(Text(entry, "glob"), Text(entry, "feature"),
-            entry?["epic"] is null ? null : Text(entry, "epic"), entry?["record"] is null ? null : Text(entry, "record"))).ToArray()
+        ? sets.Select(static entry => new ClaimFileSet(SetPath(Text(entry, "glob")), Text(entry, "feature"),
+            entry?["epic"] is null ? null : Text(entry, "epic"), entry?["record"] is null ? null : SetPath(Text(entry, "record")))).ToArray()
         : throw new EvidenceConfigurationException("codeAnalysis.records.claimFileSets is missing or invalid.");
+
+    /// <implements epic="0201" feature="F5" claim="B-035" />
+    private static string SetPath(string path)
+    {
+        try
+        {
+            return new RepositoryPaths().Normalize(path);
+        }
+        catch (ArgumentException)
+        {
+            throw new EvidenceConfigurationException("codeAnalysis.records.claimFileSets is missing or invalid.");
+        }
+    }
 
     /// <implements epic="0201" feature="F5" claim="B-035" />
     private static string Text(JsonNode? entry, string key) => entry?[key] is JsonValue value && value.TryGetValue<string>(out var text)

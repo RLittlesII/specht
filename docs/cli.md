@@ -215,7 +215,12 @@ exports remain visible and cannot establish current coverage.
 
 Only a declared test project, one with a `requiredCaseScope` or named by a
 `verifies` enforcement entry, needs a current export; another declared project
-without one is not reported missing.
+without one is not reported missing. A real test project carrying neither key
+is one of those others and no longer needs an export: omitting it exits `1` for
+its claims' missing test links, or `0` when another project's export covers
+them, where it exited `2` (`missingCompilation`) before. This is the proposed
+default of [`0201-F5` OQ-5](../src/analyzers/Reconciliation/.spec/README.md),
+which is still open.
 
 Without `--run`, a run is chosen for each declared project and target framework:
 one available run is used, and `ambiguousRun` is reported only for a pair holding

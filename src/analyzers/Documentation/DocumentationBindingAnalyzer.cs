@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Specht.Analysis.Bindings;
 using Specht.Analysis.Policy;
+using Specht.Model;
 
 namespace Specht.Analysis.Documentation;
 
@@ -90,7 +91,7 @@ public sealed class DocumentationBindingAnalyzer : DiagnosticAnalyzer
                 path = source.Substring(prefix.Length);
             }
 
-            path = new AnalysisPaths().Normalize(path);
+            path = new RepositoryPaths().Normalize(path);
         }
         catch (ArgumentException)
         {
