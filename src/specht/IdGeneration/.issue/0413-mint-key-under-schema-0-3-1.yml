@@ -2,7 +2,7 @@ id: "0413"
 type: task
 title: Add the mint key and four identifiers grammars to schema 0.3.1
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -21,7 +21,7 @@ claims:
 
 created: "2026-11-07"
 updated: "2026-11-07"
-closed: null
+closed: "2026-11-07"
 
 summary: |
   The top-level manifest key `mint` in C-12's shape, keyed by the
