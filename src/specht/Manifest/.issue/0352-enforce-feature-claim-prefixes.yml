@@ -2,7 +2,7 @@ id: "0352"
 type: task
 title: Enforce Feature claim prefixes
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -16,7 +16,7 @@ claims: [B-076, B-077, B-078, B-079, B-080]
 
 created: "2026-11-03"
 updated: "2026-11-08"
-closed: null
+closed: "2026-11-08"
 
 summary: |
   Implement the Feature grammar selected by Manifest decision 0022.
