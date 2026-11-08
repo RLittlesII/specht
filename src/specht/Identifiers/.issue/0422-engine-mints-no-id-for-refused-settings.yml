@@ -2,7 +2,7 @@ id: "0422"
 type: task
 title: Agree and test that the engine mints no id for settings it refuses
 
-status: in-progress
+status: done
 
 value: 2
 risk: 1
@@ -24,7 +24,7 @@ claims:
 
 created: "2026-11-08"
 updated: "2026-11-08"
-closed: null
+closed: "2026-11-08"
 
 summary: |
   The engine's refusals as item 0414 built them, in `Minter` and the
