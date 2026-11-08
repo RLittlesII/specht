@@ -647,6 +647,15 @@ Feature: Schema versioning
     When the tree is checked under each of the two versions
     Then the two reports are the same, the schema version each names aside
 
+  @B-154 @boundary
+  Scenario: A patch changes the report of a tree that writes an optional field only the patch defines
+    Given the root is pinned to version 0.3.0 with the embedded source
+    And a Feature declares the claim prefix "CI-AC-" and the claim "B-001"
+    When the tree is checked under 0.3.0 and under 0.3.1
+    Then under 0.3.0 SPEC1002 reports the claim prefix declaration and SPEC4003 reports nothing
+    And under 0.3.1 SPEC4003 reports claim "B-001" for lacking the prefix "CI-AC-" and SPEC1002 reports nothing
+    And neither check exits with code 2 or 3
+
   @B-041
   Scenario: Listing names every shipped version
     Given the tool ships schema versions 0.1.0 and 0.2.0
