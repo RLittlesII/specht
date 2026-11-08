@@ -1,0 +1,79 @@
+id: "0419"
+type: task
+title: Mint Snowflake ids, with their fields and encodings
+
+status: blocked
+
+risk: 4
+
+parent: "0412"
+children: []
+
+depends_on: ["0416", "0417"] # 0416 is the guard B-029 draws through; 0417 is the formatting decorator the encodings join
+spikes: []
+
+spec: src/specht/Identifiers/.spec/README.md
+
+claims:
+  - B-007
+  - B-013
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+  - B-029
+  - B-030
+  - B-031
+  - B-032
+
+created: "2026-11-07"
+updated: "2026-11-08"
+closed: null
+
+summary: |
+  The Snowflake strategy in the engine, reading only its own sub-object
+  (C-3, C-9): milliseconds from the epoch, 2026-01-01 at midnight,
+  universal time, by default (B-007, B-022); field widths 5, 5 and 12
+  by default (B-023); a datacenter, worker and sequence start that are
+  each a named number or a value drawn at random for the request
+  (B-024 to B-028; C-16); and a clock that reads earlier at a second
+  draw refuses (B-029). The formatting decorator writes the number as
+  `base32`, 13 characters (B-030, B-031), or as decimal for `none`
+  (B-032). B-013 lands here because its rows include a Snowflake
+  request.
+
+  Risk 4: a bit layout, an injected clock and random source, the
+  guard's second draw against a clock moved back, and an encoding a
+  test must decode exactly.
+
+  Blocked on OQ-13, which records no default for a Snowflake type that
+  names no encoding: every scenario here but B-030 to B-032 names
+  none and decodes the printed id under it.
+
+acceptance_criteria:
+  - "B-007 — the milliseconds from the named epoch"
+  - "B-013 — no request creates, modifies or deletes a file"
+  - "B-022 — no epoch, from 2026-01-01 universal time"
+  - "B-023 — no widths, 12, 5 and 5 bits"
+  - "B-024 to B-026 — an unnamed datacenter, worker or sequence start drawn at random"
+  - "B-027, B-028 — a named datacenter or worker kept"
+  - "B-029 — a clock moved back at the second draw, nothing printed"
+  - "B-030, B-031 — `base32`, the number over the alphabet, 13 characters"
+  - "B-032 — `none`, decimal digits"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-07, spec-author: cut on ADR-0033; `blocked`, not
+    proceeding, because OQ-13 records no default for a Snowflake type.
+    One item, not a strategy item and an encoding item: B-030 to B-032
+    need the strategy's number and the strategy's scenarios need the
+    unset encoding, so either split would wait on the other. Value
+    omitted, inheriting 0412's.
+
+out_of_scope:
+  - "A datacenter or worker from the machine, branch, author or path - § 5 row 11."
+  - "A state file that detects a clock moved back between requests - § 5 row 12."

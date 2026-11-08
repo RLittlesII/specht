@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Report;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
 using Specht.Tests.Versioning;
@@ -9,11 +10,14 @@ namespace Specht.Tests.Engine;
 
 /// <summary>
 /// The runner over a tree on disk and a version set built in memory from the embedded version 0.1.0 (<c>0001-F7</c>
-/// B-001, B-002, B-014, B-055, B-151, B-152; C-4): the manifest is the tree's, its pin selects exactly the version it names, and that
+/// B-001, B-002, B-014, B-055, B-151, B-152, B-154; C-4): the manifest is the tree's, its pin selects exactly the version it names, and that
 /// version's frontmatter schemas and rule vocabulary are the ones the check uses, whatever the tree's own
 /// <c>.specht/schema/frontmatter/</c> holds. On the shipped versions, the baseline tree pinned to 0.2.0 or 0.2.1 is
 /// reported under three-digit ids and pinned to 0.3.0 under four-digit ids, each in that version's vocabulary (B-151,
-/// B-152).
+/// B-152). Pinned to a shipped version and then to the shipped version higher than it in its patch alone, the baseline
+/// tree gets the same report document but for the schema version it names (B-154). A tree setting an optional frontmatter
+/// field the higher version's schema defines and the lower one rejects is the exception (decision 0023): <c>claim_prefix</c>
+/// is reported by <c>SPEC1002</c> under 0.3.0 and selects the claim grammar <c>SPEC4003</c> checks under 0.3.1.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerVersionsIntegrationTests
@@ -125,6 +129,53 @@ public sealed class SpechtRunnerVersionsIntegrationTests
 
         // Then
         report.Violations.Select(static violation => violation.RuleId).Should().NotBeEmpty().And.AllSatisfy(id => id.Should().BeOneOf(vocabulary));
+    }
+
+    [Theory]
+    [ClassData(typeof(ShippedPatchNeighbours))]
+    public void TheBaselineTreePinnedToAShippedVersionAndToItsPatchNeighbour_WhenChecked_ShouldGiveTheSameReportTheSchemaVersionAside(
+        string lower,
+        string higher)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        BaselineTree.Write(tree);
+
+        // When
+        var reports = new[] { lower, higher }
+            .Select(version =>
+            {
+                tree.Pin(version);
+                var document = JsonNode.Parse(SpechtReportDocument.From(tree.Run()).ToJson())!.AsObject();
+                document.Remove("schemaVersion");
+                return document.ToJsonString();
+            })
+            .ToList();
+
+        // Then
+        reports[1].Should().Be(reports[0]);
+    }
+
+    [Fact]
+    public void ATreeSettingAnOptionalFieldOnlyThePatchDefines_WhenCheckedUnderAShippedVersionAndItsPatchNeighbour_ShouldReportItUnderEachVersionsOwnRule()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteCoLocatedFeature("src/ci", "0001", "F1", new Dictionary<string, string> { ["claim_prefix"] = "\"CI-AC-\"" });
+
+        // When
+        tree.Pin("0.3.0");
+        var lower = tree.Run().Violations.Where(static violation => violation.File == "src/ci/.spec/README.md").ToList();
+        tree.Pin("0.3.1");
+        var higher = tree.Run().Violations.Where(static violation => violation.File == "src/ci/.spec/README.md").ToList();
+
+        // Then
+        lower.Should().Contain(static violation => violation.RuleId == "SPEC1002" && violation.Identifier == "claim_prefix");
+        lower.Should().NotContain(static violation => violation.RuleId == "SPEC4003");
+        higher.Should().NotContain(static violation => violation.RuleId == "SPEC1002");
+        var finding = higher.Where(static violation => violation.RuleId == "SPEC4003").Should().ContainSingle().Subject;
+        finding.Identifier.Should().Be("B-001");
+        finding.Message.Should().Contain("'B-001'").And.Contain("'CI-AC-'");
     }
 
     private static void Pin(SpechtTree tree, string? version)

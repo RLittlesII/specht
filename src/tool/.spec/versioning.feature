@@ -618,17 +618,18 @@ Feature: Schema versioning
     Then the higher one's major is greater than the lower one's
 
   @B-066
-  Scenario: Before 1.0.0 a new rule is at least a new minor
+  Scenario: Before 1.0.0 a new rule a tree can meet without a new key is at least a new minor
     Given two schema versions the tool ships, one higher than the other by version precedence
     And both are below version 1.0.0
     And the higher one holds a rule the lower one does not
+    And that rule reports on a tree whose manifest sets no key the lower one does not define
     When their numbers are compared
     Then the higher one's minor is greater than the lower one's
 
   @B-066
   Scenario: Before 1.0.0 an opt-in rule may come in a patch
     Given two schema versions the tool ships, both below version 1.0.0, the higher one greater in its patch alone
-    And every rule the higher one holds and the lower one does not reports only when a manifest sets a key the lower one does not define
+    And every rule the higher one holds and the lower one does not reports only when a manifest sets an optional key the lower one does not define
     When their numbers are compared
     Then the numbers are accepted
 
@@ -645,6 +646,15 @@ Feature: Schema versioning
     And the tool ships a version higher than it in its patch alone
     When the tree is checked under each of the two versions
     Then the two reports are the same, the schema version each names aside
+
+  @B-154 @boundary
+  Scenario: A patch changes the report of a tree that writes an optional field only the patch defines
+    Given the root is pinned to version 0.3.0 with the embedded source
+    And a Feature declares the claim prefix "CI-AC-" and the claim "B-001"
+    When the tree is checked under 0.3.0 and under 0.3.1
+    Then under 0.3.0 SPEC1002 reports the claim prefix declaration and SPEC4003 reports nothing
+    And under 0.3.1 SPEC4003 reports claim "B-001" for lacking the prefix "CI-AC-" and SPEC1002 reports nothing
+    And neither check exits with code 2 or 3
 
   @B-041
   Scenario: Listing names every shipped version

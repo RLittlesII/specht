@@ -18,6 +18,7 @@ public sealed partial class VersioningSteps
 
     [Given("the root is pinned to version {word} with the embedded source and no upstream schema source")]
     [Given("the root is pinned to version {word} and records no upstream schema source")]
+    [Given("the root is pinned to version {word} with the embedded source")]
     [Given("the root is pinned to version {word}")]
     public void GivenTheRootIsPinnedWithTheEmbeddedSource(string version) => GivenTheManifestPinsVersion(version);
 

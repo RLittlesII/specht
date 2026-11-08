@@ -2,7 +2,7 @@ id: "0393"
 type: task
 title: Report a scenario in a claim file with no claim, SPEC025, in schema 0.3.1
 
-status: ready
+status: blocked
 
 risk: 2
 
@@ -18,7 +18,7 @@ claims:
   - B-010
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-07"
 closed: null
 
 summary: |
@@ -45,6 +45,11 @@ decisions:
     2026-11-06 (OQ-2 to OQ-9 accepted; OQ-5 "0.3.1 patch, amend C-11",
     `0001-F7` decision 0022, the level warning, the id undecided), as
     proposed. Value omitted, inheriting 0387's.
+  - |
+    2026-11-07, spec-author: `blocked`, not proceeding, on `0001-F7`
+    OQ-75, raised 2026-11-07 with no default: this item adds a rule id
+    `0.3.0` does not hold, and whether B-154's same report sets aside
+    the count of rule ids evaluated is undecided.
 
 out_of_scope:
   - "Reporting a mistyped claim tag - § 5 row 7."

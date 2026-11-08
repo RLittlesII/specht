@@ -1,0 +1,63 @@
+id: "0418"
+type: task
+title: Mint the per-Feature types for the Feature --feature names
+
+status: blocked
+
+risk: 3
+
+parent: "0412"
+children: []
+
+depends_on: ["0416", "0417"] # 0416 is the guard these places join; 0417 gives the per-Feature prefixes
+spikes: []
+
+spec: src/specht/Identifiers/.spec/README.md
+
+claims:
+  - B-010
+  - B-021
+  - B-040
+  - B-041
+  - B-042
+
+created: "2026-11-07"
+updated: "2026-11-08"
+closed: null
+
+summary: |
+  `decision`, `claim`, `constraint`, `openQuestion` and `scenario`
+  ids for the Feature `--feature` names (A-7): the default size of 6
+  (B-021), and the guard's per-Feature places, the Feature's
+  `.spec/decisions/` file names, the first column of its
+  `.spec/README.md` tables and its scenarios' tags (B-010, B-040 to
+  B-042; C-18).
+
+  Risk 3: three readers of one Feature's files, each matching the
+  check's reading of them.
+
+  Blocked on two open questions with no recorded default: what a
+  per-Feature request without `--feature` does (OQ-15), and what
+  `--feature` takes and what a request does when the folder holds no
+  Feature (OQ-16). Every claim here holds for a co-located Feature
+  folder, a form OQ-16 keeps under every answer, but the item cannot
+  ship the two cases they leave open. It proceeds on OQ-14's recorded
+  prefix default through 0417.
+
+acceptance_criteria:
+  - "B-010 — the guard skips a claim id the Feature holds"
+  - "B-021 — a per-Feature type with no size, 6 characters"
+  - "B-040 — a `.spec/decisions/` file name held"
+  - "B-041 — a claim, constraint or open question id held in a first column"
+  - "B-042 — a scenario tag held"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-07, spec-author: cut on ADR-0033; `blocked`, not proceeding,
+    because OQ-15 and OQ-16 record no default. Value omitted,
+    inheriting 0412's.
+
+out_of_scope:
+  - "A legacy `epics/<epic>/<feature>/` folder - OQ-16."
+  - "The MCP tool's `feature` argument - `0132-F4` OQ-9."

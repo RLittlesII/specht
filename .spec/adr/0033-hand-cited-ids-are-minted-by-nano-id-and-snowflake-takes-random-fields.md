@@ -13,11 +13,11 @@ as proposed". Recorded by spec-author. Decider: the repository owner. Item `0256
 ([`.issue/0256-evaluate-snowflake-record-ids.yml`](../../.issue/0256-evaluate-snowflake-record-ids.yml)),
 which quotes the owner's request of 2026-10-23 and direction of 2026-11-06.
 The design trialled is the owner's, recorded in `0001-F19`
-[decision 0001](../../src/specht/IdGeneration/.spec/decisions/0001-ids-are-minted-by-a-strategy-with-decorators-opted-in-per-type.md).
+[decision 0001](../../src/specht/Identifiers/.spec/decisions/0001-ids-are-minted-by-a-strategy-with-decorators-opted-in-per-type.md).
 Every recommendation below is this record's, not the owner's. The record
 amends no claim, renumbers nothing and edits no accepted record. It answers
 `0001-F19` OQ-1 to OQ-10 and OQ-12
-([`src/specht/IdGeneration/.spec/README.md`](../../src/specht/IdGeneration/.spec/README.md)
+([`src/specht/Identifiers/.spec/README.md`](../../src/specht/Identifiers/.spec/README.md)
 § 11); settling them in that specification is a separate change. OQ-11 is not
 this spike's.
 
@@ -470,7 +470,7 @@ collision odds.
 ## The Feature to specify next
 
 `0001-F19` already exists, `draft`, at
-[`src/specht/IdGeneration/.spec/`](../../src/specht/IdGeneration/.spec/README.md),
+[`src/specht/Identifiers/.spec/`](../../src/specht/Identifiers/.spec/README.md),
 in epic `0001`, for the command. The MCP tool is `0132-F4` B-023 in epic
 `0132`, at
 [`src/mcp/Features/Reading/.spec/README.md`](../../src/mcp/Features/Reading/.spec/README.md).

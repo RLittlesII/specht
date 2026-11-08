@@ -1,0 +1,53 @@
+id: "0417"
+type: task
+title: Format a minted id with its prefix, and refuse base32 for Nano ID
+
+status: ready
+
+risk: 2
+
+parent: "0412"
+children: []
+
+depends_on: ["0415"] # 0415 is the request whose output carries the prefix
+spikes: []
+
+spec: src/specht/Identifiers/.spec/README.md
+
+claims:
+  - B-009
+  - B-033
+
+created: "2026-11-07"
+updated: "2026-11-08"
+closed: null
+
+summary: |
+  The formatting decorator in the engine (C-4, C-9): a type's `prefix`
+  starts its id (B-009), and its `encoding` is `none` or `base32`, with
+  `base32` refused for a Nano ID type (C-15, B-033).
+
+  Risk 2: one decorator with two settings. It proceeds on two recorded
+  defaults that carry no claim: OQ-14's, a type that names no prefix
+  gets ADR-0033's in-tree prefix (none for `adr`, `lesson` and
+  `decision`; `B-`, `C-`, `OQ-`, `S-` for the rest); and OQ-13's for a
+  Nano ID type, `none`. An unset encoding for a Snowflake type waits
+  on OQ-13 and is 0419's.
+
+  Waits on 0415 alone.
+
+acceptance_criteria:
+  - "B-009 — a named prefix starts the id"
+  - "B-033 — Nano ID with `base32`, nothing on standard output"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-07, spec-author: cut on ADR-0033 and § 11's recorded
+    defaults for OQ-13 (Nano ID) and OQ-14. Value omitted, inheriting
+    0412's. The `base32` and `none` encodings of a Snowflake number,
+    B-030 to B-032, go to 0419 with the strategy that gives the
+    number.
+
+out_of_scope:
+  - "Writing a Snowflake number in an encoding, and the unset Snowflake encoding - 0419; OQ-13."

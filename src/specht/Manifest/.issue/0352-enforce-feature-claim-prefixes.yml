@@ -2,7 +2,7 @@ id: "0352"
 type: task
 title: Enforce Feature claim prefixes
 
-status: ready
+status: done
 
 risk: 3
 
@@ -15,8 +15,8 @@ spec: src/specht/Manifest/.spec/README.md
 claims: [B-076, B-077, B-078, B-079, B-080]
 
 created: "2026-11-03"
-updated: "2026-11-03"
-closed: null
+updated: "2026-11-08"
+closed: "2026-11-08"
 
 summary: |
   Implement the Feature grammar selected by Manifest decision 0022.
@@ -30,6 +30,8 @@ acceptance_criteria:
 
 decisions:
   - "2026-11-03: Manifest decision 0022 resolves OQ-29 and OQ-30."
+  - "2026-11-08: Manifest decision 0023 records the owner's publication rule; B-076 to B-080 stay in schema 0.3.1, which no NuGet package carries, under 0001-F7 C-1 and C-17 (spec-author's reading)."
+  - "2026-11-08: 0001-F7 decision 0023, the owner selecting option A: an optional frontmatter field a patch adds is an opt-in addition; B-154 and C-11 amended."
 
 out_of_scope:
   - "Standalone Gherkin declarations (0001-F5 § 5)."

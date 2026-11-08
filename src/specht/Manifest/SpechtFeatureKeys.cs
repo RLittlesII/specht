@@ -12,6 +12,9 @@ namespace Specht.Manifest;
 /// <param name="Spikes">The spike ids the Feature declares.</param>
 /// <param name="DependsOn">The Features this one depends on.</param>
 /// <param name="Blocks">The Features this one blocks.</param>
+/// <param name="ClaimPrefix">
+/// The Feature's own claim prefix, from schema 0.3.1; null below it, where no key carries one (B-049, decision 0022).
+/// </param>
 /// <implements epic="0001" feature="F5" claim="B-004" />
 public sealed record SpechtFeatureKeys(
     string Id = "id",
@@ -21,4 +24,5 @@ public sealed record SpechtFeatureKeys(
     string Children = "children",
     string Spikes = "spikes",
     string DependsOn = "depends_on",
-    string Blocks = "blocks");
+    string Blocks = "blocks",
+    string? ClaimPrefix = null);

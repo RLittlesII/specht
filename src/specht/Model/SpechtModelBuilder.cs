@@ -20,6 +20,8 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-006" />
+    /// <implements epic="0001" feature="F5" claim="B-079" />
+    /// <implements epic="0001" feature="F5" claim="B-080" />
     public SpechtModel Build(SpechtSchemas schemas, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
     {
         var structure = schemas.Structure;
@@ -28,14 +30,18 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         for (var index = 0; index < listing.Specifications.Count; index++)
         {
             var location = listing.Specifications[index];
+            var document = documents.Parse(texts[location.RelativePath], location.RelativePath);
+            var grammar = structure.ClaimGrammar(
+                structure.FeatureKeys.ClaimPrefix is { } key ? document.Frontmatter.Text(key) : null);
             features.Add(new FeatureSpec(
                 location,
-                documents.Parse(texts[location.RelativePath], location.RelativePath),
+                document,
                 listing.Companions[index]
-                    .Select(path => tags.Read(path, texts[path], structure))
+                    .Select(path => tags.Read(path, texts[path], structure, grammar))
                     .ToList(),
                 structure.FeatureKeys,
-                structure.Forms));
+                structure.Forms,
+                grammar));
         }
 
         var items = new List<ChildItem>();
