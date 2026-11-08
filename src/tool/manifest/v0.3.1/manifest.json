@@ -82,7 +82,8 @@
       "children": "children",
       "spikes": "spikes",
       "dependsOn": "depends_on",
-      "blocks": "blocks"
+      "blocks": "blocks",
+      "claimPrefix": "claim_prefix"
     },
     "task": {
       "id": "id",

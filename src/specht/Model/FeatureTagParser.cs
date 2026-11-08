@@ -12,22 +12,28 @@ public sealed class FeatureTagParser
     /// <param name="structure">The effective manifest, or null for the legacy scanner.</param>
     /// <returns>Each recognized claim tag in file order.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public IReadOnlyList<FeatureTag> Parse(string text, SpechtStructure? structure = null) => Scan(text, structure).Tags;
+    public IReadOnlyList<FeatureTag> Parse(string text, SpechtStructure? structure = null) => Scan(text, structure, null).Tags;
 
     /// <summary>Reads a companion's claim tags and its scenarios, with the tags Gherkin gives each, in one pass.</summary>
     /// <param name="relativePath">The path relative to the checked root.</param>
     /// <param name="text">The companion's complete text.</param>
     /// <param name="structure">The effective manifest, or null for the legacy scanner.</param>
+    /// <param name="grammar">The claim grammar of the Feature the companion sits beside, or null for the manifest's.</param>
     /// <returns>The companion snapshot.</returns>
     /// <implements epic="0001" feature="F12" claim="B-008" />
-    public FeatureFile Read(string relativePath, string text, SpechtStructure? structure = null)
+    /// <implements epic="0001" feature="F5" claim="B-080" />
+    public FeatureFile Read(string relativePath, string text, SpechtStructure? structure = null, SpechtClaimGrammar? grammar = null)
     {
-        var (tags, scenarios) = Scan(text, structure);
+        var (tags, scenarios) = Scan(text, structure, grammar);
         return new FeatureFile(relativePath, tags, scenarios);
     }
 
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    private static (IReadOnlyList<FeatureTag> Tags, IReadOnlyList<FeatureScenario> Scenarios) Scan(string text, SpechtStructure? structure)
+    /// <implements epic="0001" feature="F5" claim="B-080" />
+    private static (IReadOnlyList<FeatureTag> Tags, IReadOnlyList<FeatureScenario> Scenarios) Scan(
+        string text,
+        SpechtStructure? structure,
+        SpechtClaimGrammar? claimGrammar)
     {
         var tags = new List<FeatureTag>();
         var form = structure?.ClaimTagForm;
@@ -35,7 +41,7 @@ public sealed class FeatureTagParser
         var ignoreCase = structure?.ClaimTagIgnoreCase == true;
         var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         var grammar = form is null ? null : new Regex(
-            $"\\A(?:{structure!.Identifiers["claim"]})\\z",
+            $"\\A(?:{claimGrammar?.Pattern ?? structure!.Identifiers["claim"]})\\z",
             RegexOptions.CultureInvariant | (ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None));
         var scenarios = new List<(string Title, int Line, List<FeatureTag> Tags)>();
         List<FeatureTag> pending = [];

@@ -14,20 +14,24 @@ public sealed class FeatureSpec
     /// <param name="featureFiles">The Gherkin files beside it.</param>
     /// <param name="keys">The frontmatter key each role is read from, or null for the names every older pin reads.</param>
     /// <param name="forms">The forms its identity is written in, or null for <c>{epic}-{id}</c> (decision 0018).</param>
+    /// <param name="claimGrammar">The grammar its claim ids are read with, or null for the manifest's <c>identifiers.claim</c>.</param>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-005" />
+    /// <implements epic="0001" feature="F5" claim="B-079" />
     public FeatureSpec(
         SpechtLocation location,
         SpechtDocument document,
         IReadOnlyList<FeatureFile> featureFiles,
         SpechtFeatureKeys? keys = null,
-        SpechtForms? forms = null)
+        SpechtForms? forms = null,
+        SpechtClaimGrammar? claimGrammar = null)
     {
         Location = location;
         Document = document;
         FeatureFiles = Array.AsReadOnly(featureFiles.ToArray());
         Keys = keys ?? new SpechtFeatureKeys();
+        ClaimGrammar = claimGrammar;
         _forms = forms;
     }
 
@@ -45,6 +49,9 @@ public sealed class FeatureSpec
 
     /// <summary>The frontmatter key each role is read from.</summary>
     public SpechtFeatureKeys Keys { get; }
+
+    /// <summary>The grammar its claim ids and claim tags are read with; null reads the manifest's <c>identifiers.claim</c>.</summary>
+    public SpechtClaimGrammar? ClaimGrammar { get; }
 
     /// <summary>The epic frontmatter value, or <c>null</c>.</summary>
     public string? Epic => Document.Frontmatter.Text(Keys.Epic);
