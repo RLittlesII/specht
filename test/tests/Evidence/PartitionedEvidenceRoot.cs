@@ -27,7 +27,7 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
             | --- | --- | --- | --- |
             | need/7 | A synthetic need | Agreement | Active |
             """);
-        var configuration = new JsonObject
+        _configuration = new JsonObject
         {
             ["revision"] = "0.1.0",
             ["idPatterns"] = new JsonObject { ["feature"] = "^cap:[a-z]+$", ["claim"] = "^need/[0-9]+$" },
@@ -48,11 +48,11 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
                     new JsonObject { ["path"] = "test/b/b.csproj", ["targetFrameworks"] = new JsonArray("net10.0") }),
                 ["features"] = new JsonArray(new JsonObject { ["feature"] = "cap:read" }),
                 ["requiredLinks"] = new JsonObject { ["test"] = true },
-                ["enforcement"] = new JsonArray(),
+                ["enforcement"] = new JsonArray(Verifies("test/a/a.csproj"), Verifies("test/b/b.csproj")),
                 ["exemptions"] = new JsonArray(),
             },
         };
-        File.WriteAllText(Path.Combine(Root, ".specht", "manifest.json"), configuration.ToJsonString());
+        File.WriteAllText(Path.Combine(Root, ".specht", "manifest.json"), _configuration.ToJsonString());
     }
 
     public string Root { get; } = Directory.CreateTempSubdirectory("specht-partitioned-evidence-").FullName;
@@ -128,6 +128,12 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
 
     public void Edit(string relativePath, string text) => File.WriteAllText(Path.Combine(Root, relativePath), text);
 
+    public void Configure(Action<JsonObject> edit)
+    {
+        edit(_configuration["codeAnalysis"]!.AsObject());
+        File.WriteAllText(Path.Combine(Root, ".specht", "manifest.json"), _configuration.ToJsonString());
+    }
+
     public EvidenceResult Reconcile(params string[] evidence) =>
         new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(Root, evidence, null);
 
@@ -143,5 +149,16 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
         ["location"] = null,
     };
 
+    private static JsonObject Verifies(string project) => new()
+    {
+        ["project"] = project,
+        ["include"] = new JsonArray("test/**/*.cs"),
+        ["exclude"] = new JsonArray(),
+        ["role"] = "verifies",
+        ["declarationKinds"] = new JsonArray("testMethod"),
+    };
+
     private string Hash(string relativePath) => Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(Root, relativePath))));
+
+    private readonly JsonObject _configuration;
 }

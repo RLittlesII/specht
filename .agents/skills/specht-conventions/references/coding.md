@@ -181,6 +181,9 @@ but a build-file change made without running `Format` can still fail CI first.
 ## Never add
 
 - A package version in a `.csproj`.
+- A source link or a project reference no record permits, or wider than the
+  scope its record states: read that record first and stay within it
+  ([lesson 0017](../../../../.spec/lessons/0017-a-source-link-stays-within-the-record-that-permits-it.md)).
 - `IsPackable=true` or `PackAsTool` anywhere but `src/tool`, `src/codeanalysis` and `src/mcp`.
 - A hand edit to `ci.yml` or a commit of `format.json`.
 - A condition on `matrix.*` in a generated workflow or a build target.

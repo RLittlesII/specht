@@ -293,3 +293,103 @@ Feature: Traceability reconciliation
     Given a request for specht evidence help
     When the help is shown
     Then the optional positional paths are in the usage and no evidence option is offered
+
+  @B-028
+  Scenario: Native claims reconciled
+    Given a consumer whose claims are declared in Gherkin claim files and whose Feature records have no claims table
+    And a passing test bound to each declared claim
+    When the supplied evidence is reconciled by specht evidence
+    Then every claim the claim files declare is reported with its test chain
+    And the default trace gate succeeds
+
+  @B-038
+  Scenario Outline: Claim file set read alike by the analyzer and specht evidence
+    Given a claim file set whose glob is spelled "<spelling>"
+    When the analyzer builds its native claim catalogue and specht evidence reconciles the supplied evidence
+    Then both read the same claim files from that set
+
+    Examples:
+      | spelling                                         |
+      | with a leading ./                                |
+      | with an empty segment                            |
+      | with a backslash                                 |
+      | with .. inside the root                          |
+      | ending in **                                     |
+      | ending in ** over the Feature record's directory |
+
+  @B-029 @boundary
+  Scenario Outline: Withdrawn or superseded native claim
+    Given a native claim carrying the consumer's "<state>" tag and no test bound to it
+    When the supplied evidence is reconciled by specht evidence
+    Then the claim is not selected and no evidence is required for it
+
+    Examples:
+      | state      |
+      | withdrawn  |
+      | superseded |
+
+  @B-030 @boundary
+  Scenario: Native claims of a Feature that is not current
+    Given a claim file set naming a Feature record whose lifecycle is not current
+    When the supplied evidence is reconciled by specht evidence
+    Then none of that Feature's native claims is selected
+
+  @B-031
+  Scenario: Native claim location
+    Given a native claim declared on a Scenario in a claim file
+    When the supplied evidence is reconciled by specht evidence
+    Then the claim's source is that claim file's path and the line of that Scenario
+
+  @B-032 @boundary
+  Scenario: Planned mark in a claim file
+    Given a native claim whose Scenario carries the consumer's planned tag
+    And its discovered case was skipped and no scenario record names it
+    When the supplied evidence is reconciled by specht evidence
+    Then the case is not reported as planned
+    And the default trace gate fails for that case
+
+  @B-033 @boundary
+  Scenario: Native claim whose every case is marked planned
+    Given a native claim whose every case a claim file marks planned
+    And no test bound to that claim
+    When the supplied evidence is reconciled by specht evidence
+    Then the claim has missing required test evidence
+
+  @B-034
+  Scenario Outline: Claim file the reader rejects
+    Given a selected Feature's claim file that "<defect>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming that claim file
+
+    Examples:
+      | defect                                 |
+      | cannot be read                         |
+      | is not valid Gherkin                   |
+      | declares a language other than English |
+
+  @B-035
+  Scenario Outline: Selected Feature without claim files
+    Given a selected Feature "<gap>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
+    Examples:
+      | gap                                  |
+      | that no claim file set names         |
+      | whose claim file set matches no file |
+
+  @B-036
+  Scenario: Declared production project without evidence
+    Given a declared test project whose current evidence passed every required case
+    And a declared production project that is not a test project
+    And no current evidence for the production project
+    When the supplied evidence is reconciled by specht evidence
+    Then the default trace gate succeeds
+    And no compilation is reported missing for the production project
+
+  @B-037 @boundary
+  Scenario: Implementation link required without production evidence
+    Given the consumer has explicitly enabled the implementation link requirement
+    And no current evidence carries a claim's implementation bindings
+    When the supplied evidence is reconciled by specht evidence
+    Then that claim's implementation link is reported as a required gap

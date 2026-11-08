@@ -135,7 +135,7 @@ A consumer whose claims are authored only as tagged Gherkin scenarios cannot use
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-23, 2026-11-06 (item 0411: the reader moves into the engine; the catalogue export is withdrawn) -->
+<!-- last written by: implementer, 2026-11-07 (item 0409: the reader types are public); implementer, 2026-10-23, 2026-11-06 (item 0411: the reader moves into the engine; the catalogue export is withdrawn) -->
 
 Records: [decision 0002](decisions/0002-a-claim-tag-is-the-existing-claim-tag-form.md)
 (what a claim tag is), [decision 0004](decisions/0004-the-gherkin-claim-reader-lives-in-the-engine.md)
@@ -153,20 +153,21 @@ reader's types beside its other text readers and changes nothing else.
 
 ### Where the code lives
 
-| Project, folder and namespace                                         | Holds                                                                                                                                                                                                                                                                                                                                                                                        |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/specht/Model/`, `Specht.Model`                                   | `internal`, one per file, beside `FrontmatterTextReader` and `MarkdownTextReader`, and linked into the analyzer under `Text/` (decision 0004): `GherkinClaimTextReader`, `GherkinClaimTagForm`, `GherkinClaimTags`, and the results `GherkinClaimText`, `GherkinClaimDeclaration`, `GherkinClaimElement`, `GherkinClaimCaseLine`, `GherkinClaimTextFinding` and `GherkinClaimTextException`. |
-| `src/analyzers/Bindings/Gherkin/`, `Specht.Analysis.Bindings.Gherkin` | `GherkinTagForm`, `GherkinClaimPolicy`, `GherkinClaimFileSet`, `GherkinClaimPolicyReader`, `GherkinClaimFileReader`, `GherkinClaimFile`, `GherkinCatalogReader`, `GherkinInputException`, `GherkinDiagnostics`, `GherkinClaimAnalyzer`. `GherkinTagForm` and `GherkinClaimFileReader` adapt the engine's types.                                                                              |
-| `src/analyzers/Bindings/`, `Specht.Analysis.Bindings`                 | `BindingClaim` gains optional trailing `RelativePath`, `Element` and `Cases`; new `BindingClaimElement`, `BindingClaimCase` and `BindingFinding`; `BindingCatalog` gains `Findings`; `BindingResolver` takes a claim's own provenance. `BindingFeatureReader` is unchanged.                                                                                                                  |
-| `src/analyzers/Policy/`, `Specht.Analysis.Policy`                     | `AnalysisPolicyReader` reads the mapped `claim` object and calls `GherkinClaimPolicyReader`; `AnalysisPolicy.Gherkin` holds the result; `AnalysisInputReader` reads claim files under it and reports a `GherkinInputException`'s path and message.                                                                                                                                           |
+| Project, folder and namespace                                         | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/specht/Model/`, `Specht.Model`                                   | `public` from item 0409, so the tool reaches them (0201-F5 § 7), one per file, beside `FrontmatterTextReader` and `MarkdownTextReader`, and linked into the analyzer under `Text/` (decision 0004): `GherkinClaimTextReader`, `GherkinClaimTagForm`, `GherkinClaimTags`, and the results `GherkinClaimText`, `GherkinClaimDeclaration`, `GherkinClaimElement`, `GherkinClaimCaseLine`, `GherkinClaimTextFinding` and `GherkinClaimTextException`. |
+| `src/analyzers/Bindings/Gherkin/`, `Specht.Analysis.Bindings.Gherkin` | `GherkinTagForm`, `GherkinClaimPolicy`, `GherkinClaimFileSet`, `GherkinClaimPolicyReader`, `GherkinClaimFileReader`, `GherkinClaimFile`, `GherkinCatalogReader`, `GherkinInputException`, `GherkinDiagnostics`, `GherkinClaimAnalyzer`. `GherkinTagForm` and `GherkinClaimFileReader` adapt the engine's types.                                                                                                                                   |
+| `src/analyzers/Bindings/`, `Specht.Analysis.Bindings`                 | `BindingClaim` gains optional trailing `RelativePath`, `Element` and `Cases`; new `BindingClaimElement`, `BindingClaimCase` and `BindingFinding`; `BindingCatalog` gains `Findings`; `BindingResolver` takes a claim's own provenance. `BindingFeatureReader` is unchanged.                                                                                                                                                                       |
+| `src/analyzers/Policy/`, `Specht.Analysis.Policy`                     | `AnalysisPolicyReader` reads the mapped `claim` object and calls `GherkinClaimPolicyReader`; `AnalysisPolicy.Gherkin` holds the result; `AnalysisInputReader` reads claim files under it and reports a `GherkinInputException`'s path and message.                                                                                                                                                                                                |
 
 A `BindingClaim` read from a Markdown table leaves the three new members `null`,
 so the Markdown path's records, diagnostics and artifacts are unchanged (B-002).
 The analyzer's dependency closure gains no assembly, so its closure test is
 unchanged: the linked files use only what the analyzer already references. The
 test-evidence artifact carries no catalogue (0201-F3 decision 0010), and
-`specht evidence` reading the claim files through the engine's reader is item
-0409's (0201-F5).
+`specht evidence` reads the claim files through the engine's reader (item 0409,
+0201-F5 § 7). The linked copies are public in `Specht.Analysis` as well; that
+assembly ships only as an analyzer and a collector, never as a library.
 
 ### One reading of a claim tag (C-1)
 
