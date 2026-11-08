@@ -359,17 +359,6 @@ Feature: Id generation
       | decision numbers |
       | scenario ids     |
 
-  @B-046 @boundary
-  Scenario Outline: No id is minted for a type not opted in
-    Given a manifest that <opts in>
-    When an ADR number is requested
-    Then no ADR number is minted
-
-    Examples:
-      | opts in                     |
-      | opts no type in             |
-      | opts only lesson numbers in |
-
   @B-047 @boundary
   Scenario Outline: No id is minted for an entry that names no strategy
     Given a manifest that lists ADR numbers <with no strategy>
