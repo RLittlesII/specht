@@ -8,8 +8,10 @@ namespace Specht.Tests.Identifiers;
 /// The minting pipeline beneath <c>0001-F19</c> B-008 and C-3 (C-12; ADR-0033; item <c>0414</c>): <see cref="Minter"/>
 /// reads the requested type's entry under the manifest's top-level <c>mint</c> key and builds the Nano ID strategy from that
 /// entry's own <c>nanoid</c> sub-object and the type alone, absent or not, and returns one id. No prefix decorator exists at
-/// this step, so the whole id is the part after the type's prefix. Each manifest is written in memory, and the draws come
-/// from a <see cref="FixedRandomSource"/>.
+/// this step, so the whole id is the part after the type's prefix. It mints no id for a type <c>mint</c> does not name
+/// (B-046), an entry naming no strategy (B-047), or a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048): it
+/// refuses, and draws nothing. Each manifest is written in memory, and the draws come from a
+/// <see cref="FixedRandomSource"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class MinterUnitTests
@@ -82,5 +84,79 @@ public sealed class MinterUnitTests
 
         // Then
         id.Should().Be(expected);
+    }
+
+    [Theory]
+    [ClassData(typeof(TypesNotOptedIn))]
+    public void ATypeTheManifestDoesNotOptIn_WhenMinted_ShouldBeRefusedWithNoIdDrawn(string? mint)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[ab]{2}$", "lesson": "^[ab]{2}$" }
+            }
+            """)!.AsObject();
+        if (mint is not null)
+        {
+            manifest["mint"] = JsonNode.Parse(mint);
+        }
+
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mintAdr = () => new Minter(random).Mint(manifest, "adr");
+
+        // Then
+        mintAdr.Should().Throw<IdRefusedException>();
+        random.Bounds.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(EntriesNamingNoStrategy))]
+    public void AnEntryNamingNoStrategy_WhenMinted_ShouldBeRefusedWithNoIdDrawn(string entry)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[ab]{2}$" }
+            }
+            """)!.AsObject();
+        manifest["mint"] = new JsonObject { ["adr"] = JsonNode.Parse(entry) };
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mintAdr = () => new Minter(random).Mint(manifest, "adr");
+
+        // Then
+        mintAdr.Should().Throw<IdRefusedException>();
+        random.Bounds.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(UnknownStrategies))]
+    public void AnEntryNamingAStrategyOtherThanNanoIdOrSnowflake_WhenMinted_ShouldBeRefusedWithNoIdDrawn(string strategy)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[ab]{2}$" },
+              "mint": { "adr": { "nanoid": { "alphabet": "ab", "size": 2 } } }
+            }
+            """)!.AsObject();
+        manifest["mint"]!["adr"]!["strategy"] = strategy;
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mintAdr = () => new Minter(random).Mint(manifest, "adr");
+
+        // Then
+        mintAdr.Should().Throw<IdRefusedException>();
+        random.Bounds.Should().BeEmpty();
     }
 }
