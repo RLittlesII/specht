@@ -15,8 +15,8 @@ public sealed class Minter(IRandomSource random)
     /// <param name="type">The id type, a member of <c>mint</c>.</param>
     /// <returns>The id.</returns>
     /// <exception cref="IdRefusedException">The type is not opted in, its entry names no built strategy, or the strategy refuses its settings.</exception>
+    /// <implements epic="0001" feature="F19" claim="B-001" />
     /// <implements epic="0001" feature="F19" claim="B-008" />
-    /// <implements epic="0001" feature="F19" claim="B-046" />
     /// <implements epic="0001" feature="F19" claim="B-047" />
     /// <implements epic="0001" feature="F19" claim="B-048" />
     public string Mint(JsonObject manifest, string type)
