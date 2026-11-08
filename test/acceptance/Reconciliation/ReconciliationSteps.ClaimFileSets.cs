@@ -18,6 +18,7 @@ public sealed partial class ReconciliationSteps
             "with a backslash" => string.Join('\\', ".spec", "features", "read", "*.feature"),
             "with .. inside the root" => ".spec/other/../features/read/*.feature",
             "ending in **" => ".spec/features/read/**",
+            "ending in ** over the Feature record's directory" => "src/read/.spec/**",
             _ => throw new ArgumentOutOfRangeException(nameof(spelling), spelling, null),
         }, new Dictionary<string, string>
         {
@@ -41,8 +42,11 @@ public sealed partial class ReconciliationSteps
             .Select(static claim => claim.RelativePath!).Distinct().Order(StringComparer.Ordinal).ToArray();
         var evidence = Report()["claims"]!.AsArray().Select(static claim => claim!["path"]!.GetValue<string>())
             .Distinct().Order(StringComparer.Ordinal).ToArray();
+        var rejected = Report()["findings"]!.AsArray().Where(static item => item!["kind"]!.GetValue<string>() == "invalidInput")
+            .Select(static item => item!["path"]!.GetValue<string>()).Except(analyzer, StringComparer.Ordinal).ToArray();
         analyzer.Should().NotBeEmpty();
         evidence.Should().Equal(analyzer);
+        rejected.Should().BeEmpty();
     }
 
     private AnalysisSnapshot? _catalogue;
