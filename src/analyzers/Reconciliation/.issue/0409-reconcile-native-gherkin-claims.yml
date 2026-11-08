@@ -1,7 +1,7 @@
 id: "0409"
 type: task
 title: "Reconcile native Gherkin claims and state the gate's project set"
-status: ready-for-architecture
+status: in-progress
 value: 4
 risk: 3
 parent: "0201"
@@ -11,7 +11,7 @@ spikes: []
 spec: src/analyzers/Reconciliation/.spec/README.md
 claims: []
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-07"
 closed: null
 summary: |
   Two gaps item 0302's packaged consumer fixture found in `specht evidence`
