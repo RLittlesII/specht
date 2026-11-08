@@ -9,7 +9,7 @@ Feature: Id generation
   @B-001 @boundary
   Scenario Outline: A type not opted in gets no id
     Given a manifest that <opts in>
-    When a claim id is requested
+    When an ADR number is requested
     Then nothing is written on standard output
 
     Examples:
@@ -20,32 +20,32 @@ Feature: Id generation
   @B-002 @boundary
   Scenario: A type not opted in is refused
     Given a manifest that opts only lesson numbers in
-    When a claim id is requested
+    When an ADR number is requested
     Then the request ends with a failure code the check already gives
 
   @B-003
   Scenario: A minted id is the whole output
-    Given a manifest that opts claim ids in to Nano ID
-    When a claim id is requested
-    Then standard output is one line holding only the minted id
+    Given a manifest that opts ADR numbers in to Nano ID
+    When an ADR number is requested
+    Then standard output is one line holding only the minted number
 
   @B-004
   Scenario: A printed id ends in success
-    Given a manifest that opts claim ids in to Nano ID
-    When a claim id is requested
+    Given a manifest that opts ADR numbers in to Nano ID
+    When an ADR number is requested
     Then the request ends in success
 
   @B-005
   Scenario: A Nano ID has the configured size
-    Given a manifest that opts claim ids in to Nano ID with a size of 10
-    When a claim id is requested
-    Then the minted id is 10 characters long after its prefix
+    Given a manifest that opts ADR numbers in to Nano ID with a size of 10
+    When an ADR number is requested
+    Then the minted number is 10 characters long after its prefix
 
   @B-006
   Scenario: A Nano ID draws only from the configured alphabet
-    Given a manifest that opts claim ids in to Nano ID with an alphabet of lowercase letters and digits
-    When a claim id is requested
-    Then every character of the minted id after its prefix is a lowercase letter or a digit
+    Given a manifest that opts ADR numbers in to Nano ID with an alphabet of lowercase letters and digits
+    When an ADR number is requested
+    Then every character of the minted number after its prefix is a lowercase letter or a digit
 
   @B-007
   Scenario: A Snowflake id carries the time since its epoch
@@ -56,10 +56,10 @@ Feature: Id generation
 
   @B-008
   Scenario: Each type follows its own settings
-    Given a manifest that opts claim ids in to Nano ID with a size of 8
+    Given a manifest that opts ADR numbers in to Nano ID with a size of 8
     And it opts lesson numbers in to Nano ID with a size of 12
-    When a claim id and a lesson number are requested
-    Then the claim id is 8 characters long after its prefix
+    When an ADR number and a lesson number are requested
+    Then the ADR number is 8 characters long after its prefix
     And the lesson number is 12 characters long after its prefix
 
   @B-009
@@ -77,30 +77,30 @@ Feature: Id generation
 
   @B-011 @boundary
   Scenario: An id its type's grammar rejects is not printed
-    Given a manifest that opts claim ids in to Snowflake
-    And its claim grammar admits only three-digit claim numbers
-    When a claim id is requested
+    Given a manifest that opts ADR numbers in to Snowflake
+    And its ADR grammar admits only four-digit ADR numbers
+    When an ADR number is requested
     Then nothing is written on standard output
 
   @B-012 @boundary
   Scenario: An id its type's grammar rejects is refused
-    Given a manifest that opts claim ids in to Snowflake
-    And its claim grammar admits only three-digit claim numbers
-    When a claim id is requested
+    Given a manifest that opts ADR numbers in to Snowflake
+    And its ADR grammar admits only four-digit ADR numbers
+    When an ADR number is requested
     Then the request ends with a failure code the check already gives
 
   @B-013 @boundary
   Scenario Outline: A request writes nothing
     Given a manifest that <opts in>
-    And specifications that already hold claim ids
-    When a claim id is requested
+    And ADRs that are already numbered
+    When an ADR number is requested
     Then no file under the root or elsewhere has been created, modified or deleted
 
     Examples:
-      | opts in                        |
-      | opts claim ids in to Nano ID   |
-      | opts claim ids in to Snowflake |
-      | opts no type in                |
+      | opts in                          |
+      | opts ADR numbers in to Nano ID   |
+      | opts ADR numbers in to Snowflake |
+      | opts no type in                  |
 
   @B-014 @boundary
   Scenario: Opting types in changes no verdict
@@ -113,7 +113,7 @@ Feature: Id generation
   Scenario: Id settings the pinned version rejects are invalid
     Given a manifest pinned to a schema version that has no id settings
     And the manifest sets them
-    When a claim id is requested
+    When an ADR number is requested
     Then the request ends as it does for an invalid manifest
 
   @B-016 @boundary
@@ -134,28 +134,28 @@ Feature: Id generation
     Then it ends with a failure code the check already gives
 
     Examples:
-      | a request that prints no id                                     |
-      | a claim id requested of a manifest that opts no type in         |
-      | an ADR number requested for a Feature                           |
-      | a claim id requested of a tree holding every candidate it tries |
+      | a request that prints no id                                        |
+      | an ADR number requested of a manifest that opts no type in         |
+      | an ADR number requested for a Feature                              |
+      | an ADR number requested of a tree holding every candidate it tries |
 
   @B-018 @boundary
   Scenario Outline: Epic, Feature and task ids are not minted
-    Given a manifest that opts claim ids in to Nano ID
+    Given a manifest that opts <type> in to Nano ID
     When <an id> is requested
     Then nothing is written on standard output
 
     Examples:
-      | an id        |
-      | an epic id   |
-      | a Feature id |
-      | a task id    |
+      | type        | an id        |
+      | epic ids    | an epic id   |
+      | Feature ids | a Feature id |
+      | task ids    | a task id    |
 
   @B-019
   Scenario: A Nano ID with no alphabet draws from lower-case base32
-    Given a manifest that opts claim ids in to Nano ID with no alphabet
-    When a claim id is requested for a Feature
-    Then every character of the minted id after its prefix is a digit or a lower-case letter other than i, l, o and u
+    Given a manifest that opts ADR numbers in to Nano ID with no alphabet
+    When an ADR number is requested
+    Then every character of the minted number after its prefix is a digit or a lower-case letter other than i, l, o and u
 
   @B-020
   Scenario Outline: A repository-wide Nano ID with no size is 8 characters
