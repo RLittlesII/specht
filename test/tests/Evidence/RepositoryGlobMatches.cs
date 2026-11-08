@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Specht.Tests.Model;
+namespace Specht.Tests.Evidence;
 
 public sealed class RepositoryGlobMatches : TheoryData<string, string, bool>
 {

@@ -1,7 +1,7 @@
 using AwesomeAssertions;
-using Specht.Model;
+using Specht.Tool.Features.Evidence;
 
-namespace Specht.Tests.Model;
+namespace Specht.Tests.Evidence;
 
 [Trait("Tier", "Unit")]
 public sealed class RepositoryPathsUnitTests

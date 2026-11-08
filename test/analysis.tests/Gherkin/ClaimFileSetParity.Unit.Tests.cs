@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Analysis.Policy;
-using Specht.Model;
+using Specht.Tool.Features.Evidence;
 
 namespace Specht.Analysis.Tests.Gherkin;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Specht.Model;
+namespace Specht.Tool.Features.Evidence;
 
 /// <summary>Normalises root-relative claim file set paths and globs and matches a path to a glob, reading them as the analyzer's AnalysisPaths does.</summary>
 /// <implements epic="0201" feature="F5" claim="B-035" />
