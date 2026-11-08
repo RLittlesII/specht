@@ -1,7 +1,7 @@
 id: "0409"
 type: task
 title: "Reconcile native Gherkin claims and state the gate's project set"
-status: in-progress
+status: done
 value: 4
 risk: 3
 parent: "0201"
@@ -12,7 +12,7 @@ spec: src/analyzers/Reconciliation/.spec/README.md
 claims: ["B-011", "B-022", "B-028", "B-029", "B-030", "B-031", "B-032", "B-033", "B-034", "B-035", "B-036", "B-037", "B-038"]
 created: "2026-11-06"
 updated: "2026-11-08"
-closed: null
+closed: "2026-11-08"
 summary: |
   Two gaps item 0302's packaged consumer fixture found in `specht evidence`
   (branch `0302/packaged-gherkin-vstest-fixture`, commit `38670c0d`). One
