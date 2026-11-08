@@ -139,7 +139,7 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-08 (item 0409: `RepositoryPaths` moved into the evidence slice); implementer, 2026-11-08 (item 0409: the gate's claim file candidates are `.feature` files, B-038); implementer, 2026-11-08 (item 0409: two claim file set readings held to one list of cases, decision 0009); implementer, 2026-11-08 (item 0409: one claim file set reading); implementer, 2026-11-07 (item 0409: native Gherkin claims, the declared test projects, the reader's visibility); implementer, 2026-11-02 (item `0166`: root-relative locations, the instance parser); implementer, 2026-10-25 -->
+<!-- last written by: implementer, 2026-11-08 (item 0302: 0201-F5 OQ-5 cited as resolved) -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -385,7 +385,7 @@ result types.
 
 For every declared project/TFM pair of a declared test project, require current
 compiler and runner evidence in the supplied F3 envelope (B-011, B-022, B-036,
-OQ-5's proposed default). `EvidencePolicy.ProjectEntry.RequiresExport` holds for
+OQ-5 as resolved). `EvidencePolicy.ProjectEntry.RequiresExport` holds for
 a project with a `requiredCaseScope` or named, by `project`, in a
 `codeAnalysis.enforcement` entry whose `role` is `verifies`. Another declared
 project needs no export: with none it raises no `missingCompilation`, and a
