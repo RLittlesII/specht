@@ -302,6 +302,20 @@ Feature: Traceability reconciliation
     Then every claim the claim files declare is reported with its test chain
     And the default trace gate succeeds
 
+  @B-038
+  Scenario Outline: Claim file set read alike by the analyzer and specht evidence
+    Given a claim file set whose glob is spelled "<spelling>"
+    When the analyzer builds its native claim catalogue and specht evidence reconciles the supplied evidence
+    Then both read the same claim files from that set
+
+    Examples:
+      | spelling                  |
+      | with a leading ./         |
+      | with an empty segment     |
+      | with a backslash          |
+      | with .. inside the root   |
+      | ending in **              |
+
   @B-029 @boundary
   Scenario Outline: Withdrawn or superseded native claim
     Given a native claim carrying the consumer's "<state>" tag and no test bound to it

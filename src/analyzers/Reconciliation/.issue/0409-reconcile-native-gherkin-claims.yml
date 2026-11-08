@@ -9,9 +9,9 @@ children: []
 depends_on: ["0411"]
 spikes: []
 spec: src/analyzers/Reconciliation/.spec/README.md
-claims: ["B-011", "B-022", "B-028", "B-029", "B-030", "B-031", "B-032", "B-033", "B-034", "B-035", "B-036", "B-037"]
+claims: ["B-011", "B-022", "B-028", "B-029", "B-030", "B-031", "B-032", "B-033", "B-034", "B-035", "B-036", "B-037", "B-038"]
 created: "2026-11-06"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: null
 summary: |
   Two gaps item 0302's packaged consumer fixture found in `specht evidence`
@@ -73,6 +73,7 @@ decisions:
     report JSON is unchanged." The recorder's reading: B-032 and B-033; a
     discovered case is planned only through scenario records. Rejected:
     option B, listing each native claim's Gherkin cases in `claims[]`.
+  - "0201-F5 decision 0009"
 out_of_scope:
   - "Moving the Gherkin claim reader into the engine, and 0201-F7 B-030: 0411."
   - "A second Gherkin reader in the tool: rejected in 0201-F7 decision 0004."
