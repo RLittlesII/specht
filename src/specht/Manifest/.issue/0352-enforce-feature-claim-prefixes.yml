@@ -2,7 +2,7 @@ id: "0352"
 type: task
 title: Enforce Feature claim prefixes
 
-status: ready
+status: in-progress
 
 risk: 3
 
@@ -15,7 +15,7 @@ spec: src/specht/Manifest/.spec/README.md
 claims: [B-076, B-077, B-078, B-079, B-080]
 
 created: "2026-11-03"
-updated: "2026-11-03"
+updated: "2026-11-08"
 closed: null
 
 summary: |
