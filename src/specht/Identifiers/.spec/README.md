@@ -58,7 +58,7 @@ An author on a branch takes the next free number from their own copy of the tree
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-11-07 (B-016 to B-045 added; Source cells of settled questions cite ADR-0033) -->
+<!-- last written by: spec-author, 2026-11-07 (B-016 to B-045 added; Source cells of settled questions cite ADR-0033); spec-author, 2026-11-08 (B-046 to B-051 added, item 0422) -->
 
 | ID    | Claim                                                                                                                                                                                                                                         | Source                                                                         | Status |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------ |
@@ -107,6 +107,12 @@ An author on a branch takes the next free number from their own copy of the tree
 | B-043 | Given a manifest that opts in a type for which `identifiers` holds no grammar, this Feature exits `3` on a request to mint an id.                                                                                                             | ADR-0033 (OQ-10); C-14                                                         | Active |
 | B-044 | Given a manifest pinned to schema `0.3.1` whose only difference from a valid manifest is a `mint` key in C-12's shape, the check does not exit `3`.                                                                                           | ADR-0033 (OQ-7); decision 0003; C-12, C-17                                     | Active |
 | B-045 | Given a manifest pinned to schema `0.3.1` whose only difference from a valid manifest is an `adr`, `lesson`, `decision` or `scenario` grammar in `identifiers`, the check does not exit `3`.                                                  | ADR-0033 (OQ-10); decision 0003; C-14, C-17                                    | Active |
+| B-046 | Given a request to mint an id of a type the manifest does not opt in, this Feature mints no id.                                                                                                                                               | the owner's selection, 2026-11-08 (item `0422`); C-2                           | Active |
+| B-047 | Given a type whose entry in the manifest's id settings names no strategy, this Feature mints no id of that type.                                                                                                                              | the owner's selection, 2026-11-08 (item `0422`); C-2, C-12                     | Active |
+| B-048 | Given a type whose entry in the manifest's id settings names a strategy other than `nanoid` or `snowflake`, this Feature mints no id of that type.                                                                                            | the owner's selection, 2026-11-08 (item `0422`); C-3, C-12                     | Active |
+| B-049 | Given a type opted in to Nano ID whose Nano ID settings are not an object, this Feature mints no id of that type.                                                                                                                             | the owner's selection, 2026-11-08 (item `0422`); C-12                          | Active |
+| B-050 | Given a type opted in to Nano ID whose alphabet is empty or is not a string, this Feature mints no id of that type.                                                                                                                           | the owner's selection, 2026-11-08 (item `0422`); C-12                          | Active |
+| B-051 | Given a type opted in to Nano ID whose size is not a positive whole number, this Feature mints no id of that type.                                                                                                                            | the owner's selection, 2026-11-08 (item `0422`); C-12                          | Active |
 
 ## 4. Constraints
 
@@ -135,23 +141,25 @@ An author on a branch takes the next free number from their own copy of the tree
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-11-07 (rows 5 and 8 amended; rows 10 to 13 added) -->
+<!-- last written by: spec-author, 2026-11-07 (rows 5 and 8 amended; rows 10 to 13 added); spec-author, 2026-11-08 (rows 14 and 15 added, item 0422) -->
 
-| #   | Item                                                                                                                | Exclusion Reason                                                                     |
-| --- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| 1   | A consumer-supplied, pluggable strategy                                                                             | Kept open as a future option (the owner, 2026-11-06; item `0256`); C-3.              |
-| 2   | A sequence strategy, a sequence default or a fallback to the sequence                                               | This replaces the sequence (the owner, 2026-11-06; item `0256`); C-2.                |
-| 3   | Writing a minted id into a document, a file name or a counter                                                       | Print only (the owner, 2026-11-06; decision 0001); C-1.                              |
-| 4   | Renumbering or rewriting an id already in the tree, under any strategy                                              | AGENTS.md § Stable IDs; C-11.                                                        |
-| 5   | The MCP tool that mints an id                                                                                       | `0132-F4` B-023; ADR-0033 names it `mint`, with arguments `type` and `feature`; C-9. |
-| 6   | A check that fails on an id claimed twice across `main` and open pull requests, or any rule over minted ids         | Item `0128`; B-014.                                                                  |
-| 7   | Allocation from a shared sequence, online or across machines                                                        | Epic `0324`; ADR-0028; C-7.                                                          |
-| 8   | Moving this repository's own records - the queue script, `.issue/.sequence`, ADR and lesson numbers - to minted ids | A follow-up item ADR-0033 names (its decision 8 and § Consequences).                 |
-| 9   | A key a record keeps for its whole lifecycle in a database                                                          | Epic `0324` § "Service mode".                                                        |
-| 10  | Minting `epic`, `feature` and `task` ids, and widening the frontmatter schemas' id patterns they need               | A later slice (decision 0003); C-13.                                                 |
-| 11  | Assigning a Snowflake datacenter or worker from the machine, the branch, the author or the worktree path            | Measured to collide and not offered (ADR-0033 finding 2); C-16.                      |
-| 12  | A state file that detects a clock moved back between two requests                                                   | C-1; ADR-0033 finding 2.                                                             |
-| 13  | Provisional ids renumbered on merge                                                                                 | Rejected (ADR-0033 option (d)); C-11.                                                |
+| #   | Item                                                                                                                   | Exclusion Reason                                                                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | A consumer-supplied, pluggable strategy                                                                                | Kept open as a future option (the owner, 2026-11-06; item `0256`); C-3.                                                                                         |
+| 2   | A sequence strategy, a sequence default or a fallback to the sequence                                                  | This replaces the sequence (the owner, 2026-11-06; item `0256`); C-2.                                                                                           |
+| 3   | Writing a minted id into a document, a file name or a counter                                                          | Print only (the owner, 2026-11-06; decision 0001); C-1.                                                                                                         |
+| 4   | Renumbering or rewriting an id already in the tree, under any strategy                                                 | AGENTS.md § Stable IDs; C-11.                                                                                                                                   |
+| 5   | The MCP tool that mints an id                                                                                          | `0132-F4` B-023; ADR-0033 names it `mint`, with arguments `type` and `feature`; C-9.                                                                            |
+| 6   | A check that fails on an id claimed twice across `main` and open pull requests, or any rule over minted ids            | Item `0128`; B-014.                                                                                                                                             |
+| 7   | Allocation from a shared sequence, online or across machines                                                           | Epic `0324`; ADR-0028; C-7.                                                                                                                                     |
+| 8   | Moving this repository's own records - the queue script, `.issue/.sequence`, ADR and lesson numbers - to minted ids    | A follow-up item ADR-0033 names (its decision 8 and § Consequences).                                                                                            |
+| 9   | A key a record keeps for its whole lifecycle in a database                                                             | Epic `0324` § "Service mode".                                                                                                                                   |
+| 10  | Minting `epic`, `feature` and `task` ids, and widening the frontmatter schemas' id patterns they need                  | A later slice (decision 0003); C-13.                                                                                                                            |
+| 11  | Assigning a Snowflake datacenter or worker from the machine, the branch, the author or the worktree path               | Measured to collide and not offered (ADR-0033 finding 2); C-16.                                                                                                 |
+| 12  | A state file that detects a clock moved back between two requests                                                      | C-1; ADR-0033 finding 2.                                                                                                                                        |
+| 13  | Provisional ids renumbered on merge                                                                                    | Rejected (ADR-0033 option (d)); C-11.                                                                                                                           |
+| 14  | What a request B-046 to B-051 mint no id for writes, and how it exits                                                  | The command's claims: B-001, B-002, B-015, B-017 and B-043 (items `0415`, `0416`); OQ-11.                                                                       |
+| 15  | A claim that no id is minted for a type that names no Nano ID size and has no default, or for the strategy `snowflake` | Built only while items `0418` and `0419` are open: B-021 gives every per-Feature type a default size, and B-007 and B-022 to B-032 make `snowflake` a strategy. |
 
 ## 6. Concern Separation
 
@@ -279,7 +287,7 @@ Review round 3 (item `0414`): the tests move to `test/tests/Identifiers/`, names
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-11-07 (rows B-016 to B-045 added, Missing until bound); test-writer, 2026-11-07 (B-014, B-044 and B-045 bound; item 0413; B-044's lower bound, review round 1); test-writer, 2026-11-08 (B-005, B-006, B-008, B-019 and B-020 unit tests; item 0414); test-writer, 2026-11-08 (review round 1: the absent sub-object, C-3's outside settings, the kept random source; item 0414); test-writer, 2026-11-08 (review round 3: `Specht.Identifiers`, `Minter`, the settings read by `NanoIdStrategy`; item 0414) -->
+<!-- last written by: spec-author, 2026-11-07 (rows B-016 to B-045 added, Missing until bound); test-writer, 2026-11-07 (B-014, B-044 and B-045 bound; item 0413; B-044's lower bound, review round 1); test-writer, 2026-11-08 (B-005, B-006, B-008, B-019 and B-020 unit tests; item 0414); test-writer, 2026-11-08 (review round 1: the absent sub-object, C-3's outside settings, the kept random source; item 0414); test-writer, 2026-11-08 (review round 3: `Specht.Identifiers`, `Minter`, the settings read by `NanoIdStrategy`; item 0414); spec-author, 2026-11-08 (rows B-046 to B-051 added, Missing until bound; item 0422) -->
 
 | Claim ID | Scenario                                                          | Test                                                                                                                                                                                                                                                                                                                                                                                            | Status  |
 | -------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -328,10 +336,16 @@ Review round 3 (item `0414`): the tests move to `test/tests/Identifiers/`, names
 | B-043    | A type opted in with no grammar is an invalid manifest            | Missing                                                                                                                                                                                                                                                                                                                                                                                         | Missing |
 | B-044    | Schema 0.3.1 accepts the id settings                              | `IdGenerationSteps` (@B-044); `SpechtManifestParserMintUnitTests.AZeroThreeOneManifestOptingATypeIn_WhenParsed_ShouldNotBeRejected`; `SpechtManifestParserMintUnitTests.APinBelowZeroThreeOneSettingMint_WhenParsed_ShouldRejectTheKeyAsOneTheEngineDoesNotKnow`                                                                                                                                | Covered |
 | B-045    | Schema 0.3.1 accepts the four new grammars                        | `IdGenerationSteps` (@B-045); `SpechtManifestParserMintUnitTests.AZeroThreeOneManifestDeclaringAGrammarForANewType_WhenParsed_ShouldCarryThatGrammar`; `SpechtManifestParserMintUnitTests.TheZeroThreeOneDefaults_WhenParsed_ShouldHoldTheZeroThreeZeroGrammarsAndNoneForTheFourNewTypes`                                                                                                       | Covered |
+| B-046    | No id is minted for a type not opted in                           | Missing                                                                                                                                                                                                                                                                                                                                                                                         | Missing |
+| B-047    | No id is minted for an entry that names no strategy               | Missing                                                                                                                                                                                                                                                                                                                                                                                         | Missing |
+| B-048    | No id is minted through a strategy that does not exist            | Missing                                                                                                                                                                                                                                                                                                                                                                                         | Missing |
+| B-049    | No id is minted from Nano ID settings that are not named settings | Missing                                                                                                                                                                                                                                                                                                                                                                                         | Missing |
+| B-050    | No id is minted from an alphabet that is empty or not text        | Missing                                                                                                                                                                                                                                                                                                                                                                                         | Missing |
+| B-051    | No id is minted for a size that is not a positive whole number    | Missing                                                                                                                                                                                                                                                                                                                                                                                         | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-07 (OQ-18 raised, item 0413; OQ-18 reworded, item 0413 review round 1) -->
+<!-- last written by: spec-author, 2026-11-07 (OQ-18 raised, item 0413; OQ-18 reworded, item 0413 review round 1); spec-author, 2026-11-08 (item 0422 cut, B-046 to B-051 added) -->
 
 2026-11-07: the owner accepted ADR-0033 by selecting "Accept as proposed", and selected the options decision 0003 records for ADR-0033's decisions 4 and 5 and for OQ-11.
 
@@ -354,6 +368,13 @@ Review round 3 (item `0414`): the tests move to `test/tests/Identifiers/`, names
 2026-11-07, item `0413`: OQ-18 raised by spec-author. As delivered, `identifiers` holds no list of permitted member names under any pin, so a pin below `0.3.1` accepts the four grammars C-17 rules out of it; no claim states otherwise, and none is added.
 
 2026-11-07, item `0413` review round 1 (§ 12), spec-author's answer: OQ-18 records `0001-F7` C-1, which rules out refusing the four members under the published `0.1.0` to `0.3.0`, and now leaves open C-17's Rules Out cell for them, not whether to refuse them; no claim is added.
+
+2026-11-08, item `0422`: asked how to handle the codecov/patch gap on PR 789, the owner selected "Add refusal claim+tests". The wording, the split into six claims and the § 5 rows are spec-author's.
+
+- Added: B-046 to B-051, each stating that the engine mints no id for an input item `0414`'s `Minter` and `NanoIdStrategy` refuse; their scenarios; § 5 rows 14 and 15; § 9 rows B-046 to B-051, `Missing` until bound. No existing claim, constraint or scenario changes.
+- B-046 and B-047 restate C-2 as behaviour: an entry naming no strategy is not an opt-in. B-046 differs from B-001 in what fails it: a Feature that mints an id and does not print it passes B-001 and fails B-046.
+- Two refusals `0414` built are not claimed (§ 5 row 15): an unset size for a type with no default, which B-021 removes for every per-Feature type, and `snowflake`, which B-007 and B-022 to B-032 make a strategy. A JSON `null` for `nanoid`, `alphabet` or `size` reads as absent and takes the default, so no claim refuses it.
+- For `implementer` and `test-writer`: § 7 and § 8 say no claim states a refusal; that no longer holds for B-046 to B-051.
 
 ## 11. Open Questions
 
@@ -410,6 +431,8 @@ Cut 2026-11-07 into [`../.issue/`](../.issue/), after the agreement review appro
 - `0419`, Snowflake, its fields and its encodings (B-007, B-013, B-022 to B-032). It is blocked on OQ-13, for a Snowflake type that names no encoding.
 - `0420`, validation against a type's grammar (B-011, B-012), after `0419`.
 - `0421`, no `epic`, `feature` or `task` id (B-018). It is blocked on OQ-17.
+
+Cut 2026-11-08: `0422`, the engine minting no id for the inputs B-046 to B-051 state, on the owner's selection recorded in § 10.
 
 Every item waits, through `0413`, on `0388` (`0001-F7`), which cuts schema `0.3.1`. The items that refuse a request proceed on OQ-11's default, and `0417` and `0418` on OQ-14's.
 

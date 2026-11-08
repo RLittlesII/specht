@@ -358,3 +358,72 @@ Feature: Id generation
       | lesson numbers   |
       | decision numbers |
       | scenario ids     |
+
+  @B-046 @boundary
+  Scenario Outline: No id is minted for a type not opted in
+    Given a manifest that <opts in>
+    When an ADR number is requested
+    Then no ADR number is minted
+
+    Examples:
+      | opts in                     |
+      | opts no type in             |
+      | opts only lesson numbers in |
+
+  @B-047 @boundary
+  Scenario Outline: No id is minted for an entry that names no strategy
+    Given a manifest that lists ADR numbers <with no strategy>
+    When an ADR number is requested
+    Then no ADR number is minted
+
+    Examples:
+      | with no strategy                     |
+      | without a strategy                   |
+      | with a number in place of a strategy |
+
+  @B-048 @boundary
+  Scenario Outline: No id is minted through a strategy that does not exist
+    Given a manifest that lists ADR numbers with the strategy "<strategy>"
+    When an ADR number is requested
+    Then no ADR number is minted
+
+    Examples:
+      | strategy |
+      | sequence |
+      | uuid     |
+
+  @B-049 @boundary
+  Scenario Outline: No id is minted from Nano ID settings that are not named settings
+    Given a manifest that opts ADR numbers in to Nano ID with its Nano ID settings given as <a value>
+    When an ADR number is requested
+    Then no ADR number is minted
+
+    Examples:
+      | a value  |
+      | a number |
+      | a list   |
+      | text     |
+
+  @B-050 @boundary
+  Scenario Outline: No id is minted from an alphabet that is empty or not text
+    Given a manifest that opts ADR numbers in to Nano ID with <an alphabet>
+    When an ADR number is requested
+    Then no ADR number is minted
+
+    Examples:
+      | an alphabet                      |
+      | an empty alphabet                |
+      | a number in place of an alphabet |
+
+  @B-051 @boundary
+  Scenario Outline: No id is minted for a size that is not a positive whole number
+    Given a manifest that opts ADR numbers in to Nano ID with a size of <size>
+    When an ADR number is requested
+    Then no ADR number is minted
+
+    Examples:
+      | size               |
+      | 0                  |
+      | -3                 |
+      | 2.5                |
+      | "8", given as text |
