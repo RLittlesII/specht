@@ -1,7 +1,7 @@
 id: "0302"
 type: test
 title: "Prove native Gherkin claims with xUnit v2 VSTest evidence in one packaged consumer"
-status: blocked
+status: done
 value: 4
 risk: 3
 parent: "0201"
@@ -11,8 +11,8 @@ spikes: []
 spec: src/codeanalysis/.spec/README.md
 claims: ["B-002", "B-016", "B-017", "B-025", "B-026", "B-027"]
 created: "2026-10-25"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-08"
+closed: "2026-11-08"
 summary: |
   Consumer request #256 asks for one packaged consumer integration fixture that
   combines what separate tests now prove apart: native Gherkin claims
@@ -42,11 +42,12 @@ acceptance_criteria:
   - "0201-F3 B-017, B-019 - the clean-checkout sequence builds first and then holds current passing evidence"
   - "0201-F3 B-018, 0201-F5 B-012 - stale evidence is reported and excluded"
   - "0201-F3 B-022, 0201-F5 B-022 - the declared test project with no evidence fails as incomplete input"
-  - "The gate reads the native claims through the engine's Gherkin claim reader, not a catalogue in the evidence artifact; 0201-F7 B-030 is withdrawn by 0411, and the 0201-F5 claim 0409 adds joins this criterion once it exists"
+  - "0201-F5 B-028 - the gate reads the native claims through the engine's Gherkin claim reader from the claim files the claim file set names, not from a catalogue in the evidence artifact"
+  - "0201-F5 B-036 - the production project, named only by an `implements` enforcement entry and with no required-case scope, needs no export, and no missing compilation is reported for it"
   - "0201-F5 B-017 - the valid fixture passes the default gate; a failed or skipped owned case fails it"
   - "B-002 - the same configuration gives the same verdicts in the local build and in the build target CI runs, with no CI-only property or file"
   - "No Reqnroll package, generated test or scenario record appears in the fixture, and none is needed to pass."
-  - "No `NoWarn`, `.editorconfig` severity change, pragma or `SuppressMessage` appears in the fixture."
+  - "No `NoWarn`, `.editorconfig` severity change, pragma or `SuppressMessage` appears in the fixture; an enforcement `exclude` is a declared scope, not a suppression."
   - "§ 9 of each cited specification carries a row naming the fixture's test for each id above."
 decisions:
   - |
@@ -84,6 +85,44 @@ decisions:
     native claims" criterion therefore waits on item 0411, which withdraws
     B-030, and is proved through the 0201-F5 claim 0409 adds; those ids
     join the criterion once they exist.
+  - |
+    2026-11-08, spec-author: the three gaps the 2026-11-06 decision named are
+    closed. 0409 makes `specht evidence` reconcile native Gherkin claims and
+    require a current export only from a declared test project; 0410 makes a
+    test method with no `verifies` recognised, so the mandatory role
+    reports; 0411 withdraws 0201-F7 B-030. The criterion that waited on
+    those ids is replaced by two: one citing 0201-F5 B-028, one citing
+    0201-F5 B-036. No other criterion changes: the "0201-F3 B-022, 0201-F5
+    B-022" criterion still fits B-022 as amended, because the test project
+    is declared by its required-case scope and its `verifies` entry, and no
+    criterion assumes a production project export. 0201-F5 B-036 follows
+    the proposed default of 0201-F5 OQ-5, which is still open.
+  - |
+    2026-11-08, repository owner, recorded by spec-author: with the fixture
+    on main, the valid run's default gate exits 1. Its two pending test
+    methods, `PostingTests.PostingOfAForeignAmountIsPending` (skipped) and
+    `ReversalTests.ReversalBelowZeroIsPending` (failing), carry `verifies`
+    and `Trait("Category","pending")`, and `requiredCaseScope: "not
+    @pending"` leaves them with no owned case, which 0201-F5 decision 0004
+    item 5 and the @B-020 boundary scenario report as `missingResult`. The
+    owner selected the option labelled "A: change the fixture". The
+    coordinating session's wording of that option: "No product change. The
+    pending methods lose `verifies` and move to their own file, which the
+    project's `verifies` enforcement lists under `exclude` (a declared
+    scope, not a suppression). The failing half still fails. Right if
+    consumers don't bind claims on pending tests." Consequence: the
+    fixture's pending methods carry no `verifies` and sit in their own
+    file, which the test project's `verifies` enforcement entry excludes;
+    the unscoped mutation adds `verifies` back, so a failed and a skipped
+    owned case still fail the gate. 0201-F5 is unchanged. Rejected:
+    amending 0201-F5 B-020 and decision 0004 item 5 so a bound method the
+    declaring project's own scope leaves out is not "no owned case", a
+    behaviour change this item does not add.
+  - |
+    2026-11-08, repository owner, recorded by spec-author: "Accept OQ-5
+    default". 0201-F5 OQ-5 is resolved in place on its proposed default, so
+    0201-F5 B-036, which the 2026-11-08 entry above calls still open, now
+    follows a resolved rule. No criterion of this item changes.
 out_of_scope:
   - "Reqnroll and scenario records: 0201-F4 is an optional input this fixture does not use."
   - "Planned scenarios and Examples blocks reaching the gate: 0201-F5 OQ-3."
