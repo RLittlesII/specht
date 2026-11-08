@@ -12,7 +12,7 @@ children: []
 depends_on: ["0414"] # 0414 is the engine pipeline the command calls
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-001
@@ -24,7 +24,7 @@ claims:
   - B-043
 
 created: "2026-11-07"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: null
 
 summary: |
@@ -55,6 +55,7 @@ acceptance_criteria:
   - "B-016 — `--feature` for adr or lesson, nothing on standard output"
   - "B-043 — an opted-in type with no grammar, exit 3"
   - "No absolute path in any output (AGENTS.md § Invariants)"
+  - "B-005, B-006, B-008, B-019, B-020 — their scenarios bound through the command; § 9 rows Partial to Covered"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -63,6 +64,14 @@ decisions:
     0003. Value omitted, inheriting 0412's. B-013's rows include a
     Snowflake request, so it goes to 0419; B-017's include the
     guard's exhaustion, so it goes to 0416.
+  - |
+    2026-11-08, spec-author: binds the scenarios of B-005, B-006,
+    B-008, B-019 and B-020. Item 0414 delivered and lists those claims
+    with unit tests; their scenarios request an ADR or lesson number,
+    which only this command answers, so their § 9 rows stay Partial
+    until it lands, and no other item binds them. The ids stay out of
+    `claims:`, which names what an item delivers, and 0414 delivered
+    them; rejected: listing them there too.
 
 out_of_scope:
   - "The MCP tool - § 5 row 5; `0132-F4` B-023."

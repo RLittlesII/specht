@@ -5,10 +5,10 @@ using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
 using Specht.Tool;
 
-namespace Specht.Acceptance.IdGeneration;
+namespace Specht.Acceptance.Identifiers;
 
 /// <summary>
-/// Steps for <c>src/specht/IdGeneration/.spec/id-generation.feature</c> (<c>0001-F19</c>). The root is a synthetic tree
+/// Steps for <c>src/specht/Identifiers/.spec/id-generation.feature</c> (<c>0001-F19</c>). The root is a synthetic tree
 /// holding this repository's default manifest; "a tree whose check reports a violation" adds the baseline tree under the
 /// manifest's own pin. "Opts claim ids in to Nano ID" writes a <c>claim</c> entry under the top-level <c>mint</c> key in
 /// C-12's shape and, as A-6 reads a scenario, a claim grammar in <c>identifiers</c> that admits the ids it mints. "The

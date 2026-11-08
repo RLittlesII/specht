@@ -14,7 +14,7 @@ children:
 depends_on: []
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-001
@@ -64,7 +64,7 @@ claims:
   - B-045
 
 created: "2026-11-07"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: null
 
 summary: |

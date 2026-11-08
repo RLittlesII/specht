@@ -80,7 +80,7 @@ request; a Feature is a thing the tool does, with its own invariant.
 | `0001-F13` | The trace command               | `src/tool/Features/Trace/.spec/README.md`          | after 6        |
 | `0001-F14` | The schema folder               | `src/specht/Manifest/SchemaFolder/.spec/README.md` | after 6        |
 | `0001-F17` | Output verbosity                | `src/tool/Features/Verbosity/.spec/README.md`      | after 6        |
-| `0001-F19` | Id generation                   | `src/specht/IdGeneration/.spec/README.md`          | after 6        |
+| `0001-F19` | Id generation                   | `src/specht/Identifiers/.spec/README.md`           | after 6        |
 
 The initial draft bundled the command, `init`, the manifest roles, discovery and the baseline in
 one Feature. Each of those has a different invariant - the command never
