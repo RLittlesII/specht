@@ -7,7 +7,8 @@ namespace Specht.Tests.Evidence;
 /// <summary>
 /// Several projects' runs, the incomplete-run finding, the undiscovered bound method and the steps a missing or stale
 /// input names (0201-F3 B-014, B-018, B-021, B-022, B-026; OQ-4, OQ-5) and the owned-key and planned-row gate
-/// (0201-F5 B-017 to B-022).
+/// (0201-F5 B-017 to B-022), native Gherkin claims (B-028 to B-035) and the declared projects that need an export
+/// (B-011, B-022, B-036, B-037).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class EvidenceReconcilerIntegrationTests : IDisposable
@@ -482,7 +483,254 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
             && NamesTheProducingSteps(message));
     }
 
-    public void Dispose() => _root.Dispose();
+    [Fact]
+    public void NativeClaimsWithAPassingTestBoundToEach_WhenReconciled_ShouldReportEveryDeclaredClaimWithItsTestChainAndSucceed()
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile + "\n\n  @need/8\n  Scenario: Reads another value\n    Then it is read\n");
+        Native.WriteEvidence(
+            new JsonArray(NativeBinding("M:Shared.Checks", "need/7", 4), NativeBinding("M:Shared.Other", "need/8", 8)),
+            new JsonArray(Case("case-1", "M:Shared.Checks", owned: true, selected: true), Case("case-2", "M:Shared.Other", owned: true, selected: true)),
+            new JsonArray(Outcome("case-1"), Outcome("case-2")));
+
+        // When
+        var result = Native.Reconcile("a.json");
+
+        // Then
+        result.ExitCode.Should().Be(0);
+        result.Report["claims"]!.AsArray()
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["links"]!["test"]!["state"]!.GetValue<string>(),
+                string.Join(",", claim["cases"]!.AsArray().Select(static item => item!.GetValue<string>()))))
+            .Should().Equal([("need/7", "satisfied", "case-1"), ("need/8", "satisfied", "case-2")]);
+    }
+
+    [Fact]
+    public void AFeatureFileTheClaimFileSetDoesNotName_WhenReconciled_ShouldContributeNoClaim()
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        Native.Write("docs/stray.feature", "Feature: Stray\n\n  @need/9\n  Scenario: Strays\n    Then it strays\n");
+        Native.WriteEvidence(new JsonArray(NativeBinding("M:Shared.Checks", "need/7", 4)),
+            new JsonArray(Case("case-1", "M:Shared.Checks", owned: true, selected: true)), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = Native.Reconcile("a.json");
+
+        // Then
+        result.ExitCode.Should().Be(0);
+        ClaimIds(result.Report).Should().Equal("need/7");
+    }
+
+    [Theory]
+    [ClassData(typeof(RetiringClaimTags))]
+    public void ANativeClaimTaggedWithdrawnOrSuperseded_WhenNoTestIsBoundToIt_ShouldNotBeSelectedOrRequireEvidence(string tag)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile,
+            BoundClaimFile + "\n\n  @need/8 " + tag + "\n  Scenario: Reads a retired value\n    Then it is read\n");
+        Native.WriteEvidence(new JsonArray(NativeBinding("M:Shared.Checks", "need/7", 4)),
+            new JsonArray(Case("case-1", "M:Shared.Checks", owned: true, selected: true)), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = Native.Reconcile("a.json");
+
+        // Then
+        result.ExitCode.Should().Be(0);
+        ClaimIds(result.Report).Should().Equal("need/7");
+        Kinds(result.Report).Should().NotContain("missingRequiredLink");
+    }
+
+    [Fact]
+    public void AClaimFileSetWhoseFeatureRecordIsNotCurrent_WhenReconciled_ShouldSelectNoneOfItsNativeClaims()
+    {
+        // Given
+        Native.Write("src/read/.spec/README.md", "---\nid: cap:read\nspec_status: superseded\n---\n# Read\n");
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        Native.WriteEvidence(new JsonArray(),
+            new JsonArray(Case("case-1", "M:Shared.Other", owned: true, selected: true)), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = Native.Reconcile("a.json");
+
+        // Then
+        result.ExitCode.Should().Be(0);
+        result.Report["claims"]!.AsArray().Should().BeEmpty();
+        Kinds(result.Report).Should().NotContain("missingRequiredLink");
+    }
+
+    [Fact]
+    public void ANativeClaimDeclaredOnAScenario_WhenReconciled_ShouldLocateItAtTheClaimFileAndTheScenarioKeywordLine()
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile,
+            "Feature: Read\n\n  Background:\n    Given a reader\n\n  @need/7\n  Scenario: Reads a value\n    Then it is read\n");
+        Native.WriteEvidence(new JsonArray(),
+            new JsonArray(Case("case-1", "M:Shared.Other", owned: true, selected: true)), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = Native.Reconcile("a.json");
+
+        // Then
+        var claim = result.Report["claims"]!.AsArray().Single()!;
+        (claim["path"]!.GetValue<string>(), claim["line"]!.GetValue<int>()).Should().Be((NativeClaimEvidenceRoot.ClaimFile, 7));
+        var finding = result.Report["findings"]!.AsArray().Single(static item => item!["kind"]!.GetValue<string>() == "missingRequiredLink")!;
+        (finding["path"]!.GetValue<string>(), finding["line"]!.GetValue<int>()).Should().Be((NativeClaimEvidenceRoot.ClaimFile, 7));
+    }
+
+    [Fact]
+    public void APlannedMarkInAClaimFile_WhenItsBoundCaseWasSkippedAndNoScenarioRecordNamesIt_ShouldMarkNoCasePlannedAndFailForTheCase()
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, PlannedClaimFile);
+        Native.WriteEvidence(new JsonArray(NativeBinding("M:Shared.Checks", "need/7", 4)),
+            new JsonArray(Case("case-1", "M:Shared.Checks", owned: true, selected: true)), new JsonArray(Outcome("case-1", "skipped")));
+
+        // When
+        var result = Native.Reconcile("a.json");
+
+        // Then
+        Row(result.Report, "case-1")["planned"]!.GetValue<bool>().Should().BeFalse();
+        result.ExitCode.Should().Be(1);
+        MissingResults(result.Report).Should().ContainSingle().Which.Should().Contain("case-1");
+    }
+
+    [Fact]
+    public void ANativeClaimWhoseEveryCaseIsMarkedPlanned_WhenNoTestIsBoundToIt_ShouldHaveMissingRequiredTestEvidence()
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, PlannedClaimFile);
+        Native.WriteEvidence(new JsonArray(),
+            new JsonArray(Case("case-1", "M:Shared.Other", owned: true, selected: true)), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = Native.Reconcile("a.json");
+
+        // Then
+        result.ExitCode.Should().Be(1);
+        var claim = result.Report["claims"]!.AsArray().Single()!;
+        claim["id"]!.GetValue<string>().Should().Be("need/7");
+        claim["links"]!["test"]!["state"]!.GetValue<string>().Should().Be("missing");
+        Kinds(result.Report).Should().Contain("missingRequiredLink");
+    }
+
+    [Theory]
+    [ClassData(typeof(RejectedClaimFiles))]
+    public void AClaimFileTheReaderRejects_WhenReconciled_ShouldFailAsInvalidInputNamingThatClaimFile(string text, bool unreadable)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, text);
+        using var held = unreadable
+            ? new FileStream(Path.Combine(Native.Root, NativeClaimEvidenceRoot.ClaimFile), FileMode.Open, FileAccess.Read, FileShare.None)
+            : null;
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.ExitCode.Should().Be(3);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
+            && finding["path"]!.GetValue<string>() == NativeClaimEvidenceRoot.ClaimFile);
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimFileSetGaps))]
+    public void ASelectedFeatureWithoutClaimFiles_WhenReconciled_ShouldFailAsInvalidInputNamingTheManifest(string? glob)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        Native.Configure(analysis =>
+        {
+            analysis["features"]!.AsArray().Add(new JsonObject { ["feature"] = "cap:list" });
+            if (glob is not null)
+            {
+                analysis["records"]!["claimFileSets"]!.AsArray().Add(new JsonObject { ["glob"] = glob, ["feature"] = "cap:list" });
+            }
+        });
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.ExitCode.Should().Be(3);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
+            && finding["path"]!.GetValue<string>() == ".specht/manifest.json");
+    }
+
+    [Theory]
+    [ClassData(typeof(NonTestProjectRoles))]
+    public void ADeclaredProjectThatIsNotATestProject_WhenItHasNoExport_ShouldNeedNoneAndLetTheTestProjectsEvidenceSucceed(string? role)
+    {
+        // Given
+        _root.Configure(analysis =>
+        {
+            analysis["projects"]!.AsArray().Add(new JsonObject { ["path"] = "src/app/app.csproj", ["targetFrameworks"] = new JsonArray("net10.0") });
+            if (role is not null)
+            {
+                analysis["enforcement"]!.AsArray().Add(Enforcement("src/app/app.csproj", role));
+            }
+        });
+        _root.Write("a.json", "a", 1, "run-a", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("a.json", "b.json");
+
+        // Then
+        result.ExitCode.Should().Be(0);
+        result.Report["findings"]!.AsArray().Should().NotContain(static finding => finding!["kind"]!.GetValue<string>() == "missingCompilation"
+            && finding["path"]!.GetValue<string>() == "src/app/app.csproj");
+    }
+
+    [Fact]
+    public void ADeclaredProjectWithARequiredCaseScopeAndNoEvidence_WhenReconciled_ShouldFailAsIncompleteInputNamingIt()
+    {
+        // Given
+        _root.Configure(static analysis =>
+        {
+            var enforcement = analysis["enforcement"]!.AsArray();
+            enforcement.Remove(enforcement.Single(static entry => entry!["project"]!.GetValue<string>() == "test/b/b.csproj"));
+            analysis["projects"]![1]!["requiredCaseScope"] = "@visual";
+        });
+        _root.Write("a.json", "a", 1, "run-a", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("a.json");
+
+        // Then
+        result.ExitCode.Should().Be(2);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "missingCompilation"
+            && finding["path"]!.GetValue<string>() == "test/b/b.csproj");
+    }
+
+    [Fact]
+    public void AnEnabledImplementationLinkWithNoExportCarryingItsImplementsBindings_WhenReconciled_ShouldReportTheImplementationLinkMissing()
+    {
+        // Given
+        _root.Configure(static analysis =>
+        {
+            analysis["requiredLinks"]!["implementation"] = true;
+            analysis["projects"]!.AsArray().Add(new JsonObject { ["path"] = "src/app/app.csproj", ["targetFrameworks"] = new JsonArray("net10.0") });
+            analysis["enforcement"]!.AsArray().Add(Enforcement("src/app/app.csproj", "implements"));
+        });
+        _root.Write("a.json", "a", 1, "run-a", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("a.json", "b.json");
+
+        // Then
+        result.ExitCode.Should().Be(1);
+        result.Report["claims"]!.AsArray().Single()!["links"]!["implementation"]!["state"]!.GetValue<string>().Should().Be("missing");
+        Messages(result.Report, "missingRequiredLink").Should().ContainSingle().Which.Should().Contain("implementation");
+    }
+
+    public void Dispose()
+    {
+        _root.Dispose();
+        _native?.Dispose();
+    }
+
+    private NativeClaimEvidenceRoot Native => _native ??= new NativeClaimEvidenceRoot();
 
     private static bool NamesTheProducingSteps(string message) =>
         message.Contains("build", StringComparison.OrdinalIgnoreCase)
@@ -567,5 +815,44 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
         ["cases"] = new JsonArray(links),
     };
 
+    private static string[] ClaimIds(JsonObject report) =>
+        report["claims"]!.AsArray().Select(static claim => claim!["id"]!.GetValue<string>()).ToArray();
+
+    private static JsonObject Enforcement(string project, string role) => new()
+    {
+        ["project"] = project,
+        ["include"] = new JsonArray(role == "verifies" ? "test/**/*.cs" : "src/**/*.cs"),
+        ["exclude"] = new JsonArray(),
+        ["role"] = role,
+        ["declarationKinds"] = new JsonArray(role == "verifies" ? "testMethod" : "method"),
+    };
+
+    private static JsonObject NativeBinding(string symbolId, string claimId, int line) => new()
+    {
+        ["symbolId"] = symbolId,
+        ["role"] = "verifies",
+        ["attributes"] = new JsonObject(),
+        ["shapeValid"] = true,
+        ["status"] = "resolved",
+        ["isEligible"] = true,
+        ["target"] = new JsonObject
+        {
+            ["kind"] = "claim",
+            ["epic"] = null,
+            ["feature"] = "cap:read",
+            ["id"] = claimId,
+            ["state"] = "Active",
+            ["featureState"] = "approved",
+            ["relativePath"] = NativeClaimEvidenceRoot.ClaimFile,
+            ["line"] = line,
+        },
+        ["matches"] = new JsonArray(),
+        ["location"] = null,
+    };
+
+    private const string BoundClaimFile = "Feature: Read\n\n  @need/7\n  Scenario: Reads a value\n    Then it is read";
+    private const string PlannedClaimFile = "Feature: Read\n\n  @need/7 @ignore\n  Scenario: Reads a value\n    Then it is read\n";
+
     private readonly PartitionedEvidenceRoot _root = new();
+    private NativeClaimEvidenceRoot? _native;
 }

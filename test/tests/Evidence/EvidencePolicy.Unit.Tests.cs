@@ -4,7 +4,7 @@ using Specht.Tool.Features.Evidence;
 
 namespace Specht.Tests.Evidence;
 
-/// <summary>The normalized consumer policy decisions used by 0201-F5 B-008 to B-010.</summary>
+/// <summary>The normalized consumer policy decisions used by 0201-F5 B-008 to B-010 and native claim input (B-028).</summary>
 [Trait("Tier", "Unit")]
 public sealed class EvidencePolicyUnitTests
 {
@@ -76,6 +76,36 @@ public sealed class EvidencePolicyUnitTests
 
         // Then
         read.Should().Throw<EvidenceConfigurationException>();
+    }
+
+    [Fact]
+    public void ANativeClaimManifestWithNoMappedClaimsSection_WhenProjected_ShouldSelectItsFeatures()
+    {
+        // Given
+        var configuration = JsonNode.Parse("""
+            {
+              "revision":"0.1.0",
+              "idPatterns":{"feature":"^cap:[a-z]+$","claim":"^need/[0-9]+$"},
+              "claimTag":{"tag":"@{claim}","tagIgnoreCase":false},
+              "codeAnalysis":{
+                "mappings":{"/schemaVersion":"/revision","/identifiers":"/idPatterns","/claim":"/claimTag","/policy":"/codeAnalysis"},
+                "projects":[{"path":"test/tests.csproj","targetFrameworks":["net10.0"]}],
+                "features":[{"feature":"cap:read"}],
+                "requiredLinks":{"test":true},
+                "exemptions":[],
+                "records":{
+                  "claimSource":"gherkin",
+                  "claimFileSets":[{"glob":"src/read/.spec/*.feature","feature":"cap:read","record":"src/read/.spec/README.md"}]
+                }
+              }
+            }
+            """)!.AsObject();
+
+        // When
+        var policy = EvidencePolicy.Read(configuration);
+
+        // Then
+        policy.Features.Should().Equal(new EvidencePolicy.FeatureEntry(null, "cap:read"));
     }
 
     private static JsonObject Configuration() => JsonNode.Parse("""
