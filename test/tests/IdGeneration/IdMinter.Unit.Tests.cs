@@ -89,19 +89,42 @@ public sealed class IdMinterUnitTests
         id.Should().HaveLength(8);
     }
 
-    [Fact]
-    public void ANanoIdEntryThatAlsoHoldsTheSnowflakeSubObject_WhenMinted_ShouldReadOnlyItsOwnNanoIdSettings()
+    [Theory]
+    [ClassData(typeof(RepositoryWideTypes))]
+    public void ARepositoryWideTypeOptedInToNanoIdWithNoNanoIdSubObject_WhenMinted_ShouldDrawEightCharactersFromLowerCaseBase32(string type)
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.3.1",
+            ["identifiers"] = new JsonObject { [type] = "^[0-9a-z]{8}$" },
+            ["mint"] = new JsonObject { [type] = new JsonObject { ["strategy"] = "nanoid" } },
+        };
+        var minter = new IdMinter(new FixedRandomSource([.. Enumerable.Range(24, 8)]));
+
+        // When
+        var id = minter.Mint(manifest, type);
+
+        // Then
+        id.Should().Be("rstvwxyz");
+    }
+
+    [Theory]
+    [ClassData(typeof(NanoIdSubObjects))]
+    public void ANanoIdEntryWithAlphabetsAndSizesOutsideItsNanoIdSubObject_WhenMinted_ShouldReadOnlyTheNanoIdSubObject(string nanoid, string expected)
     {
         // Given
         var manifest = JsonNode.Parse(
-            """
+            $$"""
             {
               "schemaVersion": "0.3.1",
-              "identifiers": { "adr": "^[ab]{3}$" },
+              "identifiers": { "adr": "^[0-9a-z]+$" },
               "mint": {
                 "adr": {
                   "strategy": "nanoid",
-                  "nanoid": { "alphabet": "ab", "size": 3 },
+                  "alphabet": "wxyz",
+                  "size": 5,
+                  "nanoid": {{nanoid}},
                   "snowflake": {
                     "epoch": "2026-01-01",
                     "datacenterBits": 5,
@@ -109,18 +132,20 @@ public sealed class IdMinterUnitTests
                     "sequenceBits": 12,
                     "datacenter": 1,
                     "worker": 2,
-                    "sequenceStart": 0
+                    "sequenceStart": 0,
+                    "alphabet": "pq",
+                    "size": 7
                   }
                 }
               }
             }
             """)!.AsObject();
-        var minter = new IdMinter(new FixedRandomSource(1, 0, 1));
+        var minter = new IdMinter(new FixedRandomSource(1, 0));
 
         // When
         var id = minter.Mint(manifest, "adr");
 
         // Then
-        id.Should().Be("bab");
+        id.Should().Be(expected);
     }
 }
