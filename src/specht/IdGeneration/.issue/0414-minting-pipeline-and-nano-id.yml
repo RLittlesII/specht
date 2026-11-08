@@ -2,7 +2,7 @@ id: "0414"
 type: task
 title: Mint an id in the engine, through the Nano ID strategy
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-11-07"
 updated: "2026-11-08"
-closed: null
+closed: "2026-11-08"
 
 summary: |
   The engine's minting pipeline in `src/specht/IdGeneration/`: read a
