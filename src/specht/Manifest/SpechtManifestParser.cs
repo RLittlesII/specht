@@ -574,6 +574,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     /// <implements epic="0001" feature="F5" claim="B-048" />
     /// <implements epic="0001" feature="F7" claim="B-145" />
     /// <implements epic="0001" feature="F7" claim="B-153" />
+    /// <implements epic="0001" feature="F19" claim="B-014" />
+    /// <implements epic="0001" feature="F19" claim="B-044" />
     private SpechtStructure Parse(string text, bool includeDocument, out JsonObject? document)
     {
         var manifest = Present(JsonNode.Parse(text)).AsObject();
@@ -594,12 +596,14 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         var keysAndForms = number.CompareTo(KeysAndFormsVersion) >= 0 && shipped is not null
             && defaults.ContainsKey("keys") && defaults.ContainsKey("forms");
         var blanks = number.CompareTo(BlankValuesVersion) >= 0 && shipped is not null;
+        var mint = number.CompareTo(MintVersion) >= 0 && shipped is not null;
         var unknown = manifest
             .Select(static entry => entry.Key)
             .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
                 && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key))
                 && !(policy && key == "pinPolicy")
-                && !(keysAndForms && key is "keys" or "forms"))
+                && !(keysAndForms && key is "keys" or "forms")
+                && !(mint && key == "mint"))
             .Select(static key => $"'{key}'")
             .ToList();
 
@@ -757,4 +761,6 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static readonly SemanticVersion KeysAndFormsVersion = new(0, 3, 0);
 
     private static readonly SemanticVersion BlankValuesVersion = new(0, 3, 0);
+
+    private static readonly SemanticVersion MintVersion = new(0, 3, 1);
 }

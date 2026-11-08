@@ -50,7 +50,7 @@ Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `with
 - `owners`: a `sections` title mapped to a non-empty list of roles.
 - `requiredSpecifications`: a list of directory globs, empty when left out.
 
-Schema `0.3.1` reads every key and reports every rule `0.3.0` does.
+Schema `0.3.1` reads every key and reports every rule `0.3.0` does. It also accepts `mint`, the id settings, an object keyed by record type, and older pins reject it. The check reads nothing from it, so a manifest with it gets the report it gets without it.
 
 Under schema `0.3.0`, `markers` also names `done`, default `done`: the delivery `status` at which `SPEC7001` reports a `Missing` cell. An empty one exits `3`. From schema `0.3.0` any marker of white space alone exits `3` too.
 

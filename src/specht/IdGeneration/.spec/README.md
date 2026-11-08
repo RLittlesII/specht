@@ -155,11 +155,35 @@ An author on a branch takes the next free number from their own copy of the tree
 
 ## 6. Concern Separation
 
-Pending implementer authorship after agreement.
+<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`) -->
+
+Item `0413` builds the first three rows; every later item extends the table.
+
+| Concern                                                                                                         | Classification | Where                                                                                                                                                                             |
+| --------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A manifest pinned to `0.3.1` or later may carry the top-level key `mint` (B-044; C-5, C-12, C-17)               | Business       | `SpechtManifestParser.Parse`, its unknown-key gate admitting `mint` when the pin is shipped and at least `MintVersion`                                                            |
+| The check reads nothing from `mint`, so its verdicts are the ones the tree gets without it (B-014; C-6, C-8)    | Business       | `SpechtStructure` has no member for the key; no rule, loader or runner sees it                                                                                                    |
+| A grammar for `adr`, `lesson`, `decision` or `scenario` in `identifiers`, with no shipped default (B-045; C-14) | Business       | `SpechtManifestParser.Filled` lays declared members over the pin's defaults and `GrammarFaults` compiles each; `src/tool/manifest/v0.3.1/manifest.json` declares none of the four |
 
 ## 7. Technical Design
 
-Pending implementer authorship after agreement.
+<!-- last written by: implementer, 2026-11-07 (item `0413`: the `mint` key under `0.3.1`) -->
+
+### The key at this step: acceptance, no model
+
+`0413` adds one version gate to `SpechtManifestParser` (`src/specht/Manifest/SpechtManifestParser.cs`), the pattern `pinPolicy`, `keys` and `forms` already follow: `MintVersion` is `0.3.1`, and `Parse` admits `mint` only when the pin is at least that and shipped. Below it the key stays unknown and the manifest is rejected, as before. The parser builds nothing from the key, and `SpechtStructure` gains no member, so nothing the check is handed can read it (C-8). The effective document that `specht manifest` prints starts from a copy of the manifest as written, so it shows `mint` as declared. The shipped `0.3.1` default manifest gets no `mint` entry, so `upgrade`, which adds only keys the pinned default defines (`ManifestKeyEditor`), never writes one (C-6).
+
+B-045 needed no change. `identifiers` is filled name by name from whatever the manifest declares, and no list of permitted member names exists under any pin. So a grammar for one of the four types is accepted at `0.3.1` and, as a fact of the code, at every lower pin too; no claim states that a lower pin refuses one.
+
+No shipped file under `src/tool/` changed, so `0.3.1`'s version lock is unchanged and no relock was needed. The lock covers the schema, manifest, template and rule-page trees, not the engine's key gate.
+
+Rejected:
+
+- **A parsed `mint` model on `SpechtStructure` now.** No claim at this step reads the settings, and a member on the structure every rule is handed is a way for the check to read them. The reader is built with its first caller, the minting pipeline (item `0414`).
+- **Checking C-12's shape in the parser now**, for example the `strategy` value or the members of a sub-object. No cited claim says a malformed entry is refused, and refusal on a mint request is a later item's claim (B-015, B-043).
+- **`mint` in `KnownKeys`.** That list holds the keys every pin accepts, so `0.3.0` and lower would accept `mint`, against C-17 and B-015.
+- **A JSON Schema for the manifest that describes `mint`.** No JSON Schema describes the manifest. It is configuration, and the parser is where its keys are checked.
+- **A default `mint` entry in the shipped `0.3.1` manifest.** The key is opt-in (C-6), and `upgrade` would add the entry to every consumer's manifest.
 
 ## 8. Testing Strategy
 
