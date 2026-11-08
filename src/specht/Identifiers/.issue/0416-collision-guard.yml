@@ -12,7 +12,7 @@ children: []
 depends_on: ["0415"] # 0415 is the request B-017's rows end in; the guard's scenarios request through it
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-017
@@ -24,7 +24,7 @@ claims:
   - B-039
 
 created: "2026-11-07"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: null
 
 summary: |

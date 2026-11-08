@@ -12,7 +12,7 @@ children: []
 depends_on: ["0388"] # 0388 cuts schema 0.3.1, the version whose manifest schema the key and grammars join
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-014
@@ -20,7 +20,7 @@ claims:
   - B-045
 
 created: "2026-11-07"
-updated: "2026-11-07"
+updated: "2026-11-08"
 closed: "2026-11-07"
 
 summary: |

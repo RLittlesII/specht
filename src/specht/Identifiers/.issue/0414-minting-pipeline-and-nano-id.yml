@@ -2,7 +2,7 @@ id: "0414"
 type: task
 title: Mint an id in the engine, through the Nano ID strategy
 
-status: ready
+status: done
 
 risk: 3
 
@@ -12,7 +12,7 @@ children: []
 depends_on: ["0413"] # 0413 puts the mint key, whose entries this reads, in schema 0.3.1
 spikes: []
 
-spec: src/specht/IdGeneration/.spec/README.md
+spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-005
@@ -22,11 +22,11 @@ claims:
   - B-020
 
 created: "2026-11-07"
-updated: "2026-11-07"
-closed: null
+updated: "2026-11-08"
+closed: "2026-11-08"
 
 summary: |
-  The engine's minting pipeline in `src/specht/IdGeneration/`: read a
+  The engine's minting pipeline in `src/specht/Identifiers/`: read a
   type's `mint` entry, select its strategy, run the decorators around
   it and give back one id or a refusal (C-4, C-9). Nano ID is its first
   strategy, reading only its own sub-object (C-3), with the default
@@ -53,6 +53,11 @@ decisions:
     2026-11-07, spec-author: cut on ADR-0033 and decision 0003. Value
     omitted, inheriting 0412's. B-021, the per-Feature default size,
     goes to 0418 because its request names a Feature (OQ-15, OQ-16).
+  - |
+    2026-11-08, spec-author: review round 3, on the repository owner's
+    review of PR 789, moves 0001-F19 from `src/specht/IdGeneration/` to
+    `src/specht/Identifiers/`, namespace `Specht.Identifiers` (decision
+    0004). Status unchanged, `done`; claims and criteria unchanged.
 
 out_of_scope:
   - "The command - 0415."
