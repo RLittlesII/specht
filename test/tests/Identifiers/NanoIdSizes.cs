@@ -1,4 +1,4 @@
-namespace Specht.Tests.IdGeneration;
+namespace Specht.Tests.Identifiers;
 
 /// <summary>
 /// Nano ID sizes a type may configure (<c>0001-F19</c> B-005): one character, the per-Feature and repository-wide

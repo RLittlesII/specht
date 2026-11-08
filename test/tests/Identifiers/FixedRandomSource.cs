@@ -1,6 +1,6 @@
-using Specht.IdGeneration;
+using Specht.Identifiers;
 
-namespace Specht.Tests.IdGeneration;
+namespace Specht.Tests.Identifiers;
 
 /// <summary>
 /// A random source that answers with the draws it was given, in order and then again from the first, and records the

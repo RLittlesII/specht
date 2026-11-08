@@ -1,4 +1,4 @@
-namespace Specht.Tests.IdGeneration;
+namespace Specht.Tests.Identifiers;
 
 /// <summary>The two repository-wide types <c>0001-F19</c> B-020 gives a default Nano ID size of 8.</summary>
 public sealed class RepositoryWideTypes : TheoryData<string>
