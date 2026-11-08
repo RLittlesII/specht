@@ -120,7 +120,7 @@ Prevent ambiguous or silently retargeted code bindings by resolving claim and AD
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-08 (item `0409`: the guard moved to `RepositoryPaths`); implementer, 2026-11-02 (item `0166`: the instance parsers); implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-11-02 (item `0166`: the instance parsers); implementer, 2026-10-18 -->
 
 ### Component and input boundary
 
@@ -148,8 +148,7 @@ lifecycle eligibility. Invalid or unknown explicit lifecycle data cannot produce
 eligible evidence. Paths are provenance only, must be root-relative, and never
 participate in identity matching.
 
-`RepositoryPaths.Validate` ([`RepositoryPaths.cs`](../../../specht/Model/RepositoryPaths.cs), the
-engine's file linked under `Text/` from item 0409, formerly `BindingProvenanceGuard`) validates provenance at
+[`BindingProvenanceGuard`](../BindingProvenanceGuard.cs) validates provenance at
 `BindingFeatureReader.Read` entry and when `BindingCatalog` snapshots typed
 Feature and ADR declarations. Catalog validation also covers an ADR copied with
 an altered init property, so constructor-only checks cannot bypass the boundary.

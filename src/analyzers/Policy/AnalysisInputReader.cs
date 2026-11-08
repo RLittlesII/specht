@@ -196,5 +196,5 @@ public sealed class AnalysisInputReader
         return BitConverter.ToString(sha.ComputeHash(bytes.ToArray())).Replace("-", string.Empty).ToLowerInvariant();
     }
 
-    private readonly RepositoryPaths _paths = new();
+    private readonly AnalysisPaths _paths = new();
 }

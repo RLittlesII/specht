@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Specht.Model;
+using Specht.Analysis.Policy;
 
 namespace Specht.Analysis.Bindings.Gherkin;
 
@@ -113,5 +113,5 @@ public sealed class GherkinClaimPolicyReader
         return Array.AsReadOnly(sets.ToArray());
     }
 
-    private readonly RepositoryPaths _paths = new();
+    private readonly AnalysisPaths _paths = new();
 }

@@ -153,5 +153,5 @@ internal sealed class AnalysisRecordReader
     }
 
     private readonly MarkdownPipeline _pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
-    private readonly RepositoryPaths _paths = new();
+    private readonly AnalysisPaths _paths = new();
 }
