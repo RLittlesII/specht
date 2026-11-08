@@ -729,12 +729,12 @@ The working `0.2.0` manifest and the live copy gain `tables.signOff` with the fo
 
 ### Feature claim prefixes at schema 0.3.1
 
-<!-- last written by: implementer, 2026-11-08 (item `0352`, built) -->
+<!-- last written by: implementer, 2026-11-08 (item `0352`: the schema version cites decision 0023); implementer, 2026-11-08 (item `0352`, built) -->
 
-Built under schema `0.3.1` (A-7), which no published package carries, so the
-version is changed in place and relocked (`0001-F7` C-17). The property is
-optional and `0.3.0`'s Feature schema closes its properties, so no tree `0.3.0`
-accepts declares it: a C-11 patch.
+Built under schema `0.3.1` (A-7). A schema version that has not gone out in a
+NuGet package takes a change in place, and no package carries `0.3.1`, so the
+change is made in it and the version relocked under `0001-F7` C-17
+([decision 0023](decisions/0023-claim-prefixes-stay-in-schema-0-3-1-which-no-package-carries.md)).
 
 **The role.** `keys.feature.claimPrefix`, `claim_prefix`, is one more entry in
 the `0.3.1` shipped manifest's `keys.feature`, so `KeysOf` fills it as it fills
@@ -803,7 +803,9 @@ top-level manifest keys, so `.specht/manifest.json` gained
   one pass over its rows.
 - An `expected.claimPrefix` member: no claim asks for it, and
   `expected.grammar` holds the escaped prefix.
-- A new schema version: `0.3.1` is unpublished (A-7).
+- A new schema version, `0.3.2` or `0.4.0`: under decision 0023 a change
+  goes to one only from a version that has gone out in a NuGet package, and
+  `0.3.1` has not (A-7).
 
 ## 8. Testing Strategy
 
