@@ -309,12 +309,13 @@ Feature: Traceability reconciliation
     Then both read the same claim files from that set
 
     Examples:
-      | spelling                  |
-      | with a leading ./         |
-      | with an empty segment     |
-      | with a backslash          |
-      | with .. inside the root   |
-      | ending in **              |
+      | spelling                                         |
+      | with a leading ./                                |
+      | with an empty segment                            |
+      | with a backslash                                 |
+      | with .. inside the root                          |
+      | ending in **                                     |
+      | ending in ** over the Feature record's directory |
 
   @B-029 @boundary
   Scenario Outline: Withdrawn or superseded native claim

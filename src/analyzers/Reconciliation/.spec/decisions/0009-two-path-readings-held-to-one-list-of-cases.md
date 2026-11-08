@@ -60,10 +60,19 @@ in each test project is that test.
 
 ## Rejected
 
+This section is the recorder's reading. Of the owner's words it holds only
+what "The call" quotes.
+
 - Keeping the `RepositoryPaths` source link (commit `e2acacf0`): outside 0201-F7
   decision 0004's scope.
-- The other options put to the owner were not relayed to the recorder and are
-  not recorded here.
+- Option B, put to the owner as the recommended option: extend 0201-F7
+  decision 0004's link permission to `RepositoryPaths`. One implementation and
+  no new assembly, at the cost of widening the PR #114 pattern by one file. The
+  owner did not select it.
+- Option C: narrow the glob contract so both sides reject non-canonical paths.
+  Spec-reviewer raised it and advised against it; it was mentioned to the
+  coordinating session, considered, and not put forward to the owner as an
+  option.
 
 ## Affects
 
