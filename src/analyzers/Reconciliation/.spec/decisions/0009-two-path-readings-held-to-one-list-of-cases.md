@@ -1,6 +1,6 @@
 ---
 title: "Decision 0009: Two path readings, held to one list of cases"
-description: "The owner selected option A: the RepositoryPaths source link is reverted, the analyzer keeps its path code, specht evidence gets its own normaliser and matcher, and one list of cases in each test project holds the two to one reading"
+description: "The owner selected option A, two copies, tested, with a shared list of cases run against both; in the recorder's reading the RepositoryPaths source link is reverted, specht evidence gets its own normaliser and matcher, and one copy of the cases sits in each test project"
 type: decision
 ---
 

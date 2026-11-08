@@ -34,12 +34,14 @@ general permission.
 ## Spec delta
 
 [0201-F5 decision 0009](../../src/analyzers/Reconciliation/.spec/decisions/0009-two-path-readings-held-to-one-list-of-cases.md)
-records the owner's ruling: the link is reverted, the analyzer keeps
-`AnalysisPaths` and `BindingProvenanceGuard`, `specht evidence` gets its own
-normaliser and matcher, and the same list of cases in `test/tests` and in
-`test/analysis.tests` holds the two to one reading. 0201-F5 B-038 states the
-parity; § 5 rows 10 and 11 exclude shared path code and the exclusions
-difference.
+records the owner's selection of the option labelled "A: two copies, tested",
+put as a shared list of cases run against both. In the recorder's reading the
+link is reverted, the analyzer keeps `AnalysisPaths` and
+`BindingProvenanceGuard`, `specht evidence` gets its own normaliser and
+matcher, and one copy of the list of cases sits in `test/tests` and one in
+`test/analysis.tests`, since fixtures are not shared across test projects.
+0201-F5 B-038 states the parity; § 5 rows 10 to 13 exclude shared path code and
+the differences the two readings keep.
 
 ## Claim
 
