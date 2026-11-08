@@ -223,6 +223,17 @@ public sealed partial class CheckSteps
     [Then("the output names the root option and the strict option")]
     public void ThenTheOutputNamesTheRootOptionAndTheStrictOption() => _stdout.Should().Contain("--root").And.Contain("--strict");
 
+    [Then("the ASCII Specht wordmark appears above the usage on standard output")]
+    public void ThenTheHelpOpensWithTheSpechtWordmark() =>
+        _stdout.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(6).Should().Equal(
+            " ####  ####   #####   ####  #   #  #####",
+            "#      #   #  #      #      #   #    #",
+            " ###   ####   ####   #      #####    #",
+            "    #  #      #      #      #   #    #",
+            "####   #      #####   ####  #   #    #",
+            "USAGE:"
+        );
+
     [Then("the output names the version option")]
     public void ThenTheOutputNamesTheVersionOption() => _stdout.Should().Contain("--version");
 

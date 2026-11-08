@@ -1,0 +1,30 @@
+id: "0423"
+type: task
+title: Add a Specht wordmark to top-level help
+
+status: done
+
+risk: 1
+parent: "0025"
+children: []
+depends_on: ["0029"]
+spikes: []
+
+spec: src/tool/Features/Check/.spec/README.md
+claims:
+  - B-048
+
+created: "2026-11-08"
+updated: "2026-11-08"
+closed: "2026-11-08"
+
+summary: |
+  Deliver 0001-F2 B-048 through the CLI host.
+
+acceptance_criteria:
+  - "0001-F2 B-048 has executable coverage."
+
+decisions: []
+
+out_of_scope:
+  - Subcommand help and version output.
