@@ -2287,7 +2287,7 @@ They guard what the build must keep, and none was made to fail by hand.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-06 (decision 0022) -->
+<!-- last written by: spec-author, 2026-11-07 (item `0388`: the `@B-066` minor scenario reworded; OQ-75 raised) -->
 
 **Independent review correction, 2026-10-14.** ADR-0014 records the owner's
 benchmark gate and evaluation of martinothamar/Mediator. The premature CQRS,
@@ -2296,6 +2296,8 @@ calls through existing services. Process lesson root `0009` records the scope
 failure. Product [lesson 0002](lessons/0002-pin-preserves-supported-manifest-encodings.md)
 records the encoding defect, and B-045's scenario now covers UTF-8 and both BOM
 byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
+
+- 2026-11-07, item `0388`, on test-writer's report. The `@B-066` scenario for a greater minor now states B-066 as amended: its new rule reports on a tree whose manifest sets no key the lower version does not define, so it is not an opt-in addition (C-11). It is renamed "Before 1.0.0 a new rule a tree can meet without a new key is at least a new minor"; was "Before 1.0.0 a new rule is at least a new minor". The opt-in scenario's key is now optional, as C-11 defines an opt-in addition. No claim or constraint changed. OQ-75 raised: whether B-154 sets aside the count of rule ids evaluated once `0.3.1` holds a rule id `0.3.0` does not.
 
 - 2026-11-06, the repository owner ruled, answering `0001-F16` OQ-5, that a schema version takes the next `0.minor` only for a breaking change, and that an addition that is not required is not breaking ([decision 0022](decisions/0022-an-opt-in-addition-below-1-0-0-is-a-patch.md)). C-11 is amended: below `1.0.0` an opt-in addition is a patch. B-066 is amended to match, its number kept, and gains an opt-in scenario and a `@boundary` scenario. Its existing scenario keeps its bound wording until the item that delivers the amendment rebinds it. B-154 is added, the report a patch keeps, with its scenario and a `Missing` § 9 row. OQ-74 is raised for schema `1.0.0` and later, where B-040 is unchanged. `0001-F16`'s keys and rules enter a new schema `0.3.1`, and published `0.3.0` stays frozen (C-1).
 
@@ -2373,7 +2375,7 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-11-06 (decision 0022: OQ-74 raised) -->
+<!-- last written by: spec-author, 2026-11-07 (item `0388`: OQ-75 raised) -->
 
 | ID | Question | Blocks | Resolution |
 | --- | --- | --- | --- | --- |
@@ -2451,6 +2453,7 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 | OQ-72 | Must `0001-F5` B-035 be built before any package carries schema `0.3.0`? The `0.3.0` feature schema drops `epic` from `required` under every manifest, since JSON Schema cannot see the manifest (§ 7, "Epics left out"); under an epic grammar only `SPEC011`'s missing-`epic` check, B-035, then reports a Feature with no `epic`, and it is not built. `SPEC002` reported that Feature under `0.2.1`, so a `0.3.0` pin with an epic grammar, this repository's since item `0339`, passes a tree `0.2.1` fails. Building B-035 once a package carries `0.3.0` changes a published version's verdict (C-1). Readings: (a) no package carries `0.3.0` until B-035 is built, which C-17 allows while `0.3.0` is unpublished; (b) `0.3.0` ships without it and B-035 is amended to hold from a later `0.minor` (C-11). Raised 2026-11-02 by spec-reviewer (§ 12, items `0321` and `0339`). | B-037; `0001-F5` B-035; item `0321`; the first package carrying `0.3.0` | Resolved 2026-11-03 by the owner, answering `0001-F5` item `0345`'s question F with "A proposed (Recommended)": (a). No package carries schema `0.3.0` until `0001-F5` B-035 is built; B-035 holds from `0.3.0` only and states the finding's line, identifier and message (`0001-F5` decision 0020 call 9). Rejected: (b). |
 | OQ-73 | Under a `pinPolicy` that has the check use a version above the pin, which version do `specht rules`, `specht --explain`, `specht rules set`, `specht manifest`, `specht init` beside an existing manifest and `specht schema pin`'s validation use: the pin, as built, or the version in use, as the check and `upgrade` (C-18)? No claim states either. Raised 2026-11-02 with the owner's question cards on item `0124`. | item `0124` | Resolved 2026-11-02 by the repository owner (decision 0021): each keeps the version the manifest pins, as built. No claim added; § 5 row 33 rules out the version in use for them. Amended 2026-11-02 by the repository owner, "Stay on the pin" (decision 0021, call 3): `specht frontmatter` keeps the pinned version too; `0001-F8` B-006 as amended states it, and § 5 row 33 names it. |
 | OQ-74 | From schema `1.0.0` on, is an opt-in addition (C-11) a minor, a patch, or a major, as B-040 states for a new rule id? Decision 0022 ruled only below `1.0.0`. Raised 2026-11-06 by spec-author. | B-040; C-11 | Open. Proposed default: B-040 and C-11 stay as they are until the owner answers; no shipped version is `1.0.0` or higher, so nothing waits on it. Readings: (a) a minor, since C-11 has a minor only accept more and an opt-in addition accepts a key the lower version rejects; (b) a patch, the rule below `1.0.0`; (c) a major, as B-040 states today. |
+| OQ-75 | Once `0.3.1` holds a rule id `0.3.0` does not, does B-154's same report set aside the count of rule ids evaluated? B-014 has the check evaluate exactly the pinned vocabulary's rule ids and `0001-F3` B-005 has the report carry their count, so a new rule at a level other than off adds one to that count on every tree, one where it reports nothing included. B-154 sets aside only the schema version, and C-11 rules out a patch that changes the report of a tree the lower version accepts. `0.3.1` adds no rule id at its cut, so the two reports agree for item `0388`. Raised 2026-11-07 by spec-author, on test-writer's report (item `0388`). | B-154 once `0.3.1` holds a rule id `0.3.0` does not; `0001-F16` items `0393` to `0395`, each of which adds one. Not item `0388`. | Open. No default. Readings: (a) B-154 sets the count aside with the schema version, and B-014 and `0001-F3` B-005 are unchanged; (b) the count is unchanged, because a rule id an opt-in key gates is neither evaluated nor counted under a manifest that does not set the key, and B-014 and `0001-F3` B-005 are amended. |
 
 ## 12. Sign-off
 
