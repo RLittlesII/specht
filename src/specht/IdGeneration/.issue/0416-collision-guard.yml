@@ -1,0 +1,65 @@
+id: "0416"
+type: task
+title: Guard a minted adr or lesson id against one the tree holds
+
+status: ready
+
+risk: 3
+
+parent: "0412"
+children: []
+
+depends_on: ["0415"] # 0415 is the request B-017's rows end in; the guard's scenarios request through it
+spikes: []
+
+spec: src/specht/IdGeneration/.spec/README.md
+
+claims:
+  - B-017
+  - B-034
+  - B-035
+  - B-036
+  - B-037
+  - B-038
+  - B-039
+
+created: "2026-11-07"
+updated: "2026-11-07"
+closed: null
+
+summary: |
+  The collision guard, a decorator in the engine (C-4, C-9): it draws
+  a new candidate while the tree holds one in any letter case (B-034),
+  up to `attempts`, 8 by default (B-035 to B-037), and then refuses.
+  This item reads the two repository-wide places, the file names in
+  every `adr/` and `lessons/` folder (B-038, B-039). B-017 lands here
+  because its third row is the guard's exhaustion and its other two
+  are 0415's.
+
+  Risk 3: the guard reads the tree, so it walks the same file set the
+  check does and never writes (C-1, C-11); a test fixes the draws so
+  the held candidates are known.
+
+  Proceeds on OQ-11's recorded default for the exit code of an
+  exhausted guard (C-10). Waits on 0415 alone.
+
+acceptance_criteria:
+  - "B-017 — each request that prints no id, exit 2, 3 or 4 (OQ-11's default)"
+  - "B-034 — a held candidate in another letter case is skipped"
+  - "B-035 — no attempts named, the eighth candidate printed"
+  - "B-036 — no attempts named, eight held, nothing printed"
+  - "B-037 — the named attempts held, nothing printed"
+  - "B-038 — an `adr/` file name held"
+  - "B-039 — a `lessons/` file name held"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-07, spec-author: cut on ADR-0033. Value omitted,
+    inheriting 0412's. B-010 asks for a claim id for a Feature, so it
+    goes to 0418 with the per-Feature places.
+
+out_of_scope:
+  - "The per-Feature places, B-040 to B-042 - 0418."
+  - "A clock moved back between draws - 0419."
+  - "Ids claimed on other branches or pull requests - § 5 row 6."
