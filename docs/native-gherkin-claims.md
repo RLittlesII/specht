@@ -187,8 +187,10 @@ stays provisional; rebuild, discover and run again to refresh it.
 `specht evidence` is the reconciliation gate for current required links and
 passing outcomes. Before evidence exists it reports incomplete and names the
 build, discovery and run steps; a successful first build alone does not prove a
-claim passed. The evidence carries no claim catalogue, and `specht evidence`
-does not yet reconcile claims declared only in Gherkin. No claims-table adapter
+claim passed. The evidence carries no claim catalogue: `specht evidence` reads
+each selected Feature's claims from its claim file set, with the same tag
+settings, and a claim file it cannot read is invalid input (exit `3`). Planned
+tags in a claim file mark no discovered case planned. No claims-table adapter
 is generated.
 
 For diagnostic conditions and remedies, see [SPCT0001](../src/codeanalysis/docs/SPCT0001.md),

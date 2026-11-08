@@ -116,7 +116,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-23, 2026-11-01 (item 0333, `0055-F6` decisions 0007 and 0009: both packages pushed to nuget.org, neither attached to the GitHub Release) -->
+<!-- last written by: implementer, 2026-11-07 (item 0409: specht evidence reads native claim files through the engine reader); implementer, 2026-10-23, 2026-11-01 (item 0333, `0055-F6` decisions 0007 and 0009: both packages pushed to nuget.org, neither attached to the GitHub Release) -->
 
 [ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md) adopts
 `src/analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
@@ -428,11 +428,12 @@ checker is introduced. A mixed-target solution is expected: the compiler-loaded
 components target netstandard2.0 while the engine and tool keep their existing
 targets. Do not add a project reference from the analyzer to the modern-only
 engine assembly. Choose the smallest compatible reuse of existing text-reading
-semantics during F1 implementation; no engine retargeting is required. Claim-tag
-reading and the required-case scope expression live in the analyzer. The tool
-needs neither: `specht evidence` reads the native
-claim catalogue and each case's evaluated scope from the test-evidence artifact
-(0201-F7 decision 0003). The analyzer's claim-tag reading repeats the engine's
+semantics during F1 implementation; no engine retargeting is required. The Gherkin
+claim reader lives in the engine and the analyzer compiles it through a `Text/`
+link (0201-F7 decision 0004); the required-case scope expression lives in the
+analyzer. `specht evidence` reads native claims from the claim files through
+the engine's reader and takes each case's evaluated scope from the
+test-evidence artifact (0201-F5 § 7). The analyzer's claim-tag reading repeats the engine's
 `FeatureTagParser` token rule, and a characterization test runs one case list
 against both (0201-F7 § 7, C-1).
 

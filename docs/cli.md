@@ -187,7 +187,8 @@ specht evidence [--root <DIR>] [<PATH>...] [--run <ID>] [--json] [--report <PATH
 ```
 
 Reconciles the current claims selected by `.specht/manifest.json`'s `codeAnalysis`
-policy against explicitly supplied `specht.test-evidence` exports of `formatVersion` 1 or 3. It
+policy against explicitly supplied `specht.test-evidence` exports of `formatVersion` 1 or 3. Under
+`codeAnalysis.records.claimSource: "gherkin"` the claims come from the claim files. It
 checks declared project and target-framework combinations, current input hashes,
 resolved bindings, discovered cases and their selected run outcomes. It is offline
 and does not build a project or start tests. The command reads each named file or
@@ -211,6 +212,10 @@ are required only when enabled in the analysis policy. A link can be satisfied
 while its associated case failed or did not run; the gate requires every current
 case supplying non-exempt required test evidence to pass. Stale or mismatched
 exports remain visible and cannot establish current coverage.
+
+Only a declared test project, one with a `requiredCaseScope` or named by a
+`verifies` enforcement entry, needs a current export; another declared project
+without one is not reported missing.
 
 Without `--run`, a run is chosen for each declared project and target framework:
 one available run is used, and `ambiguousRun` is reported only for a pair holding

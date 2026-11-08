@@ -62,7 +62,8 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
                 scope["features"]!.AsArray().Add(new JsonObject { ["epic"] = feature.Epic, ["feature"] = feature.Feature });
             }
 
-            claims.AddRange(ReadClaims(root, configuration, policy, findings));
+            claims.AddRange(policy.ClaimTags is null ? ReadClaims(root, configuration, policy, findings)
+                : ReadNativeClaims(root, configuration, policy, findings));
             if (findings.Any(static finding => finding.Kind == "invalidInput"))
             {
                 configurationInvalid = true;
@@ -169,14 +170,19 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
                 });
             }
 
-            foreach (var pair in scope["projects"]!.AsArray())
+            foreach (var (declared, framework) in policy.Projects.SelectMany(static project => project.Frameworks
+                .Select(framework => (project, framework))))
             {
-                var project = pair!["path"]!.GetValue<string>();
-                var framework = pair["targetFramework"]!.GetValue<string>();
+                var project = declared.Path;
                 var matching = artifacts.Where(entry => entry.Artifact.ProjectPath == project
                     && entry.Artifact.TargetFramework == framework && entry.Current).ToArray();
                 if (matching.Length == 0)
                 {
+                    if (!declared.RequiresExport)
+                    {
+                        continue;
+                    }
+
                     inputsIncomplete = true;
                     findings.Add(new EvidenceFinding("missingCompilation", project, 0, framework,
                         "The declared project and target framework have no current export. " + ProducingSteps));
@@ -644,6 +650,85 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
         }
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-028" />
+    private IEnumerable<ClaimEntry> ReadNativeClaims(string root, JsonObject configuration, EvidencePolicy policy,
+        List<EvidenceFinding> findings)
+    {
+        var exclusions = configuration["exclusions"] is JsonArray excluded
+            ? excluded.Select(static item => item!.GetValue<string>()).ToArray() : System.Array.Empty<string>();
+        var discovery = new SpechtDiscovery(new FileSystem());
+        var matched = policy.ClaimFileSets.ToDictionary(static set => set, set => discovery.FindTestFiles(root, [set.Glob], exclusions));
+        var shared = matched.Values.SelectMany(static files => files).GroupBy(static file => file, StringComparer.Ordinal)
+            .Where(static group => group.Count() > 1).Select(static group => group.Key).ToHashSet(StringComparer.Ordinal);
+        foreach (var file in shared.Order(StringComparer.Ordinal))
+        {
+            findings.Add(new EvidenceFinding("invalidInput", file, 0, string.Empty, "A claim file matches more than one claim file set."));
+        }
+
+        var reader = new GherkinClaimTextReader(policy.ClaimTags!);
+        foreach (var selected in policy.Features)
+        {
+            var set = policy.ClaimFileSets.FirstOrDefault(item => item.Epic == selected.Epic && item.Feature == selected.Feature);
+            if (set is null || matched[set].Count == 0)
+            {
+                findings.Add(new EvidenceFinding("invalidInput", ManifestPath, 0, selected.Feature,
+                    "A selected Feature has no claim file set, or its claim file set matches no file."));
+                continue;
+            }
+
+            if (set.Record is not null)
+            {
+                string record;
+                try
+                {
+                    record = File.ReadAllText(Path.Combine(root, set.Record.Replace('/', Path.DirectorySeparatorChar)));
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    findings.Add(new EvidenceFinding("invalidInput", set.Record, 0, set.Feature, "The claim file set's Feature record cannot be read."));
+                    continue;
+                }
+
+                var lifecycle = documents.Parse(record, set.Record).Frontmatter.Text(policy.FeatureLifecycleKey);
+                if (lifecycle is not ("draft" or "in-review") && lifecycle != policy.ApprovedMarker)
+                {
+                    continue;
+                }
+            }
+
+            foreach (var file in matched[set].Where(file => !shared.Contains(file)))
+            {
+                GherkinClaimText read;
+                try
+                {
+                    read = reader.Read(file, File.ReadAllText(Path.Combine(root, file.Replace('/', Path.DirectorySeparatorChar))));
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    findings.Add(new EvidenceFinding("invalidInput", file, 0, set.Feature, "The claim file cannot be read."));
+                    continue;
+                }
+                catch (GherkinClaimTextException exception)
+                {
+                    findings.Add(new EvidenceFinding("invalidInput", exception.RelativePath ?? file, 0, set.Feature, exception.Message));
+                    continue;
+                }
+
+                if (read.FeatureTagValues.Any(value => value != set.Feature) || read.EpicTagValues.Any(value => value != set.Epic))
+                {
+                    findings.Add(new EvidenceFinding("invalidInput", file, 0, set.Feature,
+                        "A Feature or epic tag names a different identity than its claim file set."));
+                    continue;
+                }
+
+                foreach (var claim in read.Claims.Where(static claim => claim.State == "Active"))
+                {
+                    yield return new ClaimEntry(set.Epic, set.Feature, claim.Id, claim.State, file, claim.Line);
+                }
+            }
+        }
+    }
+
     /// <implements epic="0201" feature="F5" claim="B-001" />
     private sealed record ArtifactEntry(string Label, TestEvidenceArtifact Artifact, string State)
     {
@@ -695,6 +780,7 @@ public sealed class EvidenceReconciler(SpechtDocumentParser documents)
         };
     }
 
+    private const string ManifestPath = ".specht/manifest.json";
     private const string ProducingSteps = "Produce it by building, then running `dotnet test --list-tests`, then `dotnet test`.";
     private const string RegeneratingSteps = "Regenerate it by rebuilding, then running `dotnet test --list-tests` and `dotnet test` again.";
 

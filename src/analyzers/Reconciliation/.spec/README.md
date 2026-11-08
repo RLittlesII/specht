@@ -121,20 +121,20 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-25 -->
+<!-- last written by: implementer, 2026-11-07 (item 0409); implementer, 2026-10-25 -->
 
-| Concern                                    | Classification | Owner and boundary                                                                                                                                           |
-| ------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Selected current claims and required links | Business       | 0201-F6 defines selection, link policy and reasoned exemptions; F5 starts reconciliation from every selected eligible claim.                                 |
-| Binding and case identity                  | Both           | 0201-F2 resolves targets and lifecycle; 0201-F3 exports method, case and run identities. F5 joins those records without re-resolving source symbols.         |
-| Completeness, freshness and outcome gate   | Business       | F5 evaluates declared project/TFM inputs, required links and passing current results as independent states, gating only owned cases that are not planned.    |
-| Evidence collection and scenario mapping   | Both           | 0201-F3 collects runner evidence; optional 0201-F4 records add scenario links. F5 consumes their exported contracts.                                         |
-| Artifact reading and report serialization  | Technical      | The tool's reconciliation slice reads explicit files and emits its own versioned report; it does not load the analyzer assembly or alter the checker report. |
-| Filesystem and process boundary            | Technical      | F5 reads current repository records and supplied artifacts offline. Only the caller-named report path is written.                                            |
+| Concern                                    | Classification | Owner and boundary                                                                                                                                                                                                                         |
+| ------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Selected current claims and required links | Business       | 0201-F6 defines selection, link policy and reasoned exemptions; F5 starts reconciliation from every selected eligible claim.                                                                                                               |
+| Binding and case identity                  | Both           | 0201-F2 resolves targets and lifecycle; 0201-F3 exports method, case and run identities. F5 joins those records without re-resolving source symbols.                                                                                       |
+| Completeness, freshness and outcome gate   | Business       | F5 evaluates declared project/TFM inputs, required links and passing current results as independent states, gating only owned cases that are not planned.                                                                                  |
+| Evidence collection and scenario mapping   | Both           | 0201-F3 collects runner evidence; optional 0201-F4 records add scenario links. F5 consumes their exported contracts.                                                                                                                       |
+| Artifact reading and report serialization  | Technical      | The tool's reconciliation slice reads explicit files and emits its own versioned report; it reads native claim files through the engine's Gherkin claim reader, does not load the analyzer assembly and does not alter the checker report. |
+| Filesystem and process boundary            | Technical      | F5 reads current repository records and supplied artifacts offline. Only the caller-named report path is written.                                                                                                                          |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-02 (item `0166`: root-relative locations, the instance parser); implementer, 2026-10-25 -->
+<!-- last written by: implementer, 2026-11-07 (item 0409: native Gherkin claims, the declared test projects, the reader's visibility); implementer, 2026-11-02 (item `0166`: root-relative locations, the instance parser); implementer, 2026-10-25 -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -232,7 +232,8 @@ JSON. Keep escaped text and multiline messages valid JSON.
 inputs, joins the records and builds the report. `EvidenceGate.cs` folds the exit
 code; `EvidencePolicy.cs` projects the consumer's mapped configuration;
 `EvidenceScenarioJoin.cs` joins explicit claim and case identities. The existing
-`SpechtDiscovery` and `SpechtDocument` read manifest layouts and Markdown records.
+`SpechtDiscovery` and `SpechtDocument` read manifest layouts and Markdown records,
+and the engine's `GherkinClaimTextReader` reads native claim files.
 From item `0166` discovery lists root-relative paths: `EvidenceReconciler`
 joins the root to each location's `RelativePath` to read the record, and parses
 it through the `SpechtDocumentParser` it takes by constructor, which the host's
@@ -277,25 +278,71 @@ form the policy identity against which F3's `inputs` and `policyFingerprint` are
 compared.
 
 Under native Gherkin claim input (`codeAnalysis.records.claimSource: "gherkin"`,
-0201-F7) the selected claims come from the supplied artifacts, not from engine
-discovery, and the command parses no `.feature` file (decision 0003 of 0201-F7).
-`EvidencePolicy` reads `claimSource`; `EvidenceReconciler` takes each selected
-Feature's claims, lifecycle, provenance and cases from the F3 `catalog` member of
-the current artifacts. Every current artifact must carry a `catalog`, and all of
-them must be equal, because they derive from the same hashed claim files; a
-missing or differing catalogue is an `invalidInput` finding at the artifact's
-evidence path. With no current artifact the selected claims cannot be
-enumerated, and each selected Feature is reported as missing, as a missing
-Markdown record is. A selected Feature absent from the catalogue is the same
-finding. A `planned` case keeps its claim required and never counts as passing
-evidence (0201-F7 B-016, B-024); the gate treats it as planned only through
-scenario records (decision 0004). Under the
-Markdown path `catalog` is not read. The claim files are `record` inputs, so a
-changed claim file makes the artifact stale through the existing hash check, and
-the stale catalogue is excluded with the rest of the artifact.
+0201-F7) the selected claims come from the claim files, read through the
+engine's Gherkin claim reader (0201-F7 decision 0004, decision 0007); the tool
+holds no second reader, and the evidence artifact carries no catalogue (item
+0411). `EvidencePolicy.Read` needs no mapped claims section on this path. It
+reads the keys as the analyzer's `GherkinClaimPolicyReader` does: the mapped
+`/claim` object's `tag` and `tagIgnoreCase` into the claim tag form, with the
+`claim` identifier grammar; `scenarioScopes.featureTag` and `epicTag`;
+`records.plannedTags` (default `["@ignore"]`), `withdrawnTags` and
+`supersededTags`; and `records.claimFileSets`, one set per Feature, each a
+relative glob, a Feature, an epic exactly when the grammar declares one and an
+optional `record`. A malformed key is invalid configuration (exit 3). The policy
+holds them as `ClaimTags` and `ClaimFileSets`; `ClaimTags` is `null` on the
+Markdown path, which is unchanged.
 
-For every declared project/TFM pair, require current compiler and runner evidence
-in the supplied F3 envelope. Group by the pair and their source, assembly,
+`EvidenceReconciler.ReadNativeClaims` lists each set's files with
+`SpechtDiscovery.FindTestFiles`, the set's glob under the manifest's exclusions,
+in root-relative ordinal order. A file two sets match is an `invalidInput`
+finding at that file and contributes no claim. A selected Feature with no set,
+or whose set matches no file, is an `invalidInput` finding at
+`.specht/manifest.json` (B-035). A set's `record` is parsed with the
+`SpechtDocumentParser`, and its `featureLifecycleKey` gates every claim of the
+set as a Markdown record's lifecycle does (B-030); a set with no record is
+current, and an unreadable record is an `invalidInput` finding at the record.
+Each file is read and passed to `GherkinClaimTextReader`; an `IOException` or
+`UnauthorizedAccessException`, a `GherkinClaimTextException`, or a Feature or
+epic tag value differing from the set is an `invalidInput` finding at that claim
+file (B-034), and exit 3. A declaration whose state is `Active` is selected with
+the set's epic and Feature, its id, the claim file's root-relative path and the
+declaring element's keyword line (B-028, B-031); `Withdrawn` and `Superseded`
+declarations are not (B-029). The reader's planned case flags are not read: a
+discovered case is planned only through scenario records (B-032, decision
+0008), so a claim whose every case is marked planned still needs its test link
+(B-033), and the report JSON is unchanged. The F3 export indexes the claim files
+with kind `record`, so the record-index check, which looks up each selected
+claim's path, accepts them, and a changed claim file makes the artifact stale
+through the existing hash check.
+
+The nine reader types in `src/specht/Model/` (`GherkinClaimTextReader`,
+`GherkinClaimTagForm`, `GherkinClaimTags`, `GherkinClaimText`,
+`GherkinClaimDeclaration`, `GherkinClaimElement`, `GherkinClaimCaseLine`,
+`GherkinClaimTextFinding`, `GherkinClaimTextException`) are `public` from item
+0409, so the tool reaches them through its existing reference. `InternalsVisibleTo`
+on the engine is rejected (ADR-0001), and the reader's public members expose the
+result types, so all nine change together. The analyzer's `Text/` links compile
+the same files, so its copies are public in `Specht.Analysis` too. Neither
+assembly is a compile-time library to anyone outside this repository:
+`specht.dll` ships in the tool package and `Specht.Analysis.dll` under
+`analyzers/` and `build/` of `Specht.CodeAnalysis`, and no public API file or
+dependency closure test changes. The one cost: a project referencing both
+assemblies, `test/analysis.tests` and `test/acceptance`, gets CS0433 if it names
+one of the nine types; none does, and the analyzer's tests reach them through its
+adapters. Rejected: per-assembly accessibility through a preprocessor symbol or
+partial declarations, which puts conditional compilation in nine files and cannot
+cover the enum, and a public engine facade, which would need a second set of
+result types.
+
+For every declared project/TFM pair of a declared test project, require current
+compiler and runner evidence in the supplied F3 envelope (B-011, B-022, B-036,
+OQ-5's proposed default). `EvidencePolicy.ProjectEntry.RequiresExport` holds for
+a project with a `requiredCaseScope` or named, by `project`, in a
+`codeAnalysis.enforcement` entry whose `role` is `verifies`. Another declared
+project needs no export: with none it raises no `missingCompilation`, and a
+supplied export of it is read and checked like any other. An enabled
+implementation link with no current export carrying `implements` bindings is
+therefore `missing` (exit 1), not `unavailable` (B-037). Group by the pair and their source, assembly,
 configuration and policy identities. Duplicate compatible exports with conflicting contents are
 invalid; a missing pair or a pair without current identity is incomplete. Check
 repository files named by the input index against their recorded hashes. A
@@ -331,9 +378,9 @@ gated, while an active row of the same outline still is. A bound method no
 discovered case names gets its own `missingResult` naming its symbol ID
 (0201-F3 B-014, OQ-4), and so does a bound method with no owned case that is not
 planned, in every artifact ("has no owned case"). A claim whose only cases are
-planned therefore has no covering case. A declared project/TFM with no current
-export stays `missingCompilation` (exit 2), and its keys are not reported as
-passed.
+planned therefore has no covering case. A declared test project/TFM with no
+current export stays `missingCompilation` (exit 2), and its keys are not
+reported as passed.
 
 For each current version-3 artifact (0201-F3 § 7) with available results and at
 least one case that is owned, not planned and not selected, report one
