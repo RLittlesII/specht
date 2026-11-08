@@ -577,7 +577,7 @@ a finding leaves the catalogue unchanged.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer, each compared build from a clean output) -->
+<!-- last written by: test-writer, 2026-10-24, 2026-11-06 (item 0411: B-030 withdrawn) -->
 
 Two tiers. Reqnroll covers acceptance only: every scenario in
 `gherkin.feature` is bound by `test/acceptance/Bindings/GherkinSteps.cs`
@@ -628,44 +628,6 @@ exportAssembly, exportJson)` as the seam for the catalogue pass-through test;
   parameter, because an existing integration test activates the two-argument
   constructor by reflection.
 - The new documentation pages for SPCT0010 to SPCT0012 are the implementer's.
-
-### Packaged native Gherkin consumer (item `0302`)
-
-`GherkinVsTestConsumerIntegrationTests` in `test/build.tests` packs the current
-analyzer, copies `test/gherkin.vstest.fixture/` into a temporary consumer and
-writes its manifest, a Feature record with no claims table and a central
-`.spec/features/ledger/ledger.feature`. The consumer holds a production project
-whose code carries `implements` and a plain xUnit v2 VSTest test project whose
-methods carry `verifies`, under mandatory enforcement and warnings-as-errors.
-The test runs the build, discovery, run and reconciliation steps once for the
-class and writes its probe log under `.artifacts/gherkin-vstest/` with no absolute path: the consumer, the
-repository, the .NET installation and the home folder each stand as a
-placeholder. Each build records the assemblies its compiler wrote, and the
-local and continuous-integration builds compared use `--no-incremental`, so
-each compiles from a clean output. The two pending methods carry no `verifies` and sit in
-`test/shared/PendingTests.cs`, which the test project's `verifies` enforcement
-entry lists under `exclude`, a declared scope (item 0302 decision of
-2026-11-08); the unscoped variant adds `verifies` back. The fixture carries no
-`NoWarn`, `.editorconfig` severity change, pragma, `SuppressMessage` or
-Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
-
-- B-001: mechanism and unit tests as above. Integration:
-  `NativeClaimsInACentralTree_*`, where every binding resolves to a claim in
-  the claim file.
-- B-005: mechanism and unit tests as above. Integration: `CleanCheckoutWithMandatoryEnforcementAndWarningsAsErrors_*`,
-  over a Feature record with no table, compiles both projects from a clean
-  output with no `SPCT` diagnostic.
-- B-006: mechanism and unit tests as above. Integration: `ClaimFilesInACentralSpecFeaturesTree_*`
-  delivers the central claim file to both projects, and
-  `NativeClaimsInACentralTree_*` resolves the same claims from the test
-  project's artifact while the production project builds clean.
-- B-007: mechanism and unit tests as above. Integration: `NativeClaimsInACentralTree_*`, with no
-  `epic` grammar, resolves every target with a null epic.
-- B-017: mechanism and unit tests as above. Integration: `MandatoryRelationshipRemoved_*`, one
-  row each for a removed `implements` and a removed `verifies`, reports
-  `SPCT0007` naming the declaration.
-- B-018: mechanism and unit tests as above. Integration: `RelationshipNamingAClaimAbsentFromTheNativeCatalogue_*`
-  reports `SPCT0004` for `REQ-LED-009`.
 
 ## 9. Traceability Matrix
 

@@ -470,7 +470,7 @@ modified.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer, each compared build from a clean output) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: OQ-5 cited as resolved) -->
 
 `test/acceptance/Reconciliation/ReconciliationSteps.cs` runs B-001 to B-038
 through the actual CLI over an isolated synthetic consumer; `EvidenceTree.cs`
@@ -749,41 +749,6 @@ so `PartitionedEvidenceRoot`, `VsTestEvidenceTree` and the build test construct 
 over a `SpechtDocumentParser` and a `FrontmatterReader`; no assertion changed, and
 B-006's record parse is pinned by `SpechtDocumentParserUnitTests`
 (`SpechtDocumentUnitTests` until then).
-
-### Packaged native Gherkin consumer (item `0302`)
-
-`GherkinVsTestConsumerIntegrationTests` in `test/build.tests` packs the current
-analyzer, copies `test/gherkin.vstest.fixture/` into a temporary consumer and
-writes its manifest, a Feature record with no claims table and a central
-`.spec/features/ledger/ledger.feature`. The consumer holds a production project
-whose code carries `implements` and a plain xUnit v2 VSTest test project whose
-methods carry `verifies`, under mandatory enforcement and warnings-as-errors.
-The test runs the build, discovery, run and reconciliation steps once for the
-class and writes its probe log under `.artifacts/gherkin-vstest/` with no absolute path: the consumer, the
-repository, the .NET installation and the home folder each stand as a
-placeholder. Each build records the assemblies its compiler wrote, and the
-local and continuous-integration builds compared use `--no-incremental`, so
-each compiles from a clean output. The two pending methods carry no `verifies` and sit in
-`test/shared/PendingTests.cs`, which the test project's `verifies` enforcement
-entry lists under `exclude`, a declared scope (item 0302 decision of
-2026-11-08); the unscoped variant adds `verifies` back. The fixture carries no
-`NoWarn`, `.editorconfig` severity change, pragma, `SuppressMessage` or
-Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
-
-- B-012: mechanism as above. Integration: `SourceEditedAfterTheRun_*`, where every
-  binding is not current and every case outcome `absent`.
-- B-017: mechanism as above. Integration: `DocumentedSequence_*` passes the
-  default gate with exit 0, and `FixtureWithoutItsRequiredCaseScopeAndWithItsPendingMethodsBound_*`
-  fails it, after a rebuild that exits 0, with one "did not pass"
-  `missingResult` each for the failed and the skipped owned case.
-- B-022: mechanism as above. Integration: `CleanCheckout_WhenReconciledBeforeAnyEvidence_*`
-  is exit 2 with `missingCompilation` naming the test project.
-- B-028: mechanism as above. Integration: `NativeClaimsInTheClaimFileSet_*`
-  reconciles an artifact with no `catalog` member, and the report's claims are
-  REQ-LED-001 and REQ-LED-002 at the claim file, each with its test chain.
-- B-036: mechanism as above. Integration: `ProductionProjectNamedOnlyByImplementsEnforcement_*`:
-  with and without the test project's evidence, no finding names
-  `src/Ledger/Ledger.csproj`, and with it the input state is complete.
 
 ## 9. Traceability Matrix
 

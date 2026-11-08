@@ -484,7 +484,7 @@ contents include the complete compatible parser dependency closure.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer, each compared build from a clean output) -->
+<!-- last written by: test-writer, 2026-11-01 (item `0321`: the B-024 pin test takes its rows from the shipped catalog); test-writer, 2026-11-01 (B-020 amended, `0055-F6` decision 0009) -->
 
 `AdoptionSteps` executes the input/policy scenarios through real in-memory
 AdditionalFiles and the production adapter. `AnalysisInputAnalyzerUnitTests` uses
@@ -528,55 +528,6 @@ failed the gate; restoring it returned the build to clean. The package
 integration and analyzer tests cover input delivery, package assets and
 diagnostic behavior without a separate repository dogfood script.
 
-### Packaged native Gherkin consumer (item `0302`)
-
-`GherkinVsTestConsumerIntegrationTests` in `test/build.tests` packs the current
-analyzer, copies `test/gherkin.vstest.fixture/` into a temporary consumer and
-writes its manifest, a Feature record with no claims table and a central
-`.spec/features/ledger/ledger.feature`. The consumer holds a production project
-whose code carries `implements` and a plain xUnit v2 VSTest test project whose
-methods carry `verifies`, under mandatory enforcement and warnings-as-errors.
-The test runs the build, discovery, run and reconciliation steps once for the
-class and writes its probe log under `.artifacts/gherkin-vstest/` with no absolute path: the consumer, the
-repository, the .NET installation and the home folder each stand as a
-placeholder. Each build records the assemblies its compiler wrote, and the
-local and continuous-integration builds compared use `--no-incremental`, so
-each compiles from a clean output. The two pending methods carry no `verifies` and sit in
-`test/shared/PendingTests.cs`, which the test project's `verifies` enforcement
-entry lists under `exclude`, a declared scope (item 0302 decision of
-2026-11-08); the unscoped variant adds `verifies` back. The fixture carries no
-`NoWarn`, `.editorconfig` severity change, pragma, `SuppressMessage` or
-Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
-
-- B-002: mechanism is the package's build files, which deliver inputs and load
-  the analyzer with no condition on a continuous-integration property. No unit
-  seam; code read: `Specht.CodeAnalysis.props` and `Specht.CodeAnalysis.targets`
-  hold no `ContinuousIntegrationBuild`, `CI` or `GITHUB_ACTIONS` condition.
-  Integration: `SameConfiguration_*` compares the exit and the diagnostic set of
-  a clean and a failing build, with and without `CI=true` and
-  `-p:ContinuousIntegrationBuild=true`, each from a clean output; every local
-  build runs with `CI` and `GITHUB_ACTIONS` cleared, so a continuous-integration
-  runner's own variables do not reach the local half. The editor's design-time verdict is not
-  compared, so the row is `Partial`.
-- B-016 and B-027: mechanism is the props' default scenario input glob, which
-  includes `$(SpechtRoot)/.spec/features/**/*.feature`, each item stamped with
-  its input kind and relative path. Unit as § 9. Integration:
-  `ClaimFilesInACentralSpecFeaturesTree_*` reads `AdditionalFiles` of both
-  projects through `-getItem` with no Specht property on the command line.
-- B-017: mechanism is the unavailable state reported as `SPCT0001`. Unit as
-  § 9. Integration: `RequiredInputRemoved_*` deletes the claim file, and the
-  manifest with `SpechtRoot` given on the command line.
-- B-025: mechanism is the targets' `SpechtTestEvidence` to `AdditionalFiles`
-  mapping. Unit as § 9. Integration: `ArtifactSuppliedThroughSpechtTestEvidence_*`.
-- B-026: mechanism is `requiredCaseScope` parsed as a tag expression over the
-  case categories. Unit as § 9. Integration:
-  `RequiredCaseScopeAsACategoryTraitExpression_*`, one row per case over
-  `Trait("Category", ...)` values, and `TestProjectWithNoRequiredCaseScope_*`.
-
-What the design makes hard to test: the editor's design-time build cannot be
-driven from a command-line test, so B-002's editor half has no executable
-check.
-
 ### Performance
 
 <!-- last written by: benchmarker, 2026-10-19 -->
@@ -589,12 +540,12 @@ Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named) -->
+<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged consumer's tests named; B-002's Partial reason in its row) -->
 
 | Claim ID | Scenario                         | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Status  |
 | -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
 | B-001    | Selected scope                   | `AdoptionSteps.ThenScopeIsExplicit`; `AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`; `AnalysisPolicyUnitTests.SelectedRoleAndDeclarationKind_WhenApplied_ShouldRequireOnlyTheConfiguredRelationships`; `DocumentationTestMethodsUnitTests.ADiscoveredTestMethodWithNoVerifies_WhenAnalyzedInMandatoryScope_ShouldReportSPCT0007AsAWarning`; `DocumentationTestMethodsUnitTests.AnExportedMethodNamedByNoDiscoveredCase_WhenAnalyzedInMandatoryScope_ShouldNotRequireVerifies`                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered |
-| B-002    | Editor build parity              | `GherkinVsTestConsumerIntegrationTests.SameConfiguration_WhenBuiltLocallyAndWithContinuousIntegrationProperties_ShouldGiveTheSameVerdict`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Partial |
+| B-002    | Editor build parity              | `GherkinVsTestConsumerIntegrationTests.SameConfiguration_WhenBuiltLocallyAndWithContinuousIntegrationProperties_ShouldGiveTheSameVerdict`; nothing compares the editor's design-time verdict with the build's                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Partial |
 | B-003    | Invalid inputs                   | `AdoptionSteps.ThenUnavailable`; `AnalysisInputReaderUnitTests.RequiredInputDefects_WhenRead_ShouldMakeAnalysisUnavailable`; `AnalysisInputReaderUnitTests.InvalidPolicy_WhenRead_ShouldReportUnavailableAnalysis`; `AnalysisConfigurationReaderUnitTests.InvalidExplicitMapping_WhenProjected_ShouldRejectIt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Covered |
 | B-004    | Optional Reqnroll                | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Missing |
 | B-005    | Default warning findings         | `DocumentationDiagnosticsUnitTests.AgreedRegistry_WhenLoaded_ShouldKeepEveryAssignedDiagnosticAndItsSeverity`; `DocumentationBindingAnalyzerUnitTests.InvalidReservedXml_WhenAnalyzed_ShouldReportOnePreciseFinding`; `DocumentationBindingAnalyzerUnitTests.ConflictingTypeDefaults_WhenAnalyzed_ShouldReportEachDefaultWithoutMemberDuplicates`; `DocumentationTestMethodsUnitTests.ADiscoveredTestMethodWithNoVerifies_WhenAnalyzedInMandatoryScope_ShouldReportSPCT0007AsAWarning`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Partial |

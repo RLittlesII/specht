@@ -652,7 +652,7 @@ artifact. Reconciliation runs in process through `EvidenceReconciler`.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-08 (item 0302: the packaged native Gherkin VSTest consumer, each compared build from a clean output) -->
+<!-- last written by: test-writer, 2026-10-24, 2026-11-06 (decision 0010) -->
 
 The B-001 to B-009 scenarios exercise the artifact reader and the common runner
 normalizer with synthetic xUnit fact/theory, Playwright .NET and custom producer
@@ -758,46 +758,6 @@ Testability findings for `implementer`:
 - `build.tests` references `tool.csproj` to run `EvidenceReconciler` in process.
   `EvidenceReconciler` still has no file-system seam (above), so B-022 and the
   reconciler side of B-018 are pinned at the Integration tier.
-
-### Packaged native Gherkin consumer (item `0302`)
-
-`GherkinVsTestConsumerIntegrationTests` in `test/build.tests` packs the current
-analyzer, copies `test/gherkin.vstest.fixture/` into a temporary consumer and
-writes its manifest, a Feature record with no claims table and a central
-`.spec/features/ledger/ledger.feature`. The consumer holds a production project
-whose code carries `implements` and a plain xUnit v2 VSTest test project whose
-methods carry `verifies`, under mandatory enforcement and warnings-as-errors.
-The test runs the build, discovery, run and reconciliation steps once for the
-class and writes its probe log under `.artifacts/gherkin-vstest/` with no absolute path: the consumer, the
-repository, the .NET installation and the home folder each stand as a
-placeholder. Each build records the assemblies its compiler wrote, and the
-local and continuous-integration builds compared use `--no-incremental`, so
-each compiles from a clean output. The two pending methods carry no `verifies` and sit in
-`test/shared/PendingTests.cs`, which the test project's `verifies` enforcement
-entry lists under `exclude`, a declared scope (item 0302 decision of
-2026-11-08); the unscoped variant adds `verifies` back. The fixture carries no
-`NoWarn`, `.editorconfig` severity change, pragma, `SuppressMessage` or
-Reqnroll (`FixtureSources_*`, `FixtureAndItsEvidence_*`).
-
-- B-010, B-011 and B-013: mechanism and unit tests as above. Integration: `FactOrTheoryRow_*`,
-  one row per method: each fact and theory row keeps its own case through
-  discovery and the run, and its own outcome, `passed`, `skipped` or `failed`.
-- B-012: mechanism and unit tests as above. Integration: `TestMethodCompiledFromOutsideTheTestProject_*`
-  resolves `test/shared/ReversalTests.cs`, linked into the test project.
-- B-017: mechanism and unit tests as above. Integration: `CleanCheckoutWithMandatoryEnforcementAndWarningsAsErrors_*`
-  compiles both projects from a clean output before any evidence with no
-  `SPCT` diagnostic, and
-  `TestMethodMissingVerifiesWithOnlyStaleEvidence_*` builds clean while the only
-  artifact is stale, so recognition is provisional.
-- B-018: mechanism and unit tests as above. Integration: `SourceEditedAfterTheRun_*` reports the
-  edited source as stale with the regenerating steps, and
-  `TestMethodMissingVerifiesWithOnlyStaleEvidence_*` shows a stale artifact is
-  not authoritative.
-- B-019: mechanism and unit tests as above. Integration: `DocumentedSequence_*` holds current
-  passing evidence after build, discovery and run, and
-  `ArtifactSuppliedThroughSpechtTestEvidence_*` rebuilds clean with it.
-- B-022: mechanism and unit tests as above. Integration: `CleanCheckout_WhenReconciledBeforeAnyEvidence_*`
-  is incomplete, exit 2, naming the test project and the producing steps.
 
 ## 9. Traceability Matrix
 
