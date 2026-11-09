@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
+using Specht.Discovery;
 using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
@@ -11,7 +13,8 @@ namespace Specht.Acceptance.Discovery;
 
 /// <summary>
 /// Steps for <c>src/specht/Discovery/.spec/discovery.feature</c> (0001-F6): item 0005 binds B-001, B-002, B-003, B-009 and B-012,
-/// item 0006 binds B-004, and item 0007 binds the first B-006 scenario.
+/// item 0006 binds B-004, item 0007 binds the first B-006 scenario, and item 0008 binds B-005, B-010 and the B-006 scenario
+/// without git on the path.
 /// The manifest is edited in memory from the tree's default copy and written when the check runs, and "the check runs" is
 /// the engine's runner; the summary is the lines its report document makes and the report is that document serialized,
 /// which <c>0001-F2</c> B-002 and <c>0001-F3</c> B-001 hold the tool's own output to. A specification a step writes has no
@@ -20,8 +23,10 @@ namespace Specht.Acceptance.Discovery;
 /// specification is reported for the mismatch when the path-identity rule names its file once (B-004; decision 0009). The
 /// check runs over the real file system through one whose directory records every listing it is asked for and every path
 /// a listing returns, so a directory is opened when a listing asks for it or a listing returns a path below it (B-006,
-/// C-1). The scenarios of B-005, B-007, B-008, B-010 and B-011, and the B-006 scenario without git on the path, stay
-/// pending for their items.
+/// C-1). A git work tree is made by the real <c>git</c> in the scenario's root, and the check's child process records each
+/// program discovery asks for and what it gave back; "no git executable is on the path" starts a program that does not
+/// exist in git's place, so the process-wide <c>PATH</c> is never changed (B-005, B-006, B-010). The scenarios of B-007,
+/// B-008 and B-011 stay pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "Discovery")]
@@ -216,11 +221,60 @@ public sealed class DiscoverySteps
     public void GivenHoldsACoLocatedSpecificationThreeLevelsDeep(string directory) =>
         Write(Subject = $"{directory}/one/two/three/.spec/README.md", "F1");
 
+    [Given("the root is a git work tree")]
+    public void GivenTheRootIsAGitWorkTree() => Git("init", "--quiet");
+
+    [Given("the root is a git work tree whose ignore file lists {string}")]
+    public void GivenTheRootIsAGitWorkTreeWhoseIgnoreFileLists(string directory)
+    {
+        Git("init", "--quiet");
+        Tree.WriteRaw(".gitignore", directory + "\n");
+    }
+
+    [Given("the manifest does not exclude {string}")]
+    public void GivenTheManifestDoesNotExclude(string directory) =>
+        Manifest["exclusions"]!.AsArray().Select(static entry => entry!.GetValue<string>()).Should().NotContain([directory, "/" + directory]);
+
+    [Given("the root holds a co-located specification that is not yet tracked and not ignored")]
+    public void GivenTheRootHoldsACoLocatedSpecificationThatIsNotYetTrackedAndNotIgnored()
+    {
+        Write(Subject = "src/area/.spec/README.md", "F1");
+        Untracked().Should().Contain(Subject);
+    }
+
+    [Given("the manifest excludes the root-relative path {string} and the directory name {string}")]
+    public void GivenTheManifestExcludesTheRootRelativePathAndTheDirectoryName(string path, string directory) =>
+        Manifest["exclusions"] = new JsonArray(path, directory);
+
+    [Given("a README in the root {string} folder is tracked")]
+    public void GivenAReadmeInTheRootFolderIsTracked(string folder)
+    {
+        Write(_rootReadme = $"{folder}/README.md", "F1");
+        Git("add", _rootReadme);
+    }
+
+    [Given("a co-located specification under a {string} directory is tracked")]
+    public void GivenACoLocatedSpecificationUnderADirectoryIsTracked(string directory)
+    {
+        Write(_tracked = $"src/{directory}/one/.spec/README.md", "F2");
+        Git("add", _tracked);
+    }
+
+    [Given("a second co-located specification under a {string} directory is neither tracked nor ignored")]
+    public void GivenASecondCoLocatedSpecificationUnderADirectoryIsNeitherTrackedNorIgnored(string directory)
+    {
+        Write(_untracked = $"tools/{directory}/two/.spec/README.md", "F3");
+        Untracked().Should().Contain(_untracked);
+    }
+
+    [Given("no git executable is on the path")]
+    public void GivenNoGitExecutableIsOnThePath() => _childProcess = new RecordingChildProcess(AbsentProgram);
+
     [When("the check runs")]
     public void WhenTheCheckRuns()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        Report = EngineServices.Runner(fileSystem: _fileSystem).Run(Tree.Root);
+        Report = EngineServices.Runner(fileSystem: _fileSystem, childProcess: _childProcess).Run(Tree.Root);
     }
 
     [Then("that specification is discovered")]
@@ -323,11 +377,55 @@ public sealed class DiscoverySteps
     [Then("no directory under {string} is opened")]
     public void ThenNoDirectoryUnderIsOpened(string directory)
     {
-        _fileSystem.Recording.Should().NotBeEmpty();
+        (_fileSystem.Recording.Count > 0 || _childProcess.Calls.Any(static call => call.Result is not null))
+            .Should().BeTrue("the tree was listed, by the walk or by git");
         _fileSystem.Recording.Select(listing => Relative(listing.Asked))
             .Should().NotContain(path => path == directory || path.StartsWith(directory + "/", StringComparison.Ordinal));
         _fileSystem.Recording.SelectMany(static listing => listing.Returned).Select(Relative)
             .Should().NotContain(path => path.StartsWith(directory + "/", StringComparison.Ordinal));
+    }
+
+    [Then("none of the three files is discovered")]
+    public void ThenNoneOfTheThreeFilesIsDiscovered() =>
+        Reported.Should().NotContain(
+            new[] { _rootReadme, _tracked, _untracked }.Select(static path => path ?? throw new InvalidOperationException("A step wrote none of the three.")));
+
+    [Then("git is never asked to list the root {string} folder or any {string} directory")]
+    public void ThenGitIsNeverAskedToListTheRootFolderOrAnyDirectory(string folder, string directory)
+    {
+        _childProcess.Calls.Should().NotBeEmpty().And.OnlyContain(static call => call.FileName == "git" && call.Result != null);
+        _childProcess.Calls.SelectMany(static call => call.Result!.StandardOutput.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+            .Should().NotContain(path => path.StartsWith(folder + "/", StringComparison.Ordinal) || path.Split('/').Contains(directory));
+    }
+
+    [Then("discovery completes by walking the tree")]
+    public void ThenDiscoveryCompletesByWalkingTheTree()
+    {
+        _childProcess.Calls.Should().NotBeEmpty().And.OnlyContain(static call => call.FileName == "git" && call.Result == null);
+        _fileSystem.Recording.Select(listing => Relative(listing.Asked)).Should().Contain(".");
+    }
+
+    [Then("the exit code reflects the violations alone")]
+    public void ThenTheExitCodeReflectsTheViolationsAlone()
+    {
+        var twin = Directory.CreateTempSubdirectory("specht-spec-").FullName;
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(Tree.Root, "*", SearchOption.AllDirectories)
+                         .Where(file => !Relative(file).StartsWith(".git/", StringComparison.Ordinal)))
+            {
+                var copy = Path.Combine(twin, Path.GetRelativePath(Tree.Root, file));
+                Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
+                File.Copy(file, copy);
+            }
+
+            var outsideGit = EngineServices.Runner().Run(twin);
+            Report.Violations.Select(Placed).Should().Equal(outsideGit.Violations.Select(Placed));
+        }
+        finally
+        {
+            Directory.Delete(twin, recursive: true);
+        }
     }
 
     [AfterScenario]
@@ -362,6 +460,26 @@ public sealed class DiscoverySteps
     private static (string RuleId, SpechtSeverity Severity, int Line, string? Identifier, string Message) Verdict(SpechtViolation violation) =>
         (violation.RuleId, violation.Severity, violation.Line, violation.Identifier, violation.Message);
 
+    private static (string File, string RuleId, SpechtSeverity Severity, int Line, string? Identifier, string Message) Placed(
+        SpechtViolation violation) =>
+        (violation.File, violation.RuleId, violation.Severity, violation.Line, violation.Identifier, violation.Message);
+
+    private string Git(params string[] arguments)
+    {
+        var start = new ProcessStartInfo("git") { WorkingDirectory = Tree.Root };
+        foreach (var argument in arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
+
+        var (stdout, stderr, exitCode) = AcceptanceTool.Run(start);
+        exitCode.Should().Be(0, stdout + stderr);
+
+        return stdout;
+    }
+
+    private string[] Untracked() => Git("ls-files", "-z", "--others", "--exclude-standard").Split('\0', StringSplitOptions.RemoveEmptyEntries);
+
     private string Relative(string path) =>
         Path.GetRelativePath(Path.GetFullPath(Tree.Root), Path.GetFullPath(path)).Replace(Path.DirectorySeparatorChar, '/');
 
@@ -381,6 +499,20 @@ public sealed class DiscoverySteps
         Tree.WriteSpecification(path, "0001", id, frontmatter, sections);
 
     private sealed record Listing(string Asked, IReadOnlyList<string> Returned);
+
+    private sealed record Call(string FileName, ChildProcessResult? Result);
+
+    private sealed class RecordingChildProcess(string? program = null) : IChildProcess
+    {
+        public List<Call> Calls { get; } = [];
+
+        public ChildProcessResult? Run(string fileName, IReadOnlyList<string> arguments, string workingDirectory)
+        {
+            var result = new ChildProcess().Run(program ?? fileName, arguments, workingDirectory);
+            Calls.Add(new Call(fileName, result));
+            return result;
+        }
+    }
 
     private sealed class RecordingFileSystem : FileSystem
     {
@@ -485,14 +617,19 @@ public sealed class DiscoverySteps
 
     private const string SecondCompanion = "src/other/.spec/thing.gherkin";
 
+    private const string AbsentProgram = "specht-git-that-does-not-exist";
+
     private const string PhantomTag =
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";
 
     private readonly RecordingFileSystem _fileSystem = new();
+    private RecordingChildProcess _childProcess = new();
     private SpechtTree? _tree;
     private string? _underEpics;
     private string? _besideCode;
     private string? _rootReadme;
+    private string? _tracked;
+    private string? _untracked;
     private string? _layoutFolder;
     private string? _first;
     private string? _epic;
