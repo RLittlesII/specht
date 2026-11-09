@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-11-01"
+updated: "2026-11-08"
 closed: null
 
 summary: |
@@ -157,6 +157,17 @@ decisions:
     the schema-source selection, and the `--report` row. This item is
     released when the owner accepts that rescoping; the design is then the
     rescoped one and the dependencies 0164 and 0166 are open.
+  - |
+    2026-11-08, repository owner, recorded by spec-author: asked whether to
+    accept this item's rescoping as written or defer it, the owner selected
+    the option labelled "Move both to 0.7.0", worded by the coordinator as
+    not deciding now, with this item and 0036 leaving the 0.6.0 finish line
+    and this item staying `blocked`. Not selected: "Accept as written", which
+    would have made this item ready and 0036 follow it. Both ids move to
+    0.7.0 in `.issue/.goal`. The rescoping is neither accepted nor rejected:
+    the judgements of 2026-10-31, `SpecCheck` taking the schema-source
+    selection and the `--report` row, stay open for the owner. Status stays
+    `blocked`.
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."

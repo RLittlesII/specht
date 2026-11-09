@@ -28,12 +28,10 @@
 0409
 0410
 0411
-# Repository integration: discovery and report output, moved from 0.4.0.
+# Repository integration: discovery, moved from 0.4.0.
 0007
 0008
 0009
-0167
-0036
 
 0.7.0
 # Agent surface completed: the tree's facts 0132-F2, 0132-F4's facts, trace
@@ -64,6 +62,10 @@
 0394
 0395
 0396
+# Repository integration: report output and the check's engine entry point it
+# waits on, moved from 0.6.0 by the owner's selection, 2026-11-08.
+0167
+0036
 
 0.8.0
 # Review and presentation: epics 0228, 0194 and 0101. Their Features' items
