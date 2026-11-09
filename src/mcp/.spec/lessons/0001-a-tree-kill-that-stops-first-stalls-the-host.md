@@ -30,16 +30,20 @@ did not stop the stall: it still reproduced 1 of 11 locally.
 
 ## Spec delta
 
+`0132-F3` § 3: B-036, a cancelled call ends cancelled, and B-037, it leaves
+no program it started running, with their scenarios and § 9 rows; § 5 row 20
+excludes a program started after the cancellation.
+
 `0132-F3` § 6 and § 7 (`bb378585`): on macOS and Linux a cancelled run takes
 one snapshot of the program's descendants and kills them, children before
 parent, then the program, with no step that stops the tree. Windows and other
-systems keep the tree kill. No § 3 claim changed.
+systems keep the tree kill.
 
 Gap, recorded in § 7: a program forked after the snapshot is not killed, and
 the cancel test's tree is one level deep, a shell and its `sleep`.
 
 ## Claim
 
-`0132-F3` B-017 — § 9, through the process boundary beneath it,
+`0132-F3` B-036 and B-037 — § 9, through the process boundary beneath them,
 `AProgramThatIsRunning_WhenTheRunIsCancelled_ShouldThrowCancelledAndLeaveNoProgramAlive`.
 The test is bounded, uses no FIFO, and fails if a descendant is not killed.
