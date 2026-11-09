@@ -138,6 +138,18 @@ internal static class AcceptanceTool
             ["params"] = new JsonObject { ["_meta"] = McpMeta(revision) },
         }.ToJsonString();
 
+    /// <summary>Builds one request that names no revision, as a request in a session opened by a handshake does, as one line.</summary>
+    /// <param name="id">The request id.</param>
+    /// <param name="method">The method.</param>
+    /// <returns>The JSON-RPC request.</returns>
+    public static string McpSessionRequest(int id, string method) =>
+        new JsonObject { ["jsonrpc"] = "2.0", ["id"] = id, ["method"] = method }.ToJsonString();
+
+    /// <summary>Builds the notification a client sends once it has the answer to its initialize request, as one line.</summary>
+    /// <returns>The JSON-RPC notification.</returns>
+    public static string McpInitialized() =>
+        new JsonObject { ["jsonrpc"] = "2.0", ["method"] = "notifications/initialized" }.ToJsonString();
+
     /// <summary>Builds a call of the tool <paramref name="tool"/> naming the supported revision, as one line.</summary>
     /// <param name="id">The request id.</param>
     /// <param name="tool">The tool's name.</param>
@@ -175,10 +187,11 @@ internal static class AcceptanceTool
             .Select(static block => block?["text"]?.GetValue<string>() ?? string.Empty)
             .ToList();
 
-    /// <summary>Builds the request a client of a revision with an initialize handshake opens with, as one line.</summary>
+    /// <summary>Builds the initialize request a client opens with, naming <paramref name="revision"/>, as one line.</summary>
     /// <param name="id">The request id.</param>
+    /// <param name="revision">The protocol revision the request names.</param>
     /// <returns>The JSON-RPC request.</returns>
-    public static string McpLegacyInitialize(int id) =>
+    public static string McpInitialize(int id, string revision) =>
         new JsonObject
         {
             ["jsonrpc"] = "2.0",
@@ -186,7 +199,7 @@ internal static class AcceptanceTool
             ["method"] = "initialize",
             ["params"] = new JsonObject
             {
-                ["protocolVersion"] = "2025-11-25",
+                ["protocolVersion"] = revision,
                 ["capabilities"] = new JsonObject(),
                 ["clientInfo"] = new JsonObject { ["name"] = "AcceptanceClient", ["version"] = "1.0.0" },
             },
