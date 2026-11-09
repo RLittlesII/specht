@@ -79,3 +79,29 @@ Exact configuration/evidence encoding and adapter/report contracts remain open.
 ## Reversal
 
 None.
+
+Partial, 2026-11-08: the completeness sentence is narrowed; see the amendment
+below.
+
+## Amendment 2026-11-08
+
+**Amended 2026-11-08 on the repository owner's ruling; recorded by
+spec-author.** The owner resolved
+[`0201-F5` OQ-5](../../../analyzers/Reconciliation/.spec/README.md) on
+2026-11-08: "Accept OQ-5 default". In the recorder's reading, that ruling
+narrows the call's completeness sentence:
+
+- The aggregation boundary counts only each declared test project's
+  project/target-framework combinations. A declared test project has a
+  `requiredCaseScope` or is named by a `verifies` enforcement entry
+  (`0201-F5` B-011, C-3).
+- Another declared project needs no current export and is not reported
+  missing (`0201-F5` B-036).
+- An enabled `requiredLinks.implementation` with no export carrying a claim's
+  `implements` bindings stays a missing implementation link (`0201-F5` B-037).
+
+The amendment also affects `0201-F5` B-036, B-037 and C-3.
+
+The rest of the call stands. The text above is unedited except the dated line
+under Reversal. One compilation still cannot certify coverage of an omitted
+declared test project.
