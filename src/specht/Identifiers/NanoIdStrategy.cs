@@ -20,6 +20,9 @@ public sealed class NanoIdStrategy : IIdStrategy
     /// </exception>
     /// <implements epic="0001" feature="F19" claim="B-019" />
     /// <implements epic="0001" feature="F19" claim="B-020" />
+    /// <implements epic="0001" feature="F19" claim="B-049" />
+    /// <implements epic="0001" feature="F19" claim="B-050" />
+    /// <implements epic="0001" feature="F19" claim="B-051" />
     public NanoIdStrategy(JsonNode? settings, string type, IRandomSource random)
     {
         if (settings is not null and not JsonObject)
