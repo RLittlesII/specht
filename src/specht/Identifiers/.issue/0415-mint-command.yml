@@ -44,11 +44,13 @@ summary: |
 
   Proceeds on OQ-11's recorded default: a refusal exits one of `2`,
   `3` and `4`, with the reason on standard error and no absolute path
-  (C-10). Waits on 0414 alone.
+  (C-10), except a type not opted in, which exits `4` on the owner's
+  2026-11-09 selection (B-002; OQ-11 answered in part). Waits on 0414
+  alone.
 
 acceptance_criteria:
   - "B-001 — a type not opted in, nothing on standard output"
-  - "B-002 — a type not opted in, exit 2, 3 or 4 (OQ-11's default)"
+  - "B-002 — a type not opted in, exit 4 (OQ-11, answered in part 2026-11-09)"
   - "B-003 — one line, the id alone"
   - "B-004 — a printed id exits 0"
   - "B-015 — id settings the pin does not accept, exit 3"

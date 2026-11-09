@@ -21,7 +21,7 @@ Feature: Id generation
   Scenario: A type not opted in is refused
     Given a manifest that opts only lesson numbers in
     When an ADR number is requested
-    Then the request ends with a failure code the check already gives
+    Then the request ends as it does for something named on the command line that is not found
 
   @B-003
   Scenario: A minted id is the whole output
