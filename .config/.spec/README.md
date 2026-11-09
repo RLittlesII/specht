@@ -67,21 +67,21 @@ A consumer cannot install a package from a feed it does not know, with a credent
 | B-007 | Given a clone and no GitHub token, the solution restores and builds.                                                                                                                                                                                                                                                                   | OQ-2 (owner, 2026-10-08)                                                 | Amended   |
 | B-008 | Given the install document, it names the command that installs the tool globally, says that install puts `specht` on PATH, and says a manifest install runs as `dotnet specht`.                                                                                                                                                        | owner, 2026-10-11; `0001-F2` decision 0009; OQ-3                         | Withdrawn |
 | B-009 | Given the install document while every published version is below `1.0.0`, each install command it names carries `--prerelease`.                                                                                                                                                                                                       | owner, 2026-11-01, `0055-F6` decision 0007                               | Withdrawn |
-| B-010 | Given a `specht.tool` version published to nuget.org, this repository's committed local tool manifest names `specht.tool` at a version published there.                                                                                                                                                                                | owner, 2026-11-01, `0055-F6` decision 0007; B-003                        | Active    |
+| B-010 | Given a `specht.tool` version published to nuget.org, this repository's committed local tool manifest names `specht.tool` at a version published there and usable through standard local tool restore and invocation.                                                                                                                  | owner, 2026-11-01, `0055-F6` decision 0007; B-003                        | Active    |
 | B-011 | Given this repository's committed local tool manifest names a version published to nuget.org (B-010), its committed `nuget.config` names no GitHub Packages source.                                                                                                                                                                    | owner, 2026-11-01, `0055-F6` decision 0007                               | Active    |
 
 ## 4. Constraints
 
 <!-- last written by: spec-author, 2026-11-05 (README acceptance) -->
 
-| ID  | Constraint                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Rules Out                                                                                                                                                                                     |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C-1 | A committed package source takes its credential from the environment.                                                                                                                                                                                                                                                                                                                                                                                                   | A token, password or username-and-token pair in any committed `nuget.config`, here or in the document's examples.                                                                             |
-| C-2 | The setup guide gives the local install through a committed tool manifest and the global install (`0001-F2` C-6 and its decision 0009).                                                                                                                                                                                                                                                                                                                                 | A global install as the only documented path, or as a prerequisite of a build.                                                                                                                |
-| C-3 | The document describes this repository's feed and nothing a consumer's own build does with the tool.                                                                                                                                                                                                                                                                                                                                                                    | Consumer build wiring, such as a NUKE target, written here as if it were this repository's to maintain.                                                                                       |
-| C-4 | The README gives a local quick start. The setup guide covers both installation paths.                                                                                                                                                                                                                                                                                                                                                                                   | Duplicating the full setup guide on the front page.                                                                                                                                           |
-| C-5 | Until this repository's committed local tool manifest names a `specht.tool` version published to nuget.org (B-010), its own CI, release and self-check runs read GitHub Packages with the workflow's own token granted `packages: read`; from then on they supply no package-read credential (owner, 2026-11-01; `0055-F6` decision 0007). Amended 2026-11-01: was the workflow's own token with no end, from the owner, 2026-10-08 (`0055-F2` B-011, `0055-F6` B-010). | A stored read token as a repository secret for this repository's own runs; once B-010 holds, `NuGetPackageSourceCredentials_specht` or `packages: read` supplied to any of them for the tool. |
-| C-6 | nuget.org is the only feed the document tells a consumer to install the tool from (`0055-F6` C-10).                                                                                                                                                                                                                                                                                                                                                                     | A documented GitHub Packages source, user-level source, `--add-source` or personal access token for `specht.tool`.                                                                            |
+| ID  | Constraint                                                                                                                                                                                                                                                                                     | Rules Out                                                                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| C-1 | A committed package source takes its credential from the environment.                                                                                                                                                                                                                          | A token, password or username-and-token pair in any committed `nuget.config`, here or in the document's examples.  |
+| C-2 | The setup guide gives the local install through a committed tool manifest and the global install (`0001-F2` C-6 and its decision 0009).                                                                                                                                                        | A global install as the only documented path, or as a prerequisite of a build.                                     |
+| C-3 | The document describes this repository's feed and nothing a consumer's own build does with the tool.                                                                                                                                                                                           | Consumer build wiring, such as a NUKE target, written here as if it were this repository's to maintain.            |
+| C-4 | The README gives a local quick start. The setup guide covers both installation paths.                                                                                                                                                                                                          | Duplicating the full setup guide on the front page.                                                                |
+| C-5 | This repository's CI, release and self-check runs supply no package-read credential. CI and release restore the pinned tool from nuget.org (B-010, `0055-F6` decision 0007). Amended 2026-11-09 when the pin moved to nuget.org. The former GitHub Packages pin used the workflow's own token. | A stored token, `NuGetPackageSourceCredentials_specht` or `packages: read` supplied to these runs for the tool.    |
+| C-6 | nuget.org is the only feed the document tells a consumer to install the tool from (`0055-F6` C-10).                                                                                                                                                                                            | A documented GitHub Packages source, user-level source, `--add-source` or personal access token for `specht.tool`. |
 
 ## 5. Out of Scope
 
@@ -122,26 +122,11 @@ prerelease (`0055-F5` B-009), which NuGet does not pick without
 manifest pins an exact version, label included, so `dotnet tool restore`
 needs no flag. The packages reach nuget.org through `0055-F6`'s release path.
 
-**This repository**, until item 0328, is the transition
-`0055-F6` decision 0007 names, and the next two paragraphs describe it.
-[Decision 0001](decisions/0001-use-native-package-and-tool-restore.md) uses
-native restore commands. The root `.config/dotnet-tools.json` pins published
-`specht.tool` compatible with the live manifest, `0.1.131`, a version published
-only to GitHub Packages, so B-010 and B-011 do not hold yet. Root `nuget.config` maps exactly that package to the `specht` source,
-GitHub Packages; all other packages and audit data use nuget.org. NuGet reads
-`NuGetPackageSourceCredentials_specht` from the process environment, in its
-native `Username=...;Password=...;ValidAuthenticationTypes=Basic` format.
-
-`dotnet tool restore` restores all tools with a read credential. Without one,
-`dotnet restore specht.slnx` and `dotnet build specht.slnx` still restore and
-build the solution. NUKE retains its existing tool restore followed by solution
-restore, so full NUKE invocations need the tool-feed credential. The generated CI and release build jobs receive the native NuGet environment
-credential from their workflow token, granted package read (0067 and 0085).
-No custom manifest generation or restore-target change is required. That is
-C-5 as amended: item 0328 moves the pin to the first version on nuget.org,
-then removes the `specht` source and its mapping from `nuget.config` and the
-credential and `packages: read` from this repository's runs; `nuget.config`
-keeps nuget.org and its audit source.
+**This repository** uses the same native commands. The local tool manifest
+pins the published checker, and root `nuget.config` uses nuget.org for packages
+and audit data. The pinned SDK in `global.json` supplies the runtime the
+checker selects. Restore in NUKE, CI and release uses that configuration
+without a package-read credential (B-010, B-011, C-5).
 
 The README shows how to install the local tool, commit the manifest and restore
 the tool in a clone. The setup guide covers both install paths and the public
@@ -151,13 +136,15 @@ NuGet feed. Review checks that the examples opt in to prereleases.
 
 <!-- last written by: test-writer, 2026-11-05 (README acceptance) -->
 
-`ConsumptionSteps` binds B-001, B-002, B-003 and B-007. B-010 and
-B-011 state the end of the feed transition, which item `0328` delivers after the
-first nuget.org release; their steps stay unbound, so the acceptance tier
-reports both scenarios skipped (`missingOrPendingStepsOutcome` is `Ignore`) and
-their § 9 rows stay `Missing`. Binding them now would assert something this
-repository does not yet do: its manifest still pins `0.1.131`, published only to
-GitHub Packages.
+`ConsumptionSteps` binds B-001, B-002, B-003, B-007, B-010 and B-011.
+For B-003 and B-010, it uses the committed checker entry with a synthetic tool
+at the pinned version and exercises local restore and invocation. B-011
+reads the committed package sources and mappings. The live restore of the
+full manifest and invocation of the real checker were verified on 2026-11-09
+with fresh caches, .NET 11 RC3 and no feed credential. `dotnet specht --version`
+printed `0.5.35-preview+cb12f05b68`.
+`CodeAnalysisReleaseIntegrationTests.RepositoryWorkflows_ShouldRestoreTheCheckerWithoutAPackageReadCredential`
+checks CI, main and release for the absence of package-read credentials (C-5).
 
 A folder feed stands in for nuget.org. It sits above the consumer repository in
 a `nuget.config` that clears every other source, mapping and audit source, as a
@@ -177,15 +164,9 @@ B-002 writes a manifest naming the synthetic package at its prerelease version,
 restores it with no source of the clone's own and no credential, and runs it;
 the output is the pinned version.
 
-B-003 is unchanged. B-007 writes this repository's `nuget.config`, its sources
-remapped to empty folder feeds, into the clone with a synthetic solution, and
-restores and builds it with no credential.
-
-The 2026-10-16 record follows. B-002 restored and invoked a synthetic checker at the committed pin. B-003
-checks that pin against the known published versions 0.1.90 (`0055-F6` § 8)
-and [0.1.131](https://github.com/RLittlesII/specht/releases/tag/v0.1.131).
-The latter carries the schema and `claim` setting the installed self-check needs
-(`0001-F2` B-014).
+B-007 remaps the committed package and audit sources to a local folder feed
+and restores and builds a synthetic solution. The 2026-10-16 verification
+used the former GitHub Packages pin, which has since moved to nuget.org.
 B-007 removes credential environment variables, supplies no checker package,
 and runs native solution restore followed by build. No automated test uses a
 network or real credential.
@@ -205,19 +186,19 @@ Full verification on 2026-10-14: `./build.sh` passed Format, Compile, 904 unit t
 
 <!-- last written by: test-writer, 2026-11-05 (README acceptance) -->
 
-| Claim ID | Scenario                                                              | Test               | Status    |
-| -------- | --------------------------------------------------------------------- | ------------------ | --------- |
-| B-001    | A new repository installs the tool from the feed                      | `ConsumptionSteps` | Covered   |
-| B-002    | A clone restores the pinned tool                                      | `ConsumptionSteps` | Covered   |
-| B-003    | This repository installs its own published tool                       | `ConsumptionSteps` | Covered   |
-| B-004    | The document names the feed and the source entry                      | None               | Withdrawn |
-| B-005    | The document says no credential is needed                             | None               | Withdrawn |
-| B-006    | The document names the install and restore commands                   | None               | Withdrawn |
-| B-007    | A contributor without a token can build                               | `ConsumptionSteps` | Covered   |
-| B-008    | The document names the global install and how each install is invoked | None               | Withdrawn |
-| B-009    | The document opts in to prereleases below 1.0.0                       | None               | Withdrawn |
-| B-010    | This repository installs its own tool from nuget.org                  | Missing            | Missing   |
-| B-011    | This repository drops the authenticated feed                          | Missing            | Missing   |
+| Claim ID | Scenario                                                              | Test                                                                            | Status    |
+| -------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------- |
+| B-001    | A new repository installs the tool from the feed                      | `ConsumptionSteps`                                                              | Covered   |
+| B-002    | A clone restores the pinned tool                                      | `ConsumptionSteps`                                                              | Covered   |
+| B-003    | This repository installs its own tool from nuget.org                  | `ConsumptionSteps`                                                              | Covered   |
+| B-004    | The document names the feed and the source entry                      | None                                                                            | Withdrawn |
+| B-005    | The document says no credential is needed                             | None                                                                            | Withdrawn |
+| B-006    | The document names the install and restore commands                   | None                                                                            | Withdrawn |
+| B-007    | A contributor without a token can build                               | `ConsumptionSteps`                                                              | Covered   |
+| B-008    | The document names the global install and how each install is invoked | None                                                                            | Withdrawn |
+| B-009    | The document opts in to prereleases below 1.0.0                       | None                                                                            | Withdrawn |
+| B-010    | This repository installs its own tool from nuget.org                  | `ConsumptionSteps` and credential-free restore and invocation against nuget.org | Covered   |
+| B-011    | This repository drops the authenticated feed                          | `ConsumptionSteps` and the workflow credential check in § 8 (C-5)               | Covered   |
 
 ## 10. Lessons / Spec Deltas
 
@@ -233,6 +214,11 @@ Full verification on 2026-10-14: `./build.sh` passed Format, Compile, 904 unit t
 - 2026-11-01, the owner moved the feed to nuget.org, with every version below `1.0.0` a `-preview` prerelease ([`0055-F6` decision 0007](../../.build/Releasing/.spec/decisions/0007-publish-prereleases-to-nuget-org-through-trusted-publishing.md)). A-1 retired and A-3 added; B-001, B-002, B-004 and B-005 amended in place: a consumer adds no source and supplies no credential; B-009 added, `--prerelease` below `1.0.0`; C-6 added; § 1, § 2 row 2 and § 5 row 6 amended; OQ-3 resolved in place; [decision 0002](decisions/0002-document-the-authenticated-global-install.md) reversed. Stated transition: this repository's own manifest pins `0.1.131`, published only to GitHub Packages, so its `specht` source and the `NuGetPackageSourceCredentials_specht` credential stay until the first nuget.org release. B-010 and B-011 state the end of it and C-5 is amended to it; their § 9 rows are `Missing` until item `0328` moves the pin. B-003 and B-007 are unchanged. `status` leaves `done`, since § 9 carries `Missing` rows, and `spec_status` returns to `in-review`. Owed to the `test-writer`: `ConsumptionSteps` for the reworded `@B-001`, `@B-002`, `@B-004`, `@B-005` and `@B-008` steps, and § 9's new rows. Owed to the `implementer`: § 7, which describes the GitHub Packages source and credential as the consumer path - delivered 2026-11-01 by the `implementer` in item 0327.
 
 - 2026-11-05, the README quick start changed and acceptance failed because the fixture depended on the old section heading. The owner withdrew the prose checks B-004, B-005, B-006, B-008 and B-009. B-001 still exercises installation against the synthetic feed using explicit commands.
+
+- 2026-11-09, B-010 records native restore and invocation with the public pin.
+  C-5 records credential-free restore after the feed transition. The owner
+  approved moving the SDK to .NET 11 RC3 so the normal local install can run
+  the published tool's .NET 11 build.
 
 ## 11. Open Questions
 

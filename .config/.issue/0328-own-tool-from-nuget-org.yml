@@ -2,7 +2,7 @@ id: "0328"
 type: task
 title: Install this repository's own tool from nuget.org and drop the authenticated feed
 
-status: blocked # on the first nuget.org release, which no item tracks
+status: done
 
 risk: 2
 
@@ -20,24 +20,16 @@ claims:
   - C-5
 
 created: "2026-11-01"
-updated: "2026-11-01"
-closed: null
+updated: "2026-11-09"
+closed: "2026-11-09"
 
 summary: |
-  After the first nuget.org release, move `.config/dotnet-tools.json`'s
-  `specht.tool` pin from `0.1.131`, published only to GitHub Packages, to
-  that preview version, and remove the `specht` package source from
-  `nuget.config` and the `NuGetPackageSourceCredentials_specht`
-  credential from this repository's runs (0055-F6 decision 0007, its
-  Transition).
-
-  Waits on 0327, which moves the release path, and on the maintainer
-  pushing the first `v*-preview` tag after it merges. No item tracks the
-  tag, which is the maintainer's act (0055-F6 § 5 row 5), so this item is
-  `blocked` until that version is on nuget.org; then it becomes `ready`.
+  Pin the public checker in the committed local tool manifest and remove
+  the GitHub Packages source and the native restore credential. The first
+  public release and the completion of 0327 satisfy the publication prerequisite.
 
 acceptance_criteria:
-  - "B-010 — the pin names a version published to nuget.org"
+  - "B-010 — a public pin restores and runs through the standard local tool commands"
   - "B-011 — `nuget.config` names no GitHub Packages source"
   - "C-5 — no package-read credential in this repository's own runs"
   - "§ 9 carries a row naming a test for each id above."
@@ -46,8 +38,11 @@ decisions:
   - |
     2026-11-01, spec-author's cut, on the repository owner's decision to
     move the feed (0055-F6 decision 0007): the follow-up the owner named
-    for the transition. 0055-F6 B-010 then holds vacuously, and whether
-    it is withdrawn is that Feature's next amendment.
+    for the transition.
+  - |
+    2026-11-09, the owner approved updating the .NET 11 SDK pin so the standard
+    local tool restore can run the public package. The pin is 0.5.35-preview,
+    the newest public release verified with its required .NET 11 RC3 runtime.
 
 out_of_scope:
   - "The release path and the install document — 0327."
