@@ -2,7 +2,7 @@ id: "0008"
 type: task
 title: List files through git inside a work tree
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -21,7 +21,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-11-09"
-closed: null
+closed: "2026-11-09"
 
 summary: |
   Inside a work tree with git on PATH, ask the git executable (decision 0002)
