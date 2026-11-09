@@ -40,7 +40,7 @@ public sealed class McpHostSessionIntegrationTests
             AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision),
             "this is not a protocol message",
             AcceptanceTool.McpRequest(2, "tools/list", "1900-01-01"),
-            AcceptanceTool.McpLegacyInitialize(3),
+            AcceptanceTool.McpInitialize(3, "2025-11-25"),
         ];
 
         // When
@@ -80,7 +80,7 @@ public sealed class McpHostSessionIntegrationTests
             [
                 AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision),
                 AcceptanceTool.McpRequest(2, "tools/list", "1900-01-01"),
-                AcceptanceTool.McpLegacyInitialize(3),
+                AcceptanceTool.McpInitialize(3, "2025-11-25"),
             ]);
 
         // Then
