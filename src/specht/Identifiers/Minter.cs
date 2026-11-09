@@ -11,17 +11,18 @@ namespace Specht.Identifiers;
 public sealed class Minter(IRandomSource random)
 {
     /// <summary>
-    /// Builds the strategy <c>mint[type]</c> names from that entry alone and draws one id from it, once every type <c>mint</c>
-    /// names has a grammar in <c>identifiers</c>.
+    /// Builds the strategy <c>mint[type]</c> names from that entry alone and draws one id from it, once every one of C-13's
+    /// types <c>mint</c> names has a grammar in <c>identifiers</c>.
     /// </summary>
     /// <param name="manifest">The manifest document, its <c>identifiers</c> filled with the pin's defaults.</param>
     /// <param name="type">The id type, a member of <c>mint</c>.</param>
     /// <returns>The id.</returns>
     /// <exception cref="IdRefusedException">
-    /// A type <c>mint</c> names has no grammar, the type is not opted in, its entry names no built strategy, or the strategy
-    /// refuses its settings.
+    /// One of C-13's types <c>mint</c> names has no grammar, the type is not opted in (an <see cref="IdNotOptedInException"/>),
+    /// its entry names no built strategy, or the strategy refuses its settings.
     /// </exception>
     /// <implements epic="0001" feature="F19" claim="B-001" />
+    /// <implements epic="0001" feature="F19" claim="B-002" />
     /// <implements epic="0001" feature="F19" claim="B-008" />
     /// <implements epic="0001" feature="F19" claim="B-043" />
     /// <implements epic="0001" feature="F19" claim="B-047" />
@@ -30,9 +31,9 @@ public sealed class Minter(IRandomSource random)
     {
         var mint = manifest["mint"] as JsonObject;
         var grammars = manifest["identifiers"] as JsonObject;
-        foreach (var (opted, _) in mint ?? new JsonObject())
+        foreach (var opted in Types)
         {
-            if (grammars?[opted] is null)
+            if (mint?.ContainsKey(opted) == true && grammars?[opted] is null)
             {
                 throw new IdRefusedException($"'mint.{opted}' opts '{opted}' in, and 'identifiers' holds no grammar for it.");
             }
@@ -40,7 +41,7 @@ public sealed class Minter(IRandomSource random)
 
         if (mint?[type] is not JsonObject entry)
         {
-            throw new IdRefusedException($"The type '{type}' is not opted in under 'mint'.");
+            throw new IdNotOptedInException(type);
         }
 
         var name = entry["strategy"] is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
@@ -53,4 +54,8 @@ public sealed class Minter(IRandomSource random)
 
         return strategy.Next();
     }
+
+    /// <summary>The types of the first slice (C-13), the members of <c>mint</c> whose grammar B-043 requires.</summary>
+    /// <implements epic="0001" feature="F19" claim="B-043" />
+    private static readonly string[] Types = ["adr", "lesson", "decision", "claim", "constraint", "openQuestion", "scenario"];
 }

@@ -518,8 +518,8 @@ specht mint <type> [--feature <DIR>] [--root <DIR>]
 
 Prints one new id for `<type>`, a type the manifest's `mint` key opts in, drawn
 with that type's own strategy settings. Schema `0.3.1` or later accepts the key;
-[Configuration](configuration.md) describes the manifest. Every type the key
-names needs a grammar in `identifiers`.
+[Configuration](configuration.md) describes the manifest. Every record type the
+key names, such as `adr` or `lesson`, needs a grammar in `identifiers`.
 
 | Option            | Value   | Default               | Does                                                                       |
 | ----------------- | ------- | --------------------- | -------------------------------------------------------------------------- |
@@ -533,9 +533,9 @@ no network request and never reserves the id.
 
 **Exit codes.** `0` when an id is printed; `2` for a missing root or manifest,
 or `--feature` with `adr` or `lesson`; `3` for an invalid manifest, a `mint`
-key the pin does not accept, a type `mint` names with no grammar, or a type
-the id settings give no id for: not opted in, no built strategy, or settings
-it cannot draw from.
+key the pin does not accept, a record type `mint` names with no grammar, or an
+opted-in type with no strategy, a strategy that is not built, or settings it
+cannot draw from; `4` for a type `mint` does not opt in.
 
 ```sh
 specht mint adr --root .

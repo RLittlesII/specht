@@ -285,6 +285,10 @@ public sealed class IdGenerationSteps
         LastRequest.Run.ExitCode.Should().BeOneOf(FailureCodes, LastRequest.Run.Stderr);
     }
 
+    [Then("^the request ends as it does for something named on the command line that is not found$")]
+    public void ThenTheRequestEndsAsItDoesForSomethingNamedOnTheCommandLineThatIsNotFound() =>
+        LastRequest.Run.ExitCode.Should().Be(ExitCodes.NotFound, LastRequest.Run.Stderr);
+
     [Then("^the request ends as it does for an invalid manifest$")]
     public void ThenTheRequestEndsAsItDoesForAnInvalidManifest() =>
         LastRequest.Run.ExitCode.Should().Be(ExitCodes.InvalidManifest, LastRequest.Run.Stderr);

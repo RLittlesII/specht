@@ -21,10 +21,13 @@ public static class ExitCodes
 
     /// <summary>
     /// The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects, its id settings
-    /// giving no id for the type <c>mint</c> requests included.
+    /// giving no id for an opted-in type <c>mint</c> requests included.
     /// </summary>
     public const int InvalidManifest = 3;
 
-    /// <summary>A target named on the command line is not found in the shipped catalog.</summary>
+    /// <summary>
+    /// A target named on the command line is not found in the shipped catalog, or a type <c>mint</c> requests is not opted in
+    /// under the manifest's <c>mint</c> key.
+    /// </summary>
     public const int NotFound = 4;
 }

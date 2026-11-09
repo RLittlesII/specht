@@ -12,7 +12,8 @@ namespace Specht.Tests.Identifiers;
 /// this step, so the whole id is the part after the type's prefix. It mints no id for a type <c>mint</c> does not name
 /// (B-001), an entry naming no strategy (B-047), a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048), or any
 /// request of a manifest whose <c>mint</c> names a type <c>identifiers</c> holds no grammar for (B-043): it refuses, and
-/// draws nothing. A <c>mint</c> member that names none of C-13's types is not such a type, so it leaves a request for an
+/// draws nothing. The refusal of a type not opted in is an <see cref="IdNotOptedInException"/>, which the B-043 refusal is
+/// not, so the command can give it its own exit (B-002). A <c>mint</c> member that names none of C-13's types is not such a type, so it leaves a request for an
 /// opted-in type to mint its id (B-003). Each manifest is written in memory, and the draws come from a
 /// <see cref="FixedRandomSource"/>.
 /// </summary>
@@ -117,6 +118,30 @@ public sealed class MinterUnitTests
     }
 
     [Theory]
+    [ClassData(typeof(TypesNotOptedIn))]
+    public void ATypeTheManifestDoesNotOptIn_WhenMinted_ShouldBeRefusedAsNotOptedIn(string? mint)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[ab]{2}$", "lesson": "^[ab]{2}$" }
+            }
+            """)!.AsObject();
+        if (mint is not null)
+        {
+            manifest["mint"] = JsonNode.Parse(mint);
+        }
+
+        // When
+        var mintAdr = () => new Minter(new FixedRandomSource(0)).Mint(manifest, "adr");
+
+        // Then
+        mintAdr.Should().Throw<IdNotOptedInException>();
+    }
+
+    [Theory]
     [ClassData(typeof(EntriesNamingNoStrategy))]
     public void AnEntryNamingNoStrategy_WhenMinted_ShouldBeRefusedWithNoIdDrawn(string entry)
     {
@@ -175,7 +200,7 @@ public sealed class MinterUnitTests
         var mint = () => new Minter(random).Mint(document, type);
 
         // Then
-        mint.Should().Throw<IdRefusedException>();
+        mint.Should().Throw<IdRefusedException>().Which.Should().NotBeOfType<IdNotOptedInException>();
         random.Bounds.Should().BeEmpty();
     }
 

@@ -50,6 +50,10 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
         {
             return await Fail(ExitCodes.MissingInput, $"specht: {exception.Message}");
         }
+        catch (IdNotOptedInException exception)
+        {
+            return await Fail(ExitCodes.NotFound, $"specht: {exception.Message}");
+        }
         catch (Exception exception) when (exception is SpechtManifestUnreadableException or SpechtManifestException or IdRefusedException)
         {
             return await Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
