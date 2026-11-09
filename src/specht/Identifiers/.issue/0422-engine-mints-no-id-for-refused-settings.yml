@@ -1,0 +1,75 @@
+id: "0422"
+type: task
+title: Agree and test that the engine mints no id for settings it refuses
+
+status: done
+
+value: 2
+risk: 1
+
+parent: "0412"
+children: []
+
+depends_on: ["0414"] # 0414 built the refusals in Minter and NanoIdStrategy that these claims state
+spikes: []
+
+spec: src/specht/Identifiers/.spec/README.md
+
+claims:
+  - B-047
+  - B-048
+  - B-049
+  - B-050
+  - B-051
+
+created: "2026-11-08"
+updated: "2026-11-08"
+closed: "2026-11-08"
+
+summary: |
+  The engine's refusals as item 0414 built them, in `Minter` and the
+  `NanoIdStrategy` constructor, are behaviour no claim states, so § 7
+  and § 8 disclose them as untested and PR 789's patch coverage fell
+  short. This item states them as claims, B-047 to B-051, and pins
+  each with an engine test: no id is minted for an entry naming no
+  strategy or a strategy that does not exist, or for Nano ID
+  settings, an alphabet or a size outside C-12's shape. A type not
+  opted in is B-001's; its engine test is B-001's mechanism.
+
+  Value 2: no new behaviour reaches a consumer; the refusals become
+  agreed and tested, so a later item cannot drop one unseen. Risk 1:
+  the claims state what the code on `main` does, so the work is tests
+  over existing code.
+
+  Waits on 0414 alone, done. The command's output and exit code for
+  these requests stay with 0415 and 0416.
+
+acceptance_criteria:
+  - "B-047 — an entry naming no strategy, no id minted"
+  - "B-048 — a strategy other than nanoid or snowflake, no id minted"
+  - "B-049 — Nano ID settings not an object, no id minted"
+  - "B-050 — an empty or non-string alphabet, no id minted"
+  - "B-051 — a size not a positive whole number, no id minted"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-08, spec-author: cut on the repository owner's selection
+    "Add refusal claim+tests", asked how to handle the codecov/patch
+    gap on PR 789. The claim wording, the split into six claims, value
+    2 and risk 1 are spec-author's, not the owner's. Id 0422 checked
+    against `main` (`.issue/.sequence` 0421) and the one open pull
+    request, 790, which claims no item id. Not added to a milestone in
+    `.issue/.goal`: that is the owner's call.
+  - |
+    2026-11-08, spec-author: on review finding 1, B-046 is withdrawn
+    and leaves `claims:`. It duplicated B-001: the same Given, the same
+    rows, and a Then the command shows only as nothing on standard
+    output. The id is retired, not reused, and B-047 to B-051 keep
+    theirs. Rejected: renumbering them, since this branch's commits
+    cite them.
+
+out_of_scope:
+  - "A type not opted in - B-001, item 0415; B-046 withdrawn (spec § 10)."
+  - "The output and exit code of these requests - § 5 row 14; items 0415 and 0416."
+  - "The refusals of an unset size and of `snowflake` while 0418 and 0419 are open - § 5 row 15."
