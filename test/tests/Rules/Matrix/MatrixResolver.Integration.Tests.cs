@@ -4,6 +4,7 @@ using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules.Matrix;
+using Specht.Tests.Discovery;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Rules.Matrix;
@@ -77,7 +78,7 @@ public sealed class MatrixResolverIntegrationTests
 
     private static IReadOnlyList<SpechtTestFile> TestFiles(FileSystem fileSystem, string root, SpechtStructure structure)
     {
-        var paths = new SpechtDiscovery(fileSystem).FindTestFiles(root, structure.Tests!.Files, structure.Discovery.Exclusions);
+        var paths = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindTestFiles(root, structure.Tests!.Files, structure.Discovery.Exclusions);
         return new Specht.Tree.SpechtTreeStore(fileSystem).Load(root, paths).Files
             .Select(static file => new SpechtTestFile(file.RelativePath, file.Text()))
             .ToArray();

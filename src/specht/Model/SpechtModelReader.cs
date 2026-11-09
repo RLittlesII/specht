@@ -25,7 +25,7 @@ public sealed class SpechtModelReader(
     SpechtManifestParser parser,
     UpstreamSchemaCopy copy,
     SpechtSchemaCompiler compiler,
-    SpechtDiscovery discovery,
+    ISpecDiscovery discovery,
     SpechtTreeStore tree,
     SpechtModelBuilder builder)
 {

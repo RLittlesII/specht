@@ -8,8 +8,9 @@ namespace Specht.Discovery;
 /// they are (<c>0001-F6</c> B-001, B-002, B-003, B-012), each by its root-relative path; it reads no file.
 /// </summary>
 /// <param name="fileSystem">The file system the tree is listed through.</param>
+/// <param name="childProcess">The child process git is run through (<c>0001-F6</c> B-005, decision 0002).</param>
 /// <implements epic="0001" feature="F6" claim="B-001" />
-public sealed class SpechtDiscovery(IFileSystem fileSystem)
+public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childProcess) : ISpecDiscovery
 {
     /// <summary>
     /// Discovers every specification under <paramref name="root"/> in the layouts <paramref name="inputs"/> declares,
@@ -167,4 +168,6 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
             .Where(matches)
             .Order(StringComparer.Ordinal)
             .Select(name => specification.Directory.Length == 0 ? name : specification.Directory + "/" + name);
+
+    private readonly IChildProcess _childProcess = childProcess;
 }

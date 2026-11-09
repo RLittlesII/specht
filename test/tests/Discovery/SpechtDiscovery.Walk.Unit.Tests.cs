@@ -38,7 +38,7 @@ public sealed class SpechtDiscoveryWalkUnitTests
             [$"{Root}/test/obj/c.cs"] = new(string.Empty),
         });
         var inputs = EngineServices.Manifest(fileSystem, Root).Discovery;
-        var discovery = new SpechtDiscovery(fileSystem);
+        var discovery = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess());
         fileSystem.Recording.Clear();
 
         // When
