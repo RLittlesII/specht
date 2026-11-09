@@ -225,7 +225,7 @@ public sealed partial class CheckSteps
 
     [Then("the ASCII Specht wordmark appears above the usage on standard output")]
     public void ThenTheHelpOpensWithTheSpechtWordmark() =>
-        _stdout.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(6).Should().Equal(
+        SgrEscape().Replace(_stdout, string.Empty).ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(6).Should().Equal(
             " ####  ####   #####   ####  #   #  #####",
             "#      #   #  #      #      #   #    #",
             " ###   ####   ####   #      #####    #",
@@ -336,6 +336,9 @@ public sealed partial class CheckSteps
 
     [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3,4}): \S.*$")]
     private static partial Regex Diagnostic();
+
+    [GeneratedRegex(@"\e\[[0-9;]*m")]
+    private static partial Regex SgrEscape();
 
     private static string[] Lines(string output) =>
         output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
