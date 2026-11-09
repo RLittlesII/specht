@@ -109,11 +109,10 @@ Feature: Continuous integration
     Then the macOS and Windows builds each report as a separate check
 
   @B-011
-  Scenario: A run reads the feed with its own token
-    Given this repository's tool manifest names the published checker
+  Scenario: A run restores the checker without credentials
+    Given this repository's tool manifest names a checker published to nuget.org
     When integration runs
-    Then the checker is restored with the run's own token
-    And no stored token is read
+    Then the checker is restored from nuget.org without a package-read credential
 
   @B-012
   Scenario: A documentation-only pull request skips the gates
