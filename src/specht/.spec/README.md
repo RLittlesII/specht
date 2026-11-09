@@ -137,7 +137,7 @@ The rule engine exists only inside a consumer repository, as a project reference
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-09 (`0001-F6` item `0008`: ISpecDiscovery and the git-listing seam leave the not-built list); implementer, 2026-11-02 (item `0152`: the per-rule unit-test classes leave the not-built list); implementer, 2026-11-02 (item `0166`: the model reader); implementer, 2026-11-02 (item `0169`: a rule's id per pinned version) -->
+<!-- last written by: implementer, 2026-11-09 (`0001-F6` item `0008`: ISpecDiscovery and the git-listing seam leave the not-built list) -->
 
 Delivered so far by items 0021, 0104, 0103, 0024, 0105, 0106, 0107, 0156 to 0163, 0164 and 0166. A bullet dated before item `0107` says what its item built; where stage D changed that, the stage D bullet is the current shape, where ADR-0010 stage 3 split a rule, the subsection "ADR-0010 stage 3: one rule per id" is, where ADR-0010 stage 4 replaced the static evaluation, the subsection "ADR-0010 stage 4: the evaluator" is, and where ADR-0010 stage 6 replaced a loader, a static parse or an absolute path, the subsection "ADR-0010 stage 6: the model reader" is.
 
