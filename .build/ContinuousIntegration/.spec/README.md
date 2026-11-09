@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: ["F3", "F4", "F9", "0109/F1"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-11-01"
+updated: "2026-11-09"
 github_issue: null
 synced_at: null
 ---
@@ -61,7 +61,7 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (B-012 amended, ADR-0011), 2026-10-23 (decision 0005) -->
+<!-- last written by: spec-author, 2026-11-09 (decision 0006) -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                      | Source                                                                                                                                                                                                                                                                                                                                                                                          | Status    |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -89,6 +89,8 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 | B-022 | Given a merge-tree run that reports a violation while `Specht` does not yet gate a run (C-4), the macOS check does not fail because of it.                                                                                                                                 | C-4; `0055-F1` B-025, C-7; decision 0004; decision 0005 (owner, 2026-10-23): was the ubuntu check                                                                                                                                                                                                                                                                                               | Amended   |
 | B-023 | Given `Specht` gates a run (C-4) and the merge-tree run reports a violation that would fail the head's `Specht`, the macOS check fails.                                                                                                                                    | derived from C-10, C-4 and B-005; decision 0004; decision 0005 (owner, 2026-10-23): was the ubuntu check                                                                                                                                                                                                                                                                                        | Amended   |
 | B-024 | Given a pull request whose merge tree cannot be computed, the macOS check does not fail because of it.                                                                                                                                                                     | owner, 2026-10-09 (OQ-3); decision 0004; decision 0005 (owner, 2026-10-23): was the ubuntu check                                                                                                                                                                                                                                                                                                | Amended   |
+| B-025 | Given a CI acceptance test run, this Feature reports passing and skipped scenarios only in the test summary.                                                                                                                                                               | owner, 2026-11-09; decision 0006                                                                                                                                                                                                                                                                                                                                                                | Active    |
+| B-026 | Given a CI acceptance test run with a failing scenario, this Feature reports the scenario and its failure details in the build log.                                                                                                                                        | owner, 2026-11-09; decision 0006                                                                                                                                                                                                                                                                                                                                                                | Active    |
 
 ## 4. Constraints
 
@@ -111,7 +113,7 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-17 (working-package self-check, decision 0014, item 0237), 2026-10-23 (decision 0005), 2026-11-01 (#28 clarified, `0055-F6` decision 0008) -->
+<!-- last written by: spec-author, 2026-11-09 (decision 0006) -->
 
 | #   | Item                                                                                   | Exclusion Reason                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -145,6 +147,7 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 | 28  | Running the build on a GitHub-hosted Linux runner, beside the pool or in place of it   | Owner, 2026-10-23: the pool replaces the Linux leg (C-12, decision 0005). Accepted cost: no run proves the build on Linux; Windows still proves the path invariants (B-003). Clarified 2026-11-01 (`0055-F6` decision 0008): the release workflow's `publish` job runs no gate and is not the build; it runs on `ubuntu-latest` (C-12).                                                                                                                                            |
 | 29  | Running the Renovate workflow on the pool                                              | `0055-F4`, whose decision 0001 keeps it on GitHub-hosted `ubuntu-latest`; the owner did not overturn it (C-12, decision 0005).                                                                                                                                                                                                                                                                                                                                                     |
 | 30  | Running the windows leg on the pool                                                    | The pool has no Windows runner; the leg stays on `windows-latest` (C-12, decision 0005).                                                                                                                                                                                                                                                                                                                                                                                           |
+| 31  | Changing local acceptance test output                                                  | `0055-F1`; decision 0006 scopes quiet output to CI.                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ## 6. Concern Separation
 
@@ -178,6 +181,8 @@ Delivered so far by items 0064, 0102, 0066, 0114, 0118, 0140 and 0183.
 - **The checkout** is the generator's `actions/checkout` step, which the owner's shared `Middleware` already gives `fetch-depth: 0` (C-2) and, since 2026-10-23, `clean: 'true'` in place of the generator's `clean: 'false'`, so a pool runner's untracked and ignored files from an earlier job are removed before the build (C-11, decision 0005). One checkout step serves every matrix leg, so the windows leg of `main` carries the same option; it adds no step there, and `clean: true` is `actions/checkout`'s own default, which the generator had overridden. It is followed by a `git fetch --prune` and `actions/setup-dotnet`. The CI middleware sets `ref: ${{ github.event.pull_request.head.sha }}`: a pull request builds its head commit rather than the merge GitHub synthesises (B-001), and a push, where the expression is empty, builds the pushed commit (B-002).
 - **Published outputs** (B-008, C-3): coverage uploads follow the existing policy. Benchmark Markdown and JSON exporters are uploaded per operating system, as `0109-F1` B-019 and C-13 specify. No package is uploaded or pushed; packing for a selected cold-start benchmark remains inside `Benchmark` (§ 5 #18). Repository permissions stay `contents: read`.
 - **Not in this workflow's claims:** the Codecov upload, which is `0055-F3`'s (B-002) though it is a step here. **Not in this workflow:** the `artifacts/logs/` upload, a path this build never writes, and `DeployMiddleware`'s registry and Azure logins, which belong to a release workflow, not to integration.
+
+The `AcceptanceTest` target selects minimal test reporting on GitHub Actions (B-025, B-026). It still runs both framework modules and requests Cobertura coverage; local runs use the normal reporter.
 
 ### Benchmark integration
 
@@ -224,6 +229,12 @@ The generated YAML was parsed locally. Only the main workflow contains benchmark
 
 The earlier pre-policy-change pull-request run proved Linux execution and upload. The revised pull-request run proves absence of both steps. Linux and Windows first exercise the main-only policy on the post-merge main push; until then those live outcomes remain unverified. § 9 remains `Missing`: these mechanisms are manually verified, not automated tests.
 
+### Acceptance reporting proof (B-025, B-026)
+
+On the pinned SDK, normal output for one skipped Reqnroll scenario produced 78 lines; minimal output produced 12 and retained the skipped count. A synthetic Reqnroll run with one passing, one skipped and one deliberately failing scenario kept the failing scenario's name, assertion, step trace, all three counts and exit code 2 in both modes. These are manual checks; the standing workflow-test decision above still applies.
+
+The paired Release runs produced 2,630 passes, 330 skips and identical Cobertura line and branch totals per framework and merged. From the `dotnet test` command through its summary, normal output produced 22,927 lines and minimal output produced 25. The normal run took 6m 45s and the minimal run 7m 41s; this pair establishes no speedup.
+
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-09, 2026-11-02 (item 0334: B-004 holds the missing marker in place of prose, as `SPEC032` requires; its evidence stays in § 8) -->
@@ -254,6 +265,8 @@ The earlier pre-policy-change pull-request run proved Linux execution and upload
 | B-022    | The merged tree's check does not gate before the self-check does                                                                                                                                                                                | Missing                         | Missing   |
 | B-023    | A violation the merged tree carries fails the macOS check once the self-check gates                                                                                                                                                             | Missing                         | Missing   |
 | B-024    | A merge that cannot be computed does not fail the macOS check                                                                                                                                                                                   | Missing                         | Missing   |
+| B-025    | Passing and skipped acceptance scenarios appear only in the test summary                                                                                                                                                                        | Missing                         | Missing   |
+| B-026    | The log explains an acceptance failure                                                                                                                                                                                                          | Missing                         | Missing   |
 
 ## 10. Lessons / Spec Deltas
 
@@ -285,6 +298,10 @@ The earlier pre-policy-change pull-request run proved Linux execution and upload
 <!-- last written by: spec-author, 2026-11-01 (`0055-F6` decision 0008) -->
 
 - 2026-11-01, [`0055-F6` decision 0008](../../Releasing/.spec/decisions/0008-the-push-runs-in-its-own-publish-job.md): asked "Where should the `publish` job run?", the owner answered "GitHub-hosted runner". The release workflow's new `publish` job, the only one granted `id-token: write`, runs on `ubuntu-latest` so that the publishing credential never sits on a pool runner, which persists between jobs and runs `0109-F5`'s measured revisions. C-12 and § 5 #28 gain dated notes that it is not a hosted Linux leg and runs no gate. C-11 is unchanged: it already requires no clean step of a GitHub-hosted job (A-5). No claim or scenario changes.
+
+<!-- last written by: spec-author, 2026-11-09 (decision 0006) -->
+
+- 2026-11-09, decision 0006 keeps the acceptance tier in the required pull request build and adds B-025 and B-026 to omit routine output from passing and skipped scenarios while keeping failure diagnostics.
 
 ## 11. Open Questions
 

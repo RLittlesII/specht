@@ -142,10 +142,11 @@ internal partial class SpechtBuild : NukeBuild
         .Executes(() =>
         {
             var coverage = TierCoverageDirectory("Acceptance");
+            var output = GitHubActionsTasks.IsRunningOnGitHubActions() ? "Minimal" : "Normal";
             DotNet(
                 $"test --project {RootDirectory / "test" / "acceptance" / "acceptance.csproj"} --configuration {Configuration} --no-build " +
                 $"--max-parallel-test-modules 1 --coverage --coverage-output-format cobertura --coverage-settings {CoverageSettings} " +
-                $"--results-directory {coverage}",
+                $"--results-directory {coverage} --output {output}",
                 workingDirectory: RootDirectory);
         });
 
