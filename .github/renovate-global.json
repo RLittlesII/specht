@@ -2,5 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "platform": "github",
   "onboarding": false,
-  "requireConfig": "required"
+  "requireConfig": "required",
+  "allowedCommands": ["^bash \\.github/renovate-regenerate-workflows\\.sh$"]
 }

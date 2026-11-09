@@ -18,7 +18,7 @@ using Specht.Build;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Git.GitTasks;
 
-[GitHubActionsSteps(
+[DeclaredGitHubActionsSteps(
     "release",
     GitHubActionsImage.UbuntuLatest,
     AutoGenerate = true,
@@ -174,6 +174,7 @@ internal sealed partial class SpechtBuild
             buildJob.Steps.IndexOf(packStep) + 1,
             new UploadArtifactStep("Upload the package")
             {
+                Uses = ReleaseUploadArtifactAction,
                 Name = PackageArtifact,
                 Path = $"{PackagePath}/*.nupkg",
                 IfNoFilesFound = "error",
@@ -205,6 +206,7 @@ internal sealed partial class SpechtBuild
                 Checkout(),
                 new DownloadArtifactStep("Download the package")
                 {
+                    Uses = "actions/download-artifact@v4.3.0",
                     Name = PackageArtifact,
                     Path = PackagePath,
                 },
@@ -212,7 +214,7 @@ internal sealed partial class SpechtBuild
                 new UsingStep("Log in to NuGet")
                 {
                     Id = "nuget",
-                    Uses = "NuGet/login@v1",
+                    Uses = "NuGet/login@v1.2.0",
                     With = new Dictionary<string, string>
                     {
                         ["user"] = "${{ vars.NUGET_USER }}",
@@ -265,6 +267,7 @@ internal sealed partial class SpechtBuild
                 },
                 new UploadArtifactStep("Upload the comparison request")
                 {
+                    Uses = ReleaseUploadArtifactAction,
                     Name = "comparison-request-${{ github.run_id }}-${{ github.run_attempt }}",
                     Path = RequestPath,
                     IfNoFilesFound = "error",
@@ -302,10 +305,19 @@ internal sealed partial class SpechtBuild
             Matrix = [RunnerPool],
             Steps =
             [
-                new CheckoutStep("Checkout") { Id = "checkout", FetchDepth = 0, Clean = true, PersistCredentials = false, ContinueOnError = true },
+                new CheckoutStep("Checkout")
+                {
+                    Uses = CheckoutAction,
+                    Id = "checkout",
+                    FetchDepth = 0,
+                    Clean = true,
+                    PersistCredentials = false,
+                    ContinueOnError = true,
+                },
                 new SetupDotNetStep("Use .NET 10 and 11 SDKs")
                 {
-                    DotNetVersion = "10.0.401",
+                    Uses = SetupDotNetAction,
+                    DotNetVersion = DotNetBuildSdkVersion,
                     ContinueOnError = true,
                     With = { ["global-json-file"] = "global.json" },
                 },
@@ -323,6 +335,7 @@ internal sealed partial class SpechtBuild
                 },
                 new UploadArtifactStep("Upload the comparison result")
                 {
+                    Uses = ReleaseUploadArtifactAction,
                     Name = "comparison-result-${{ github.run_id }}-${{ github.run_attempt }}",
                     Path = ResultPath,
                     IfNoFilesFound = "error",
@@ -340,11 +353,19 @@ internal sealed partial class SpechtBuild
         return configuration;
     }
 
-    private static CheckoutStep Checkout() => new("Checkout") { Id = "checkout", FetchDepth = 0, Clean = true, PersistCredentials = false };
+    private static CheckoutStep Checkout() => new("Checkout")
+    {
+        Uses = CheckoutAction,
+        Id = "checkout",
+        FetchDepth = 0,
+        Clean = true,
+        PersistCredentials = false,
+    };
 
     private static SetupDotNetStep UseDotNet() => new("Use .NET 10 and 11 SDKs")
     {
-        DotNetVersion = "10.0.401",
+        Uses = SetupDotNetAction,
+        DotNetVersion = DotNetBuildSdkVersion,
         With = { ["global-json-file"] = "global.json" },
     };
 
@@ -365,6 +386,8 @@ internal sealed partial class SpechtBuild
     };
 
     private const string ReleaseCondition = "${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}";
+
+    private const string ReleaseUploadArtifactAction = "actions/upload-artifact@v4.6.2";
 
     private const string PackageArtifact = "nupkg";
 

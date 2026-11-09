@@ -5,7 +5,7 @@
 #
 #     - To turn off auto-generation set:
 #
-#         [GitHubActionsSteps (AutoGenerate = false)]
+#         [DeclaredGitHubActionsSteps (AutoGenerate = false)]
 #
 #     - To trigger manual generation invoke:
 #
@@ -43,7 +43,7 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
         with:
           clean: 'true'
           fetch-depth: '0'
@@ -51,7 +51,7 @@ jobs:
         run: |
           git fetch --prune
       - name: 🔨 Use .NET 10 and 11 SDKs
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
           global-json-file: 'global.json'
           dotnet-version: '10.0.401'
@@ -104,7 +104,7 @@ jobs:
         run: |
           ./build.cmd --target Pack --skip Build
       - name: 🏺 Upload the package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           include-hidden-files: 'true'
           if-no-files-found: 'error'
@@ -137,24 +137,24 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
         with:
           clean: 'true'
           fetch-depth: '0'
           persist-credentials: 'false'
       - name: 🚀 Download the package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.3.0
         with:
           name: 'nupkg'
           path: '.artifacts/nupkg'
       - name: 🔨 Use .NET 10 and 11 SDKs
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
           global-json-file: 'global.json'
           dotnet-version: '10.0.401'
       - name: Log in to NuGet
         id: nuget
-        uses: NuGet/login@v1
+        uses: NuGet/login@v1.2.0
         with:
           user: '${{ vars.NUGET_USER }}'
       - name: Push release packages
@@ -184,13 +184,13 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
         with:
           clean: 'true'
           fetch-depth: '0'
           persist-credentials: 'false'
       - name: 🔨 Use .NET 10 and 11 SDKs
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
           global-json-file: 'global.json'
           dotnet-version: '10.0.401'
@@ -215,7 +215,7 @@ jobs:
           dotnet .artifacts/comparator/specht.comparison.dll request .artifacts/benchmarks/comparison/request
       - name: 🏺 Upload the comparison request
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           include-hidden-files: 'true'
           if-no-files-found: 'error'
@@ -259,14 +259,14 @@ jobs:
       - name: Checkout
         id: checkout
         continue-on-error: true
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
         with:
           clean: 'true'
           fetch-depth: '0'
           persist-credentials: 'false'
       - name: 🔨 Use .NET 10 and 11 SDKs
         continue-on-error: true
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
           global-json-file: 'global.json'
           dotnet-version: '10.0.401'
@@ -286,7 +286,7 @@ jobs:
           dotnet .artifacts/comparator/specht.comparison.dll compare .artifacts/benchmarks/comparison/result
       - name: 🏺 Upload the comparison result
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           include-hidden-files: 'true'
           if-no-files-found: 'error'

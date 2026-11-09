@@ -5,7 +5,7 @@
 #
 #     - To turn off auto-generation set:
 #
-#         [GitHubActionsSteps (AutoGenerate = false)]
+#         [DeclaredGitHubActionsSteps (AutoGenerate = false)]
 #
 #     - To trigger manual generation invoke:
 #
@@ -44,7 +44,7 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
         with:
           clean: 'true'
           fetch-depth: '0'
@@ -73,7 +73,7 @@ jobs:
           echo "build=$build" >> "$GITHUB_OUTPUT"
       - name: 🔨 Use .NET 10 and 11 SDKs
         if: ${{ steps.changes.outputs.build == 'true' }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
           global-json-file: 'global.json'
           dotnet-version: '10.0.401'
@@ -125,7 +125,7 @@ jobs:
         id: codecov
         if: ${{ (!cancelled() && runner.os == 'macOS') && steps.changes.outputs.build == 'true' }}
         continue-on-error: true
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v5.5.5
         with:
           token: '${{ secrets.CODECOV_TOKEN }}'
           directory: '.artifacts/coverage'
