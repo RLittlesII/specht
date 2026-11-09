@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
@@ -10,14 +11,17 @@ namespace Specht.Acceptance.Discovery;
 
 /// <summary>
 /// Steps for <c>src/specht/Discovery/.spec/discovery.feature</c> (0001-F6): item 0005 binds B-001, B-002, B-003, B-009 and B-012,
-/// and item 0006 binds B-004.
+/// item 0006 binds B-004, and item 0007 binds the first B-006 scenario.
 /// The manifest is edited in memory from the tree's default copy and written when the check runs, and "the check runs" is
 /// the engine's runner; the summary is the lines its report document makes and the report is that document serialized,
 /// which <c>0001-F2</c> B-002 and <c>0001-F3</c> B-001 hold the tool's own output to. A specification a step writes has no
 /// companion beside it unless the step says so, so one that is discovered is reported under its own path and one that is
 /// not is reported nowhere. A layout's path identity is written into its <c>layouts</c> entry as <c>identity</c>, and a
-/// specification is reported for the mismatch when the path-identity rule names its file once (B-004; decision 0009). The scenarios
-/// of B-005 to B-008, B-010 and B-011 stay pending for their items.
+/// specification is reported for the mismatch when the path-identity rule names its file once (B-004; decision 0009). The
+/// check runs over the real file system through one whose directory records every listing it is asked for and every path
+/// a listing returns, so a directory is opened when a listing asks for it or a listing returns a path below it (B-006,
+/// C-1). The scenarios of B-005, B-007, B-008, B-010 and B-011, and the B-006 scenario without git on the path, stay
+/// pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "Discovery")]
@@ -199,11 +203,24 @@ public sealed class DiscoverySteps
     public void GivenTheRootHoldsASpecificationInThatLayoutWhoseFeatureFolderDoesNotMatchItsFrontmatter() =>
         Write(Subject = $"{_layoutFolder}/0001-epic/F9-feature/spec.md", "F1");
 
+    [Given("the root is not inside a git work tree")]
+    public void GivenTheRootIsNotInsideAGitWorkTree()
+    {
+        for (var directory = new DirectoryInfo(Tree.Root); directory is not null; directory = directory.Parent)
+        {
+            Path.Exists(Path.Combine(directory.FullName, ".git")).Should().BeFalse("the root must lie outside every git work tree");
+        }
+    }
+
+    [Given("{string} holds a co-located specification three levels deep")]
+    public void GivenHoldsACoLocatedSpecificationThreeLevelsDeep(string directory) =>
+        Write(Subject = $"{directory}/one/two/three/.spec/README.md", "F1");
+
     [When("the check runs")]
     public void WhenTheCheckRuns()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        Report = EngineServices.Runner().Run(Tree.Root);
+        Report = EngineServices.Runner(fileSystem: _fileSystem).Run(Tree.Root);
     }
 
     [Then("that specification is discovered")]
@@ -303,6 +320,16 @@ public sealed class DiscoverySteps
     [Then("the first is not")]
     public void ThenTheFirstIsNot() => Mismatches(_first).Should().BeEmpty();
 
+    [Then("no directory under {string} is opened")]
+    public void ThenNoDirectoryUnderIsOpened(string directory)
+    {
+        _fileSystem.Recording.Should().NotBeEmpty();
+        _fileSystem.Recording.Select(listing => Relative(listing.Asked))
+            .Should().NotContain(path => path == directory || path.StartsWith(directory + "/", StringComparison.Ordinal));
+        _fileSystem.Recording.SelectMany(static listing => listing.Returned).Select(Relative)
+            .Should().NotContain(path => path.StartsWith(directory + "/", StringComparison.Ordinal));
+    }
+
     [AfterScenario]
     public void DeleteTree() => _tree?.Dispose();
 
@@ -335,6 +362,9 @@ public sealed class DiscoverySteps
     private static (string RuleId, SpechtSeverity Severity, int Line, string? Identifier, string Message) Verdict(SpechtViolation violation) =>
         (violation.RuleId, violation.Severity, violation.Line, violation.Identifier, violation.Message);
 
+    private string Relative(string path) =>
+        Path.GetRelativePath(Path.GetFullPath(Tree.Root), Path.GetFullPath(path)).Replace(Path.DirectorySeparatorChar, '/');
+
     private JsonObject Entry(string layout) =>
         Manifest["layouts"]!.AsArray().Select(static entry => entry!.AsObject()).Single(entry => entry["name"]!.GetValue<string>() == layout);
 
@@ -349,6 +379,97 @@ public sealed class DiscoverySteps
         IReadOnlyDictionary<string, string>? frontmatter = null,
         IReadOnlyList<string>? sections = null) =>
         Tree.WriteSpecification(path, "0001", id, frontmatter, sections);
+
+    private sealed record Listing(string Asked, IReadOnlyList<string> Returned);
+
+    private sealed class RecordingFileSystem : FileSystem
+    {
+        public RecordingFileSystem() => _directory = new RecordingDirectory(this);
+
+        public override IDirectory Directory => _directory ?? base.Directory;
+
+        public List<Listing> Recording => _directory?.Recording ?? [];
+
+        private readonly RecordingDirectory? _directory;
+    }
+
+    private sealed class RecordingDirectory(IFileSystem fileSystem) : DirectoryWrapper(fileSystem)
+    {
+        public List<Listing> Recording { get; } = [];
+
+        public override IEnumerable<string> EnumerateFiles(string path) => Record(path, base.EnumerateFiles(path));
+
+        public override IEnumerable<string> EnumerateFiles(string path, string searchPattern) =>
+            Record(path, base.EnumerateFiles(path, searchPattern));
+
+        public override IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption) =>
+            Record(path, base.EnumerateFiles(path, searchPattern, searchOption));
+
+        public override IEnumerable<string> EnumerateFiles(string path, string searchPattern, EnumerationOptions enumerationOptions) =>
+            Record(path, base.EnumerateFiles(path, searchPattern, enumerationOptions));
+
+        public override IEnumerable<string> EnumerateDirectories(string path) => Record(path, base.EnumerateDirectories(path));
+
+        public override IEnumerable<string> EnumerateDirectories(string path, string searchPattern) =>
+            Record(path, base.EnumerateDirectories(path, searchPattern));
+
+        public override IEnumerable<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption) =>
+            Record(path, base.EnumerateDirectories(path, searchPattern, searchOption));
+
+        public override IEnumerable<string> EnumerateDirectories(string path, string searchPattern, EnumerationOptions enumerationOptions) =>
+            Record(path, base.EnumerateDirectories(path, searchPattern, enumerationOptions));
+
+        public override IEnumerable<string> EnumerateFileSystemEntries(string path) => Record(path, base.EnumerateFileSystemEntries(path));
+
+        public override IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern) =>
+            Record(path, base.EnumerateFileSystemEntries(path, searchPattern));
+
+        public override IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, SearchOption searchOption) =>
+            Record(path, base.EnumerateFileSystemEntries(path, searchPattern, searchOption));
+
+        public override IEnumerable<string> EnumerateFileSystemEntries(
+            string path, string searchPattern, EnumerationOptions enumerationOptions) =>
+            Record(path, base.EnumerateFileSystemEntries(path, searchPattern, enumerationOptions));
+
+        public override string[] GetFiles(string path) => Record(path, base.GetFiles(path)).ToArray();
+
+        public override string[] GetFiles(string path, string searchPattern) => Record(path, base.GetFiles(path, searchPattern)).ToArray();
+
+        public override string[] GetFiles(string path, string searchPattern, SearchOption searchOption) =>
+            Record(path, base.GetFiles(path, searchPattern, searchOption)).ToArray();
+
+        public override string[] GetFiles(string path, string searchPattern, EnumerationOptions enumerationOptions) =>
+            Record(path, base.GetFiles(path, searchPattern, enumerationOptions)).ToArray();
+
+        public override string[] GetDirectories(string path) => Record(path, base.GetDirectories(path)).ToArray();
+
+        public override string[] GetDirectories(string path, string searchPattern) =>
+            Record(path, base.GetDirectories(path, searchPattern)).ToArray();
+
+        public override string[] GetDirectories(string path, string searchPattern, SearchOption searchOption) =>
+            Record(path, base.GetDirectories(path, searchPattern, searchOption)).ToArray();
+
+        public override string[] GetDirectories(string path, string searchPattern, EnumerationOptions enumerationOptions) =>
+            Record(path, base.GetDirectories(path, searchPattern, enumerationOptions)).ToArray();
+
+        public override string[] GetFileSystemEntries(string path) => Record(path, base.GetFileSystemEntries(path)).ToArray();
+
+        public override string[] GetFileSystemEntries(string path, string searchPattern) =>
+            Record(path, base.GetFileSystemEntries(path, searchPattern)).ToArray();
+
+        public override string[] GetFileSystemEntries(string path, string searchPattern, SearchOption searchOption) =>
+            Record(path, base.GetFileSystemEntries(path, searchPattern, searchOption)).ToArray();
+
+        public override string[] GetFileSystemEntries(string path, string searchPattern, EnumerationOptions enumerationOptions) =>
+            Record(path, base.GetFileSystemEntries(path, searchPattern, enumerationOptions)).ToArray();
+
+        private IReadOnlyList<string> Record(string path, IEnumerable<string> listed)
+        {
+            var returned = listed.ToList();
+            Recording.Add(new Listing(path, returned));
+            return returned;
+        }
+    }
 
     private const string EpicsGlob = "epics/**/spec.md";
 
@@ -367,6 +488,7 @@ public sealed class DiscoverySteps
     private const string PhantomTag =
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";
 
+    private readonly RecordingFileSystem _fileSystem = new();
     private SpechtTree? _tree;
     private string? _underEpics;
     private string? _besideCode;

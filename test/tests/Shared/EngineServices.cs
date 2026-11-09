@@ -70,8 +70,9 @@ public static class EngineServices
     public static SchemaVersionManager Commands(SchemaVersions? versions = null) =>
         (SchemaVersionManager) Resolve(typeof(SchemaVersionManager), versions: versions);
 
-    /// <summary>Resolves a runner with the chosen catalog.</summary>
-    public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner) Resolve(typeof(SpechtRunner), versions: versions);
+    /// <summary>Resolves a runner with the chosen catalog, over the supplied file system or the real one.</summary>
+    public static SpechtRunner Runner(SchemaVersions? versions = null, IFileSystem? fileSystem = null) =>
+        (SpechtRunner) Resolve(typeof(SpechtRunner), fileSystem, versions);
 
     /// <summary>Resolves the model reader over the supplied file system and catalog, or the real ones.</summary>
     public static SpechtModelReader Reader(IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
