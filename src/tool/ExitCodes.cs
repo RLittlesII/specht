@@ -13,10 +13,16 @@ public static class ExitCodes
     /// <summary>An error-severity violation, or any violation under <c>--strict</c>.</summary>
     public const int Violations = 1;
 
-    /// <summary>The root or manifest is missing, or a version is required without an interactive terminal.</summary>
+    /// <summary>
+    /// The root or manifest is missing, a version is required without an interactive terminal, or <c>mint</c> is given
+    /// <c>--feature</c> for a repository-wide type.
+    /// </summary>
     public const int MissingInput = 2;
 
-    /// <summary>The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects.</summary>
+    /// <summary>
+    /// The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects, its id settings
+    /// giving no id for the type <c>mint</c> requests included.
+    /// </summary>
     public const int InvalidManifest = 3;
 
     /// <summary>A target named on the command line is not found in the shipped catalog.</summary>

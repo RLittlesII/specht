@@ -6,13 +6,13 @@ type: reference
 
 # Exit codes
 
-| Exit | Meaning                                                                                                                  |
-| ---- | ------------------------------------------------------------------------------------------------------------------------ |
-| `0`  | Clean                                                                                                                    |
-| `1`  | Violations (any violation, under `--strict`)                                                                             |
-| `2`  | Missing root or manifest, invalid frontmatter-command usage, or a version required without an interactive terminal       |
-| `3`  | Invalid manifest or init source options, or an upstream schema fetch or hash check failed                                |
-| `4`  | Something named on the command line, such as a schema version, rule id, frontmatter kind or document file, was not found |
+| Exit | Meaning                                                                                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `0`  | Clean                                                                                                                                                        |
+| `1`  | Violations (any violation, under `--strict`)                                                                                                                 |
+| `2`  | Missing root or manifest, invalid frontmatter-command usage, `--feature` on an `adr` or `lesson` mint, or a version required without an interactive terminal |
+| `3`  | Invalid manifest or init source options, an upstream schema fetch or hash check failed, or id settings that give no id for the requested type                |
+| `4`  | Something named on the command line, such as a schema version, rule id, frontmatter kind or document file, was not found                                     |
 
 For `specht evidence`, `1` means a missing required link or nonpassing required
 case, `2` means required evidence is missing, stale or incompatible, `3` means

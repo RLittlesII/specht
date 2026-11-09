@@ -192,6 +192,7 @@ specht --version
 specht manifest [--root <dir>] [--defaults] [--json]
 specht rules [--root <dir>] [--json]
 specht rules set <id> <level> [--root <dir>]
+specht mint <type> [--feature <dir>] [--root <dir>]
 ```
 
 Stdout: one MSBuild-shaped line per violation

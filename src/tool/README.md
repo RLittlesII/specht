@@ -19,6 +19,7 @@ specht schema pin [version] [--root <dir>]
 specht rules [--root <dir>] [--json]
 specht rules set <id> <level>
 specht manifest [--root <dir>] [--defaults] [--json]
+specht mint <type> [--feature <dir>] [--root <dir>]
 specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]
 specht evidence [--root <dir>] [<path>...] [--run <id>] [--json] [--report <path>]
 specht init [--root <dir>] [--schemas] [--templates] [--all]

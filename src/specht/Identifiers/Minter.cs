@@ -10,18 +10,35 @@ namespace Specht.Identifiers;
 /// <implements epic="0001" feature="F19" claim="B-008" />
 public sealed class Minter(IRandomSource random)
 {
-    /// <summary>Builds the strategy <c>mint[type]</c> names from that entry alone and draws one id from it.</summary>
-    /// <param name="manifest">The manifest document.</param>
+    /// <summary>
+    /// Builds the strategy <c>mint[type]</c> names from that entry alone and draws one id from it, once every type <c>mint</c>
+    /// names has a grammar in <c>identifiers</c>.
+    /// </summary>
+    /// <param name="manifest">The manifest document, its <c>identifiers</c> filled with the pin's defaults.</param>
     /// <param name="type">The id type, a member of <c>mint</c>.</param>
     /// <returns>The id.</returns>
-    /// <exception cref="IdRefusedException">The type is not opted in, its entry names no built strategy, or the strategy refuses its settings.</exception>
+    /// <exception cref="IdRefusedException">
+    /// A type <c>mint</c> names has no grammar, the type is not opted in, its entry names no built strategy, or the strategy
+    /// refuses its settings.
+    /// </exception>
     /// <implements epic="0001" feature="F19" claim="B-001" />
     /// <implements epic="0001" feature="F19" claim="B-008" />
+    /// <implements epic="0001" feature="F19" claim="B-043" />
     /// <implements epic="0001" feature="F19" claim="B-047" />
     /// <implements epic="0001" feature="F19" claim="B-048" />
     public string Mint(JsonObject manifest, string type)
     {
-        if (manifest["mint"] is not JsonObject mint || mint[type] is not JsonObject entry)
+        var mint = manifest["mint"] as JsonObject;
+        var grammars = manifest["identifiers"] as JsonObject;
+        foreach (var (opted, _) in mint ?? new JsonObject())
+        {
+            if (grammars?[opted] is null)
+            {
+                throw new IdRefusedException($"'mint.{opted}' opts '{opted}' in, and 'identifiers' holds no grammar for it.");
+            }
+        }
+
+        if (mint?[type] is not JsonObject entry)
         {
             throw new IdRefusedException($"The type '{type}' is not opted in under 'mint'.");
         }

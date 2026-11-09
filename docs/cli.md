@@ -10,6 +10,7 @@ type: reference
 `schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin, skipping the schemas under `schemaSource` `disk` with no `spechtSchema` and the templates named in `consumerTemplates`.
 `evidence` reconciles supplied build and runner exports. `rules` lists the pinned rules and their effective levels.
 `manifest` prints the effective configuration or the newest shipped default.
+`mint` prints a new id for a record type the manifest opts in.
 Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
@@ -508,3 +509,34 @@ skips is current. No diff.
 invalid manifest, an unshipped pin, or a recorded source that cannot be
 reached, refuses, or serves content that fails its hash. Failures explain the
 problem on stderr; a source failure names the source's address.
+
+## `specht mint`
+
+```text
+specht mint <type> [--feature <DIR>] [--root <DIR>]
+```
+
+Prints one new id for `<type>`, a type the manifest's `mint` key opts in, drawn
+with that type's own strategy settings. Schema `0.3.1` or later accepts the key;
+[Configuration](configuration.md) describes the manifest. Every type the key
+names needs a grammar in `identifiers`.
+
+| Option            | Value   | Default               | Does                                                                       |
+| ----------------- | ------- | --------------------- | -------------------------------------------------------------------------- |
+| `--feature <DIR>` | `<DIR>` | None                  | Names the Feature a per-Feature id is for; refused for `adr` and `lesson`. |
+| `--root <DIR>`    | `<DIR>` | The working directory | Names the repository whose manifest supplies the settings.                 |
+| `-h, --help`      | none    | none                  | Prints the command's help.                                                 |
+
+**Stdout.** One line holding the id and nothing else. A refused request writes
+nothing on stdout and says why on stderr. The command writes no file, makes
+no network request and never reserves the id.
+
+**Exit codes.** `0` when an id is printed; `2` for a missing root or manifest,
+or `--feature` with `adr` or `lesson`; `3` for an invalid manifest, a `mint`
+key the pin does not accept, a type `mint` names with no grammar, or a type
+the id settings give no id for: not opted in, no built strategy, or settings
+it cannot draw from.
+
+```sh
+specht mint adr --root .
+```
