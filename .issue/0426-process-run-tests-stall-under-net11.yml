@@ -2,7 +2,7 @@ id: "0426"
 type: bug
 title: The process-run integration tests stall the net11.0 step
 
-status: in-progress
+status: done
 
 value: 4
 risk: 2
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-11-08"
 updated: "2026-11-08"
-closed: null
+closed: "2026-11-08"
 
 summary: |
   The Integration Test step under net11.0 stalls in
@@ -69,8 +69,21 @@ decisions:
     The tests hold the process boundary beneath `0132-F3` B-017 and the item
     preserves it; the stall is observed in tests, not in the host. Value and
     risk are spec-author's scores, not an owner ruling.
+  - |
+    2026-11-08, owner: option A selected. specht-mcp stops calling
+    `Kill(entireProcessTree: true)` on macOS and Linux and instead kills the
+    program's descendants, children before parent, without a stop step.
+  - |
+    2026-11-08, spec-author: runtime finding. The test change alone
+    (`5099c78a`) did not stop the stall; it reproduced in 1 of 11 full
+    `net11.0` Integration-tier runs locally. After the production change
+    (`bb378585`), 26 full `net11.0` tier runs and more than 40 runs of
+    `SystemProcessRunIntegrationTests` passed with 0 stalls, measured
+    locally; CI is still to be confirmed. The cause and the design are in
+    `0132-F3` § 7, "Ending a cancelled run", and the incident in
+    `src/mcp/.spec/lessons/0001-a-tree-kill-that-stops-first-stalls-the-host.md`.
 
 out_of_scope:
   - "Changing `global.json`'s SDK pin or roll-forward policy."
-  - "Any change to the MCP host's process run under `src/mcp/` unless a test shows a defect."
+  - "Any change under `src/mcp/` beyond ending a cancelled run on macOS and Linux, the defect the cancel test showed (decisions, 2026-11-08)."
   - "Masking the stall by skipping a test or removing net11.0 from the Integration Test step."
