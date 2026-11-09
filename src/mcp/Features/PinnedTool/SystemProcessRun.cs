@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -16,10 +14,13 @@ namespace Specht.Mcp.Features.PinnedTool;
 /// what it writes is read as UTF-8 without a byte order mark and handed back unchanged.
 /// </summary>
 /// <implements epic="0132" feature="F3" claim="B-017" />
+/// <implements epic="0132" feature="F3" claim="B-036" />
+/// <implements epic="0132" feature="F3" claim="B-037" />
 public sealed class SystemProcessRun : IProcessRun
 {
     /// <inheritdoc />
     /// <implements epic="0132" feature="F3" claim="B-017" />
+    /// <implements epic="0132" feature="F3" claim="B-036" />
     public async Task<ProcessResult?> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
         var utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
@@ -80,12 +81,11 @@ public sealed class SystemProcessRun : IProcessRun
             return;
         }
 
-        var descendants = Descendants(process.Id);
-        for (var index = descendants.Count - 1; index >= 0; index--)
+        foreach (var pid in Descendants(process.Id))
         {
             try
             {
-                using var descendant = Process.GetProcessById(descendants[index]);
+                using var descendant = Process.GetProcessById(pid);
                 descendant.Kill();
             }
             catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or Win32Exception)
@@ -102,21 +102,17 @@ public sealed class SystemProcessRun : IProcessRun
         }
     }
 
-    private static List<int> Descendants(int root)
+    private static IReadOnlyList<int> Descendants(int root)
     {
-        Func<int, IEnumerable<int>> childrenOf = OperatingSystem.IsMacOS() ? ChildrenOnMacOS : ChildrenOnLinux();
-        var descendants = new List<int>();
-        var parents = new Queue<int>([root]);
-        while (parents.TryDequeue(out var parent))
+        try
         {
-            foreach (var child in childrenOf(parent))
-            {
-                descendants.Add(child);
-                parents.Enqueue(child);
-            }
+            var tree = OperatingSystem.IsMacOS() ? new ProcessTree(ChildrenOnMacOS) : new ProcessTree(new ProcScan().ChildrenOf);
+            return tree.KillOrder(root);
         }
-
-        return descendants;
+        catch (Exception)
+        {
+            return [];
+        }
     }
 
     private static int[] ChildrenOnMacOS(int parent)
@@ -132,42 +128,6 @@ public sealed class SystemProcessRun : IProcessRun
 
             buffer = new int[buffer.Length * 2];
         }
-    }
-
-    private static Func<int, IEnumerable<int>> ChildrenOnLinux()
-    {
-        var children = new Dictionary<int, List<int>>();
-        foreach (var directory in Directory.EnumerateDirectories("/proc"))
-        {
-            if (!int.TryParse(Path.GetFileName(directory), NumberStyles.None, CultureInfo.InvariantCulture, out var pid))
-            {
-                continue;
-            }
-
-            string stat;
-            try
-            {
-                stat = File.ReadAllText(Path.Combine(directory, "stat"));
-            }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-            {
-                continue;
-            }
-
-            var fields = stat[(stat.LastIndexOf(')') + 2)..].Split(' ');
-            if (fields.Length > 1 && int.TryParse(fields[1], NumberStyles.None, CultureInfo.InvariantCulture, out var parent))
-            {
-                if (!children.TryGetValue(parent, out var siblings))
-                {
-                    siblings = [];
-                    children[parent] = siblings;
-                }
-
-                siblings.Add(pid);
-            }
-        }
-
-        return parent => children.TryGetValue(parent, out var siblings) ? siblings : [];
     }
 
     [DllImport("libproc", EntryPoint = "proc_listchildpids")]
