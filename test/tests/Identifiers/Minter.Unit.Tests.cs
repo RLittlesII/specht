@@ -12,7 +12,8 @@ namespace Specht.Tests.Identifiers;
 /// this step, so the whole id is the part after the type's prefix. It mints no id for a type <c>mint</c> does not name
 /// (B-001), an entry naming no strategy (B-047), a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048), or any
 /// request of a manifest whose <c>mint</c> names a type <c>identifiers</c> holds no grammar for (B-043): it refuses, and
-/// draws nothing. Each manifest is written in memory, and the draws come from a
+/// draws nothing. A <c>mint</c> member that names none of C-13's types is not such a type, so it leaves a request for an
+/// opted-in type to mint its id (B-003). Each manifest is written in memory, and the draws come from a
 /// <see cref="FixedRandomSource"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -176,5 +177,28 @@ public sealed class MinterUnitTests
         // Then
         mint.Should().Throw<IdRefusedException>();
         random.Bounds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AMintMemberNamingNoTypeWithNoGrammar_WhenAnOptedInTypeIsMinted_ShouldMintItsId()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^z{3}$" },
+              "mint": {
+                "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } },
+                "foo": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } }
+              }
+            }
+            """)!.AsObject();
+
+        // When
+        var id = new Minter(new FixedRandomSource(0)).Mint(manifest, "adr");
+
+        // Then
+        id.Should().Be("zzz");
     }
 }
