@@ -4,10 +4,12 @@ Feature: Dependency updates
   So that nothing ages silently and nothing breaks unseen
 
   @B-001
-  Scenario: Package updates arrive together
-    Given two packages each have a newer minor or patch release
+  Scenario: NuGet updates arrive by package family
+    Given two CodeAnalysis packages and two xUnit v3 packages have minor or patch updates
+    And an unrelated package has a patch update
     When updates are proposed
-    Then one pull request carries both
+    Then each family has a separate pull request carrying its two updates
+    And the unrelated package has its own pull request
 
   @B-002
   Scenario: Workflow action updates arrive together
