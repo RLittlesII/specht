@@ -2,7 +2,7 @@ id: "0008"
 type: task
 title: List files through git inside a work tree
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 4
 
@@ -20,7 +20,7 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-11-08"
+updated: "2026-11-09"
 closed: null
 
 summary: |
