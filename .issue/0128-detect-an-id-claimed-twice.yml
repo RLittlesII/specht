@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-11-09"
 closed: null
 
 summary: |
@@ -130,6 +130,16 @@ decisions:
     exception. Not decided: whether the check keeps a recorded-exception
     mechanism now that no pair needs it - `0101-F8` OQ-14. Recorded by
     spec-author.
+  - |
+    2026-11-09, repository owner, recorded by spec-author: asked where this
+    item should go, the owner selected the option labelled "Move 0128 to
+    0.7.0", worded by the coordinator as the same move made for 0167 and
+    0036, with 0.6.0 then closing once id generation (0415 to 0421) and
+    discovery (0008, 0009) land. Not selected: "Keep case (e) only", which
+    would have kept only case (e), through `0101-F6`, in 0.6.0; and keeping
+    all of this item in 0.6.0. The id moves from 0.6.0 to 0.7.0 in
+    `.issue/.goal`. Status stays `blocked`. Nothing about this item's scope,
+    its five cases or the `0101-F6` to `0101-F8` specifications changes.
 
 out_of_scope:
   - "Reserving ids, and the rule for claiming one - 0127, delivered."
