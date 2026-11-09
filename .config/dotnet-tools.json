@@ -17,7 +17,7 @@
       "rollForward": false
     },
     "specht.tool": {
-      "version": "0.1.131",
+      "version": "0.5.35-preview",
       "commands": [
         "specht"
       ],

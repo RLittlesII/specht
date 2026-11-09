@@ -23,9 +23,6 @@ public sealed class HostCommand(SessionRoot root, IEnumerable<McpServerTool> too
     /// <summary>The server's name, and the application's.</summary>
     public const string Name = "specht-mcp";
 
-    /// <summary>The one protocol revision the host supports (<c>0132-F3</c> OQ-5).</summary>
-    public const string Revision = "2026-07-28";
-
     /// <inheritdoc />
     /// <implements epic="0132" feature="F3" claim="B-002" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
@@ -40,7 +37,6 @@ public sealed class HostCommand(SessionRoot root, IEnumerable<McpServerTool> too
         root.Value = Path.GetFullPath(settings.Root);
         var options = new McpServerOptions
         {
-            ProtocolVersion = Revision,
             ServerInfo = new Implementation { Name = Name, Version = ThisAssembly.AssemblyInformationalVersion },
             Capabilities = new ServerCapabilities(),
             ToolCollection = [.. tools],

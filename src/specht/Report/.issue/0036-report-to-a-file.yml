@@ -9,7 +9,7 @@ risk: 2
 parent: "0033"
 children: []
 
-depends_on: ["0034", "0026", "0035", "0167"] # B-003 compares with 0035's stdout document; the mediator and `SpecReportStore` are 0167's
+depends_on: ["0034", "0026", "0035", "0167"] # B-003 compares with 0035's stdout document; `SpecReportStore` is 0167's
 spikes: []
 
 spec: src/specht/Report/.spec/README.md
@@ -23,7 +23,7 @@ claims:
   - B-025
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-11-08"
 closed: null
 
 summary: |
@@ -72,6 +72,17 @@ decisions:
     are as the specification says. Whether the handler returns a value is
     the architecture pass's: cqrsz's command returns one, and ADR-0010
     writes `ICommand<T>`.
+  - |
+    2026-11-08, repository owner, recorded by spec-author: asked whether to
+    accept item 0167's rescoping as written or defer it, the owner selected
+    the option labelled "Move both to 0.7.0", worded by the coordinator as
+    not deciding now, with 0167 and this item leaving the 0.6.0 finish line
+    and 0167 staying `blocked`. Not selected: "Accept as written", which
+    would have made 0167 ready and this item follow it. Both ids move to
+    0.7.0 in `.issue/.goal`. 0167's rescoping is neither accepted nor
+    rejected, and its `--report` row stays open for the owner. Also, by
+    spec-author: the `depends_on` comment no longer names the mediator,
+    which ADR-0026 supersedes; `SpecReportStore` is still 0167's.
 
 out_of_scope:
   - "Refusing, appending to or backing up an existing file — § 5 #7."

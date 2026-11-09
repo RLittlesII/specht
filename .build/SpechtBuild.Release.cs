@@ -187,7 +187,6 @@ internal sealed partial class SpechtBuild
         configuration.Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
         {
             Contents = GitHubActionsPermission.Read,
-            Packages = GitHubActionsPermission.Read,
         };
 
         configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("publish")

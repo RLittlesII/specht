@@ -53,6 +53,12 @@ From a global install:
 
 Where a client reads its configuration from is the client's own documentation.
 
+The server speaks protocol revision 2026-07-28 and, for a client that opens with
+`initialize`, revisions 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05. An
+`initialize` naming 2026-07-28, or a later revision, is refused with an error
+naming it as having no handshake; 2026-07-28 is discovered through
+`server/discover`. One earlier than 2024-11-05 is answered with 2025-11-25.
+
 ## Tools
 
 Each tool runs one `specht` command on the root and returns its output

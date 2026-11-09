@@ -65,14 +65,29 @@ public sealed partial class McpHostSteps
         _session.Exchange(AcceptanceTool.McpRequest(1, "server/discover", AcceptanceTool.McpRevision)).Should().NotBeNull();
     }
 
-    [Given("a client asking for the protocol revision the server supports")]
-    public void GivenTheSupportedRevision() => _request = AcceptanceTool.McpRequest(1, "tools/list", AcceptanceTool.McpRevision);
+    [Given("a client asking for protocol revision 2026-07-28 in the request itself")]
+    public void GivenTheSupportedRevision() => _requests = [AcceptanceTool.McpRequest(1, "tools/list", AcceptanceTool.McpRevision)];
 
     [Given("a client asking for a protocol revision the server does not support")]
-    public void GivenAnUnsupportedRevision() => _request = AcceptanceTool.McpRequest(1, "tools/list", UnsupportedRevision);
+    [Given("a client asking for a protocol revision the server does not support, in a request that is not an initialize request")]
+    public void GivenAnUnsupportedRevision() => _requests = [AcceptanceTool.McpRequest(1, "tools/list", UnsupportedRevision)];
 
-    [Given("a client that opens with a legacy initialize request")]
-    public void GivenALegacyInitialize() => _request = AcceptanceTool.McpLegacyInitialize(1);
+    [Given(@"a client that opens with an initialize request naming protocol revision (\S+)")]
+    public void GivenAnInitializeNaming(string revision)
+    {
+        _revision = revision;
+        _requests = [AcceptanceTool.McpInitialize(1, revision)];
+    }
+
+    [Given("a client that opens with an initialize request naming a protocol revision earlier than 2024-11-05")]
+    public void GivenAnInitializeNamingAnEarlierRevision() => _requests = [AcceptanceTool.McpInitialize(1, UnsupportedRevision)];
+
+    [Given("a client that opens with an initialize request naming a protocol revision later than 2026-07-28")]
+    public void GivenAnInitializeNamingALaterRevision()
+    {
+        _revision = LaterRevision;
+        _requests = [AcceptanceTool.McpInitialize(1, LaterRevision)];
+    }
 
     [Given("the repository pins the tool at a version other than the MCP's own")]
     public void GivenAPinOtherThanTheMcps()
@@ -123,7 +138,7 @@ public sealed partial class McpHostSteps
     public void WhenCalled() => WhenDiscovery();
 
     [When("the client sends a request")]
-    public void WhenARequestIsSent() => _result = AcceptanceTool.LaunchMcp(Tree.Root, [_request]);
+    public void WhenARequestIsSent() => _result = AcceptanceTool.LaunchMcp(Tree.Root, _requests);
 
     [When("the client sends it")]
     public void WhenItIsSent() => WhenARequestIsSent();
@@ -142,7 +157,7 @@ public sealed partial class McpHostSteps
 
         session.Exchange("this is not a protocol message");
         session.Exchange(AcceptanceTool.McpRequest(2, "tools/list", UnsupportedRevision)).Should().NotBeNull();
-        session.Exchange(AcceptanceTool.McpLegacyInitialize(3)).Should().NotBeNull();
+        session.Exchange(AcceptanceTool.McpInitialize(3, "2025-11-25")).Should().NotBeNull();
         _result = session.Close();
     }
 
@@ -260,8 +275,20 @@ public sealed partial class McpHostSteps
     [Then("the server answers with an error")]
     public void ThenAnError() => Answer(1)["error"].Should().NotBeNull();
 
-    [Then("the error names the protocol revision the server supports")]
-    public void ThenRevisionNamed() => Answer(1)["error"]!.ToJsonString().Should().Contain(AcceptanceTool.McpRevision);
+    [Then("the error names that revision as one that has no initialize handshake")]
+    public void ThenRevisionNamed() => Answer(1)["error"]!.ToJsonString().Should().Contain(_revision).And.Contain("initialize");
+
+    [Then("the server answers with that revision, its capabilities and its identity")]
+    public void ThenHandshakeCompleted()
+    {
+        var result = Answer(1)["result"]!.AsObject();
+        result["protocolVersion"]!.GetValue<string>().Should().Be(_revision);
+        result["capabilities"].Should().BeOfType<JsonObject>();
+        result["serverInfo"]!["name"]!.GetValue<string>().Should().Be("specht-mcp");
+    }
+
+    [Then(@"the server answers with protocol revision (\S+)")]
+    public void ThenAnsweredWithRevision(string revision) => Answer(1)["result"]!["protocolVersion"]!.GetValue<string>().Should().Be(revision);
 
     [Then("the tool that ran is the pinned version")]
     public void ThenThePinnedRan() =>
@@ -389,14 +416,16 @@ public sealed partial class McpHostSteps
     private const int MissingInput = 2;
     private const int UnsupportedProtocolVersion = -32022;
     private const string UnsupportedRevision = "1900-01-01";
+    private const string LaterRevision = "2099-01-01";
 
+    private string _revision = string.Empty;
     private SpechtTree? _tree;
     private SpechtTree? _elsewhere;
     private AcceptanceTool.FakeTools? _tools;
     private int _calls = 1;
     private IReadOnlyList<JsonObject> _answers = [];
     private string[] _arguments = [];
-    private string _request = string.Empty;
+    private string[] _requests = [];
     private IReadOnlyDictionary<string, string> _before = new Dictionary<string, string>();
     private IReadOnlyList<string> _listening = [];
     private IReadOnlyList<string> _open = [];
