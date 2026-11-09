@@ -215,12 +215,15 @@ exports remain visible and cannot establish current coverage.
 
 Only a declared test project, one with a `requiredCaseScope` or named by a
 `verifies` enforcement entry, needs a current export; another declared project
-without one is not reported missing. A real test project carrying neither key
-is one of those others and no longer needs an export: omitting it exits `1` for
-its claims' missing test links, or `0` when another project's export covers
-them, where it exited `2` (`missingCompilation`) before. This is the proposed
-default of [`0201-F5` OQ-5](../src/analyzers/Reconciliation/.spec/README.md),
-which is still open.
+needs none and is not reported missing. With `requiredLinks.implementation`
+enabled, a claim whose `implements` bindings no current export carries is
+reported as a missing implementation link. The owner decided this rule on
+2026-11-08, resolving
+[`0201-F5` OQ-5](../src/analyzers/Reconciliation/.spec/README.md). As a
+consequence, a real test project carrying neither key no longer needs an
+export: omitting it exits `1` for its claims' missing test links, or `0` when
+another project's export covers them, where it exited `2`
+(`missingCompilation`) before.
 
 Without `--run`, a run is chosen for each declared project and target framework:
 one available run is used, and `ambiguousRun` is reported only for a pair holding
