@@ -20,10 +20,11 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>Each specification, carrying its root-relative path and directory and the layout it was found in.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
     public IReadOnlyList<SpechtLocation> FindSpecifications(string root, SpechtDiscoveryInputs inputs)
     {
-        var files = Files(root, inputs.Exclusions);
+        var files = Files(root, inputs.Layouts.Select(static layout => layout.Glob).ToList(), inputs.Exclusions);
 
         return inputs.Layouts
             .SelectMany(layout => Matching(files, [layout.Glob])
@@ -60,9 +61,10 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The root-relative path of each epic file, in ordinal order.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
     public IReadOnlyList<string> FindEpics(string root, SpechtDiscoveryInputs inputs) =>
-        Matching(Files(root, inputs.Exclusions), inputs.EpicFiles).Select(static file => file.Relative).ToList();
+        Matching(Files(root, inputs.EpicFiles, inputs.Exclusions), inputs.EpicFiles).Select(static file => file.Relative).ToList();
 
     /// <summary>
     /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches one of the
@@ -85,12 +87,13 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     /// <param name="exclusions">The selected manifest's directory exclusions.</param>
     /// <returns>The root-relative path of each selected file.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
     public IReadOnlyList<string> FindTestFiles(
         string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
         globs.Count == 0
             ? []
-            : Matching(Files(root, exclusions), globs).Select(static file => file.Relative).ToArray();
+            : Matching(Files(root, globs, exclusions), globs).Select(static file => file.Relative).ToArray();
 
     /// <summary>The anchored expression a glob is read as, <c>**</c> spanning directories and <c>*</c> matching within one.</summary>
     /// <param name="glob">The glob.</param>
@@ -133,9 +136,84 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         return name => shapes.Any(shape => shape.IsMatch(name));
     }
 
+    /// <implements epic="0001" feature="F6" claim="B-005" />
+    /// <implements epic="0001" feature="F6" claim="B-010" />
+    private static List<string> Arguments(string prefix, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions)
+    {
+        var anchor = "/" + Escaped(prefix, Wildcards);
+
+        return
+        [
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            .. exclusions.Select(entry =>
+                "--exclude=" + anchor + (entry.StartsWith('/') ? Escaped(entry[1..], Wildcards) : "**/" + Escaped(entry, Wildcards)) + "/"),
+            "--",
+            .. globs.Select(static glob => ":(glob)" + Escaped(glob, GlobLiterals)),
+            .. exclusions.Select(static entry =>
+                entry.StartsWith('/') ? ":(exclude,literal)" + entry[1..] : ":(exclude,glob)**/" + Escaped(entry, Wildcards) + "/**"),
+        ];
+    }
+
+    /// <implements epic="0001" feature="F6" claim="B-010" />
+    private static string Escaped(string text, string special) =>
+        string.Concat(text.Select(character => special.Contains(character, StringComparison.Ordinal) ? "\\" + character : character.ToString()));
+
+    /// <implements epic="0001" feature="F6" claim="B-005" />
+    /// <implements epic="0001" feature="F6" claim="B-006" />
+    private List<(string Path, string Relative)> Files(string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
+        Listed(root, globs, exclusions) ?? Walked(root, exclusions);
+
+    /// <implements epic="0001" feature="F6" claim="B-005" />
+    /// <implements epic="0001" feature="F6" claim="B-006" />
+    /// <implements epic="0001" feature="F6" claim="B-010" />
+    private List<(string Path, string Relative)>? Listed(string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions)
+    {
+        if (exclusions.Any(static entry => entry.EndsWith('/') || entry.Contains("//", StringComparison.Ordinal)))
+        {
+            return null;
+        }
+
+        var origin = fileSystem.Path.GetFullPath(root);
+        if (WorkTreePrefix(origin) is not { } prefix
+            || childProcess.Run("git", Arguments(prefix, globs, exclusions), origin) is not { ExitCode: 0 } listing)
+        {
+            return null;
+        }
+
+        var kept = new HashSet<string>(StringComparer.Ordinal);
+
+        return listing.StandardOutput.Split('\0', StringSplitOptions.RemoveEmptyEntries)
+            .Where(relative => !relative.StartsWith("../", StringComparison.Ordinal) && kept.Add(relative))
+            .Select(relative => (Path: fileSystem.Path.Combine(root, relative.Replace('/', fileSystem.Path.DirectorySeparatorChar)), Relative: relative))
+            .Where(file => fileSystem.File.Exists(file.Path))
+            .ToList();
+    }
+
+    /// <implements epic="0001" feature="F6" claim="B-005" />
+    /// <implements epic="0001" feature="F6" claim="B-006" />
+    private string? WorkTreePrefix(string origin)
+    {
+        for (var directory = origin; directory is not null; directory = fileSystem.Path.GetDirectoryName(directory))
+        {
+            var git = fileSystem.Path.Combine(directory, ".git");
+            if (fileSystem.Directory.Exists(git) || fileSystem.File.Exists(git))
+            {
+                var below = fileSystem.Path.GetRelativePath(directory, origin).Replace(fileSystem.Path.DirectorySeparatorChar, '/');
+
+                return below == "." ? string.Empty : below + "/";
+            }
+        }
+
+        return null;
+    }
+
     /// <implements epic="0001" feature="F6" claim="B-001" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
-    private List<(string Path, string Relative)> Files(string root, IReadOnlyList<string> exclusions)
+    private List<(string Path, string Relative)> Walked(string root, IReadOnlyList<string> exclusions)
     {
         var origin = fileSystem.Path.GetFullPath(root);
         var separator = fileSystem.Path.DirectorySeparatorChar;
@@ -169,5 +247,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
             .Order(StringComparer.Ordinal)
             .Select(name => specification.Directory.Length == 0 ? name : specification.Directory + "/" + name);
 
-    private readonly IChildProcess _childProcess = childProcess;
+    private const string Wildcards = @"\*?[";
+
+    private const string GlobLiterals = @"\?[";
 }
