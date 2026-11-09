@@ -79,8 +79,7 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
         var jobs = (YamlMappingNode) root["jobs"];
         var publish = (YamlMappingNode) jobs["publish"];
         var steps = ((YamlSequenceNode) publish["steps"]).Cast<YamlMappingNode>().ToArray();
-        steps.Should().Contain(static step =>
-            step.Children.ContainsKey("uses") && step["uses"].ToString().StartsWith("NuGet/login@", StringComparison.Ordinal));
+        steps.Should().Contain(static step => step.Children.ContainsKey("uses") && step["uses"].ToString() == "NuGet/login@v1");
         steps.Should().ContainSingle(static step => step["name"].ToString() == "Push release packages")
             .Which["run"].ToString().TrimEnd().Should().Be("./build.cmd --target PushReleasePackages");
     }

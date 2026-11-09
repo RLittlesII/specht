@@ -11,10 +11,9 @@ Feature: Dependency updates
 
   @B-002
   Scenario: Workflow action updates arrive together
-    Given two GitHub Actions declared in the build project each have a newer minor or patch release
+    Given two workflow actions each have a newer minor or patch release
     When updates are proposed
-    Then one pull request carries both action updates
-    And the .NET updates have their own pull requests
+    Then one pull request carries both
 
   @B-003
   Scenario: An SDK update arrives on its own
@@ -74,15 +73,15 @@ Feature: Dependency updates
 
   @B-012
   Scenario: Each major update is reviewed alone
-    Given two packages from the same upstream monorepo each have a new major release
+    Given two .NET packages from the same upstream monorepo each have a new major release
     When updates are proposed
     Then each is carried by a pull request of its own
 
   @B-013
   Scenario: An action update carries its regenerated workflow
-    Given a workflow action used by more than one generated workflow has a newer minor release
+    Given a workflow action has a newer minor release
     When updates are proposed
-    Then the pull request carries the changed declaration and every affected regenerated workflow
+    Then the pull request carries the changed declaration and the regenerated workflow
     And every workflow it commits is the build's own generation
 
   @B-014

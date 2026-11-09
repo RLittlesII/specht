@@ -13,7 +13,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
 
 // 0055-F2: the integration workflow, generated into .github/workflows/ci.yml and committed (C-1).
 // B-001, B-002: a pull request to main and a push to main. B-004: every gate, each through the entry script; § 5 #17.
-[DeclaredGitHubActionsSteps(
+[GitHubActionsSteps(
     "ci",
     GitHubActionsImage.UbuntuLatest,
     AutoGenerate = true,
@@ -34,7 +34,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
     ],
     Enhancements = [nameof(ContinuousIntegrationMiddleware)]
 )]
-[DeclaredGitHubActionsSteps(
+[GitHubActionsSteps(
     "main",
     GitHubActionsImage.UbuntuLatest,
     GitHubActionsImage.WindowsLatest,
@@ -108,7 +108,6 @@ internal sealed partial class SpechtBuild
             "Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic";
         buildJob.Matrix = buildJob.Matrix.Select(static image => image == "ubuntu-latest" ? RunnerPool : image).ToArray();
         var checkoutStep = buildJob.Steps.OfType<CheckoutStep>().Single();
-        checkoutStep.Uses = CheckoutAction;
         // For fetch all
         checkoutStep.FetchDepth = 0;
         // C-11: a pool runner keeps its workspace between jobs, so every checkout removes untracked and ignored files.
@@ -117,12 +116,7 @@ internal sealed partial class SpechtBuild
             buildJob.Steps.IndexOf(checkoutStep) + 1,
             [
                 new RunStep("Fetch all history for all tags and branches") { Run = "git fetch --prune" },
-                new SetupDotNetStep("Use .NET 10 and 11 SDKs")
-                {
-                    Uses = SetupDotNetAction,
-                    DotNetVersion = DotNetBuildSdkVersion,
-                    With = { ["global-json-file"] = "global.json" },
-                },
+                new SetupDotNetStep("Use .NET 10 and 11 SDKs") { DotNetVersion = "10.0.401", With = { ["global-json-file"] = "global.json" } }
             ]
         );
 
@@ -143,7 +137,7 @@ internal sealed partial class SpechtBuild
             [
                 new UsingStep("Login to GitHub Container Registry")
                 {
-                    Uses = "docker/login-action@v3.7.0",
+                    Uses = "docker/login-action@v3",
                     With = new Dictionary<string, string>
                     {
                         ["registry"] = "ghcr.io",
@@ -153,7 +147,7 @@ internal sealed partial class SpechtBuild
                 },
                 new UsingStep("Azure Login")
                 {
-                    Uses = "azure/login@v2.3.1",
+                    Uses = "azure/login@v2",
                     With = new Dictionary<string, string>
                     {
                         ["client-id"] = "${{ secrets.AZURE_CLIENT_ID }}",
@@ -207,7 +201,7 @@ internal sealed partial class SpechtBuild
             Id = "codecov",
             If = "${{ !cancelled() && runner.os == 'macOS' }}",
             ContinueOnError = true,
-            Uses = "codecov/codecov-action@v5.5.5",
+            Uses = "codecov/codecov-action@v5",
             With = new Dictionary<string, string>
             {
                 ["token"] = "${{ secrets.CODECOV_TOKEN }}",
@@ -241,7 +235,7 @@ internal sealed partial class SpechtBuild
         {
             Id = "benchmarkResults",
             If = "${{ !cancelled() && (steps.benchmark.outcome == 'success' || steps.benchmark.outcome == 'failure') }}",
-            Uses = "actions/upload-artifact@v7.0.2",
+            Uses = "actions/upload-artifact@v7",
             With = new Dictionary<string, string>
             {
                 ["name"] = "benchmarks-${{ runner.os }}",
@@ -343,10 +337,6 @@ internal sealed partial class SpechtBuild
                 $"title={EscapeProperty(violation.Groups["rule"].Value)}::{EscapeData(violation.Groups["message"].Value)}");
         }
     }
-
-    private const string CheckoutAction = "actions/checkout@v4.4.0";
-    private const string SetupDotNetAction = "actions/setup-dotnet@v4.3.1";
-    private const string DotNetBuildSdkVersion = "10.0.401";
 
     // C-12 (decision 0005): the owner's self-hosted macOS pool takes every leg that ran on ubuntu-latest.
     private const string RunnerPool = "[self-hosted, macOS, ARM64]";

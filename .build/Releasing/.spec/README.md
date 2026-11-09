@@ -582,9 +582,9 @@ above names GitHub Packages, `GITHUB_TOKEN` as the push credential or
   `none`, `packages: none` among them (C-7). Its steps are the checkout, the
   download, the SDK, "Log in to NuGet", "Push release packages" and "Create
   GitHub Release". The login step is a typed `UsingStep` with `Id` `nuget`,
-  a reference to `NuGet/login` with `user` set to `${{ vars.NUGET_USER }}`.
-  The build project pins the release tag for Renovate (`0055-F4` C-6).
-  The step exchanges the job's OIDC token for a
+  `Uses` `NuGet/login@v1` and `user` set to `${{ vars.NUGET_USER }}`; its
+  action version is in the build project's source for Renovate, as
+  `0055-F4` C-6 requires. The step exchanges the job's OIDC token for a
   short-lived nuget.org key and exposes it as its `NUGET_API_KEY` output.
 - **`PushReleasePackages`** reads `NUGET_API_KEY`, which the push step's `env`
   maps to `steps.nuget.outputs.NUGET_API_KEY`, fails when it is empty, and

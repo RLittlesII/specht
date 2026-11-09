@@ -9,15 +9,9 @@
   "nuget": {
     "enabled": true
   },
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": [".build/SpechtBuild.*.cs"],
-      "matchStrings": ["(?:\\bUses|\\bconst string \\w+Action)\\s*=\\s*\"(?<depName>[\\w.-]+/[\\w.-]+)@(?<currentValue>v[\\d.]+(?:-[\\w.-]+)?)\""],
-      "datasourceTemplate": "github-tags",
-      "versioningTemplate": "github-actions"
-    }
-  ],
+  "github-actions": {
+    "enabled": true
+  },
   "packageRules": [
     {
       "description": "0055-F4 B-001: NuGet minor and patch updates in Directory.Packages.props, one pull request.",
@@ -44,38 +38,11 @@
       "groupSlug": "dotnet-local-tools"
     },
     {
-      "description": "0055-F4 B-002: GitHub Actions minor and patch updates, one pull request.",
-      "matchManagers": ["custom.regex"],
-      "matchFileNames": [".build/SpechtBuild.*.cs"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "GitHub Actions",
-      "groupSlug": "github-actions"
-    },
-    {
-      "description": "0055-F4 B-012: give each major update its own pull request.",
+      "description": "0055-F4 B-012: give each .NET major update its own pull request.",
+      "matchManagers": ["nuget"],
       "matchUpdateTypes": ["major"],
       "groupName": null,
       "groupSlug": null
-    },
-    {
-      "description": "0055-F4 B-009, B-013: regenerate workflows once after all action declarations in the branch are updated.",
-      "matchManagers": ["custom.regex"],
-      "matchFileNames": [".build/SpechtBuild.*.cs"],
-      "postUpgradeTasks": {
-        "commands": ["bash .github/renovate-regenerate-workflows.sh"],
-        "fileFilters": [".github/workflows/*.yml"],
-        "executionMode": "branch"
-      }
-    },
-    {
-      "description": "0055-F4 B-014: regenerate workflows when the build generator changes.",
-      "matchManagers": ["nuget"],
-      "matchFileNames": ["Directory.Packages.props"],
-      "matchPackageNames": ["Nuke.Common", "Rocket.Surgery.Nuke"],
-      "postUpgradeTasks": {
-        "commands": ["bash .github/renovate-regenerate-workflows.sh"],
-        "fileFilters": [".github/workflows/*.yml"]
-      }
     },
     {
       "description": "0055-F4 C-4: a version is changed only where it is declared once.",

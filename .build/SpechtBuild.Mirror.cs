@@ -8,7 +8,7 @@ using Nuke.Common.Tooling;
 using Rocket.Surgery.Nuke.GithubActions;
 using Serilog;
 
-[DeclaredGitHubActionsSteps(
+[GitHubActionsSteps(
     "mirror",
     GitHubActionsImage.UbuntuLatest,
     AutoGenerate = true,
@@ -78,9 +78,7 @@ internal sealed partial class SpechtBuild
 
         RunThroughEntryScript(job);
 
-        var checkout = job.Steps.OfType<CheckoutStep>().Single();
-        checkout.Uses = CheckoutAction;
-        checkout.FetchDepth = 0;
+        job.Steps.OfType<CheckoutStep>().Single().FetchDepth = 0;
         var mirror = job.Steps.OfType<RunStep>().Single(static step => step.Id == "mirror");
         job.Steps[job.Steps.IndexOf(mirror)] = new UsingStep("Mirror")
         {

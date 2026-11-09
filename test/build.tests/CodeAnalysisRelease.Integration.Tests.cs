@@ -80,7 +80,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             .Should().Equal("actions/checkout", "actions/download-artifact", "actions/setup-dotnet", "NuGet/login", "Push release packages");
         ((YamlMappingNode) steps[1]["with"])["name"].ToString().Should().Be("nupkg");
         steps[3]["name"].ToString().Should().Be("Log in to NuGet");
-        steps[3]["uses"].ToString().Should().StartWith("NuGet/login@");
+        steps[3]["uses"].ToString().Should().Be("NuGet/login@v1");
         ((YamlMappingNode) steps[4]["env"])["NUGET_API_KEY"].ToString()
             .Should().Be($"${{{{ steps.{steps[3]["id"]}.outputs.NUGET_API_KEY }}}}");
     }
