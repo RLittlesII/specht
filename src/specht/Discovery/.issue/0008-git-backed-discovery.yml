@@ -16,10 +16,11 @@ spec: src/specht/Discovery/.spec/README.md
 
 claims:
   - B-005
+  - B-006
   - B-010
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-11-08"
 closed: null
 
 summary: |
@@ -31,6 +32,7 @@ summary: |
 
 acceptance_criteria:
   - "B-005 — tracked plus untracked-not-ignored; ignored directory never opened"
+  - "B-006 — mode selection: outside a git work tree, or with no `git` on `PATH`, the walk runs; the scenario \"Discovery runs without git on the path\" bound"
   - "B-010 — exclusions as exclude pathspecs; tracked and untracked file under `bin` both absent"
   - "§ 9 carries a row naming a test for each id above."
 
@@ -44,6 +46,13 @@ decisions:
     that caller. `ISpecDiscovery` still arrives with items 0007 and 0008
     and not before (ADR-0001, as ADR-0010 § "What this supersedes" leaves
     it). The claims, the criteria and the scope are unchanged.
+  - |
+    2026-11-08, spec-author: `claims` gains B-006, for its remainder.
+    Item 0007 built the walk and closes with § 9's B-006 row `Partial`:
+    choosing the walk when the root is outside a work tree or `git` is
+    absent from `PATH` needs this item's git mode, and § 8 already binds
+    the scenario "Discovery runs without git on the path" here. This item
+    selects the mode and binds that scenario; the walk itself is 0007's.
 
 out_of_scope:
   - "git ls-files failing inside a work tree — OQ-2, open; resolve it and add a claim before building that path."

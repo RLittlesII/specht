@@ -2,14 +2,14 @@ id: "0007"
 type: task
 title: Walk the tree without entering an excluded directory
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
 parent: "0004"
 children: []
 
-depends_on: ["0005", "0107", "0166"] # prunes on the manifest exclusions 0005 reads; ISpecDiscovery (ADR-0001 stage E) lands here on 0107's instance classes; the one reader that calls discovery is 0166's
+depends_on: ["0005", "0107", "0166"] # prunes on the manifest exclusions 0005 reads; the walk replaces the one enumeration on 0107's instance classes; ISpecDiscovery (ADR-0001 stage E) lands with 0008, not here; the one reader that calls discovery is 0166's
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md
@@ -18,8 +18,8 @@ claims:
   - B-006
 
 created: "2026-10-08"
-updated: "2026-10-11"
-closed: null
+updated: "2026-11-08"
+closed: "2026-11-08"
 
 summary: |
   The mode used outside a git work tree or with no git on PATH: a walk that
@@ -41,6 +41,13 @@ decisions:
     that caller. `ISpecDiscovery` still arrives with items 0007 and 0008
     and not before (ADR-0001, as ADR-0010 § "What this supersedes" leaves
     it). The claims, the criteria and the scope are unchanged.
+  - |
+    2026-11-08, spec-author: this item closes with § 9's B-006 row
+    `Partial`. The walk is built and its tests pass; the claim's second
+    condition, `git` absent from `PATH`, needs a mode choice that does not
+    exist until item 0008 adds git mode. The remainder - selecting the
+    walk outside a work tree or with no `git` on `PATH`, and the second
+    `@B-006` scenario - moves to item 0008, whose `claims` gains B-006.
 
 out_of_scope:
   - "Following symbolic links — § 5 #1; the B-011 proof across both modes is 0009."
