@@ -1,0 +1,59 @@
+id: "0424"
+type: spike
+title: Investigate stale type references in Mermaid architecture diagrams
+
+status: in-review
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-11-08"
+updated: "2026-11-08"
+closed: null
+
+summary: |
+  2026-11-08, the repository owner: investigate whether Specht can detect
+  references to removed C# classes and interfaces in Mermaid diagrams embedded
+  in Markdown documentation.
+
+  The motivating repository requirement is that implementation types should
+  disappear from the architecture documentation, ADRs, and other Markdown
+  documents in which an architect originally described them once those types
+  have been removed from the code. Mermaid code fences offer a bounded, parseable
+  starting point. The investigation should determine whether diagram type names
+  can be compared reliably with the current code and how consumers identify the
+  Markdown files and projects in scope.
+
+  The spike recommends a product direction and records evidence. It does not
+  settle a shipped contract or change Specht's behavior.
+
+acceptance_criteria:
+  - "A proposed repository-wide ADR records the owner's decision options and recommends whether to validate Mermaid type references, preserve the current behavior, or pursue another bounded scope."
+  - "The investigation examines the Mermaid class diagram constructs in current use and identifies which declarations and relationships can be mapped to C# class, interface, record, and other relevant type symbols."
+  - "The investigation compares exact fully qualified names, unambiguous short names, Mermaid aliases/display labels, and explicit source-name annotations, documenting false-positive and false-negative risks for each."
+  - "The investigation determines how the checker obtains the current code inventory, scopes projects and Markdown files, handles partial or generated types, and behaves when code inputs are absent or incomplete."
+  - "A small synthetic prototype or equivalent parser experiment demonstrates representative stale and live references, including Markdown outside files named architecture.md; findings cite the commands and commits used."
+  - "The proposed ADR lists the required specification deltas, tests, and follow-up work if the owner accepts the recommendation. No accepted specification or decision is edited by the spike."
+
+decisions:
+  - |
+    2026-11-08, spec-author: filed at the repository owner's request as a
+    repository-wide spike. Mermaid fenced diagrams are the initial investigation
+    boundary because they provide structured references; broader Markdown prose
+    scanning is not assumed.
+
+out_of_scope:
+  - "Shipping a checker rule or analyzer diagnostic; follow-up work after the owner rules on the proposed ADR."
+  - "Scanning ordinary Markdown prose for type names."
+  - "Requiring consumers to annotate or rewrite existing diagrams. The spike may recommend an explicit mapping syntax but does not adopt one."
+  - "Changing the current analyzer, manifest, specification, or documentation behavior."
