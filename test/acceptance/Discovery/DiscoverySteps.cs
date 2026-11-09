@@ -393,7 +393,7 @@ public sealed class DiscoverySteps
     [Then("git is never asked to list the root {string} folder or any {string} directory")]
     public void ThenGitIsNeverAskedToListTheRootFolderOrAnyDirectory(string folder, string directory)
     {
-        _childProcess.Calls.Should().NotBeEmpty().And.OnlyContain(static call => call.FileName == "git" && call.Result != null);
+        _childProcess.Calls.Should().NotBeEmpty().And.OnlyContain(static call => call.FileName == "git" && call.Result != null && call.Result.ExitCode == 0);
         _childProcess.Calls.SelectMany(static call => call.Result!.StandardOutput.Split('\0', StringSplitOptions.RemoveEmptyEntries))
             .Should().NotContain(path => path.StartsWith(folder + "/", StringComparison.Ordinal) || path.Split('/').Contains(directory));
     }
