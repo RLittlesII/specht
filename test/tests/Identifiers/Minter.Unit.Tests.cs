@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Identifiers;
+using Specht.Tests.Mint;
 
 namespace Specht.Tests.Identifiers;
 
@@ -9,8 +10,9 @@ namespace Specht.Tests.Identifiers;
 /// reads the requested type's entry under the manifest's top-level <c>mint</c> key and builds the Nano ID strategy from that
 /// entry's own <c>nanoid</c> sub-object and the type alone, absent or not, and returns one id. No prefix decorator exists at
 /// this step, so the whole id is the part after the type's prefix. It mints no id for a type <c>mint</c> does not name
-/// (B-001), an entry naming no strategy (B-047), or a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048): it
-/// refuses, and draws nothing. Each manifest is written in memory, and the draws come from a
+/// (B-001), an entry naming no strategy (B-047), a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048), or any
+/// request of a manifest whose <c>mint</c> names a type <c>identifiers</c> holds no grammar for (B-043): it refuses, and
+/// draws nothing. Each manifest is written in memory, and the draws come from a
 /// <see cref="FixedRandomSource"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -157,6 +159,22 @@ public sealed class MinterUnitTests
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
+        random.Bounds.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(ManifestsOptingInATypeWithNoGrammar))]
+    public void AManifestOptingInATypeWithNoGrammar_WhenAnyTypeIsMinted_ShouldBeRefusedWithNoIdDrawn(string manifest, string type)
+    {
+        // Given
+        var document = JsonNode.Parse(manifest)!.AsObject();
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mint = () => new Minter(random).Mint(document, type);
+
+        // Then
+        mint.Should().Throw<IdRefusedException>();
         random.Bounds.Should().BeEmpty();
     }
 }
