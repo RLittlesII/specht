@@ -7,8 +7,9 @@ namespace Specht.Tests.Mcp;
 
 /// <summary>
 /// Holds <see cref="SystemProcessRun"/> against real programs started with <c>sh</c>: what a program writes and how it ends comes
-/// back as it was, a program never reads the session's standard input, a cancelled run leaves no program alive, and a program that
-/// does not exist is none (0132-F3 B-017).
+/// back as it was, a program never reads the session's standard input, and a program that does not exist is none (0132-F3 B-017);
+/// a cancelled run ends cancelled and leaves neither the program nor the program it started alive (0132-F3 B-036, B-037). The
+/// cancelled run waits for the file of process ids on an event of its directory, bounded by the test's token.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SystemProcessRunIntegrationTests
@@ -67,12 +68,24 @@ public sealed class SystemProcessRunIntegrationTests
         try
         {
             using (var waiting = CancellationTokenSource.CreateLinkedTokenSource(token))
+            using (var watcher = new FileSystemWatcher(directory))
             {
                 waiting.CancelAfter(TimeSpan.FromSeconds(10));
-                while (!File.Exists(pids))
+                var seen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                void Look()
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(20), waiting.Token);
+                    if (File.Exists(pids))
+                    {
+                        seen.TrySetResult();
+                    }
                 }
+
+                watcher.Created += (_, _) => Look();
+                watcher.Renamed += (_, _) => Look();
+                watcher.Changed += (_, _) => Look();
+                watcher.EnableRaisingEvents = true;
+                Look();
+                await seen.Task.WaitAsync(waiting.Token);
             }
 
             var written = await File.ReadAllLinesAsync(pids, token);
