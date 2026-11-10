@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "ignorePaths": [".github/workflows/**"],
   "timezone": "America/Chicago",
   "schedule": ["before 6am on monday"],
   "labels": ["dependencies", "📦 dependencies"],
@@ -17,21 +18,31 @@
       "matchManagers": ["nuget"],
       "matchFileNames": ["Directory.Packages.props"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "NuGet packages"
+      "groupName": "NuGet packages",
+      "groupSlug": "nuget-packages"
     },
     {
       "description": "0055-F4 B-003: the .NET SDK global.json pins, one pull request.",
       "matchManagers": ["nuget"],
       "matchDepTypes": ["dotnet-sdk"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": ".NET SDK"
+      "groupName": ".NET SDK",
+      "groupSlug": "net-sdk"
     },
     {
       "description": "0055-F4 B-004: local tool manifest minor and patch updates, one pull request.",
       "matchManagers": ["nuget"],
       "matchFileNames": [".config/dotnet-tools.json"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "dotnet local tools"
+      "groupName": "dotnet local tools",
+      "groupSlug": "dotnet-local-tools"
+    },
+    {
+      "description": "0055-F4 B-012: give each .NET major update its own pull request.",
+      "matchManagers": ["nuget"],
+      "matchUpdateTypes": ["major"],
+      "groupName": null,
+      "groupSlug": null
     },
     {
       "description": "0055-F4 C-4: a version is changed only where it is declared once.",

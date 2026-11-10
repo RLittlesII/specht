@@ -85,19 +85,27 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             .Should().Be($"${{{{ steps.{steps[3]["id"]}.outputs.NUGET_API_KEY }}}}");
     }
 
-    [Fact]
-    public void ReleaseWorkflow_ShouldRestoreTheCheckerWithTheRunsOwnToken()
+    [Theory]
+    [InlineData("ci.yml")]
+    [InlineData("main.yml")]
+    [InlineData("release.yml")]
+    public void RepositoryWorkflows_ShouldRestoreTheCheckerWithoutAPackageReadCredential(string workflowFile)
     {
-        var path = Path.Combine(FindRepositoryRoot(), ".github", "workflows", "release.yml");
+        var path = Path.Combine(FindRepositoryRoot(), ".github", "workflows", workflowFile);
         var stream = new YamlStream();
         using var input = File.OpenText(path);
         stream.Load(input);
         var workflow = (YamlMappingNode) stream.Documents[0].RootNode;
-        var build = (YamlMappingNode) ((YamlMappingNode) workflow["jobs"])["build"];
 
-        ((YamlMappingNode) workflow["permissions"])["packages"].ToString().Should().Be("read");
-        ((YamlMappingNode) build["env"])["NuGetPackageSourceCredentials_specht"].ToString()
-            .Should().Contain("Password=${{ secrets.GITHUB_TOKEN }}");
+        ((YamlMappingNode) workflow["permissions"])["packages"].ToString().Should().Be("none");
+        File.ReadAllText(path).Should().NotContain("NuGetPackageSourceCredentials_");
+    }
+
+    [Fact]
+    public void ReleaseWorkflow_ShouldNameOnlyTheGitHubTokenSecret()
+    {
+        var path = Path.Combine(FindRepositoryRoot(), ".github", "workflows", "release.yml");
+
         Regex.Matches(File.ReadAllText(path), @"secrets\.(\w+)").Select(static match => match.Groups[1].Value).Distinct()
             .Should().Equal("GITHUB_TOKEN");
     }

@@ -73,7 +73,7 @@ Feature: Dependency updates
 
   @B-012
   Scenario: Each major update is reviewed alone
-    Given two packages each have a new major release
+    Given two .NET packages from the same upstream monorepo each have a new major release
     When updates are proposed
     Then each is carried by a pull request of its own
 
