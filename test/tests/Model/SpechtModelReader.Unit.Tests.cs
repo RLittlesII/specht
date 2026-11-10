@@ -12,7 +12,9 @@ namespace Specht.Tests.Model;
 /// 0166): the specification, companion, item and epic the model carries are the ones that file system holds, each under
 /// its root-relative path, read through the stores the reader sequences. Nothing touches the disk. The root is the file
 /// system's own full path of <c>repo</c>, because an in-memory file system lists a relative directory's files by their full
-/// paths, which the real one does not.
+/// paths, which the real one does not. A Feature in two layouts reaches the model, and so <c>SPEC012</c>'s first
+/// declaration and the dependency graph's kept twin, and an item id used twice reaches <c>SPEC044</c>, in discovery's one
+/// ordinal order of root-relative path (<c>0001-F6</c> B-008, decision 0011; item 0009).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtModelReaderUnitTests
@@ -99,5 +101,61 @@ public sealed class SpechtModelReaderUnitTests
         feature.FeatureFiles.Select(static file => Path.GetFileName(file.RelativePath)).Should().Equal("area.feature");
         model.Items.Select(static item => (item.RelativePath, item.Id)).Should().Equal(("src/area/.spec/0001-01-do.md", "0001-01"));
         model.Epics.Select(static epic => (epic.RelativePath, epic.Id)).Should().Equal(("epics/0001-example/epic.md", "0001"));
+    }
+
+    [Fact]
+    public void AFeatureInBothLayoutsWhoseCoLocatedPathSortsFirst_WhenLoaded_ShouldDeclareTheCoLocatedCopyFirstAndKeepTheEpicsCopysEdges()
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}"),
+                [Path.Combine("repo", "docs", "x", ".spec", "README.md")] = new("---\nepic: \"0001\"\nid: F1\ndepends_on: [F2]\n---\n"),
+                [Path.Combine("repo", "epics", "0001-e", "F1-f", "spec.md")] = new("---\nepic: \"0001\"\nid: F1\ndepends_on: [F3]\n---\n"),
+            });
+        var root = fileSystem.Path.GetFullPath("repo");
+        var reader = EngineServices.Reader(fileSystem);
+
+        // When
+        var model = reader.Read(root, null);
+
+        // Then
+        model.Features.Select(static feature => feature.RelativePath).Should().Equal("docs/x/.spec/README.md", "epics/0001-e/F1-f/spec.md");
+        new DuplicateIdentityRule().Evaluate(model).Select(static finding => finding.Expected!["firstDeclaration"]!.GetValue<string>())
+            .Should().Equal("docs/x/.spec/README.md", "docs/x/.spec/README.md");
+        model.DependencyGraph.DependsOn["0001-F1"].Should().BeEquivalentTo(["0001-F3"]);
+    }
+
+    [Theory]
+    [ClassData(typeof(ReusedItemIds))]
+    public void AnItemIdReusedBesideTwoSpecifications_WhenLoaded_ShouldReportSpec044OnTheLaterPathAndDeclareTheEarlierFirst(
+        string because,
+        string earlierSpecification,
+        string earlierItem,
+        string laterSpecification,
+        string laterItem)
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}"),
+                [Path.Combine("repo", earlierSpecification)] = new("---\nepic: \"0001\"\nid: F1\n---\n"),
+                [Path.Combine("repo", earlierItem)] = new("---\nid: \"0001-01\"\n---\n"),
+                [Path.Combine("repo", laterSpecification)] = new("---\nepic: \"0001\"\nid: F2\n---\n"),
+                [Path.Combine("repo", laterItem)] = new("---\nid: \"0001-01\"\n---\n"),
+            });
+        var root = fileSystem.Path.GetFullPath("repo");
+        var reader = EngineServices.Reader(fileSystem);
+
+        // When
+        var model = reader.Read(root, null);
+
+        // Then
+        new ItemSequenceRule().Evaluate(model)
+            .Where(static finding => finding.Expected?["firstDeclaration"] is not null)
+            .Select(static finding => (finding.File, finding.Expected!["firstDeclaration"]!.GetValue<string>()))
+            .Should().Equal([(laterItem, earlierItem)], because);
     }
 }

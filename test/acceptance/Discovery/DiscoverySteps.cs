@@ -25,12 +25,17 @@ namespace Specht.Acceptance.Discovery;
 /// a listing returns, so a directory is opened when a listing asks for it or a listing returns a path below it (B-006,
 /// C-1). A git work tree is made by the real <c>git</c> in the scenario's root, and the check's child process records each
 /// program discovery asks for and what it gave back; "no git executable is on the path" starts a program that does not
-/// exist in git's place, so the process-wide <c>PATH</c> is never changed (B-005, B-006, B-010). The scenarios of B-007,
-/// B-008 and B-011 stay pending for their items.
+/// exist in git's place, so the process-wide <c>PATH</c> is never changed (B-005, B-006, B-010). Item 0009 binds B-007, B-008
+/// and B-011: the specifications, items, epics and companions are discovered directly, once through the real <c>git</c> and
+/// once with git's place taken by that absent program, each run required to have listed through git with exit code <c>0</c>
+/// or to have started nothing that ran, so two walks never compare equal. A root that is not yet a work tree is made one
+/// before it is discovered through git. The clean checkout is a shared clone of the repository this assembly was built in,
+/// checked out at that repository's <c>HEAD</c> in a temporary directory with no hook able to run, and nothing is
+/// committed from it; a link is made with a target relative to the root, so the tree holds no absolute path.
 /// </summary>
 [Binding]
 [Scope(Feature = "Discovery")]
-public sealed class DiscoverySteps
+public sealed class DiscoverySteps(PackedTool tool)
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpechtTree();
@@ -270,6 +275,72 @@ public sealed class DiscoverySteps
     [Given("no git executable is on the path")]
     public void GivenNoGitExecutableIsOnThePath() => _childProcess = new RecordingChildProcess(AbsentProgram);
 
+    [Given("a clean checkout of this repository at one commit")]
+    public void GivenACleanCheckoutOfThisRepositoryAtOneCommit()
+    {
+        var commit = GitIn(tool.Repository, "rev-parse", "HEAD").Trim();
+        _checkoutParent = Directory.CreateTempSubdirectory("specht-checkout-").FullName;
+        var checkout = Path.Combine(_checkoutParent, "checkout");
+        GitIn(_checkoutParent, "clone", "--quiet", "--shared", "--no-checkout", tool.Repository, checkout);
+        GitIn(checkout, "-c", "core.hooksPath=" + Path.Combine(_checkoutParent, "no-hooks"), "checkout", "--quiet", "--detach", commit);
+        GitIn(checkout, "rev-parse", "HEAD").Trim().Should().Be(commit);
+        GitIn(checkout, "status", "--porcelain", "--untracked-files=all", "--ignored")
+            .Should().BeEmpty("a clean checkout holds no change and no untracked or ignored path");
+        _checkout = checkout;
+    }
+
+    [Given("the root holds specifications under {string}, {string} and {string}")]
+    public void GivenTheRootHoldsSpecificationsUnder(string first, string second, string third)
+    {
+        _folders = [first, second, third];
+        foreach (var (folder, index) in _folders.Select(static (folder, index) => (folder, index)))
+        {
+            Write($"{folder}/.spec/README.md", $"F{index + 1}");
+        }
+    }
+
+    [Given("the root holds a symbolic link to a directory outside it")]
+    public void GivenTheRootHoldsASymbolicLinkToADirectoryOutsideIt()
+    {
+        _outside = Directory.CreateTempSubdirectory("specht-outside-").FullName;
+        Directory.CreateSymbolicLink(Path.Combine(Tree.Root, Link), Path.GetRelativePath(Tree.Root, _outside));
+    }
+
+    [Given("that directory holds a co-located specification")]
+    public void GivenThatDirectoryHoldsACoLocatedSpecification()
+    {
+        var outside = _outside ?? throw new InvalidOperationException("No step made the directory outside the root.");
+        var directory = Directory.CreateDirectory(Path.Combine(outside, "area", ".spec"));
+        File.WriteAllText(Path.Combine(directory.FullName, "README.md"), string.Empty);
+        Subject = $"{Link}/area/.spec/README.md";
+        File.Exists(Path.Combine(Tree.Root, Subject)).Should().BeTrue("the specification is reachable through the link");
+    }
+
+    [When("specifications, items, epics and companions are discovered through git")]
+    [When("they are discovered through git")]
+    [When("the specifications are discovered through git")]
+    public void WhenTheyAreDiscoveredThroughGit()
+    {
+        if (_checkout is null)
+        {
+            File.WriteAllText(ManifestPath, Manifest.ToJsonString());
+            if (!Path.Exists(Path.Combine(Tree.Root, ".git")))
+            {
+                Git("init", "--quiet");
+            }
+        }
+
+        _gitRun = new RecordingChildProcess();
+        ThroughGit = Discover(_gitRun);
+    }
+
+    [When("they are discovered by walking the tree")]
+    public void WhenTheyAreDiscoveredByWalkingTheTree()
+    {
+        _walkRun = new RecordingChildProcess(AbsentProgram);
+        Walked = Discover(_walkRun);
+    }
+
     [When("the check runs")]
     public void WhenTheCheckRuns()
     {
@@ -428,8 +499,51 @@ public sealed class DiscoverySteps
         }
     }
 
+    [Then("the two sets are equal")]
+    public void ThenTheTwoSetsAreEqual()
+    {
+        ThroughGit.Specifications.Should().BeEquivalentTo(Walked.Specifications);
+        ThroughGit.Items.Should().BeEquivalentTo(Walked.Items);
+        ThroughGit.Epics.Should().BeEquivalentTo(Walked.Epics);
+        ThroughGit.Companions.Should().BeEquivalentTo(Walked.Companions);
+        ThroughGit.Specifications.Should().NotBeEmpty();
+        ThroughGit.Epics.Should().NotBeEmpty();
+        ThroughGit.Companions.Should().NotBeEmpty();
+    }
+
+    [Then("both list them in the same order")]
+    public void ThenBothListThemInTheSameOrder()
+    {
+        Paths(ThroughGit).Should().BeEquivalentTo(_folders.Select(static folder => $"{folder}/.spec/README.md"));
+        Paths(Walked).Should().Equal(Paths(ThroughGit));
+    }
+
+    [Then("the order is by root-relative path, ordinally, so {string} comes before {string}")]
+    public void ThenTheOrderIsByRootRelativePathOrdinallySoComesBefore(string before, string after)
+    {
+        foreach (var listed in new[] { Paths(ThroughGit), Paths(Walked) })
+        {
+            listed.Should().Equal(listed.Order(StringComparer.Ordinal));
+            listed.Should().ContainInOrder($"{before}/.spec/README.md", $"{after}/.spec/README.md");
+        }
+    }
+
+    [Then("neither discovers that specification")]
+    public void ThenNeitherDiscoversThatSpecification()
+    {
+        Paths(ThroughGit).Should().NotContain(Subject);
+        Paths(Walked).Should().NotContain(Subject);
+    }
+
     [AfterScenario]
-    public void DeleteTree() => _tree?.Dispose();
+    public void DeleteTree()
+    {
+        _tree?.Dispose();
+        foreach (var directory in new[] { _checkoutParent, _outside }.OfType<string>().Where(Directory.Exists))
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
 
     private static IReadOnlyList<string> ThreeDefects =>
         SpechtTree.SectionsWith(
@@ -449,6 +563,31 @@ public sealed class DiscoverySteps
 
     private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
 
+    private Discovered ThroughGit
+    {
+        get
+        {
+            var run = _gitRun ?? throw new InvalidOperationException("Nothing was discovered through git.");
+            run.Calls.Should().HaveCount(2, "the specifications and the epics are each listed through git once")
+                .And.OnlyContain(static call => call.FileName == "git" && call.Result != null && call.Result.ExitCode == 0);
+            return field ?? throw new InvalidOperationException("Nothing was discovered through git.");
+        }
+
+        set;
+    }
+
+    private Discovered Walked
+    {
+        get
+        {
+            var run = _walkRun ?? throw new InvalidOperationException("Nothing was discovered by walking.");
+            run.Calls.Should().OnlyContain(static call => call.FileName == "git" && call.Result == null);
+            return field ?? throw new InvalidOperationException("Nothing was discovered by walking.");
+        }
+
+        set;
+    }
+
     private IEnumerable<string> Reported => Report.Violations.Select(static violation => violation.File).Distinct();
 
     private IReadOnlyList<string> Summary => SpechtReportDocument.From(Report).SummaryLines();
@@ -464,9 +603,12 @@ public sealed class DiscoverySteps
         SpechtViolation violation) =>
         (violation.File, violation.RuleId, violation.Severity, violation.Line, violation.Identifier, violation.Message);
 
-    private string Git(params string[] arguments)
+    private static IReadOnlyList<string> Paths(Discovered discovered) =>
+        discovered.Specifications.Select(static specification => specification.Path).ToList();
+
+    private static string GitIn(string directory, params string[] arguments)
     {
-        var start = new ProcessStartInfo("git") { WorkingDirectory = Tree.Root };
+        var start = new ProcessStartInfo("git") { WorkingDirectory = directory };
         foreach (var argument in arguments)
         {
             start.ArgumentList.Add(argument);
@@ -476,6 +618,23 @@ public sealed class DiscoverySteps
         exitCode.Should().Be(0, stdout + stderr);
 
         return stdout;
+    }
+
+    private string Git(params string[] arguments) => GitIn(Tree.Root, arguments);
+
+    private Discovered Discover(IChildProcess childProcess)
+    {
+        var fileSystem = new FileSystem();
+        var root = _checkout ?? Tree.Root;
+        var structure = EngineServices.Manifest(fileSystem, root);
+        var discovery = new SpechtDiscovery(fileSystem, childProcess);
+        var specifications = discovery.FindSpecifications(root, structure.Discovery);
+
+        return new Discovered(
+            [.. specifications.Select(static location => (location.RelativePath, location.Layout.Name))],
+            discovery.FindChildItems(root, specifications, structure.Discovery, structure.Identifiers["task"]),
+            discovery.FindEpics(root, structure.Discovery),
+            [.. specifications.SelectMany(location => discovery.FindCompanions(root, location, structure.Discovery))]);
     }
 
     private string[] Untracked() => Git("ls-files", "-z", "--others", "--exclude-standard").Split('\0', StringSplitOptions.RemoveEmptyEntries);
@@ -501,6 +660,12 @@ public sealed class DiscoverySteps
     private sealed record Listing(string Asked, IReadOnlyList<string> Returned);
 
     private sealed record Call(string FileName, ChildProcessResult? Result);
+
+    private sealed record Discovered(
+        IReadOnlyList<(string Path, string Layout)> Specifications,
+        IReadOnlyList<string> Items,
+        IReadOnlyList<string> Epics,
+        IReadOnlyList<string> Companions);
 
     private sealed class RecordingChildProcess(string? program = null) : IChildProcess
     {
@@ -619,6 +784,8 @@ public sealed class DiscoverySteps
 
     private const string AbsentProgram = "specht-git-that-does-not-exist";
 
+    private const string Link = "linked";
+
     private const string PhantomTag =
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";
 
@@ -634,4 +801,10 @@ public sealed class DiscoverySteps
     private string? _first;
     private string? _epic;
     private IReadOnlyList<string> _pair = [];
+    private IReadOnlyList<string> _folders = [];
+    private string? _checkoutParent;
+    private string? _checkout;
+    private string? _outside;
+    private RecordingChildProcess? _gitRun;
+    private RecordingChildProcess? _walkRun;
 }
