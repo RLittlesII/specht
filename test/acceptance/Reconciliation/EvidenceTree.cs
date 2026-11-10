@@ -176,6 +176,14 @@ internal sealed class EvidenceTree : IDisposable
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
+    public void EditManifest(Action<JsonObject> edit)
+    {
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        edit(manifest);
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
     public IReadOnlyList<AnalysisInput> AnalyzerInputs() =>
     [
         new("configuration", ".specht/manifest.json", File.ReadAllText(Path.Combine(Root, ".specht", "manifest.json"))),

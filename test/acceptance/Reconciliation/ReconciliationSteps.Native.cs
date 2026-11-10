@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
 
@@ -75,6 +76,64 @@ public sealed partial class ReconciliationSteps
         _tree.UseNativeClaims((scope == "epic" ? "@epic:ep2" : "@feature:cap:list") + "\n" + BoundClaimFile);
         _tree.ScopeClaimFilesToEpic("ep1");
     }
+
+    [Given("a consumer reading native claims whose {string}")]
+    public void GivenMalformedNativeClaimKey(string defect)
+    {
+        _tree.UseNativeClaims(BoundClaimFile);
+        _tree.EditManifest(manifest =>
+        {
+            var records = manifest["codeAnalysis"]!["records"]!;
+            switch (defect)
+            {
+                case "claim source is not Gherkin":
+                    records["claimSource"] = "markdown";
+                    break;
+                case "claim tag has no claim placeholder":
+                    manifest["claimTag"]!["tag"] = "@claim";
+                    break;
+                case "scope tag has no placeholder of its own":
+                    manifest["codeAnalysis"]!["scenarioScopes"] = new JsonObject { ["featureTag"] = "@feature" };
+                    break;
+                case "planned tag list holds a tag without a leading @":
+                    records["plannedTags"] = new JsonArray("ignore");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(defect), defect, null);
+            }
+        });
+    }
+
+    [Given("a consumer reading native claims whose claim file set {string}")]
+    public void GivenMalformedClaimFileSetEntry(string defect)
+    {
+        _tree.UseNativeClaims(BoundClaimFile);
+        _tree.EditManifest(manifest =>
+        {
+            var sets = manifest["codeAnalysis"]!["records"]!["claimFileSets"]!.AsArray();
+            switch (defect)
+            {
+                case "has no glob":
+                    sets[0]!.AsObject().Remove("glob");
+                    break;
+                case "names a Feature outside its grammar":
+                    sets[0]!["feature"] = "Cap:Read";
+                    break;
+                case "names an epic though the manifest declares none":
+                    sets[0]!["epic"] = "0201";
+                    break;
+                case "names a Feature another claim file set names":
+                    sets.Add(new JsonObject { ["glob"] = "src/list/.spec/*.feature", ["feature"] = "cap:read" });
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(defect), defect, null);
+            }
+        });
+    }
+
+    [Given("a consumer whose claims are declared in Feature records and whose manifest maps no claims section")]
+    public void GivenMarkdownClaimsWithoutClaimsSection() =>
+        _tree.EditManifest(static manifest => manifest["codeAnalysis"]!["mappings"]!.AsObject().Remove("/claimsSection"));
 
     [Given("a declared test project whose current evidence passed every required case")]
     public void GivenPassingTestProject() { }

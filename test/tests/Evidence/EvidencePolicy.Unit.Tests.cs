@@ -6,7 +6,8 @@ using Specht.Tool.Features.Evidence;
 namespace Specht.Tests.Evidence;
 
 /// <summary>
-/// The normalized consumer policy decisions used by 0201-F5 B-008 to B-010, native claim input and its claim file set paths (B-028, B-035) and the declared
+/// The normalized consumer policy decisions used by 0201-F5 B-008 to B-010, native claim input and its claim file set paths (B-028, B-035), the
+/// malformed native claim keys and claim file set entries (B-042, B-043), Markdown claim input with no claims section (B-044) and the declared
 /// projects that need an export (B-036).
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -239,8 +240,8 @@ public sealed class EvidencePolicyUnitTests
     }
 
     [Theory]
-    [ClassData(typeof(MalformedClaimFileSets))]
-    public void AMissingOrMalformedClaimFileSet_WhenProjected_ShouldBeRejectedAsInvalidConfiguration(string? sets, string? epicGrammar)
+    [ClassData(typeof(AbsentClaimFileSets))]
+    public void ANativeClaimManifestWithNoClaimFileSet_WhenProjected_ShouldBeRejectedAsInvalidConfiguration(string? sets)
     {
         // Given
         var configuration = JsonNode.Parse(NativeManifest)!.AsObject();
@@ -251,6 +252,20 @@ public sealed class EvidencePolicyUnitTests
             records["claimFileSets"] = JsonNode.Parse(sets);
         }
 
+        // When
+        var read = () => EvidencePolicy.Read(configuration);
+
+        // Then
+        read.Should().Throw<EvidenceConfigurationException>();
+    }
+
+    [Theory]
+    [ClassData(typeof(MalformedClaimFileSets))]
+    public void AMalformedClaimFileSetEntry_WhenProjected_ShouldBeRejectedAsInvalidConfiguration(string sets, string? epicGrammar)
+    {
+        // Given
+        var configuration = JsonNode.Parse(NativeManifest)!.AsObject();
+        configuration["codeAnalysis"]!["records"]!["claimFileSets"] = JsonNode.Parse(sets);
         if (epicGrammar is not null)
         {
             configuration["idPatterns"]!["epic"] = epicGrammar;

@@ -7,7 +7,7 @@ namespace Specht.Tests.Evidence;
 /// <summary>
 /// Several projects' runs, the incomplete-run finding, the undiscovered bound method and the steps a missing or stale
 /// input names (0201-F3 B-014, B-018, B-021, B-022, B-026; OQ-4, OQ-5) and the owned-key and planned-row gate
-/// (0201-F5 B-017 to B-022), native Gherkin claims (B-028 to B-035, B-039 to B-041) and the declared projects that need an export
+/// (0201-F5 B-017 to B-022), native Gherkin claims (B-028 to B-035, B-039 to B-044) and the declared projects that need an export
 /// (B-011, B-022, B-036, B-037).
 /// </summary>
 [Trait("Tier", "Integration")]
@@ -762,6 +762,36 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
         result.ExitCode.Should().Be(3);
         result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
             && finding["path"]!.GetValue<string>() == NativeClaimEvidenceRoot.ClaimFile);
+    }
+
+    [Theory]
+    [ClassData(typeof(RejectedClaimInputManifests))]
+    public void AManifestWhoseClaimInputTheEvidencePolicyRejects_WhenReconciled_ShouldFailAsInvalidInputNamingTheManifest(string parent, string key,
+        string? value)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        var manifest = Path.Combine(Native.Root, ".specht", "manifest.json");
+        var configuration = JsonNode.Parse(File.ReadAllText(manifest))!.AsObject();
+        var owner = parent.Split('/').Aggregate((JsonNode) configuration, static (node, name) => node[name]!).AsObject();
+        if (value is null)
+        {
+            owner.Remove(key);
+        }
+        else
+        {
+            owner[key] = JsonNode.Parse(value);
+        }
+
+        File.WriteAllText(manifest, configuration.ToJsonString());
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.ExitCode.Should().Be(3);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
+            && finding["path"]!.GetValue<string>() == ".specht/manifest.json");
     }
 
     [Theory]
