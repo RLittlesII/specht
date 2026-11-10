@@ -16,16 +16,18 @@ spikes: []
 spec: src/analyzers/Reconciliation/.spec/README.md
 
 claims:
+  - B-011
   - B-028
-  - B-029
   - B-030
-  - B-034
   - B-035
   - B-036
   - B-038
   - B-039
   - B-040
   - B-041
+  - B-042
+  - B-043
+  - B-044
 
 created: "2026-11-08"
 updated: "2026-11-09"
@@ -54,7 +56,14 @@ decisions:
     amend 0201-F5 so the three unstated branches can be tested?", answered
     "Amend the spec". 0201-F5 B-039 to B-041 state the three branches as new
     claims (0201-F5 § 10, 2026-11-09).
+  - |
+    2026-11-09, spec-author: the repository owner, asked "Add a claim for
+    the malformed-key rejections, or drop those test rows?", answered "Add a
+    claim". 0201-F5 B-042 to B-044 state the malformed native claim keys,
+    the malformed claim file set entries and the Markdown manifest with no
+    claims section (0201-F5 § 10, 2026-11-09).
 
 out_of_scope:
   - "Production code changes; a defect a test exposes becomes its own bug item."
-  - "Claims beyond 0201-F5 B-039 to B-041; any other branch no claim states is reported in 0201-F5 § 8, not claimed here."
+  - "Claims beyond 0201-F5 B-039 to B-044; any other branch no claim states is reported in 0201-F5 § 8, not claimed here."
+  - "A non-string featureTag or epicTag, which EvidencePolicy.Scope ignores against 0201-F5 § 7; it is a defect for its own bug item."

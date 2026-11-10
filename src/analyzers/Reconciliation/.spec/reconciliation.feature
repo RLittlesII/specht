@@ -402,6 +402,38 @@ Feature: Traceability reconciliation
       | Feature |
       | epic    |
 
+  @B-042
+  Scenario Outline: Malformed native claim key
+    Given a consumer reading native claims whose "<defect>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
+    Examples:
+      | defect                                           |
+      | claim source is not Gherkin                      |
+      | claim tag has no claim placeholder               |
+      | scope tag has no placeholder of its own          |
+      | planned tag list holds a tag without a leading @ |
+
+  @B-043
+  Scenario Outline: Malformed claim file set entry
+    Given a consumer reading native claims whose claim file set "<defect>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
+    Examples:
+      | defect                                          |
+      | has no glob                                     |
+      | names a Feature outside its grammar             |
+      | names an epic though the manifest declares none |
+      | names a Feature another claim file set names    |
+
+  @B-044
+  Scenario: Markdown claim input without a claims section
+    Given a consumer whose claims are declared in Feature records and whose manifest maps no claims section
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
   @B-036
   Scenario: Declared production project without evidence
     Given a declared test project whose current evidence passed every required case
