@@ -3,9 +3,10 @@ namespace Specht.Tests.Discovery;
 /// <summary>
 /// Why a row asks as it does, the root, under a work tree whose <c>.git</c> is at <c>repo</c>, the manifest it holds, the
 /// finder that asks git, and the arguments git is run with: each glob a <c>:(glob)</c> pathspec with <c>\</c>, <c>?</c> and
-/// <c>[</c> escaped, each bare exclusion an <c>--exclude</c> pattern at any depth below the root and an exclude glob
+/// <c>[</c> escaped and a literal first character escaped too, so no two globs share a leading directory git would read as
+/// a prefix (B-007), each bare exclusion an <c>--exclude</c> pattern at any depth below the root and an exclude glob
 /// pathspec, and each root-relative exclusion an <c>--exclude</c> pattern at that place and an exclude literal pathspec
-/// (<c>0001-F6</c> B-005, B-010, C-1, C-2; decisions 0002, 0010).
+/// (<c>0001-F6</c> B-005, B-007, B-010, C-1, C-2; decisions 0002, 0010).
 /// </summary>
 public sealed class GitCommandLines : TheoryData<string, string, string, string, string[]>
 {
@@ -21,7 +22,7 @@ public sealed class GitCommandLines : TheoryData<string, string, string, string,
                 "--exclude=/**/bin/",
                 "--exclude=/.spec/",
                 "--",
-                ":(glob)epics/**/spec.md",
+                @":(glob)\epics/**/spec.md",
                 ":(glob)**/.spec/README.md",
                 ":(exclude,glob)**/bin/**",
                 ":(exclude,literal).spec",
@@ -36,7 +37,7 @@ public sealed class GitCommandLines : TheoryData<string, string, string, string,
                 @"--exclude=/in\[1]/**/bin/",
                 @"--exclude=/in\[1]/.spec/",
                 "--",
-                ":(glob)epics/**/spec.md",
+                @":(glob)\epics/**/spec.md",
                 ":(glob)**/.spec/README.md",
                 ":(exclude,glob)**/bin/**",
                 ":(exclude,literal).spec",
@@ -51,7 +52,7 @@ public sealed class GitCommandLines : TheoryData<string, string, string, string,
                 @"--exclude=/**/b\*n\?/",
                 @"--exclude=/a\?/\[c]/",
                 "--",
-                @":(glob)epics/q\?/\[x]/e\\pic*.md",
+                @":(glob)\epics/q\?/\[x]/e\\pic*.md",
                 @":(exclude,glob)**/b\*n\?/**",
                 ":(exclude,literal)a?/[c]",
             ]);
@@ -64,7 +65,7 @@ public sealed class GitCommandLines : TheoryData<string, string, string, string,
                 .. LsFiles,
                 "--exclude=/**/obj/",
                 "--",
-                ":(glob)test/**/*.cs",
+                @":(glob)\test/**/*.cs",
                 ":(glob)**/*.fs",
                 ":(exclude,glob)**/obj/**",
             ]);

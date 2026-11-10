@@ -7,9 +7,9 @@ namespace Specht.Tests.Discovery;
 
 /// <summary>
 /// Discovery over a <see cref="SpechtTree"/> that a real <c>git</c> has made a work tree, in a temporary directory outside
-/// every other one (<c>0001-F6</c> B-005, B-010; item 0008); an epic file in it is found through git as the walk finds it
-/// (<c>0001-F6</c> B-007; item 0009). The child process is the production one, wrapped so a test can read what each git
-/// listing returned.
+/// every other one (<c>0001-F6</c> B-005, B-010; item 0008); an epic file in it is found through git as the walk finds it,
+/// and a test-file glob with a leading directory lists nothing under an excluded one (<c>0001-F6</c> B-007, B-010; item
+/// 0009). The child process is the production one, wrapped so a test can read what each git listing returned.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtDiscoveryGitIntegrationTests
@@ -56,6 +56,29 @@ public sealed class SpechtDiscoveryGitIntegrationTests
         git.Results.Should().ContainSingle().Which!.ExitCode.Should().Be(0);
         walked.Should().Equal("epics/0001-example/epic.md");
         throughGit.Should().Equal(walked);
+    }
+
+    [Fact]
+    public void ATestFileGlobBesideAnExcludedDirectory_WhenTestFilesAreListedThroughGit_ShouldListNoFileUnderItTrackedOrNot()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteRaw("test/u/a.cs", string.Empty);
+        tree.WriteRaw("test/obj/b.cs", string.Empty);
+        tree.WriteRaw("test/obj/c.cs", string.Empty);
+        LocalGit.Run(tree.Root, "init", "--quiet");
+        LocalGit.Run(tree.Root, "add", "test/u/a.cs", "test/obj/b.cs");
+        var fileSystem = new FileSystem();
+        var inputs = EngineServices.Manifest(fileSystem, tree.Root).Discovery;
+        var git = new RecordingChildProcess();
+
+        // When
+        var discovered = new SpechtDiscovery(fileSystem, git).FindTestFiles(tree.Root, ["test/**/*.cs"], inputs.Exclusions);
+
+        // Then
+        inputs.Exclusions.Should().Contain("obj");
+        git.Results.Should().ContainSingle().Which!.ExitCode.Should().Be(0);
+        discovered.Should().Equal("test/u/a.cs");
     }
 
     [Fact]
