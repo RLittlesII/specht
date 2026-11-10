@@ -20,14 +20,14 @@ public static class ExitCodes
     public const int MissingInput = 2;
 
     /// <summary>
-    /// The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects, its id settings
-    /// giving no id for an opted-in type <c>mint</c> requests included.
+    /// The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects, a <c>mint</c> entry
+    /// that gives no id for the type requested included.
     /// </summary>
     public const int InvalidManifest = 3;
 
     /// <summary>
-    /// A target named on the command line is not found in the shipped catalog, or a type <c>mint</c> requests is not opted in
-    /// under the manifest's <c>mint</c> key.
+    /// A target named on the command line is not found in the shipped catalog, or the manifest's <c>mint</c> key holds no
+    /// entry object for the type requested.
     /// </summary>
     public const int NotFound = 4;
 }

@@ -533,9 +533,10 @@ no network request and never reserves the id.
 
 **Exit codes.** `0` when an id is printed; `2` for a missing root or manifest,
 or `--feature` with `adr` or `lesson`; `3` for an invalid manifest, a `mint`
-key the pin does not accept, a record type `mint` names with no grammar, or an
-opted-in type with no strategy, a strategy that is not built, or settings it
-cannot draw from; `4` for a type `mint` does not opt in.
+key the pin does not accept, a record type `mint` names with no grammar, or a
+type whose `mint` entry gives no id: no strategy, a strategy that is not built,
+or settings it cannot draw from; `4` for a type `mint` holds no entry object
+for.
 
 ```sh
 specht mint adr --root .
