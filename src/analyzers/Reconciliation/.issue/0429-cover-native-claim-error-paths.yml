@@ -1,0 +1,52 @@
+id: "0429"
+type: test
+title: Cover the native claim error paths of specht evidence
+
+status: in-progress
+
+value: 2
+risk: 1
+
+parent: null
+children: []
+
+depends_on: ["0409"]
+spikes: []
+
+spec: src/analyzers/Reconciliation/.spec/README.md
+
+claims:
+  - B-028
+  - B-029
+  - B-030
+  - B-034
+  - B-035
+  - B-036
+  - B-038
+
+created: "2026-11-08"
+updated: "2026-11-09"
+closed: null
+
+summary: |
+  Item 0409 (commit b74b0a90) added native Gherkin claim reading to
+  `specht evidence`. Its pull request merged with the Codecov patch check
+  at 76.6% against the 80% target: the error paths it added to
+  `EvidencePolicy`, `EvidenceReconciler.ReadNativeClaims` and
+  `RepositoryPaths` were never exercised. This item adds unit and
+  integration tests under `test/tests/Evidence/` for those branches, each
+  tied to the 0201-F5 claim it proves, and updates § 8 and § 9 where a test
+  is added. Risk 1: tests over code that already works, no production
+  change.
+
+acceptance_criteria:
+  - "Every branch b74b0a90 added to EvidencePolicy.cs, EvidenceReconciler.cs and RepositoryPaths.cs that the coverage report shows unexercised has a test, or § 8 names why it has none."
+  - "Each new test names the 0201-F5 claim it pins, and § 9 names it in that claim's row."
+  - "No file under src/ other than the specification changes; a test that exposes wrong behaviour is reported, not fixed here."
+  - "./build.sh is green and the Codecov patch check passes."
+
+decisions: []
+
+out_of_scope:
+  - "Production code changes; a defect a test exposes becomes its own bug item."
+  - "New claims; this item adds tests to claims 0201-F5 already states."
