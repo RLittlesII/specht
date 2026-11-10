@@ -9,8 +9,7 @@ namespace Specht.Acceptance.Consumption;
 
 /// <summary>
 /// Offline package-consumption checks for 0055-F7. A folder feed above the consumer
-/// repository, configured as the only source as a machine's default nuget.org is, stands in for nuget.org. B-010 and
-/// B-011 state the end of the feed transition, item 0328, and stay unbound until it is true.
+/// repository stands in for nuget.org. The repository's own pin is verified separately against the public feed.
 /// </summary>
 [Binding]
 [Scope(Feature = "Consuming the package")]
@@ -23,9 +22,6 @@ public sealed class ConsumptionSteps : IDisposable
             Directory.Delete(_root, recursive: true);
         }
     }
-
-    [Given("the first package has been published")]
-    public void GivenTheFirstPackageHasBeenPublished() => _publishedVersion = "0.1.90";
 
     [Given("an empty repository with no package source of its own")]
     public void GivenAnEmptyRepositoryWithNoPackageSourceOfItsOwn()
@@ -59,6 +55,20 @@ public sealed class ConsumptionSteps : IDisposable
                 },
             },
         };
+    }
+
+    [Given("a clone of this repository with its committed checker pin")]
+    public void GivenACloneOfThisRepositoryWithItsCommittedCheckerPin()
+    {
+        ReadManifest();
+        var checker = _manifest!["tools"]!["specht.tool"]!;
+        _feedVersion = checker["version"]!.GetValue<string>();
+        if (_feedVersion.StartsWith("0.", StringComparison.Ordinal))
+        {
+            _feedVersion.Should().EndWith("-preview");
+        }
+
+        _manifest["tools"] = new JsonObject { ["specht.tool"] = checker.DeepClone() };
     }
 
     [Given("a clone of this repository after the first publish")]
@@ -114,13 +124,14 @@ public sealed class ConsumptionSteps : IDisposable
         Output.Trim().Should().Be(_manifest!["tools"]!["specht.tool"]!["version"]!.GetValue<string>());
     }
 
-    [Then("this repository's committed tool manifest names the tool at a published version")]
-    public void ThenThisRepositorysCommittedToolManifestNamesTheToolAtAPublishedVersion()
+    [Then("its committed package configuration names only nuget.org")]
+    public void ThenItsCommittedPackageConfigurationNamesOnlyNuGetOrg()
     {
-        ReadManifest();
-        var checker = _manifest!["tools"]!["specht.tool"]!;
-        checker["version"]!.GetValue<string>().Should().BeOneOf(_publishedVersion!, "0.1.131");
-        checker["commands"]!.AsArray().Select(static command => command!.GetValue<string>()).Should().Equal("specht");
+        var root = _configuration!.Root!;
+        root.Element("packageSources")!.Elements("add").Select(static source => (string?) source.Attribute("value"))
+            .Should().Equal("https://api.nuget.org/v3/index.json");
+        root.Element("packageSourceMapping")!.Elements("packageSource").Select(static source => (string?) source.Attribute("key"))
+            .Should().Equal("nuget.org");
     }
 
     [Then("the build succeeds")]
@@ -183,9 +194,8 @@ public sealed class ConsumptionSteps : IDisposable
     {
         foreach (var source in configuration.Root!.Element("packageSources")!.Elements("add"))
         {
-            var feed = (string?) source.Attribute("key") == "specht" ? "feeds/checker" : "feeds/public";
-            Directory.CreateDirectory(Path.Combine(Repository, feed));
-            source.SetAttributeValue("value", feed);
+            Directory.CreateDirectory(Path.Combine(Repository, "feeds/public"));
+            source.SetAttributeValue("value", "feeds/public");
         }
 
         foreach (var source in configuration.Root!.Element("auditSources")!.Elements("add"))
@@ -248,7 +258,6 @@ public sealed class ConsumptionSteps : IDisposable
 
     private readonly string _root = Path.Combine(".artifacts", "consumption-tests", Guid.NewGuid().ToString("N"));
     private JsonNode? _manifest;
-    private string? _publishedVersion;
     private string? _feedVersion;
     private bool _withoutCredential;
     private bool _install;

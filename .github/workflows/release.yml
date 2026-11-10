@@ -29,7 +29,7 @@ permissions:
   id-token: none
   issues: none
   discussions: none
-  packages: read
+  packages: none
   pages: none
   pull-requests: none
   repository-projects: none
@@ -38,8 +38,6 @@ permissions:
 
 jobs:
   build:
-    env:
-      NuGetPackageSourceCredentials_specht: 'Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic'
     runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout

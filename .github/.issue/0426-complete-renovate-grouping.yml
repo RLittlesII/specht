@@ -1,0 +1,29 @@
+id: "0426"
+type: task
+title: Group .NET updates in Renovate
+
+status: done
+risk: 2
+parent: "0072"
+children: []
+depends_on: ["0074"]
+spikes: []
+spec: .github/.spec/README.md
+claims: [B-001, B-003, B-004, B-008, B-012]
+
+created: "2026-11-09"
+updated: "2026-11-09"
+closed: "2026-11-09"
+
+summary: |
+  Verify the .NET update groups and separate major updates under the recommended preset.
+
+acceptance_criteria:
+  - "Verify the .NET update groups and baseline holds with Renovate."
+  - "Exclude generated workflows from Renovate extraction under C-3."
+
+decisions:
+  - "2026-11-09, owner: group .NET updates only."
+
+out_of_scope:
+  - "GitHub Actions version updates, workflow regeneration, automatic merging, the schedule, and credential provisioning."
