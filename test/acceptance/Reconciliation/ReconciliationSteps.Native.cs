@@ -56,6 +56,26 @@ public sealed partial class ReconciliationSteps
         _tree.SelectFeature("cap:list", gap == "whose claim file set matches no file" ? "src/list/.spec/*.feature" : null);
     }
 
+    [Given("a claim file that two claim file sets match")]
+    public void GivenClaimFileOfTwoSets()
+    {
+        _tree.UseNativeClaims(BoundClaimFile);
+        _tree.SelectFeature("cap:list", "src/read/.spec/*.feature");
+    }
+
+    [Given("a selected Feature whose claim file set matches a claim file")]
+    public void GivenSelectedFeatureWithClaimFile() => _tree.UseNativeClaims(BoundClaimFile);
+
+    [Given("that claim file set names a Feature record that cannot be read")]
+    public void GivenUnreadableFeatureRecord() => _tree.NameClaimFileSetRecord(UnreadableRecord);
+
+    [Given("a claim file of a current selected Feature whose {string} tag names another identity than its claim file set")]
+    public void GivenClaimFileTaggedForAnotherIdentity(string scope)
+    {
+        _tree.UseNativeClaims((scope == "epic" ? "@epic:ep2" : "@feature:cap:list") + "\n" + BoundClaimFile);
+        _tree.ScopeClaimFilesToEpic("ep1");
+    }
+
     [Given("a declared test project whose current evidence passed every required case")]
     public void GivenPassingTestProject() { }
 
@@ -114,6 +134,9 @@ public sealed partial class ReconciliationSteps
     [Then("the command fails with invalid input naming the manifest")]
     public void ThenManifestRejected() => ThenInvalidInputNaming(".specht/manifest.json");
 
+    [Then("the command fails with invalid input naming that Feature record")]
+    public void ThenFeatureRecordRejected() => ThenInvalidInputNaming(UnreadableRecord);
+
     [Then("no compilation is reported missing for the production project")]
     public void ThenProductionProjectNotMissing() => Report()["findings"]!.AsArray().Should().NotContain(static item =>
         item!["kind"]!.GetValue<string>() == "missingCompilation" && item["path"]!.GetValue<string>() == "src/app/app.csproj");
@@ -134,6 +157,7 @@ public sealed partial class ReconciliationSteps
 
     private const string BoundClaimFile = "Feature: Read\n\n  @need/7\n  Scenario: Reads a value\n    Then it is read\n";
     private const string PlannedClaimFile = "Feature: Read\n\n  @need/7 @ignore\n  Scenario: Reads a value\n    Then it is read\n";
+    private const string UnreadableRecord = "src/read/.spec/missing.md";
 
     private bool _lockClaimFile;
     private FileStream? _claimFileLock;

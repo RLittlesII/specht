@@ -157,6 +157,25 @@ internal sealed class EvidenceTree : IDisposable
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
+    public void NameClaimFileSetRecord(string record)
+    {
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!;
+        manifest["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["record"] = record;
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
+    public void ScopeClaimFilesToEpic(string epic)
+    {
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!;
+        manifest["idPatterns"]!["epic"] = "^ep[0-9]+$";
+        manifest["codeAnalysis"]!["scenarioScopes"] = new JsonObject { ["featureTag"] = "@feature:{feature}", ["epicTag"] = "@epic:{epic}" };
+        manifest["codeAnalysis"]!["features"]![0]!["epic"] = epic;
+        manifest["codeAnalysis"]!["records"]!["claimFileSets"]![0]!["epic"] = epic;
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
     public IReadOnlyList<AnalysisInput> AnalyzerInputs() =>
     [
         new("configuration", ".specht/manifest.json", File.ReadAllText(Path.Combine(Root, ".specht", "manifest.json"))),

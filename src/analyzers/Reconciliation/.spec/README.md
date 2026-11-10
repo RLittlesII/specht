@@ -473,9 +473,9 @@ modified.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-09 (item 0429: the native claim error paths of `EvidencePolicy`, `RepositoryPaths` and `ReadNativeClaims` pinned; four branches no claim states reported) -->
+<!-- last written by: test-writer, 2026-11-09 (item 0429: B-039 to B-041 pinned, the three `ReadNativeClaims` branches the earlier pass reported as gaps) -->
 
-`test/acceptance/Reconciliation/ReconciliationSteps.cs` runs B-001 to B-038
+`test/acceptance/Reconciliation/ReconciliationSteps.cs` runs B-001 to B-041
 through the actual CLI over an isolated synthetic consumer; `EvidenceTree.cs`
 builds one or two projects' version-three artifacts with per-case ownership,
 selection and scenario links. Unit tests pin the independent link and exit
@@ -619,11 +619,8 @@ indexed with kind `record`, as the F3 export indexes them.
   `Native claims of a Feature that is not current`. The other side of the
   decision is `AClaimFileSetWithNoRecordOrACurrentRecord_*`: a set with no
   `record`, current by § 7, and a record whose lifecycle is `draft` or
-  `in-review` each select the set's claim with no `invalidInput` finding. Not
-  tested: an unreadable `record`, which § 7 makes an `invalidInput` finding at
-  the record (the `IOException` and `UnauthorizedAccessException` catch around
-  the record read in `ReadNativeClaims`). No § 3 claim states it, since B-034
-  names only claim files; a gap for `spec-author`.
+  `in-review` each select the set's claim with no `invalidInput` finding. An
+  unreadable `record` is B-040's.
 - B-031: mechanism is the reader's declaration line, the keyword line of the
   element the claim tag sits on, carried as the claim's path and line. Unit:
   `GherkinClaimFileReaderUnitTests.ScenarioTaggedWithAClaim_WhenRead_ShouldLocateTheClaimAtTheScenarioKeywordLine`.
@@ -647,13 +644,10 @@ indexed with kind `record`, as the F3 export indexes them.
   and `ClaimFileDeclaringAnotherLanguage_WhenRead_ShouldFailNamingTheFileAndTheLanguage`;
   the mapping has no seam outside `Reconcile`. Integration:
   `AClaimFileTheReaderRejects_*`, the unreadable row holding the file open with
-  `FileShare.None`. Acceptance: `Claim file the reader rejects`. Not tested: a
-  claim file whose Feature or epic scope tag names another identity than its
-  set. § 7 lists it beside B-034's failures and `ReadNativeClaims` reports it
-  at the claim file, but B-034 names only an unreadable file, invalid Gherkin
-  and another language, so a test would assert a fourth defect the claim does
-  not state; an amendment for `spec-author`. The `exception.RelativePath ??
-file` fallback in the `GherkinClaimTextException` catch has no test either.
+  `FileShare.None`. Acceptance: `Claim file the reader rejects`. A claim file
+  whose Feature or epic scope tag names another identity than its set is
+  B-041's. The `exception.RelativePath ?? file` fallback in the
+  `GherkinClaimTextException` catch has no test.
   Code read: every exception `GherkinClaimTextReader.Read` throws carries its
   path (`Invalid()` and `CheckLanguage`), and the one `null` path, from
   `GherkinClaimTagForm`, is thrown in `EvidencePolicy.Read` before any claim
@@ -689,10 +683,8 @@ file` fallback in the `GherkinClaimTextException` catch has no test either.
   with no epic grammar; two sets for one Feature; and, under an epic grammar, a
   set with no epic or one outside the grammar. Missing and empty are B-035's
   Feature with no claim file set; the entry rows are § 7's set shape, which the
-  analyzer's `GherkinClaimPolicyReader.Sets` rejects alike. Not tested: a claim
-  file two sets match, which § 7 makes an `invalidInput` finding at that file
-  and which contributes no claim (`ReadNativeClaims`' `shared` set). No § 3
-  claim states it; a gap for `spec-author`.
+  analyzer's `GherkinClaimPolicyReader.Sets` rejects alike. A claim file two
+  sets match is B-039's.
 - B-036: mechanism is the derivation of the declared test projects,
   `EvidencePolicy.ProjectEntry.RequiresExport`, true for a project with a
   `requiredCaseScope` or named by a `verifies` enforcement entry, and
@@ -775,6 +767,50 @@ directory`, maps to `src/read/.spec/**`, over the record
   and a lower-case drive, which the parity cases do not hold. A `:` at index 1
   after a character that is not a letter has no test: no claim and no § 7
   sentence says whether such a path is drive-qualified.
+- B-039: mechanism is `ReadNativeClaims`' `shared` set, the claim files more
+  than one set's match list holds, each an `invalidInput` finding at the file
+  and read by no set. The match is `RepositoryPaths.Matches`, pinned by
+  `RepositoryPathsUnitTests` as B-038; the grouping across sets has no seam
+  outside `ReadNativeClaims`, a private method over a real `FileSystem`.
+  Integration:
+  `EvidenceReconcilerIntegrationTests.AClaimFileTwoClaimFileSetsMatch_WhenReconciled_ShouldFailAsInvalidInputNamingThatClaimFile`,
+  a second selected Feature, `cap:list`, whose set has the first set's glob.
+  Acceptance: `Claim file two claim file sets match`,
+  `ReconciliationSteps.GivenClaimFileOfTwoSets` and `ThenClaimFileRejected`.
+  Both passed on arrival, since B-039 states built behaviour. Code read: the
+  claim file is valid Gherkin and every other `invalidInput` branch in
+  `ReadNativeClaims` names the manifest or a record, so without the `shared`
+  check no finding names the file and both fail. That the file contributes no
+  claim stays § 7's and is not asserted.
+- B-040: mechanism is the `IOException` and `UnauthorizedAccessException`
+  catch around the record read in `ReadNativeClaims`, an `invalidInput`
+  finding at the set's `record`. No unit seam; the read is a `File` static in
+  the same private method. Integration:
+  `EvidenceReconcilerIntegrationTests.AClaimFileSetNamingAFeatureRecordThatCannotBeRead_WhenReconciled_ShouldFailAsInvalidInputNamingThatRecord`,
+  a `record` naming a missing file, `src/read/.spec/missing.md`. Acceptance:
+  `Claim file set whose Feature record cannot be read`,
+  `ReconciliationSteps.GivenSelectedFeatureWithClaimFile`,
+  `GivenUnreadableFeatureRecord` and `ThenFeatureRecordRejected`. Both passed
+  on arrival. A record held open with `FileShare.None`, as B-034's unreadable
+  row is, is the same catch and has no row of its own.
+- B-041: mechanism is the reader's Feature and epic scope tag values, compared
+  in `ReadNativeClaims` with the set's `feature` and `epic`, a mismatch an
+  `invalidInput` finding at the claim file. Unit: the capture is the engine's
+  `GherkinClaimTextReader`, which the analyzer's reader wraps, pinned by
+  `GherkinClaimFileReaderUnitTests.FeatureTaggedWithAClaim_WhenRead_ShouldDeclareItAtTheFeatureAndCoverItsScenarios`
+  and `PolicyWithoutScopeForms_WhenFeatureTagsAreRead_ShouldCaptureNoScopeValues`
+  in `test/analysis.tests`; the comparison has no seam outside
+  `ReadNativeClaims`. Integration:
+  `EvidenceReconcilerIntegrationTests.AClaimFileWhoseFeatureOrEpicTagNamesAnotherIdentity_WhenReconciled_ShouldFailAsInvalidInputNamingThatClaimFile`
+  over `ForeignScopeTags`, `@feature:cap:list` and `@epic:ep2`, under an epic
+  grammar with the Feature and its set in epic `ep1`, so each row names an
+  identity the set holds another of. Acceptance, two examples:
+  `Claim file tagged for another identity`,
+  `ReconciliationSteps.GivenClaimFileTaggedForAnotherIdentity` and
+  `ThenClaimFileRejected`. Both passed on arrival. Code read: a Feature-line
+  tag is valid Gherkin to the reader, so the only finding at the file is the
+  comparison's, and without its Feature or its epic half that row's finding
+  is gone.
 - B-011, amended: the derivation as B-036, beneath the complete-analysis
   state. Unit: `EvidencePolicyUnitTests.ADeclaredProject_*`, as B-036. A
   declared project path keeps § 7's stricter `IsRelative`, pinned by
@@ -800,10 +836,11 @@ B-036 is exposed as `EvidencePolicy.ProjectEntry.RequiresExport` and pinned by
 `EvidencePolicyUnitTests.ADeclaredProject_*`. The claim file set glob match of
 B-028 is `RepositoryPaths.Matches`, pinned by `RepositoryPathsUnitTests`; the
 file listing under the exclusions and record join of B-028 and B-030, the
-reader-failure mapping of B-034 and the claim file set check of B-035 stay
-inside `EvidenceReconciler.ReadNativeClaims`, a private method over a real
-`FileSystem`; they are pinned at the integration tier, and a seam for them stays
-reported to `implementer`.
+reader-failure mapping of B-034, the claim file set check of B-035, the
+shared claim file of B-039, the unreadable record of B-040 and the scope tag
+comparison of B-041 stay inside `EvidenceReconciler.ReadNativeClaims`, a
+private method over a real `FileSystem`; they are pinned at the integration
+tier, and a seam for them stays reported to `implementer`.
 
 From item `0166` the reconciler takes its `SpechtDocumentParser` by constructor,
 so `PartitionedEvidenceRoot`, `VsTestEvidenceTree` and the build test construct it
@@ -813,7 +850,7 @@ B-006's record parse is pinned by `SpechtDocumentParserUnitTests`
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-11-09 (B-039 to B-041 rows added, Missing, item 0429) -->
+<!-- last written by: test-writer, 2026-11-09 (item 0429: B-039 to B-041 name their scenarios, steps and tests) -->
 
 | Claim ID | Scenario                                                                                                                                     | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Status    |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -855,9 +892,9 @@ B-006's record parse is pinned by `SpechtDocumentParserUnitTests`
 | B-036    | Declared production project without evidence                                                                                                 | Declared production project without evidence; `ReconciliationSteps.ThenGateSucceeds`; `ReconciliationSteps.ThenProductionProjectNotMissing`; `EvidencePolicyUnitTests.ADeclaredProject_WhenProjected_ShouldRequireAnExportOnlyWithARequiredCaseScopeOrAVerifiesEntryNamingIt`; `EvidenceReconcilerIntegrationTests.ADeclaredProjectThatIsNotATestProject_WhenItHasNoExport_ShouldNeedNoneAndLetTheTestProjectsEvidenceSucceed`; `GherkinVsTestConsumerIntegrationTests.ProductionProjectNamedOnlyByImplementsEnforcement_WhenReconciledWithAndWithoutTestEvidence_ShouldNeedNoExportAndNeverBeMissing`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Covered   |
 | B-037    | Implementation link required without production evidence                                                                                     | Implementation link required without production evidence; `ReconciliationSteps.ThenImplementationLinkGap`; `EvidenceGateUnitTests.LinkInputs_WhenEvaluated_ShouldRetainTheirIndependentState`; `EvidenceReconcilerIntegrationTests.AnEnabledImplementationLinkWithNoExportCarryingItsImplementsBindings_WhenReconciled_ShouldReportTheImplementationLinkMissing`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered   |
 | B-038    | Claim file set read alike by the analyzer and specht evidence                                                                                | Claim file set read alike by the analyzer and specht evidence, six examples including `ending in ** over the Feature record's directory`; `ReconciliationSteps.ThenBothReadTheSameClaimFiles`; `RepositoryPathsUnitTests.AClaimFileSetGlobSpelling_WhenNormalisedAndMatched_ShouldReadTheClaimFileOrRejectTheGlobAsTheAnalyzerDoes`; `RepositoryPathsUnitTests.AnEmptyRootedOrDriveQualifiedPath_WhenNormalised_ShouldBeRejected`; `ClaimFileSetParityUnitTests.AClaimFileSetGlobSpelling_WhenReadByTheAnalyzerAndTheEngine_ShouldCatalogueTheClaimFileOrRejectTheGlobInBoth`; `EvidenceReconcilerIntegrationTests.AClaimFileSetGlobTheAnalyzerReadsAsNamingAClaimFile_WhenReconciled_ShouldSelectTheClaimsOfThatFile`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Covered   |
-| B-039    | Claim file two claim file sets match                                                                                                         | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Missing   |
-| B-040    | Claim file set whose Feature record cannot be read                                                                                           | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Missing   |
-| B-041    | Claim file tagged for another identity                                                                                                       | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Missing   |
+| B-039    | Claim file two claim file sets match                                                                                                         | Claim file two claim file sets match; `ReconciliationSteps.GivenClaimFileOfTwoSets`; `ReconciliationSteps.ThenClaimFileRejected`; `RepositoryPathsUnitTests.AClaimFileSetGlobSpelling_WhenNormalisedAndMatched_ShouldReadTheClaimFileOrRejectTheGlobAsTheAnalyzerDoes`; `EvidenceReconcilerIntegrationTests.AClaimFileTwoClaimFileSetsMatch_WhenReconciled_ShouldFailAsInvalidInputNamingThatClaimFile`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Covered   |
+| B-040    | Claim file set whose Feature record cannot be read                                                                                           | Claim file set whose Feature record cannot be read; `ReconciliationSteps.GivenSelectedFeatureWithClaimFile`; `ReconciliationSteps.GivenUnreadableFeatureRecord`; `ReconciliationSteps.ThenFeatureRecordRejected`; `EvidenceReconcilerIntegrationTests.AClaimFileSetNamingAFeatureRecordThatCannotBeRead_WhenReconciled_ShouldFailAsInvalidInputNamingThatRecord`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered   |
+| B-041    | Claim file tagged for another identity                                                                                                       | Claim file tagged for another identity, two examples; `ReconciliationSteps.GivenClaimFileTaggedForAnotherIdentity`; `ReconciliationSteps.ThenClaimFileRejected`; `GherkinClaimFileReaderUnitTests.FeatureTaggedWithAClaim_WhenRead_ShouldDeclareItAtTheFeatureAndCoverItsScenarios`; `GherkinClaimFileReaderUnitTests.PolicyWithoutScopeForms_WhenFeatureTagsAreRead_ShouldCaptureNoScopeValues`; `EvidenceReconcilerIntegrationTests.AClaimFileWhoseFeatureOrEpicTagNamesAnotherIdentity_WhenReconciled_ShouldFailAsInvalidInputNamingThatClaimFile`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Covered   |
 
 ## 10. Lessons / Spec Deltas
 
