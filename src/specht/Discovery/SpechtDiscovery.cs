@@ -155,11 +155,16 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
             .. exclusions.Select(entry =>
                 "--exclude=" + anchor + (entry.StartsWith('/') ? Escaped(entry[1..], Wildcards) : "**/" + Escaped(entry, Wildcards)) + "/"),
             "--",
-            .. globs.Select(static glob => ":(glob)" + Escaped(glob, GlobLiterals)),
+            .. globs.Select(static glob => ":(glob)" + HeadEscaped(Escaped(glob, GlobLiterals))),
             .. exclusions.Select(static entry =>
                 entry.StartsWith('/') ? ":(exclude,literal)" + entry[1..] : ":(exclude,glob)**/" + Escaped(entry, Wildcards) + "/**"),
         ];
     }
+
+    /// <implements epic="0001" feature="F6" claim="B-007" />
+    /// <implements epic="0001" feature="F6" claim="B-010" />
+    private static string HeadEscaped(string pathspec) =>
+        pathspec is [not ('*' or '\\'), ..] ? "\\" + pathspec : pathspec;
 
     /// <implements epic="0001" feature="F6" claim="B-010" />
     private static string Escaped(string text, string special) =>
@@ -167,6 +172,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
 
     /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
+    /// <implements epic="0001" feature="F6" claim="B-007" />
     private List<(string Path, string Relative)> Files(string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
         Listed(root, globs, exclusions) ?? Walked(root, exclusions);
 
