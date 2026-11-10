@@ -29,9 +29,18 @@ specification's directory, which is ordinal.
 - Today, with one specification below another's directory, as
   `epics/E/F/spec.md` and `epics/E/F/G/spec.md`, the item list is in
   specification order, not path order (§ 7 "What it leaves").
-- What a consumer reads barely moves: the report is ordered by
-  `SpechtViolationOrder`, so a violation moves only among violations equal on
-  severity, file, line and rule id (§ 7 "What it touches").
+- **Amended 2026-11-10, on `spec-reviewer`'s § 12 finding 8 for item `0009`.**
+  This bullet first said that only the order of tied violations could move,
+  because the report is ordered by `SpechtViolationOrder`. That was wrong for
+  `SPEC044`. `ItemSequenceRule`'s reuse check reports the second item it reads
+  with an id and names the first, so the item order decides which file is
+  reported.
+- Under the flat order, a reused id's `SPEC044` moves to the other file on two
+  trees: one specification beside another and below its directory, within
+  `epics`; and a co-located item whose path sorts before an `epics/` one. Its
+  message and `expected.firstDeclaration` swap with it. The trees, the example
+  and the test that pins it are in § 7 "What it touches". This reading still
+  holds: path order is what B-008 states, and the move is a consequence of it.
 
 ## Rejected
 
@@ -49,6 +58,8 @@ and it takes a claim change and a review round for no change in meaning.
   is owed to `implementer`. A test of that order with one specification below
   another's directory is owed to `test-writer`. § 9 reads `Covered` only once
   that test passes.
+- `SPEC044`: on the two trees above, which file it reports and the first
+  declaration it names (§ 7 "What it touches").
 - B-003, B-012 and C-3: unchanged.
 
 ## Reversal
