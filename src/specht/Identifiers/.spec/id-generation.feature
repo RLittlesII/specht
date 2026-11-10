@@ -268,6 +268,55 @@ Feature: Id generation
     When an ADR number is requested
     Then nothing is written on standard output
 
+  @B-053 @boundary
+  Scenario Outline: Nothing is written for a prefix that is not text
+    Given a manifest that opts ADR numbers in to Nano ID with a prefix given as <a prefix>
+    When an ADR number is requested
+    Then nothing is written on standard output
+
+    Examples:
+      | a prefix                  |
+      | the number 7              |
+      | a list                    |
+      | a group of named settings |
+      | a yes-or-no value         |
+
+  @B-054 @boundary
+  Scenario Outline: Nothing is written for an encoding formatting does not offer
+    Given a manifest that opts ADR numbers in to Nano ID with the encoding "<encoding>"
+    When an ADR number is requested
+    Then nothing is written on standard output
+
+    Examples:
+      | encoding |
+      | base64   |
+      | decimal  |
+
+  @B-055
+  Scenario Outline: A repository-wide type that names no prefix mints an id with none
+    Given a manifest that opts <type> in to Nano ID with no prefix
+    When <a type id> is requested
+    Then the minted id is the drawn characters with nothing ahead of them
+
+    Examples:
+      | type           | a type id       |
+      | ADR numbers    | an ADR number   |
+      | lesson numbers | a lesson number |
+
+  @B-055
+  Scenario Outline: A per-Feature type that names no prefix takes the prefix its records already carry
+    Given a manifest that opts <type> in to Nano ID with no prefix
+    When <a type id> is requested for a Feature
+    Then the minted id is the drawn characters with <a prefix> ahead of them
+
+    Examples:
+      | type              | a type id           | a prefix |
+      | decision numbers  | a decision number   | nothing  |
+      | claim ids         | a claim id          | "B-"     |
+      | constraint ids    | a constraint id     | "C-"     |
+      | open question ids | an open question id | "OQ-"    |
+      | scenario ids      | a scenario id       | "S-"     |
+
   @B-034
   Scenario: An id held in another letter case is never handed out
     Given a manifest that opts ADR numbers in to Nano ID
