@@ -59,6 +59,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<SpechtTreeGenerator>();
         services.AddSingleton<FrontmatterSchemaCheck>();
         services.TryAddSingleton<IRandomSource, RandomSource>();
+        services.AddSingleton<HeldIds>();
         services.AddSingleton<Minter>();
         services.AddSingleton<ISpechtRule, FrontmatterPresentRule>();
         services.AddSingleton<ISpechtRule, FeatureFrontmatterRule>();
