@@ -2,7 +2,7 @@ id: "0008"
 type: task
 title: List files through git inside a work tree
 
-status: ready-for-architecture
+status: done
 
 risk: 4
 
@@ -20,8 +20,8 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-11-08"
-closed: null
+updated: "2026-11-09"
+closed: "2026-11-09"
 
 summary: |
   Inside a work tree with git on PATH, ask the git executable (decision 0002)
@@ -53,8 +53,14 @@ decisions:
     absent from `PATH` needs this item's git mode, and § 8 already binds
     the scenario "Discovery runs without git on the path" here. This item
     selects the mode and binds that scenario; the walk itself is 0007's.
+  - |
+    2026-11-09, spec-author: decision 0010 is extended to OQ-2 on
+    spec-reviewer's § 12 finding for this item. The item proceeds with
+    OQ-2 open; a git exiting other than 0 inside a work tree gives the
+    walk, as built, and no claim or test pins it. `out_of_scope` says so.
+    The claims, the criteria and the scope are unchanged.
 
 out_of_scope:
-  - "git ls-files failing inside a work tree — OQ-2, open; resolve it and add a claim before building that path."
+  - "A claim for git ls-files failing inside a work tree — OQ-2, open. The path walks, silently, as built and unpinned by any claim or test (decision 0010); an answer changes only that fallback."
   - "Submodules — § 5 #4."
   - "Any git call beyond the file list — C-2."

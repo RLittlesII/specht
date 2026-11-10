@@ -141,7 +141,7 @@ public sealed class SpechtDiscoveryManifestUnitTests
         var inputs = EngineServices.Manifest(fileSystem, Root).Discovery;
 
         // When
-        var found = new SpechtDiscovery(fileSystem).FindSpecifications(Root, inputs);
+        var found = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindSpecifications(Root, inputs);
 
         // Then
         found.Select(static location => location.RelativePath).Should().BeEquivalentTo(expected, because);
@@ -167,7 +167,7 @@ public sealed class SpechtDiscoveryManifestUnitTests
         var inputs = EngineServices.Manifest(fileSystem, Root).Discovery;
 
         // When
-        var found = new SpechtDiscovery(fileSystem).FindSpecifications(Root, inputs);
+        var found = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindSpecifications(Root, inputs);
 
         // Then
         found.ToDictionary(static location => location.RelativePath, static location => location.Layout).Should().Equal(
@@ -193,7 +193,7 @@ public sealed class SpechtDiscoveryManifestUnitTests
         string[] expected = matches ? [path] : [];
 
         // When
-        var found = new SpechtDiscovery(fileSystem).FindSpecifications(Root, inputs);
+        var found = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindSpecifications(Root, inputs);
 
         // Then
         found.Select(static location => location.RelativePath).Should().Equal(expected, because);
@@ -213,7 +213,7 @@ public sealed class SpechtDiscoveryManifestUnitTests
         string[] expected = discovered ? [path] : [];
 
         // When
-        var found = new SpechtDiscovery(fileSystem).FindSpecifications(Root, inputs);
+        var found = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindSpecifications(Root, inputs);
 
         // Then
         found.Select(static location => location.RelativePath).Should().Equal(expected, because);
@@ -241,7 +241,8 @@ public sealed class SpechtDiscoveryManifestUnitTests
         var structure = EngineServices.Manifest(fileSystem, Root);
 
         // When
-        var found = new SpechtDiscovery(fileSystem).FindChildItems(Root, [specification], structure.Discovery, structure.Identifiers["task"]);
+        var found = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess())
+            .FindChildItems(Root, [specification], structure.Discovery, structure.Identifiers["task"]);
 
         // Then
         found.Should().BeEquivalentTo(expected.Select(Beside), because);
@@ -264,7 +265,7 @@ public sealed class SpechtDiscoveryManifestUnitTests
         var inputs = EngineServices.Manifest(fileSystem, Root).Discovery;
 
         // When
-        var found = new SpechtDiscovery(fileSystem).FindEpics(Root, inputs);
+        var found = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindEpics(Root, inputs);
 
         // Then
         found.Should().BeEquivalentTo(expected, because);
@@ -290,7 +291,7 @@ public sealed class SpechtDiscoveryManifestUnitTests
         var inputs = EngineServices.Manifest(fileSystem, Root).Discovery;
 
         // When
-        var found = new SpechtDiscovery(fileSystem).FindCompanions(Root, specification, inputs);
+        var found = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindCompanions(Root, specification, inputs);
 
         // Then
         found.Should().BeEquivalentTo(expected.Select(Beside), because);
@@ -321,9 +322,10 @@ public sealed class SpechtDiscoveryManifestUnitTests
         // When
         var found = key switch
         {
-            "taskFiles" => new SpechtDiscovery(fileSystem).FindChildItems(Root, [specification], structure.Discovery, structure.Identifiers["task"]),
-            "epicFiles" => new SpechtDiscovery(fileSystem).FindEpics(Root, structure.Discovery),
-            "companionFiles" => new SpechtDiscovery(fileSystem).FindCompanions(Root, specification, structure.Discovery),
+            "taskFiles" => new SpechtDiscovery(fileSystem, new UnexpectedChildProcess())
+                .FindChildItems(Root, [specification], structure.Discovery, structure.Identifiers["task"]),
+            "epicFiles" => new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindEpics(Root, structure.Discovery),
+            "companionFiles" => new SpechtDiscovery(fileSystem, new UnexpectedChildProcess()).FindCompanions(Root, specification, structure.Discovery),
             _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Not a file-shape key."),
         };
 
