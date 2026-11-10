@@ -91,6 +91,15 @@ internal sealed partial class SpechtBuild
         // the other, so each operating system reports its own result.
         buildJob.FailFast = false;
 
+        if (configuration.Name == "ci")
+        {
+            configuration.Concurrency = new RocketSurgeonsGithubActionsConcurrency
+            {
+                Group = "${{ github.workflow }}-${{ github.ref }}",
+                CancelInProgress = true,
+            };
+        }
+
         AddCodecovUpload(buildJob);
         AddBenchmarkResults(buildJob);
         PassAnnotationContext(buildJob);
