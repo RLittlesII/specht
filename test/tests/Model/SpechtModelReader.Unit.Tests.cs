@@ -13,8 +13,8 @@ namespace Specht.Tests.Model;
 /// its root-relative path, read through the stores the reader sequences. Nothing touches the disk. The root is the file
 /// system's own full path of <c>repo</c>, because an in-memory file system lists a relative directory's files by their full
 /// paths, which the real one does not. A Feature in two layouts reaches the model, and so <c>SPEC012</c>'s first
-/// declaration and the dependency graph's kept twin, in discovery's one ordinal order of root-relative path (<c>0001-F6</c>
-/// B-008; item 0009).
+/// declaration and the dependency graph's kept twin, and an item id used twice reaches <c>SPEC044</c>, in discovery's one
+/// ordinal order of root-relative path (<c>0001-F6</c> B-008, decision 0011; item 0009).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtModelReaderUnitTests
@@ -125,5 +125,31 @@ public sealed class SpechtModelReaderUnitTests
         new DuplicateIdentityRule().Evaluate(model).Select(static finding => finding.Expected!["firstDeclaration"]!.GetValue<string>())
             .Should().Equal("docs/x/.spec/README.md", "docs/x/.spec/README.md");
         model.DependencyGraph.DependsOn["0001-F1"].Should().BeEquivalentTo(["0001-F3"]);
+    }
+
+    [Fact]
+    public void AnItemIdReusedBesideASpecificationAndBelowItsDirectory_WhenLoaded_ShouldReportSpec044OnTheLaterPathAndDeclareTheEarlierFirst()
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}"),
+                [Path.Combine("repo", "epics", "0001-e", "F1-f", "spec.md")] = new("---\nepic: \"0001\"\nid: F1\n---\n"),
+                [Path.Combine("repo", "epics", "0001-e", "F1-f", "0001-01-a.md")] = new("---\nid: \"0001-01\"\n---\n"),
+                [Path.Combine("repo", "epics", "0001-e", "F1-f", "G1-g", "spec.md")] = new("---\nepic: \"0001\"\nid: G1\n---\n"),
+                [Path.Combine("repo", "epics", "0001-e", "F1-f", "G1-g", "0001-01-b.md")] = new("---\nid: \"0001-01\"\n---\n"),
+            });
+        var root = fileSystem.Path.GetFullPath("repo");
+        var reader = EngineServices.Reader(fileSystem);
+
+        // When
+        var model = reader.Read(root, null);
+
+        // Then
+        new ItemSequenceRule().Evaluate(model)
+            .Where(static finding => finding.Expected?["firstDeclaration"] is not null)
+            .Select(static finding => (finding.File, finding.Expected!["firstDeclaration"]!.GetValue<string>()))
+            .Should().Equal(("epics/0001-e/F1-f/G1-g/0001-01-b.md", "epics/0001-e/F1-f/0001-01-a.md"));
     }
 }
