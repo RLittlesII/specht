@@ -1,0 +1,31 @@
+id: "0427"
+type: bug
+title: Group related NuGet packages in Renovate
+
+status: done
+risk: 2
+parent: "0072"
+children: []
+depends_on: ["0426"]
+spikes: []
+
+spec: .github/.spec/README.md
+claims: [B-001, B-003, B-004, B-008, B-012]
+
+created: "2026-11-09"
+updated: "2026-11-09"
+closed: "2026-11-09"
+
+summary: |
+  Pull request 809 combines unrelated NuGet updates from Directory.Packages.props.
+  Use explicit package families for minor and patch grouping.
+
+acceptance_criteria:
+  - "Validate package family boundaries and independent updates in a Renovate dry run."
+  - "Verify the SDK, local tool and major update rules and the engine hold."
+
+decisions:
+  - "2026-11-09, owner: group NuGet packages by related family, including CodeAnalysis, Rocket.Surgery and xUnit v3."
+
+out_of_scope:
+  - "Workflow generation, GitHub Actions updates, scheduling and credentials."
