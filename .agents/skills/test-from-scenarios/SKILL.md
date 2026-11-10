@@ -65,6 +65,15 @@ Where bugs actually live: differs and derivations, converters and mappers,
 anything time-derived, boundaries and seams, redaction, deduplication, and the
 translation between an external format and the domain.
 
+## Each shape that crosses a real boundary
+
+A test against a real dependency - a program the code starts, a library it
+hands arguments - runs every distinct shape of input the code builds for it,
+not one representative. A dependency's defect can hang on a shape, such as a
+leading literal or a second entry, and a pass on one shape says nothing of
+another. A recorded double pins what the code sends, not what the dependency
+does with it.
+
 ## Never add
 
 - A test that reaches the network or needs a credential.
@@ -74,3 +83,5 @@ translation between an external format and the domain.
 - Recorded real traffic as a fixture.
 - A test that exists only to raise a coverage number.
 - A green coverage signal for a test that does not exist.
+- A real-dependency test that runs one input shape where the code builds
+  several.
