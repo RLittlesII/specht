@@ -296,6 +296,19 @@ Feature: Id generation
     When an ADR number is requested
     Then nothing is written on standard output
 
+  @B-052 @boundary
+  Scenario Outline: Nothing is written for a number of attempts that is not a positive whole number
+    Given a manifest that opts ADR numbers in to Nano ID with a number of attempts of <attempts>
+    When an ADR number is requested
+    Then nothing is written on standard output
+
+    Examples:
+      | attempts           |
+      | 0                  |
+      | -3                 |
+      | 2.5                |
+      | "8", given as text |
+
   @B-038
   Scenario: An ADR number is checked against every ADR folder
     Given a manifest that opts ADR numbers in to Nano ID

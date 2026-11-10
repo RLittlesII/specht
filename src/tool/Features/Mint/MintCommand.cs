@@ -38,8 +38,10 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
 
         try
         {
-            var manifest = reader.ReadManifestDocument(Path.GetFullPath(settings.Root));
-            await console.Profile.Out.Writer.WriteLineAsync(minter.Mint(manifest.Document, settings.Type));
+            var root = Path.GetFullPath(settings.Root);
+            var manifest = reader.ReadManifestDocument(root);
+            var id = minter.Mint(manifest.Document, settings.Type, root, manifest.Structure.Discovery.Exclusions);
+            await console.Profile.Out.Writer.WriteLineAsync(id);
             return ExitCodes.Success;
         }
         catch (SpechtRootNotFoundException)
