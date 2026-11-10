@@ -1,0 +1,35 @@
+id: "0432"
+type: chore
+title: Move to the released .NET 11 SDK
+status: done
+value: 2
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-10"
+updated: "2026-11-10"
+closed: "2026-11-10"
+summary: |
+  .NET 11 reached general availability on 2026-11-10. global.json still
+  pinned the release-candidate SDK 11.0.100-rc.3.26522.148 with
+  allowPrerelease true, the cost decision 0011 of 0001-F2 accepted until
+  release. global.json now pins the released 11.0.100 with rollForward
+  latestFeature and allowPrerelease false. The key is set to false
+  explicitly because, omitted, it defaults to true outside Visual Studio,
+  and latestFeature could then roll to a later preview feature band. No
+  package reference was on a release candidate. 0001-F2 § 7 "The SDK" is
+  rewritten as built.
+acceptance_criteria:
+  - global.json pins the released SDK 11.0.100, with rollForward latestFeature and allowPrerelease false, so no prerelease SDK is selected.
+  - The default build (Compile, CodeAnalysis, Test) passes on that SDK.
+  - Continuous integration installs the SDK from global.json through the existing global-json-file input, with no change to a generated workflow.
+  - "No .feature change needed: dependency bump; both target frameworks and every verdict are unchanged. Preserved: 0001-F2 B-045."
+decisions: []
+out_of_scope:
+  - Moving package references to 11.x versions.
+  - Changing the target frameworks; 0001-F2 § 5 rows 28 and 29 exclude it.
+  - Gate 3 of ADR-0009, dropping the net10.0 long-term-support target (0001-F2 § 5 row 29).
