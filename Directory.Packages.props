@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Mcp">
-    <PackageVersion Include="ModelContextProtocol" Version="2.2.0" />
+    <PackageVersion Include="ModelContextProtocol" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup Label="Build">
