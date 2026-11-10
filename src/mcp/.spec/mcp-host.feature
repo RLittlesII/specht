@@ -300,3 +300,16 @@ Feature: The MCP host
     When its packages are published
     Then the MCP package is published to nuget.org with the tool and analysis packages
     And the three carry the repository release version
+
+  @B-040
+  Scenario: A cancelled call ends cancelled
+    Given a client has called the check tool and the tool is still running
+    When the client cancels the call
+    Then the call ends as cancelled
+
+  @B-041
+  Scenario: A cancelled call leaves no program running
+    Given a client has called the check tool and the tool is still running
+    And the tool has started a program of its own
+    When the client cancels the call
+    Then neither the tool nor the program it started is still running
