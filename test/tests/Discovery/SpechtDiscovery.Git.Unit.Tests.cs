@@ -9,8 +9,9 @@ namespace Specht.Tests.Discovery;
 /// Discovery inside a git work tree asks git for the file list and walks otherwise (<c>0001-F6</c> B-005, B-006, B-010, C-1,
 /// C-2, C-3; item 0008). The file system is a <see cref="MockFileSystem"/> holding a <c>.git</c> where a row puts one, and git is a
 /// child process that records each start and answers a canned <c>-z</c> listing, or nothing when it cannot be started.
-/// Over one tree both modes give the same specifications, items, epics and companions, and the specifications in one ordinal
-/// order of root-relative path across every layout (<c>0001-F6</c> B-007, B-008; item 0009).
+/// Over one tree both modes give the same specifications, items, epics and companions, the specifications in one ordinal
+/// order of root-relative path across every layout, and the child items in one ordinal flat list where one specification
+/// sits below another's directory (<c>0001-F6</c> B-007, B-008, decision 0011; item 0009).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtDiscoveryGitUnitTests
@@ -206,6 +207,46 @@ public sealed class SpechtDiscoveryGitUnitTests
         // Then
         git.Calls.Should().HaveCount(workTree ? 1 : 0, because);
         discovered.Should().Equal(["a/.spec/README.md", "epics/0001-e/F1-f/spec.md", "src/b/.spec/README.md"], because);
+    }
+
+    [Theory]
+    [InlineData("no .git at the root is outside a work tree, so the tree is walked", false)]
+    [InlineData("a .git directory at the root is a work tree, so git lists it", true)]
+    public void ASpecificationBelowAnothersDirectoryEachWithAnItem_WhenChildItemsAreFoundInEitherMode_ShouldListThemInOneOrdinalOrder(
+        string because,
+        bool workTree)
+    {
+        // Given
+        string[] tracked =
+        [
+            SpechtTree.ManifestPath,
+            "epics/0001-e/F1-f/0001-01-do.md",
+            "epics/0001-e/F1-f/G1-g/0001-02-do.md",
+            "epics/0001-e/F1-f/G1-g/spec.md",
+            "epics/0001-e/F1-f/spec.md",
+        ];
+        var files = tracked.ToDictionary(
+            static path => $"{Root}/{path}",
+            static path => new MockFileData(path == SpechtTree.ManifestPath ? "{}" : string.Empty));
+        if (workTree)
+        {
+            files[$"{Root}/.git"] = new MockDirectoryData();
+        }
+
+        var fileSystem = new MockFileSystem(files);
+        var git = new CannedGit(new ChildProcessResult(0, string.Concat(tracked.Select(static path => path + "\0"))));
+        var structure = EngineServices.Manifest(fileSystem, Root);
+        var discovery = new SpechtDiscovery(fileSystem, git);
+        var specifications = discovery.FindSpecifications(Root, structure.Discovery);
+
+        // When
+        var items = discovery.FindChildItems(Root, specifications, structure.Discovery, structure.Identifiers["task"]);
+
+        // Then
+        git.Calls.Should().HaveCount(workTree ? 1 : 0, because);
+        specifications.Select(static location => location.RelativePath).Should().Equal(
+            ["epics/0001-e/F1-f/G1-g/spec.md", "epics/0001-e/F1-f/spec.md"], because);
+        items.Should().Equal(["epics/0001-e/F1-f/0001-01-do.md", "epics/0001-e/F1-f/G1-g/0001-02-do.md"], because);
     }
 
     [Fact]

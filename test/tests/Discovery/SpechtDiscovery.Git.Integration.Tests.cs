@@ -8,8 +8,9 @@ namespace Specht.Tests.Discovery;
 /// <summary>
 /// Discovery over a <see cref="SpechtTree"/> that a real <c>git</c> has made a work tree, in a temporary directory outside
 /// every other one (<c>0001-F6</c> B-005, B-010; item 0008); an epic file in it is found through git as the walk finds it,
-/// and a test-file glob with a leading directory lists nothing under an excluded one (<c>0001-F6</c> B-007, B-010; item
-/// 0009). The child process is the production one, wrapped so a test can read what each git listing returned.
+/// and a test-file glob with a leading directory, or with a first character a glob pathspec reads as special, lists its
+/// tracked file and nothing under an excluded one (<c>0001-F6</c> B-007, B-010; item 0009). The child process is the
+/// production one, wrapped so a test can read what each git listing returned.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtDiscoveryGitIntegrationTests
@@ -79,6 +80,37 @@ public sealed class SpechtDiscoveryGitIntegrationTests
         inputs.Exclusions.Should().Contain("obj");
         git.Results.Should().ContainSingle().Which!.ExitCode.Should().Be(0);
         discovered.Should().Equal("test/u/a.cs");
+    }
+
+    [Theory]
+    [ClassData(typeof(GlobHeads))]
+    public void AGlobWhoseFirstCharacterIsSpecialToGit_WhenTestFilesAreListedThroughGit_ShouldListItsTrackedFileAndNoneUnderAnExcludedDirectory(
+        string because,
+        string directory)
+    {
+        // Given
+        if (directory.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+        {
+            Assert.Skip("This file system cannot name the directory " + directory + ".");
+        }
+
+        using var tree = new SpechtTree();
+        tree.WriteRaw($"{directory}/a.md", string.Empty);
+        tree.WriteRaw($"{directory}/obj/b.md", string.Empty);
+        tree.WriteRaw($"{directory}/obj/c.md", string.Empty);
+        LocalGit.Run(tree.Root, "init", "--quiet");
+        LocalGit.Run(tree.Root, "--literal-pathspecs", "add", $"{directory}/a.md", $"{directory}/obj/b.md");
+        var fileSystem = new FileSystem();
+        var inputs = EngineServices.Manifest(fileSystem, tree.Root).Discovery;
+        var git = new RecordingChildProcess();
+
+        // When
+        var discovered = new SpechtDiscovery(fileSystem, git).FindTestFiles(tree.Root, [$"{directory}/**/*.md"], inputs.Exclusions);
+
+        // Then
+        inputs.Exclusions.Should().Contain(["/.spec", "obj"], because);
+        git.Results.Should().ContainSingle(because).Which!.ExitCode.Should().Be(0, because);
+        discovered.Should().Equal([$"{directory}/a.md"], because);
     }
 
     [Fact]
