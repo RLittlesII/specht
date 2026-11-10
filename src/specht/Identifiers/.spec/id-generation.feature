@@ -18,10 +18,16 @@ Feature: Id generation
       | opts only lesson numbers in |
 
   @B-002 @boundary
-  Scenario: A type not opted in is refused
-    Given a manifest that opts only lesson numbers in
+  Scenario Outline: A type not opted in is refused
+    Given a manifest that <leaves ADR numbers out>
     When an ADR number is requested
     Then the request ends as it does for something named on the command line that is not found
+
+    Examples:
+      | leaves ADR numbers out                                 |
+      | opts only lesson numbers in                            |
+      | lists ADR numbers without a strategy                   |
+      | lists ADR numbers with a number in place of a strategy |
 
   @B-003
   Scenario: A minted id is the whole output
