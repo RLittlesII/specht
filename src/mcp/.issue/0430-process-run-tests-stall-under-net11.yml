@@ -41,7 +41,11 @@ summary: |
   `src/mcp/.spec/lessons/0001-a-tree-kill-that-stops-first-stalls-the-host.md`.
 
   The item delivers `0132-F3` B-040 and B-041, what a cancelled call does,
-  so it sits beside that Feature's specification.
+  so it sits beside that Feature's specification. At the coordinating
+  session's request it also delivers `0055-F2` B-027, a `build` job of the
+  `ci` and `main` workflows cancelled once it has run for 45 minutes, so a
+  hung job frees its pool runner instead of holding it until cancelled by
+  hand.
 
   Value 4: the pull-request build cannot finish while the step stalls, and a
   48-minute stall holds a runner. Risk 3: a production change to how the
@@ -55,7 +59,8 @@ acceptance_criteria:
   - "The cancel test depends on neither a blocking FIFO open nor an extra `mkfifo` process."
   - "CI passes the net11.0 Integration Test step, and the step ends on its own."
   - "`0132-F3` B-017 still holds."
-  - "§ 9 carries a row naming a test for each id above."
+  - "`0055-F2` B-027 — a `build` job still running at 45 minutes is cancelled, freeing its runner"
+  - "§ 9 of `0132-F3` carries a row naming a test for B-040 and B-041; `0055-F2` B-027's row stays `Missing` under that Feature's ruling that CI has no tests (its § 8)."
 
 decisions:
   - |
@@ -92,9 +97,18 @@ decisions:
     0426 and other open branches held 0427 to 0429, and its claims B-036 and
     B-037 to B-040 and B-041, because `main`'s item 0425 took B-036 to B-039
     in `0132-F3` § 3. No claim text changes.
+  - |
+    2026-11-09, coordinator (requested), not an owner decision: the item
+    also delivers `0055-F2` B-027. On 2026-11-09 two of the pool's three
+    runners sat in hung `build` jobs, this item's stall, for 80 to 100
+    minutes until cancelled by hand, with 8 runs queued. The build now
+    generates `timeout-minutes: 45` on the `build` job of `ci.yml` and
+    `main.yml` (`LimitBuildJobTime`, `TimeLimitedJob`), about 1.7 times the
+    longest recent successful job, 27.1 minutes. The limit awaits the
+    owner's ratification (`0055-F2` OQ-6).
 
 out_of_scope:
   - "Changing `global.json`'s SDK pin or roll-forward policy."
-  - "Any production change beyond ending a cancelled run on macOS and Linux (B-040, B-041)."
+  - "Any production change beyond ending a cancelled run on macOS and Linux (B-040, B-041); the build-job time limit is build configuration (`0055-F2` B-027)."
   - "A program the cancelled call's tree starts after the cancellation (`0132-F3` § 5 row 20)."
   - "Masking the stall by skipping a test or removing net11.0 from the Integration Test step."
