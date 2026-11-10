@@ -4,11 +4,11 @@ using System.Globalization;
 namespace Specht.Mcp.Features.PinnedTool;
 
 /// <summary>One <c>/proc/&lt;pid&gt;/stat</c> line on Linux, read for the parent process id it states.</summary>
-/// <implements epic="0132" feature="F3" claim="B-037" />
+/// <implements epic="0132" feature="F3" claim="B-041" />
 public sealed record ProcStatLine(string Text)
 {
     /// <summary>Gets the field after the state, taken after the last <c>)</c>, or null when the text ends before it.</summary>
-    /// <implements epic="0132" feature="F3" claim="B-037" />
+    /// <implements epic="0132" feature="F3" claim="B-041" />
     public int? Parent
     {
         get

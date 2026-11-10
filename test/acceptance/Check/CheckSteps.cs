@@ -223,6 +223,17 @@ public sealed partial class CheckSteps
     [Then("the output names the root option and the strict option")]
     public void ThenTheOutputNamesTheRootOptionAndTheStrictOption() => _stdout.Should().Contain("--root").And.Contain("--strict");
 
+    [Then("the ASCII Specht wordmark appears above the usage on standard output")]
+    public void ThenTheHelpOpensWithTheSpechtWordmark() =>
+        SgrEscape().Replace(_stdout, string.Empty).ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(6).Should().Equal(
+            " ####  ####   #####   ####  #   #  #####",
+            "#      #   #  #      #      #   #    #",
+            " ###   ####   ####   #      #####    #",
+            "    #  #      #      #      #   #    #",
+            "####   #      #####   ####  #   #    #",
+            "USAGE:"
+        );
+
     [Then("the output names the version option")]
     public void ThenTheOutputNamesTheVersionOption() => _stdout.Should().Contain("--version");
 
@@ -325,6 +336,9 @@ public sealed partial class CheckSteps
 
     [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3,4}): \S.*$")]
     private static partial Regex Diagnostic();
+
+    [GeneratedRegex(@"\e\[[0-9;]*m")]
+    private static partial Regex SgrEscape();
 
     private static string[] Lines(string output) =>
         output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

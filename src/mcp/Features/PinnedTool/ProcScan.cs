@@ -6,7 +6,7 @@ using System.IO;
 namespace Specht.Mcp.Features.PinnedTool;
 
 /// <summary>The children of every process on Linux, read in one scan of <c>/proc</c> when the object is made.</summary>
-/// <implements epic="0132" feature="F3" claim="B-037" />
+/// <implements epic="0132" feature="F3" claim="B-041" />
 internal sealed class ProcScan
 {
     public ProcScan()

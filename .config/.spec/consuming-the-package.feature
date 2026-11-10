@@ -18,11 +18,6 @@ Feature: Consuming the package
     When the local tools are restored
     Then the tool is available at the pinned version
 
-  @B-003
-  Scenario: This repository installs its own published tool
-    Given the first package has been published
-    Then this repository's committed tool manifest names the tool at a published version
-
   @B-007
   Scenario: A contributor without a token can build
     Given a clone of this repository after the first publish
@@ -30,12 +25,14 @@ Feature: Consuming the package
     When the solution is restored and built
     Then the build succeeds
 
-  @B-010
+  @B-003 @B-010
   Scenario: This repository installs its own tool from nuget.org
-    Given a version of the tool has been published to nuget.org
-    Then this repository's committed tool manifest names the tool at a version published there
+    Given a clone of this repository with its committed checker pin
+    And no credential for any package feed
+    When the local tools are restored
+    Then the tool is available at the pinned version
 
   @B-011 @boundary
   Scenario: This repository drops the authenticated feed
-    Given this repository's committed tool manifest names a version published to nuget.org
-    Then its committed package configuration names no GitHub Packages source
+    Given a clone of this repository after the first publish
+    Then its committed package configuration names only nuget.org

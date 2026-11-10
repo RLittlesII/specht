@@ -92,7 +92,7 @@ Feature: The MCP host
 
   @B-014
   Scenario: A request naming the supported revision is answered
-    Given a client asking for the protocol revision the server supports
+    Given a client asking for protocol revision 2026-07-28 in the request itself
     When the client sends a request
     Then the server answers it without a version error
 
@@ -129,7 +129,7 @@ Feature: The MCP host
 
   @B-019
   Scenario: An unsupported revision gets the unsupported-version error
-    Given a client asking for a protocol revision the server does not support
+    Given a client asking for a protocol revision the server does not support, in a request that is not an initialize request
     When the client sends a request
     Then the server answers with the protocol's unsupported-version error
 
@@ -253,11 +253,46 @@ Feature: The MCP host
     And it has one entry on updating the tool
 
   @B-032
-  Scenario: A legacy initialize request gets an error naming the revision
-    Given a client that opens with a legacy initialize request
+  Scenario: An initialize request naming 2026-07-28 gets an error naming the revision
+    Given a client that opens with an initialize request naming protocol revision 2026-07-28
     When the client sends it
     Then the server answers with an error
-    And the error names the protocol revision the server supports
+    And the error names that revision as one that has no initialize handshake
+
+  @B-036
+  Scenario Outline: A handshake for 2025-06-18 or 2025-11-25 is completed
+    Given a client that opens with an initialize request naming protocol revision <revision>
+    When the client sends it
+    Then the server answers with that revision, its capabilities and its identity
+
+    Examples:
+      | revision   |
+      | 2025-06-18 |
+      | 2025-11-25 |
+
+  @B-037
+  Scenario Outline: A handshake for 2024-11-05 or 2025-03-26 is completed
+    Given a client that opens with an initialize request naming protocol revision <revision>
+    When the client sends it
+    Then the server answers with that revision, its capabilities and its identity
+
+    Examples:
+      | revision   |
+      | 2024-11-05 |
+      | 2025-03-26 |
+
+  @B-038
+  Scenario: An initialize request naming a revision earlier than the oldest is answered with the newest handshake revision
+    Given a client that opens with an initialize request naming a protocol revision earlier than 2024-11-05
+    When the client sends it
+    Then the server answers with protocol revision 2025-11-25
+
+  @B-039
+  Scenario: An initialize request naming a revision later than 2026-07-28 gets an error naming the revision
+    Given a client that opens with an initialize request naming a protocol revision later than 2026-07-28
+    When the client sends it
+    Then the server answers with an error
+    And the error names that revision as one that has no initialize handshake
 
   @B-035
   Scenario: A repository release publishes the MCP package with the tool
@@ -266,13 +301,13 @@ Feature: The MCP host
     Then the MCP package is published to nuget.org with the tool and analysis packages
     And the three carry the repository release version
 
-  @B-036
+  @B-040
   Scenario: A cancelled call ends cancelled
     Given a client has called the check tool and the tool is still running
     When the client cancels the call
     Then the call ends as cancelled
 
-  @B-037
+  @B-041
   Scenario: A cancelled call leaves no program running
     Given a client has called the check tool and the tool is still running
     And the tool has started a program of its own

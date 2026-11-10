@@ -86,11 +86,10 @@ Feature: Release
     And no release is created
 
   @B-010
-  Scenario: A release reads the feed with its own token
-    Given this repository's tool manifest names a checker published only to the authenticated feed
-    When a version tag is pushed
-    Then the checker is restored with the run's own token
-    And no stored token is read
+  Scenario: A release restores the checker without credentials
+    Given this repository's tool manifest names a checker published to nuget.org
+    When a release or dry run builds
+    Then the checker is restored from nuget.org without a package-read credential
 
   @B-011 @boundary
   Scenario: A version tag off the main line publishes nothing

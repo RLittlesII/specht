@@ -89,4 +89,25 @@ public sealed class McpHostDiscoveryIntegrationTests
         answer.Should().NotBeNull(stderr);
         answer!["error"]?["code"]?.GetValue<int>().Should().NotBe(unsupportedProtocolVersion);
     }
+
+    [Theory]
+    [ClassData(typeof(HandshakeRevisions))]
+    public void ARequestInASessionOpenedAtAHandshakeRevision_WhenSent_ShouldNotBeAnsweredWithAVersionError(string revision)
+    {
+        // Given
+        const int unsupportedProtocolVersion = -32022;
+        using var tree = new SpechtTree();
+        using var session = AcceptanceTool.McpSession.Start(tree.Root);
+        session.Exchange(AcceptanceTool.McpInitialize(1, revision)).Should().NotBeNull();
+        session.Send(AcceptanceTool.McpInitialized());
+
+        // When
+        var line = session.Exchange(AcceptanceTool.McpSessionRequest(2, "tools/list"));
+
+        // Then
+        line.Should().NotBeNull();
+        var answer = AcceptanceTool.McpAnswer(line!, 2);
+        answer.Should().NotBeNull(line);
+        answer!["error"]?["code"]?.GetValue<int>().Should().NotBe(unsupportedProtocolVersion);
+    }
 }

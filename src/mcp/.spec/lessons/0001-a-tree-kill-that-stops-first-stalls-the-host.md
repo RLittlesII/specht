@@ -30,7 +30,7 @@ did not stop the stall: it still reproduced 1 of 11 locally.
 
 ## Spec delta
 
-`0132-F3` § 3: B-036, a cancelled call ends cancelled, and B-037, it leaves
+`0132-F3` § 3: B-040, a cancelled call ends cancelled, and B-041, it leaves
 no program it started running, with their scenarios and § 9 rows; § 5 row 20
 excludes a program started after the cancellation.
 
@@ -44,6 +44,6 @@ the cancel test's tree is one level deep, a shell and its `sleep`.
 
 ## Claim
 
-`0132-F3` B-036 and B-037 — § 9, through the process boundary beneath them,
+`0132-F3` B-040 and B-041 — § 9, through the process boundary beneath them,
 `AProgramThatIsRunning_WhenTheRunIsCancelled_ShouldThrowCancelledAndLeaveNoProgramAlive`.
 The test is bounded, uses no FIFO, and fails if a descendant is not killed.

@@ -8,7 +8,7 @@ value: 4
 risk: 4
 
 parent: "0055"
-children: ["0073", "0074"]
+children: ["0073", "0074", "0426"]
 
 depends_on: []
 spikes: []
@@ -35,7 +35,7 @@ claims:
   - B-017
 
 created: "2026-10-08"
-updated: "2026-10-28"
+updated: "2026-11-09"
 closed: null
 
 summary: |
@@ -56,7 +56,7 @@ acceptance_criteria:
   - "B-009 — workflow changes are regeneration only (0075)"
   - "B-010 — no GitHub issue (0073)"
   - "B-011 — label `dependencies` (0073)"
-  - "B-012 — one pull request per major (0076)"
+  - "B-012 — one pull request per .NET major (0426)"
   - "B-013 — action update carries the regenerated workflows (0075)"
   - "B-014 — NUKE update carries the regenerated workflows (0075)"
   - "B-015 — scheduled self-hosted Renovate run (0073)"

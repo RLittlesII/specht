@@ -8,7 +8,7 @@ namespace Specht.Tests.Mcp;
 /// <summary>
 /// Holds <see cref="SystemProcessRun"/> against real programs started with <c>sh</c>: what a program writes and how it ends comes
 /// back as it was, a program never reads the session's standard input, and a program that does not exist is none (0132-F3 B-017);
-/// a cancelled run ends cancelled and leaves neither the program nor the program it started alive (0132-F3 B-036, B-037). The
+/// a cancelled run ends cancelled and leaves neither the program nor the program it started alive (0132-F3 B-040, B-041). The
 /// cancelled run waits for the file of process ids on an event of its directory, bounded by the test's token.
 /// </summary>
 [Trait("Tier", "Integration")]

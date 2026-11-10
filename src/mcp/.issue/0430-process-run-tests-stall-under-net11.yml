@@ -1,4 +1,4 @@
-id: "0426"
+id: "0430"
 type: bug
 title: The process-run integration tests stall the net11.0 step
 
@@ -15,10 +15,10 @@ spikes: []
 
 spec: src/mcp/.spec/README.md
 
-claims: [B-036, B-037]
+claims: [B-040, B-041]
 
 created: "2026-11-08"
-updated: "2026-11-08"
+updated: "2026-11-09"
 closed: null
 
 summary: |
@@ -40,7 +40,7 @@ summary: |
   design are `0132-F3` § 7, "Ending a cancelled run", and the incident is
   `src/mcp/.spec/lessons/0001-a-tree-kill-that-stops-first-stalls-the-host.md`.
 
-  The item delivers `0132-F3` B-036 and B-037, what a cancelled call does,
+  The item delivers `0132-F3` B-040 and B-041, what a cancelled call does,
   so it sits beside that Feature's specification.
 
   Value 4: the pull-request build cannot finish while the step stalls, and a
@@ -49,8 +49,8 @@ summary: |
   scan on Linux, where no CI runner runs Linux.
 
 acceptance_criteria:
-  - "B-036 — a cancelled call ends cancelled"
-  - "B-037 — no program of a cancelled call left running"
+  - "B-040 — a cancelled call ends cancelled"
+  - "B-041 — no program of a cancelled call left running"
   - "Every test in `SystemProcessRunIntegrationTests` is bounded, so a stuck start fails that test instead of stalling the step."
   - "The cancel test depends on neither a blocking FIFO open nor an extra `mkfifo` process."
   - "CI passes the net11.0 Integration Test step, and the step ends on its own."
@@ -82,13 +82,19 @@ decisions:
   - |
     2026-11-08, spec-author, on the round-8 review of `0132-F3`: the item
     delivers a Feature claim, so it moves from the root `.issue/` to
-    `src/mcp/.issue/`, with `spec:` the Feature and `claims:` B-036 and
-    B-037, added to `0132-F3` § 3. The rework asked for one claim; its text
+    `src/mcp/.issue/`, with `spec:` the Feature and `claims:` B-040 and
+    B-041, added to `0132-F3` § 3. The rework asked for one claim; its text
     carried two assertions, the call ending and no program left running, so
     it is split. Risk is rescored 2 to 3 for the production change.
+  - |
+    2026-11-09, spec-author, on merging `main`: an id collision fix, not an
+    owner decision. The item is renumbered 0426 to 0430, because `main` took
+    0426 and other open branches held 0427 to 0429, and its claims B-036 and
+    B-037 to B-040 and B-041, because `main`'s item 0425 took B-036 to B-039
+    in `0132-F3` § 3. No claim text changes.
 
 out_of_scope:
   - "Changing `global.json`'s SDK pin or roll-forward policy."
-  - "Any production change beyond ending a cancelled run on macOS and Linux (B-036, B-037)."
+  - "Any production change beyond ending a cancelled run on macOS and Linux (B-040, B-041)."
   - "A program the cancelled call's tree starts after the cancellation (`0132-F3` § 5 row 20)."
   - "Masking the stall by skipping a test or removing net11.0 from the Integration Test step."

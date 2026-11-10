@@ -6,7 +6,7 @@ namespace Specht.Tests.Mcp;
 /// <summary>
 /// Holds the order a cancelled run's descendants are killed in, over trees given as a delegate from a process to its children, with
 /// no process started: every program the run started, directly or through another program, taken in one walk and each before its
-/// ancestors, the run's own program excluded (0132-F3 B-037).
+/// ancestors, the run's own program excluded (0132-F3 B-041).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class ProcessTreeUnitTests
