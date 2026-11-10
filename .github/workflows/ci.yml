@@ -34,6 +34,9 @@ permissions:
   repository-projects: none
   security-events: none
   statuses: none
+concurrency:
+  group: '${{ github.workflow }}-${{ github.ref }}'
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -148,3 +151,4 @@ jobs:
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target ContinuousIntegration --skip Build
+    timeout-minutes: 45
