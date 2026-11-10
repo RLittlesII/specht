@@ -2,7 +2,7 @@ id: "0009"
 type: test
 title: Prove both discovery modes find the same files in the same order
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-11-10"
-closed: null
+closed: "2026-11-10"
 
 summary: |
   The C-3 contract: on a clean checkout, the walk and the git listing yield
