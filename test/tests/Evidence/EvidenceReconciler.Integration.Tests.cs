@@ -7,7 +7,7 @@ namespace Specht.Tests.Evidence;
 /// <summary>
 /// Several projects' runs, the incomplete-run finding, the undiscovered bound method and the steps a missing or stale
 /// input names (0201-F3 B-014, B-018, B-021, B-022, B-026; OQ-4, OQ-5) and the owned-key and planned-row gate
-/// (0201-F5 B-017 to B-022), native Gherkin claims (B-028 to B-035) and the declared projects that need an export
+/// (0201-F5 B-017 to B-022), native Gherkin claims (B-028 to B-035, B-039 to B-044) and the declared projects that need an export
 /// (B-011, B-022, B-036, B-037).
 /// </summary>
 [Trait("Tier", "Integration")]
@@ -576,6 +576,29 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
         Kinds(result.Report).Should().NotContain("missingRequiredLink");
     }
 
+    [Theory]
+    [ClassData(typeof(CurrentClaimFileSetRecords))]
+    public void AClaimFileSetWithNoRecordOrACurrentRecord_WhenReconciled_ShouldSelectItsNativeClaims(string? lifecycle)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        if (lifecycle is null)
+        {
+            Native.Configure(static analysis => analysis["records"]!["claimFileSets"]![0]!.AsObject().Remove("record"));
+        }
+        else
+        {
+            Native.Write("src/read/.spec/README.md", "---\nid: cap:read\nspec_status: " + lifecycle + "\n---\n# Read\n");
+        }
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        ClaimIds(result.Report).Should().Equal("need/7");
+        Kinds(result.Report).Should().NotContain("invalidInput");
+    }
+
     [Fact]
     public void ANativeClaimDeclaredOnAScenario_WhenReconciled_ShouldLocateItAtTheClaimFileAndTheScenarioKeywordLine()
     {
@@ -668,6 +691,98 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
         var manifest = Path.Combine(Native.Root, ".specht", "manifest.json");
         var configuration = JsonNode.Parse(File.ReadAllText(manifest))!.AsObject();
         configuration["exclusions"] = new JsonArray("obj");
+        File.WriteAllText(manifest, configuration.ToJsonString());
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.ExitCode.Should().Be(3);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
+            && finding["path"]!.GetValue<string>() == ".specht/manifest.json");
+    }
+
+    [Fact]
+    public void AClaimFileTwoClaimFileSetsMatch_WhenReconciled_ShouldFailAsInvalidInputNamingThatClaimFile()
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        Native.Configure(static analysis =>
+        {
+            analysis["features"]!.AsArray().Add(new JsonObject { ["feature"] = "cap:list" });
+            analysis["records"]!["claimFileSets"]!.AsArray().Add(new JsonObject { ["glob"] = "src/read/.spec/*.feature", ["feature"] = "cap:list" });
+        });
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.ExitCode.Should().Be(3);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
+            && finding["path"]!.GetValue<string>() == NativeClaimEvidenceRoot.ClaimFile);
+    }
+
+    [Fact]
+    public void AClaimFileSetNamingAFeatureRecordThatCannotBeRead_WhenReconciled_ShouldFailAsInvalidInputNamingThatRecord()
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        Native.Configure(static analysis => analysis["records"]!["claimFileSets"]![0]!["record"] = "src/read/.spec/missing.md");
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.ExitCode.Should().Be(3);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
+            && finding["path"]!.GetValue<string>() == "src/read/.spec/missing.md");
+    }
+
+    [Theory]
+    [ClassData(typeof(ForeignScopeTags))]
+    public void AClaimFileWhoseFeatureOrEpicTagNamesAnotherIdentity_WhenReconciled_ShouldFailAsInvalidInputNamingThatClaimFile(string tag)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, tag + "\n" + BoundClaimFile);
+        Native.Configure(static analysis =>
+        {
+            analysis["scenarioScopes"] = new JsonObject { ["featureTag"] = "@feature:{feature}", ["epicTag"] = "@epic:{epic}" };
+            analysis["features"]![0]!["epic"] = "ep1";
+            analysis["records"]!["claimFileSets"]![0]!["epic"] = "ep1";
+        });
+        var manifest = Path.Combine(Native.Root, ".specht", "manifest.json");
+        var configuration = JsonNode.Parse(File.ReadAllText(manifest))!.AsObject();
+        configuration["idPatterns"]!["epic"] = "^ep[0-9]+$";
+        File.WriteAllText(manifest, configuration.ToJsonString());
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        result.ExitCode.Should().Be(3);
+        result.Report["findings"]!.AsArray().Should().Contain(static finding => finding!["kind"]!.GetValue<string>() == "invalidInput"
+            && finding["path"]!.GetValue<string>() == NativeClaimEvidenceRoot.ClaimFile);
+    }
+
+    [Theory]
+    [ClassData(typeof(RejectedClaimInputManifests))]
+    public void AManifestWhoseClaimInputTheEvidencePolicyRejects_WhenReconciled_ShouldFailAsInvalidInputNamingTheManifest(string parent, string key,
+        string? value)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        var manifest = Path.Combine(Native.Root, ".specht", "manifest.json");
+        var configuration = JsonNode.Parse(File.ReadAllText(manifest))!.AsObject();
+        var owner = parent.Split('/').Aggregate((JsonNode) configuration, static (node, name) => node[name]!).AsObject();
+        if (value is null)
+        {
+            owner.Remove(key);
+        }
+        else
+        {
+            owner[key] = JsonNode.Parse(value);
+        }
+
         File.WriteAllText(manifest, configuration.ToJsonString());
 
         // When

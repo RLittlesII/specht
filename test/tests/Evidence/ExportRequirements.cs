@@ -11,5 +11,7 @@ public sealed class ExportRequirements : TheoryData<string?, string?, string?, b
         Add(null, null, null, false);
         Add(null, "implements", "test/tests.csproj", false);
         Add(null, "verifies", "test/other.csproj", false);
+        Add(null, null, "test/tests.csproj", false);
+        Add(null, "verifies", null, false);
     }
 }

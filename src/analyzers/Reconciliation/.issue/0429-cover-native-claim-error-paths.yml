@@ -1,0 +1,69 @@
+id: "0429"
+type: test
+title: Cover the native claim error paths of specht evidence
+
+status: done
+
+value: 2
+risk: 1
+
+parent: null
+children: []
+
+depends_on: ["0409"]
+spikes: []
+
+spec: src/analyzers/Reconciliation/.spec/README.md
+
+claims:
+  - B-011
+  - B-028
+  - B-030
+  - B-035
+  - B-036
+  - B-038
+  - B-039
+  - B-040
+  - B-041
+  - B-042
+  - B-043
+  - B-044
+
+created: "2026-11-08"
+updated: "2026-11-09"
+closed: "2026-11-09"
+
+summary: |
+  Item 0409 (commit b74b0a90) added native Gherkin claim reading to
+  `specht evidence`. Its pull request merged with the Codecov patch check
+  at 76.6% against the 80% target: the error paths it added to
+  `EvidencePolicy`, `EvidenceReconciler.ReadNativeClaims` and
+  `RepositoryPaths` were never exercised. This item adds unit and
+  integration tests under `test/tests/Evidence/` for those branches, each
+  tied to the 0201-F5 claim it proves, and updates § 8 and § 9 where a test
+  is added. Risk 1: tests over code that already works, no production
+  change.
+
+acceptance_criteria:
+  - "Every branch b74b0a90 added to EvidencePolicy.cs, EvidenceReconciler.cs and RepositoryPaths.cs that the coverage report shows unexercised has a test, or § 8 names why it has none."
+  - "Each new test names the 0201-F5 claim it pins, and § 9 names it in that claim's row."
+  - "No file under src/ other than the specification changes; a test that exposes wrong behaviour is reported, not fixed here."
+  - "./build.sh is green and the Codecov patch check passes."
+
+decisions:
+  - |
+    2026-11-09, spec-author: the repository owner, asked "Should spec-author
+    amend 0201-F5 so the three unstated branches can be tested?", answered
+    "Amend the spec". 0201-F5 B-039 to B-041 state the three branches as new
+    claims (0201-F5 § 10, 2026-11-09).
+  - |
+    2026-11-09, spec-author: the repository owner, asked "Add a claim for
+    the malformed-key rejections, or drop those test rows?", answered "Add a
+    claim". 0201-F5 B-042 to B-044 state the malformed native claim keys,
+    the malformed claim file set entries and the Markdown manifest with no
+    claims section (0201-F5 § 10, 2026-11-09).
+
+out_of_scope:
+  - "Production code changes; a defect a test exposes becomes its own bug item."
+  - "Claims beyond 0201-F5 B-039 to B-044; any other branch no claim states is reported in 0201-F5 § 8, not claimed here."
+  - "A non-string featureTag or epicTag, which EvidencePolicy.Scope ignores against 0201-F5 § 7; it is a defect for its own bug item."
