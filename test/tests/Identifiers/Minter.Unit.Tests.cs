@@ -1,6 +1,9 @@
+using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Discovery;
 using Specht.Identifiers;
+using Specht.Tests.Discovery;
 using Specht.Tests.Mint;
 
 namespace Specht.Tests.Identifiers;
@@ -36,11 +39,11 @@ public sealed class MinterUnitTests
               }
             }
             """)!.AsObject();
-        var minter = new Minter(new FixedRandomSource(1));
+        var minter = new Minter(new FixedRandomSource(1), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())));
 
         // When
-        var adr = minter.Mint(manifest, "adr");
-        var lesson = minter.Mint(manifest, "lesson");
+        var adr = minter.Mint(manifest, "adr", ".", []);
+        var lesson = minter.Mint(manifest, "lesson", ".", []);
 
         // Then
         adr.Should().Be("bb");
@@ -82,10 +85,10 @@ public sealed class MinterUnitTests
             manifest["mint"]!["adr"]!["nanoid"] = JsonNode.Parse(nanoid);
         }
 
-        var minter = new Minter(new FixedRandomSource(1, 0));
+        var minter = new Minter(new FixedRandomSource(1, 0), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())));
 
         // When
-        var id = minter.Mint(manifest, "adr");
+        var id = minter.Mint(manifest, "adr", ".", []);
 
         // Then
         id.Should().Be(expected);
@@ -111,7 +114,8 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mintAdr = () => new Minter(random).Mint(manifest, "adr");
+        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+            .Mint(manifest, "adr", ".", []);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
@@ -136,7 +140,8 @@ public sealed class MinterUnitTests
         }
 
         // When
-        var mintAdr = () => new Minter(new FixedRandomSource(0)).Mint(manifest, "adr");
+        var mintAdr = () => new Minter(new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+            .Mint(manifest, "adr", ".", []);
 
         // Then
         mintAdr.Should().Throw<IdNotOptedInException>();
@@ -158,7 +163,8 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mintAdr = () => new Minter(random).Mint(manifest, "adr");
+        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+            .Mint(manifest, "adr", ".", []);
 
         // Then
         mintAdr.Should().Throw<IdNotOptedInException>();
@@ -182,7 +188,8 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mintAdr = () => new Minter(random).Mint(manifest, "adr");
+        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+            .Mint(manifest, "adr", ".", []);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
@@ -198,7 +205,7 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mint = () => new Minter(random).Mint(document, type);
+        var mint = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()))).Mint(document, type, ".", []);
 
         // Then
         mint.Should().Throw<IdRefusedException>().Which.Should().NotBeOfType<IdNotOptedInException>();
@@ -224,7 +231,8 @@ public sealed class MinterUnitTests
         }
 
         // When
-        var id = new Minter(new FixedRandomSource(0)).Mint(manifest, "adr");
+        var id = new Minter(new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+            .Mint(manifest, "adr", ".", []);
 
         // Then
         id.Should().Be("zzz");

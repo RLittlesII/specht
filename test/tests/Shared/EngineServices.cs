@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
@@ -70,9 +71,9 @@ public static class EngineServices
     public static SchemaVersionManager Commands(SchemaVersions? versions = null) =>
         (SchemaVersionManager) Resolve(typeof(SchemaVersionManager), versions: versions);
 
-    /// <summary>Resolves a runner with the chosen catalog, over the supplied file system or the real one.</summary>
-    public static SpechtRunner Runner(SchemaVersions? versions = null, IFileSystem? fileSystem = null) =>
-        (SpechtRunner) Resolve(typeof(SpechtRunner), fileSystem, versions);
+    /// <summary>Resolves a runner with the chosen catalog, over the supplied file system and child process or the real ones.</summary>
+    public static SpechtRunner Runner(SchemaVersions? versions = null, IFileSystem? fileSystem = null, IChildProcess? childProcess = null) =>
+        (SpechtRunner) Resolve(typeof(SpechtRunner), fileSystem, versions, childProcess);
 
     /// <summary>Resolves the model reader over the supplied file system and catalog, or the real ones.</summary>
     public static SpechtModelReader Reader(IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
@@ -109,12 +110,17 @@ public static class EngineServices
     public static SpechtSchemas ReadDiskSchemas(IFileSystem fileSystem, string root) =>
         Reader(fileSystem).ReadSchemas(root, SchemaSourceSelection.Disk);
 
-    private static object Resolve(Type service, IFileSystem? fileSystem = null, SchemaVersions? versions = null)
+    private static object Resolve(Type service, IFileSystem? fileSystem = null, SchemaVersions? versions = null, IChildProcess? childProcess = null)
     {
         var services = new ServiceCollection();
         if (fileSystem is not null)
         {
             services.AddSingleton(fileSystem);
+        }
+
+        if (childProcess is not null)
+        {
+            services.AddSingleton(childProcess);
         }
 
         if (versions is not null)

@@ -19,8 +19,11 @@ namespace Specht.Acceptance.Identifiers;
 /// <remarks>
 /// A request (A-2, item <c>0415</c>) launches <c>specht mint &lt;type&gt; --root .</c>, with <c>--feature features/one</c> when
 /// it is made for a Feature, a co-located Feature written there. Only <c>adr</c> and <c>lesson</c> entries are written here,
-/// each with a grammar admitting what it mints (A-6), so the scenarios of other items' types, of Snowflake, of a prefix, an
-/// encoding or a number of attempts keep a step no binding matches and stay pending. "No ADR number is minted" is nothing on
+/// each with a grammar admitting what it mints (A-6), so the scenarios of other items' types, of Snowflake, of a prefix or an
+/// encoding keep a step no binding matches and stay pending. The built tool's draws are random, so an ADR the tree holds is
+/// written only where the entry's alphabet has one character and its one candidate is known (item <c>0416</c>): the guard's
+/// refusals, B-017's guard row, B-036 and B-037. The scenarios of B-034, B-035, B-038 and B-039 name a first or an eighth
+/// candidate of a random draw and keep a step no binding matches. "No ADR number is minted" is nothing on
 /// standard output and then an exit of <c>2</c>, <c>3</c> or <c>4</c> (A-8, B-017; OQ-11's default). The part of an id after
 /// its prefix is the line less the entry's <c>prefix</c>; <c>adr</c> and <c>lesson</c> have none under every answer to OQ-14.
 /// </remarks>
@@ -201,6 +204,48 @@ public sealed class IdGenerationSteps
         }
     }
 
+    [Given("^an ADR number requested of a tree holding every candidate it tries$")]
+    public void GivenAnAdrNumberRequestedOfATreeHoldingEveryCandidateItTries()
+    {
+        OptIn("adr", """{ "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } }""", "^z{3}$");
+        HoldEveryAdrCandidate();
+        _pending = ("adr", false);
+    }
+
+    [Given("^a manifest that opts ADR numbers in to Nano ID with no number of attempts$")]
+    public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithNoNumberOfAttempts() =>
+        OptIn("adr", """{ "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } }""", "^z{3}$");
+
+    [Given("^a manifest that opts ADR numbers in to Nano ID with (\\d+) attempts$")]
+    public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithAttempts(int attempts) =>
+        OptIn(
+            "adr",
+            new JsonObject
+            {
+                ["strategy"] = "nanoid",
+                ["nanoid"] = new JsonObject { ["alphabet"] = "z", ["size"] = 3 },
+                ["attempts"] = attempts,
+            }.ToJsonString(),
+            "^z{3}$");
+
+    [Given("^a manifest that opts ADR numbers in to Nano ID with a number of attempts of (.+)$")]
+    public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithANumberOfAttemptsOf(string attempts)
+    {
+        var text = Regex.Match(attempts, "^\"(.*)\", given as text$");
+        OptIn(
+            "adr",
+            new JsonObject
+            {
+                ["strategy"] = "nanoid",
+                ["nanoid"] = new JsonObject { ["alphabet"] = Base32, ["size"] = 8 },
+                ["attempts"] = text.Success ? JsonValue.Create(text.Groups[1].Value) : JsonNode.Parse(attempts),
+            }.ToJsonString(),
+            AnyId);
+    }
+
+    [Given("^ADRs already numbered with each of the first (?:eight|three) ADR numbers that would be minted$")]
+    public void GivenAdrsAlreadyNumberedWithEachOfTheFirstAdrNumbersThatWouldBeMinted() => HoldEveryAdrCandidate();
+
     [When("the tree is checked")]
     public void WhenTheTreeIsChecked() => _run = AcceptanceTool.Launch(Tree.Root, "--root", ".");
 
@@ -323,6 +368,18 @@ public sealed class IdGenerationSteps
 
         mint[type] = JsonNode.Parse(entry);
         WriteManifest(manifest);
+    }
+
+    private void HoldEveryAdrCandidate()
+    {
+        var nanoid = ReadManifest()["mint"]!["adr"]!["nanoid"]!;
+        var alphabet = nanoid["alphabet"]!.GetValue<string>();
+        if (alphabet.Length != 1)
+        {
+            throw new InvalidOperationException($"Only a one-character alphabet has known candidates, not '{alphabet}'.");
+        }
+
+        Tree.WriteRaw($".spec/adr/{new string(alphabet[0], nanoid["size"]!.GetValue<int>())}-held.md", "# Held\n");
     }
 
     private (string Type, (string Stdout, string Stderr, int ExitCode) Run) Request(string type, bool forFeature)

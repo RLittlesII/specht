@@ -26,7 +26,7 @@ public sealed class SpechtDiscoveryTestFilesUnitTests
         });
 
         // When
-        var selected = new SpechtDiscovery(files).FindTestFiles("repo", globs, exclusions);
+        var selected = new SpechtDiscovery(files, new UnexpectedChildProcess()).FindTestFiles("repo", globs, exclusions);
 
         // Then
         selected.Should().Equal(expected);
@@ -36,7 +36,7 @@ public sealed class SpechtDiscoveryTestFilesUnitTests
     public void NoDeclaredGlobs_WhenTestFilesAreListed_ShouldNotRequireARootDirectory()
     {
         // Given
-        var discovery = new SpechtDiscovery(new MockFileSystem());
+        var discovery = new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess());
 
         // When
         var files = discovery.FindTestFiles("repo", [], []);

@@ -36,7 +36,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<SpechtDocumentParser>();
         services.AddSingleton<FeatureTagParser>();
-        services.AddSingleton<SpechtDiscovery>();
+        services.TryAddSingleton<IChildProcess, ChildProcess>();
+        services.AddSingleton<ISpecDiscovery, SpechtDiscovery>();
         services.AddSingleton<MatrixResolver>();
         services.AddSingleton<SpechtManifestStore>();
         services.AddSingleton<ManifestPinEditor>();
@@ -58,6 +59,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<SpechtTreeGenerator>();
         services.AddSingleton<FrontmatterSchemaCheck>();
         services.TryAddSingleton<IRandomSource, RandomSource>();
+        services.AddSingleton<HeldIds>();
         services.AddSingleton<Minter>();
         services.AddSingleton<ISpechtRule, FrontmatterPresentRule>();
         services.AddSingleton<ISpechtRule, FeatureFrontmatterRule>();
