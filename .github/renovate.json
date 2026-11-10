@@ -14,12 +14,96 @@
   },
   "packageRules": [
     {
-      "description": "0055-F4 B-001: NuGet minor and patch updates in Directory.Packages.props, one pull request.",
+      "description": "0055-F4 B-001: clear preset groups for central packages before applying package families.",
       "matchManagers": ["nuget"],
       "matchFileNames": ["Directory.Packages.props"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "NuGet packages",
-      "groupSlug": "nuget-packages"
+      "groupName": null,
+      "groupSlug": null
+    },
+    {
+      "description": "0055-F4 B-001: group CodeAnalysis minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": [
+        "Microsoft.CodeAnalysis",
+        "Microsoft.CodeAnalysis.*"
+      ],
+      "groupName": "CodeAnalysis",
+      "groupSlug": "nuget-codeanalysis"
+    },
+    {
+      "description": "0055-F4 B-001: group Rocket.Surgery minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": ["Rocket.Surgery", "Rocket.Surgery.*"],
+      "groupName": "Rocket.Surgery",
+      "groupSlug": "nuget-rocket-surgery"
+    },
+    {
+      "description": "0055-F4 B-001: group xUnit v3 minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": ["xunit.v3", "xunit.v3.*"],
+      "groupName": "xUnit v3",
+      "groupSlug": "nuget-xunit-v3"
+    },
+    {
+      "description": "0055-F4 B-001: group Microsoft dependency injection minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": [
+        "Microsoft.Extensions.DependencyInjection",
+        "Microsoft.Extensions.DependencyInjection.*"
+      ],
+      "groupName": "Microsoft dependency injection",
+      "groupSlug": "nuget-dependency-injection"
+    },
+    {
+      "description": "0055-F4 B-001: group VSTest minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": [
+        "Microsoft.NET.Test.Sdk",
+        "Microsoft.TestPlatform.*"
+      ],
+      "groupName": "VSTest",
+      "groupSlug": "nuget-vstest"
+    },
+    {
+      "description": "0055-F4 B-001: group Reqnroll minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": ["Reqnroll", "Reqnroll.*"],
+      "groupName": "Reqnroll",
+      "groupSlug": "nuget-reqnroll"
+    },
+    {
+      "description": "0055-F4 B-001: group Spectre.Console.Cli minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": ["Spectre.Console.Cli", "Spectre.Console.Cli.*"],
+      "groupName": "Spectre.Console.Cli",
+      "groupSlug": "nuget-spectre-cli"
+    },
+    {
+      "description": "0055-F4 B-001: group TestableIO file-system abstractions minor and patch updates.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": [
+        "TestableIO.System.IO.Abstractions",
+        "TestableIO.System.IO.Abstractions.*"
+      ],
+      "groupName": "TestableIO file-system abstractions",
+      "groupSlug": "nuget-testableio"
     },
     {
       "description": "0055-F4 B-003: the .NET SDK global.json pins, one pull request.",

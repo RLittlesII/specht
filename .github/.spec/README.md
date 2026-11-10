@@ -1,6 +1,6 @@
 ---
 title: "Specification: Dependency updates"
-description: "Renovate proposes updates as pull requests grouped by ecosystem - NuGet packages, GitHub Actions, the .NET SDK, dotnet local tools - merges a minor or patch update itself once every required check passes, leaves a major for review, and leaves the engine's three pinned dependencies alone until 0001-F1's golden baseline test exists"
+description: "Renovate proposes updates as pull requests grouped by NuGet package family, GitHub Actions, the .NET SDK and dotnet local tools. It merges a minor or patch update itself once every required check passes, leaves a major for review, and leaves the engine's three pinned dependencies alone until 0001-F1's golden baseline test exists"
 type: feature
 id: "F4"
 epic: "0055"
@@ -20,7 +20,7 @@ depends_on: ["F1", "F2"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-23"
+updated: "2026-11-09"
 github_issue: null
 synced_at: null
 ---
@@ -31,18 +31,18 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-Every version this repository depends on - packages, the SDK, local tools, workflow actions - is pinned, so without a mechanism they age silently until an update is large and urgent at once; and the one mechanism that would update them indiscriminately would also move the engine's three dependencies off the baseline dependency versions before the baseline exists, breaking the extraction the whole of epic `0001` is measured against. This Feature removes that failure state: Renovate proposes updates as pull requests grouped by ecosystem, a minor or patch update merges itself once every required check passes, a major waits for a person, and the engine's dependencies are left alone until `0001-F1`'s golden baseline test exists (its B-004).
+Every version this repository depends on - packages, the SDK, local tools, workflow actions - is pinned, so without a mechanism they age silently until an update is large and urgent at once; and the one mechanism that would update them indiscriminately would also move the engine's three dependencies off the baseline dependency versions before the baseline exists, breaking the extraction the whole of epic `0001` is measured against. This Feature removes that failure state: Renovate proposes updates as pull requests grouped by ecosystem and by family within NuGet, a minor or patch update merges itself once every required check passes, a major waits for a person, and the engine's dependencies are left alone until `0001-F1`'s golden baseline test exists (its B-004).
 
 ## 2. User Needs
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-| #   | Persona        | Need                                                                                        | Pain Point Today                            |
-| --- | -------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| 1   | The maintainer | Routine updates applied without attention, and only when the build agrees                   | Every update is a manual edit               |
-| 2   | The maintainer | A breaking update shown to a person before it lands                                         | Nothing distinguishes a major from a patch  |
-| 3   | The reviewer   | One pull request per ecosystem, not one per package                                         | The configuration present groups NuGet only |
-| 4   | `0001-F1`      | The engine's three dependencies held at the baseline dependency versions until the baseline | Nothing excludes them                       |
+| #   | Persona        | Need                                                                                        | Pain Point Today                           |
+| --- | -------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| 1   | The maintainer | Routine updates applied without attention, and only when the build agrees                   | Every update is a manual edit              |
+| 2   | The maintainer | A breaking update shown to a person before it lands                                         | Nothing distinguishes a major from a patch |
+| 3   | The reviewer   | Separate pull requests for related NuGet families                                           | One NuGet PR mixed unrelated updates       |
+| 4   | `0001-F1`      | The engine's three dependencies held at the baseline dependency versions until the baseline | Nothing excludes them                      |
 
 ### Assumptions
 
@@ -58,7 +58,7 @@ Every version this repository depends on - packages, the SDK, local tools, workf
 
 | ID    | Claim                                                                                                                                                                                                               | Source                                                    | Status  |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------- |
-| B-001 | Given minor or patch updates available for two or more NuGet packages, this Feature proposes all of them in one pull request.                                                                                       | owner, 2026-10-08                                         | Active  |
+| B-001 | Given minor or patch updates to central NuGet packages, Renovate proposes one PR per configured family and a separate PR for each ungrouped package.                                                                | owner, 2026-11-09                                         | Amended |
 | B-002 | Given minor or patch updates available for two or more GitHub Actions whose versions the build project declares, this Feature proposes all of them in one pull request that changes those declarations.             | owner, 2026-10-08; OQ-1                                   | Amended |
 | B-003 | Given a newer minor or patch release of the .NET SDK than `global.json` pins, this Feature proposes it in one pull request.                                                                                         | owner, 2026-10-08                                         | Active  |
 | B-004 | Given minor or patch updates available for two or more tools in the local tool manifest, this Feature proposes all of them in one pull request.                                                                     | owner, 2026-10-08                                         | Active  |
@@ -134,8 +134,8 @@ Delivered so far by items 0073 and 0074. Action updates and the post-upgrade reg
 - **The SDK before any post-upgrade task** (B-016). The action runs Renovate as the `ghcr.io/renovatebot/renovate` container on the hosted runner, where Docker is preinstalled (decision 0001), so an SDK set up on the runner would not reach a post-upgrade task inside the container. The action instead starts the container as `root` (`docker-user`) with [`.github/renovate-entrypoint.sh`](../renovate-entrypoint.sh) as its command (`docker-cmd-file`) and passes `DOTNET_SDK_VERSION` in (`additional-env-list`). The script runs containerbase's `install-tool dotnet "$DOTNET_SDK_VERSION"`, then `runuser -u ubuntu renovate` - the action's documented pattern for this - so the SDK `global.json` pins is installed before Renovate starts, and therefore before any post-upgrade task.
 - **The self-hosted run's settings** (C-2) are committed in [`.github/renovate-global.json`](../renovate-global.json), passed as `configurationFile`: `platform: github`, `onboarding: false` and `requireConfig: required`, so the run reads this repository's `.github/renovate.json` and opens no onboarding pull request. `allowedPostUpgradeCommands` is not there yet; it is 0075's (C-7).
 - **No issue** (B-010, C-5): `.github/renovate.json` sets `dependencyDashboard: false`. The NuGet major rule whose only setting was `dependencyDashboardApproval` is removed, because that approval lives in the dashboard issue C-5 forbids; a major waiting as an open pull request is 0076's B-007. **The label** (B-011) is the existing `labels: ["dependencies"]`, kept.
-- **The rules** are the `packageRules` in [`.github/renovate.json`](../renovate.json), delivered by 0074. Renovate applies every rule that matches an update in order, and a later rule's setting wins, so the order is part of the design: the three grouping rules first, then the C-4 hold, then the engine hold last, so nothing after it can switch an engine dependency back on. Each rule carries a `description` citing the id it serves. They replace 0073's single rule, which put every NuGet minor and patch update, the SDK and the local tools included, into one group.
-- **NuGet packages** (B-001): the `nuget` manager, `matchFileNames: ["Directory.Packages.props"]`, minor and patch, `groupName: "NuGet packages"`, branch `renovate/nuget-packages`. **Local tools** (B-004): the same manager and update types with `matchFileNames: [".config/dotnet-tools.json"]`, `groupName: "dotnet local tools"`, branch `renovate/dotnet-local-tools`. Renovate gives a package in either file the same `depType`, `nuget`, so the file name is the only thing that tells the two groups apart. **The .NET SDK** (B-003) is keyed instead by `matchDepTypes: ["dotnet-sdk"]`, the type the `nuget` manager gives `global.json`'s `sdk.version`, `groupName: ".NET SDK"`, branch `renovate/net-sdk`.
+- **The rules** are the `packageRules` in [`.github/renovate.json`](../renovate.json), delivered by 0074. Renovate applies every rule that matches an update in order, and a later rule's setting wins, so the order is part of the design: the package defaults and grouping rules first, then the C-4 hold, then the engine hold last, so nothing after it can switch an engine dependency back on. Each rule carries a `description` citing the id it serves. They replace 0073's single rule, which put every NuGet minor and patch update, the SDK and the local tools included, into one group.
+- **NuGet packages** (B-001). For central minor and patch updates, the rules clear inherited groups and then match explicit families by package name. The families cover Roslyn CodeAnalysis, Rocket.Surgery, xUnit v3, Microsoft dependency injection, VSTest, Reqnroll, Spectre.Console.Cli and TestableIO file-system abstractions. Each family has its own branch slug. A package outside those families has an individual update. **Local tools** (B-004): the same manager and update types with `matchFileNames: [".config/dotnet-tools.json"]`, `groupName: "dotnet local tools"`, branch `renovate/dotnet-local-tools`. Renovate gives a package in either file the same `depType`, `nuget`, so the file name is the only thing that tells the two groups apart. **The .NET SDK** (B-003) is keyed instead by `matchDepTypes: ["dotnet-sdk"]`, the type the `nuget` manager gives `global.json`'s `sdk.version`, `groupName: ".NET SDK"`, branch `renovate/net-sdk`.
 - **The C-4 hold**: a `nuget` rule whose `matchFileNames` lists only negations - `!Directory.Packages.props`, `!global.json`, `!.config/dotnet-tools.json` - with `enabled: false`. In Renovate 44 a list of negations alone matches every file none of them names, so a version declared anywhere else, a `Version` written into a `.csproj` included, is never updated. Today no file outside those three declares a version: the `.csproj` and `Directory.Build.props` references carry none, and Renovate already skips them as `invalid-version`.
 - **The engine hold** (B-008, C-1): `matchPackageNames: ["Markdig", "YamlDotNet", "JsonSchema.Net"]` with `enabled: false`, last, so a major, a minor and a patch alike are never proposed and no later rule can re-enable them. Its `description` records the lift condition: a change made after `0001-F1` B-004's golden baseline test is on `main`, citing it, that also amends `0001-F1` C-7. TestableIO.System.IO.Abstractions sits in the same `Engine` item group in `Directory.Packages.props` but is not one of the three baseline dependency pins, so it groups with the other packages.
 - Item 0426 gives each .NET minor and patch group an explicit branch slug and clears inherited preset groups for .NET major updates (B-012). It excludes `.github/workflows/**` from Renovate extraction to enforce C-3. The owner scoped this delivery to .NET grouping on 2026-11-09. The scheduled and manual runs require the `RENOVATE_TOKEN` repository secret.
@@ -154,14 +154,15 @@ Delivered so far by items 0073 and 0074. Action updates and the post-upgrade reg
   - B-011: a literal setting. `renovate.json` sets `labels: ["dependencies"]`, which applies to every pull request Renovate opens.
   - B-015: literal settings in the generated workflow. The trigger is `schedule: cron: '0 10 * * 1'`, and the Renovate step's `env` sets `RENOVATE_REPOSITORIES: ${{ github.repository }}`, so the run names this repository and no other.
   - B-016: an ordering. A bash step writes `jq -r .sdk.version global.json` into `DOTNET_SDK_VERSION`, which `additional-env-list` passes into the container. The entrypoint runs `install-tool dotnet "$DOTNET_SDK_VERSION"` and only then `runuser -u ubuntu renovate`, under `set -euo pipefail`, so a failed install stops the run before Renovate starts.
-  - B-001: literal settings in `renovate.json`. A `packageRules` entry matches the `nuget` manager, `matchFileNames: ["Directory.Packages.props"]` and `matchUpdateTypes: ["minor", "patch"]`, and sets `groupName: "NuGet packages"`, so every such update lands on one branch and one pull request.
+  - B-001: validate the repository rules with Renovate and inspect a local lookup run. Check that CodeAnalysis and xUnit v3 form different branches and unrelated packages use individual branches. Check the Rocket.Surgery prefix and the preset override with Renovate's rule resolver.
   - B-003: literal settings in `renovate.json`. A rule matches the `nuget` manager's `matchDepTypes: ["dotnet-sdk"]` - the type it gives `global.json`'s `sdk.version` - for minor and patch, and sets `groupName: ".NET SDK"`, so the SDK has its own pull request.
   - B-004: literal settings in `renovate.json`. A rule matches the `nuget` manager, `matchFileNames: [".config/dotnet-tools.json"]`, minor and patch, and sets `groupName: "dotnet local tools"`. The file name is the only thing separating it from B-001's group, since both files give their packages the same `depType`.
   - B-008: an ordering of literal settings. The last rule in `packageRules` matches `matchPackageNames: ["Markdig", "YamlDotNet", "JsonSchema.Net"]` with `enabled: false`. Renovate applies every matching rule in order and a later rule's setting wins, so no earlier grouping rule, and no rule added before it, can switch an engine dependency back on. The C-4 hold before it - a `nuget` rule whose `matchFileNames` lists only negations of the three declaring files, with `enabled: false` - keeps a version declared anywhere else, such as a `.csproj`, from being updated.
   - B-002, B-005 to B-007, B-009, B-012 to B-014 and B-017: not built yet (items 0075 to 0077).
 - **Verified by hand when 0073 was delivered.** `./build.sh Compile` regenerated `renovate.yml` and nothing else; `ci.yml` was unchanged. On 2026-10-09, `renovate-config-validator --strict` from `renovate@44` accepted `renovate.json` and `renovate-global.json`. `Format` and `Test` passed. These checks show the configuration is valid. They do not show a run's behaviour.
 - **Verified by hand when 0074 was delivered.** `renovate-config-validator --strict` at Renovate 44 accepted both JSON files again, and two local `--platform=local --dry-run=lookup` runs of Renovate 44 against real registries, recorded in § 7, showed the grouping and the holds as claimed: the NuGet packages and the SDK each on their own branch (B-001, B-003), husky alone on `renovate/dotnet-local-tools` on a scratch copy (B-004), the engine's three logged `is disabled` and never looked up (B-008), and a `.csproj` version held (C-4). A dry run opens no pull request, so these show the branches Renovate would create, not the pull requests GitHub would show.
-- **Nothing has been observed live.** The first live observation is a `workflow_dispatch` run after the merge, once the owner creates the `RENOVATE_TOKEN` secret (decision 0001). That run should show `install-tool dotnet` completing before Renovate's first log line (B-016), and should open no issue (B-010). B-011's label is observable only on the first pull request Renovate opens, and B-015 only on the first scheduled Monday run. For 0074's claims, the first run with updates available should open at most one pull request each from `renovate/nuget-packages` (B-001), `renovate/net-sdk` (B-003) and `renovate/dotnet-local-tools` (B-004), and none touching Markdig, YamlDotNet or JsonSchema.Net (B-008); B-004 is observable only once a local tool has a minor or patch release.
+- **Verified for B-001 on 2026-11-09.** Renovate 44.149.0 accepted the repository configuration. Its local lookup returned distinct branches for CodeAnalysis, Rocket.Surgery, xUnit v3, dependency injection and VSTest, plus individual branches for packages such as the MCP SDK and System.Text.Json. Its rule resolver exercised all eight configured families, both update types, the SDK and tool groups, separate major updates and the engine hold.
+- **The original self-hosted run had no live observation.** The first live observation is a `workflow_dispatch` run after the merge, once the owner creates the `RENOVATE_TOKEN` secret (decision 0001). That run should show `install-tool dotnet` completing before Renovate's first log line (B-016), and should open no issue (B-010). B-011's label is observable only on the first pull request Renovate opens, and B-015 only on the first scheduled Monday run. For 0074's claims, the first run with updates available should open at most one pull request each from `renovate/nuget-packages` (B-001), `renovate/net-sdk` (B-003) and `renovate/dotnet-local-tools` (B-004), and none touching Markdig, YamlDotNet or JsonSchema.Net (B-008); B-004 is observable only once a local tool has a minor or patch release.
 - **Verdict.** B-001, B-003, B-004, B-010, B-011 and B-015 are literal settings with no logic of their own; a test would assert configuration, not behaviour. B-008's hold depends on rule order, which a dry run against a fixture tree could pin, but only through Renovate itself and its registries, which a test may not reach. B-016's ordering lives in a shell script inside the Renovate container, and only a run shows it. The generated step list is testable as it stands, given `RenovateMiddleware`'s output, as `0055-F2`'s rewrite is. No claim has a test because the owner decided the build needs none, not because the design prevents it.
 
 ## 9. Traceability Matrix
@@ -170,7 +171,7 @@ Delivered so far by items 0073 and 0074. Action updates and the post-upgrade reg
 
 | Claim ID | Scenario                                               | Test    | Status  |
 | -------- | ------------------------------------------------------ | ------- | ------- |
-| B-001    | Package updates arrive together                        | Missing | Missing |
+| B-001    | NuGet updates arrive by package family                 | Missing | Missing |
 | B-002    | Workflow action updates arrive together                | Missing | Missing |
 | B-003    | An SDK update arrives on its own                       | Missing | Missing |
 | B-004    | Local tool updates arrive together                     | Missing | Missing |
@@ -197,6 +198,8 @@ Delivered so far by items 0073 and 0074. Action updates and the post-upgrade reg
 - 2026-10-08, C-1, § 1 and § 5 row 3 amended, following `0001-F1` decision 0004 (the owner): no baseline tag is placed, so the exclusion holds until `0001-F1` B-004's golden baseline test is on `main`, not until a tag exists. The B-008 scenario's precondition follows.
 - 2026-10-09, `0055-F2` B-009 withdrawn by the owner (`0055-F2` decision 0001). B-013 and B-014 now rest on `0055-F2` C-1, the committed workflows staying the build's generation, rather than on a run-time check passing; their behaviour is unchanged. Their scenarios' last step follows.
 - 2026-10-09, decision 0001 (the owner, while item 0073 was planned): the Renovate workflow can also be started by hand, which is not claimed (§ 5 row 6); C-8 names its token secret `RENOVATE_TOKEN`; A-2 states that the run uses GitHub's hosted runner, not a self-hosted one (§ 5 row 7). No claim changes.
+
+- 2026-11-09, the owner clarified that central NuGet updates group by related package family. B-001 and its scenario now cover separate families and individual updates. [Lesson 0001](lessons/0001-group-nuget-updates-by-family.md) records the mixed pull request.
 
 ## 11. Open Questions
 
@@ -239,7 +242,7 @@ Earlier review rows are preserved verbatim; later approvals and the current reco
 
 ## Tasks
 
-Delivery items in [`../.issue/`](../.issue/) include `0072` (the Feature), `0073`, `0074` and `0426`.
+Delivery items in [`../.issue/`](../.issue/) include `0072` (the Feature), `0073`, `0074`, `0426` and `0427`.
 
 ## Scoring
 
