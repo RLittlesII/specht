@@ -7,7 +7,7 @@ namespace Specht.Tests.Discovery;
 
 /// <summary>
 /// Discovery inside a git work tree asks git for the file list and walks otherwise (<c>0001-F6</c> B-005, B-006, B-010, C-1,
-/// C-2; item 0008). The file system is a <see cref="MockFileSystem"/> holding a <c>.git</c> where a row puts one, and git is a
+/// C-2, C-3; item 0008). The file system is a <see cref="MockFileSystem"/> holding a <c>.git</c> where a row puts one, and git is a
 /// child process that records each start and answers a canned <c>-z</c> listing, or nothing when it cannot be started.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -86,6 +86,27 @@ public sealed class SpechtDiscoveryGitUnitTests
         call.FileName.Should().Be("git", because);
         call.WorkingDirectory.Should().Be(fileSystem.Path.GetFullPath(root), because);
         call.Arguments.Should().Equal(arguments, because);
+    }
+
+    [Theory]
+    [ClassData(typeof(UnstatedExclusions))]
+    public void AnExclusionNoClaimStates_WhenSpecificationsAreDiscoveredInAWorkTree_ShouldNeverStartGit(string because, string exclusion)
+    {
+        // Given
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            [$"{Root}/{SpechtTree.ManifestPath}"] = new($$"""{ "exclusions": ["{{exclusion}}"] }"""),
+            [$"{Root}/.git"] = new MockDirectoryData(),
+            [$"{Root}/src/a/.spec/README.md"] = new(string.Empty),
+        });
+        var git = new CannedGit(new ChildProcessResult(0, "src/a/.spec/README.md\0"));
+        var inputs = EngineServices.Manifest(fileSystem, Root).Discovery;
+
+        // When
+        _ = new SpechtDiscovery(fileSystem, git).FindSpecifications(Root, inputs);
+
+        // Then
+        git.Calls.Should().BeEmpty(because);
     }
 
     [Fact]
