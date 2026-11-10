@@ -43,4 +43,18 @@ public sealed class RepositoryPathsUnitTests
         // Then
         matched.Should().Be(read);
     }
+
+    [Theory]
+    [ClassData(typeof(UnsafeRepositoryPaths))]
+    public void AnEmptyRootedOrDriveQualifiedPath_WhenNormalised_ShouldBeRejected(string path)
+    {
+        // Given
+        var paths = new RepositoryPaths();
+
+        // When
+        var normalise = () => paths.Normalize(path);
+
+        // Then
+        normalise.Should().Throw<ArgumentException>();
+    }
 }

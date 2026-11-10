@@ -576,6 +576,29 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
         Kinds(result.Report).Should().NotContain("missingRequiredLink");
     }
 
+    [Theory]
+    [ClassData(typeof(CurrentClaimFileSetRecords))]
+    public void AClaimFileSetWithNoRecordOrACurrentRecord_WhenReconciled_ShouldSelectItsNativeClaims(string? lifecycle)
+    {
+        // Given
+        Native.Write(NativeClaimEvidenceRoot.ClaimFile, BoundClaimFile);
+        if (lifecycle is null)
+        {
+            Native.Configure(static analysis => analysis["records"]!["claimFileSets"]![0]!.AsObject().Remove("record"));
+        }
+        else
+        {
+            Native.Write("src/read/.spec/README.md", "---\nid: cap:read\nspec_status: " + lifecycle + "\n---\n# Read\n");
+        }
+
+        // When
+        var result = Native.Reconcile();
+
+        // Then
+        ClaimIds(result.Report).Should().Equal("need/7");
+        Kinds(result.Report).Should().NotContain("invalidInput");
+    }
+
     [Fact]
     public void ANativeClaimDeclaredOnAScenario_WhenReconciled_ShouldLocateItAtTheClaimFileAndTheScenarioKeywordLine()
     {

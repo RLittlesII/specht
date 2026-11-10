@@ -2,7 +2,7 @@ id: "0429"
 type: test
 title: Cover the native claim error paths of specht evidence
 
-status: in-progress
+status: done
 
 value: 2
 risk: 1
@@ -26,7 +26,7 @@ claims:
 
 created: "2026-11-08"
 updated: "2026-11-09"
-closed: null
+closed: "2026-11-09"
 
 summary: |
   Item 0409 (commit b74b0a90) added native Gherkin claim reading to
