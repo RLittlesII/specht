@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Identifiers;
+using Specht.Tests.Mint;
 
 namespace Specht.Tests.Identifiers;
 
@@ -9,9 +10,13 @@ namespace Specht.Tests.Identifiers;
 /// reads the requested type's entry under the manifest's top-level <c>mint</c> key and builds the Nano ID strategy from that
 /// entry's own <c>nanoid</c> sub-object and the type alone, absent or not, and returns one id. No prefix decorator exists at
 /// this step, so the whole id is the part after the type's prefix. It mints no id for a type <c>mint</c> does not name
-/// (B-001), an entry naming no strategy (B-047), or a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048): it
-/// refuses, and draws nothing. Each manifest is written in memory, and the draws come from a
-/// <see cref="FixedRandomSource"/>.
+/// (B-001), an entry naming no strategy (B-047), a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048), or any
+/// request of a manifest whose <c>mint</c> names a type <c>identifiers</c> holds no grammar for (B-043): it refuses, and
+/// draws nothing. The refusal of a type not opted in, or of an entry naming no strategy, is an
+/// <see cref="IdNotOptedInException"/>, which the B-043 refusal is not, so the command can give it its own exit (B-002). A
+/// <c>mint</c> member that opts no C-13 type in, one naming no such type or one naming no strategy, is outside the B-043
+/// check, so it leaves a request for an opted-in type to mint its id (B-003). Each manifest is written in memory, and the
+/// draws come from a <see cref="FixedRandomSource"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class MinterUnitTests
@@ -114,6 +119,30 @@ public sealed class MinterUnitTests
     }
 
     [Theory]
+    [ClassData(typeof(TypesNotOptedIn))]
+    public void ATypeTheManifestDoesNotOptIn_WhenMinted_ShouldBeRefusedAsNotOptedIn(string? mint)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[ab]{2}$", "lesson": "^[ab]{2}$" }
+            }
+            """)!.AsObject();
+        if (mint is not null)
+        {
+            manifest["mint"] = JsonNode.Parse(mint);
+        }
+
+        // When
+        var mintAdr = () => new Minter(new FixedRandomSource(0)).Mint(manifest, "adr");
+
+        // Then
+        mintAdr.Should().Throw<IdNotOptedInException>();
+    }
+
+    [Theory]
     [ClassData(typeof(EntriesNamingNoStrategy))]
     public void AnEntryNamingNoStrategy_WhenMinted_ShouldBeRefusedWithNoIdDrawn(string entry)
     {
@@ -132,7 +161,7 @@ public sealed class MinterUnitTests
         var mintAdr = () => new Minter(random).Mint(manifest, "adr");
 
         // Then
-        mintAdr.Should().Throw<IdRefusedException>();
+        mintAdr.Should().Throw<IdNotOptedInException>();
         random.Bounds.Should().BeEmpty();
     }
 
@@ -158,5 +187,46 @@ public sealed class MinterUnitTests
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
         random.Bounds.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(ManifestsOptingInATypeWithNoGrammar))]
+    public void AManifestOptingInATypeWithNoGrammar_WhenAnyTypeIsMinted_ShouldBeRefusedWithNoIdDrawn(string manifest, string type)
+    {
+        // Given
+        var document = JsonNode.Parse(manifest)!.AsObject();
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mint = () => new Minter(random).Mint(document, type);
+
+        // Then
+        mint.Should().Throw<IdRefusedException>().Which.Should().NotBeOfType<IdNotOptedInException>();
+        random.Bounds.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(MintMembersOptingNoTypeIn))]
+    public void AMintMemberOptingNoTypeInWithNoGrammar_WhenAnOptedInTypeIsMinted_ShouldMintItsId(string member)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^z{3}$" },
+              "mint": { "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } } }
+            }
+            """)!.AsObject();
+        foreach (var (name, entry) in JsonNode.Parse(member)!.AsObject())
+        {
+            manifest["mint"]![name] = entry?.DeepClone();
+        }
+
+        // When
+        var id = new Minter(new FixedRandomSource(0)).Mint(manifest, "adr");
+
+        // Then
+        id.Should().Be("zzz");
     }
 }

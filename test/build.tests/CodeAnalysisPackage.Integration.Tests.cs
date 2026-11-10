@@ -12,9 +12,9 @@ public sealed class CodeAnalysisPackageIntegrationTests
     [Fact]
     public async Task DeploymentProject_WhenPacked_ShouldCarryCompilerAssetsAndNoRuntimeDependencies()
     {
-        if (!AppContext.TargetFrameworkName!.EndsWith("v10.0", StringComparison.Ordinal))
+        if (!AppContext.TargetFrameworkName!.EndsWith("v11.0", StringComparison.Ordinal))
         {
-            Assert.Skip("The package integration test runs once against the repository's .NET 10 consumer runtime.");
+            Assert.Skip("The package integration test runs once in the .NET 11 test gate.");
         }
 
         // Given
@@ -182,9 +182,9 @@ public sealed class CodeAnalysisPackageIntegrationTests
     [Fact]
     public async Task DeploymentProject_WhenPacked_ShouldCarryTheVsTestLoggerFilesPerTargetFrameworkAndNoTestPlatformAssembly()
     {
-        if (!AppContext.TargetFrameworkName!.EndsWith("v10.0", StringComparison.Ordinal))
+        if (!AppContext.TargetFrameworkName!.EndsWith("v11.0", StringComparison.Ordinal))
         {
-            Assert.Skip("The package integration test runs once against the repository's .NET 10 consumer runtime.");
+            Assert.Skip("The package integration test runs once in the .NET 11 test gate.");
         }
 
         // Given
@@ -221,9 +221,9 @@ public sealed class CodeAnalysisPackageIntegrationTests
     [Fact]
     public async Task McpProject_WhenPacked_ShouldCarryTheSpechtMcpToolSettingsAtTheVersionOfTheToolAndTheAnalyzerPackages()
     {
-        if (!AppContext.TargetFrameworkName!.EndsWith("v10.0", StringComparison.Ordinal))
+        if (!AppContext.TargetFrameworkName!.EndsWith("v11.0", StringComparison.Ordinal))
         {
-            Assert.Skip("The package integration test runs once against the repository's .NET 10 consumer runtime.");
+            Assert.Skip("The package integration test runs once in the .NET 11 test gate.");
         }
 
         // Given

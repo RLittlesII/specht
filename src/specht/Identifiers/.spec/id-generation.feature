@@ -18,10 +18,16 @@ Feature: Id generation
       | opts only lesson numbers in |
 
   @B-002 @boundary
-  Scenario: A type not opted in is refused
-    Given a manifest that opts only lesson numbers in
+  Scenario Outline: A type not opted in is refused
+    Given a manifest that <leaves ADR numbers out>
     When an ADR number is requested
-    Then the request ends with a failure code the check already gives
+    Then the request ends as it does for something named on the command line that is not found
+
+    Examples:
+      | leaves ADR numbers out                                 |
+      | opts only lesson numbers in                            |
+      | lists ADR numbers without a strategy                   |
+      | lists ADR numbers with a number in place of a strategy |
 
   @B-003
   Scenario: A minted id is the whole output
@@ -332,11 +338,16 @@ Feature: Id generation
     Then the minted id is one no scenario of that Feature is tagged with
 
   @B-043 @boundary
-  Scenario: A type opted in with no grammar is an invalid manifest
+  Scenario Outline: A type opted in with no grammar is an invalid manifest
     Given a manifest that opts ADR numbers in to Nano ID
     And it declares no grammar for ADR numbers
-    When an ADR number is requested
+    When <an id> is requested
     Then the request ends as it does for an invalid manifest
+
+    Examples:
+      | an id           |
+      | an ADR number   |
+      | a lesson number |
 
   @B-044
   Scenario: Schema 0.3.1 accepts the id settings
