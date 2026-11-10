@@ -10,7 +10,8 @@ namespace Specht.Tests.Discovery;
 /// Discovery outside git walks the tree and declines to enter an excluded directory, so no child of one is enumerated
 /// (<c>0001-F6</c> B-006, C-1; item 0007). The file system records every listing it is asked for and every path a listing
 /// returns, through every listing overload of its directory, so a full enumeration filtered afterwards fails as surely
-/// as a walk that opens the directory to reject it.
+/// as a walk that opens the directory to reject it. The same recording shows that the walk never lists a symbolic link to a
+/// directory, the link its parent's listing returns (<c>0001-F6</c> B-011; item 0009).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtDiscoveryWalkUnitTests
@@ -57,6 +58,34 @@ public sealed class SpechtDiscoveryWalkUnitTests
         asked.Should().NotContain(path => excluded.Any(directory => path == directory || path.StartsWith(directory + "/", StringComparison.Ordinal)));
         returned.Should().NotContain(path => excluded.Any(directory => path.StartsWith(directory + "/", StringComparison.Ordinal)));
         asked.Should().Contain(excluded.Select(static directory => directory.Contains('/') ? directory[..directory.LastIndexOf('/')] : string.Empty));
+    }
+
+    [Fact]
+    public void ALinkToADirectory_WhenDiscoveryWalksTheTree_ShouldListItsParentAndNeverListThroughIt()
+    {
+        // Given
+        var fileSystem = new RecordingFileSystem(new Dictionary<string, MockFileData>
+        {
+            [$"{Root}/{SpechtTree.ManifestPath}"] = new("{}"),
+            [$"{Root}/src/a/.spec/README.md"] = new(string.Empty),
+            ["outside/x/.spec/README.md"] = new(string.Empty),
+        });
+        fileSystem.Directory.CreateSymbolicLink($"{Root}/linked", "../outside");
+        var inputs = EngineServices.Manifest(fileSystem, Root).Discovery;
+        var discovery = new SpechtDiscovery(fileSystem, new UnexpectedChildProcess());
+        fileSystem.Recording.Clear();
+
+        // When
+        var discovered = discovery.FindSpecifications(Root, inputs).Select(static location => location.RelativePath);
+
+        // Then
+        discovered.Should().Equal("src/a/.spec/README.md");
+        fileSystem.Recording.Select(listing => Relative(fileSystem, listing.Asked))
+            .Should().NotContain(static path => path == "linked" || path.StartsWith("linked/", StringComparison.Ordinal));
+        fileSystem.Recording.Where(listing => Relative(fileSystem, listing.Asked).Length == 0)
+            .SelectMany(static listing => listing.Returned)
+            .Select(path => Relative(fileSystem, path))
+            .Should().Contain("linked");
     }
 
     private static string Relative(IFileSystem fileSystem, string path) =>

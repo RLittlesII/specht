@@ -11,8 +11,10 @@ namespace Specht.Tests.Identifiers;
 /// <summary>
 /// The minting pipeline beneath <c>0001-F19</c> B-008 and C-3 (C-12; ADR-0033; item <c>0414</c>): <see cref="Minter"/>
 /// reads the requested type's entry under the manifest's top-level <c>mint</c> key and builds the Nano ID strategy from that
-/// entry's own <c>nanoid</c> sub-object and the type alone, absent or not, and returns one id. No prefix decorator exists at
-/// this step, so the whole id is the part after the type's prefix. It mints no id for a type <c>mint</c> does not name
+/// entry's own <c>nanoid</c> sub-object and the type alone, absent or not, and returns one id. An entry that names no prefix
+/// mints an id that is the part after the type's prefix alone. A prefix the entry names starts the id (B-009, item
+/// <c>0417</c>), and the guard compares the id in that form, the candidate of A-5, with the names the tree holds (B-038). It
+/// mints no id for a Nano ID entry with the encoding <c>base32</c> (B-033). It mints no id for a type <c>mint</c> does not name
 /// (B-001), an entry naming no strategy (B-047), a strategy other than <c>nanoid</c> or <c>snowflake</c> (B-048), or any
 /// request of a manifest whose <c>mint</c> names a type <c>identifiers</c> holds no grammar for (B-043): it refuses, and
 /// draws nothing. The refusal of a type not opted in, or of an entry naming no strategy, is an
@@ -236,5 +238,74 @@ public sealed class MinterUnitTests
 
         // Then
         id.Should().Be("zzz");
+    }
+
+    [Fact]
+    public void AnEntryNamingAPrefix_WhenMinted_ShouldMintAnIdStartingWithThatPrefix()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^ADR-[ab]{2}$" },
+              "mint": { "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 }, "prefix": "ADR-" } }
+            }
+            """)!.AsObject();
+        var minter = new Minter(new FixedRandomSource(1), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())));
+
+        // When
+        var id = minter.Mint(manifest, "adr", ".", []);
+
+        // Then
+        id.Should().Be("ADR-bb");
+    }
+
+    [Fact]
+    public void AnEntryNamingAPrefixAndAHeldNameStartingWithThePrefixedFirstCandidate_WhenMinted_ShouldMintTheNextCandidateWithThatPrefix()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^ADR-[xy]$" },
+              "mint": { "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "xy", "size": 1 }, "prefix": "ADR-" } }
+            }
+            """)!.AsObject();
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.spec/adr/ADR-x-held.md"] = new("# Held\n"),
+        });
+        var minter = new Minter(new FixedRandomSource(0, 1), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())));
+
+        // When
+        var id = minter.Mint(manifest, "adr", files.Path.GetFullPath("repo"), []);
+
+        // Then
+        id.Should().Be("ADR-y");
+    }
+
+    [Fact]
+    public void ANanoIdEntryWithTheEncodingBase32_WhenMinted_ShouldBeRefusedWithNoIdDrawn()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[0-9a-z]+$" },
+              "mint": { "adr": { "strategy": "nanoid", "nanoid": { "size": 8 }, "encoding": "base32" } }
+            }
+            """)!.AsObject();
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+            .Mint(manifest, "adr", ".", []);
+
+        // Then
+        mintAdr.Should().Throw<IdRefusedException>();
+        random.Bounds.Should().BeEmpty();
     }
 }
