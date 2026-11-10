@@ -22,6 +22,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     /// <implements epic="0001" feature="F6" claim="B-001" />
     /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
+    /// <implements epic="0001" feature="F6" claim="B-008" />
     public IReadOnlyList<SpechtLocation> FindSpecifications(string root, SpechtDiscoveryInputs inputs)
     {
         var files = Files(root, inputs.Layouts.Select(static layout => layout.Glob).ToList(), inputs.Exclusions);
@@ -29,6 +30,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         return inputs.Layouts
             .SelectMany(layout => Matching(files, [layout.Glob])
                 .Select(file => new SpechtLocation(file.Relative, layout, DirectoryOf(file.Relative))))
+            .OrderBy(static specification => specification.RelativePath, StringComparer.Ordinal)
             .ToList();
     }
 
@@ -40,8 +42,9 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     /// <param name="specifications">The discovered specifications.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <param name="taskGrammar">The manifest's <c>identifiers.task</c> grammar.</param>
-    /// <returns>The root-relative path of each item file, in specification order, each one's in ordinal order of file name.</returns>
+    /// <returns>The root-relative path of each item file, in ordinal order.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-008" />
     public IReadOnlyList<string> FindChildItems(
         string root,
         IEnumerable<SpechtLocation> specifications,
@@ -50,7 +53,10 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     {
         var shapes = new SpechtTaskShapes(inputs.TaskFiles, taskGrammar);
 
-        return specifications.SelectMany(specification => Beside(root, specification, shapes.IsMatch)).ToList();
+        return specifications
+            .SelectMany(specification => Beside(root, specification, shapes.IsMatch))
+            .Order(StringComparer.Ordinal)
+            .ToList();
     }
 
     /// <summary>
@@ -108,6 +114,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-008" />
     private static IEnumerable<(string Path, string Relative)> Matching(List<(string Path, string Relative)> files, IReadOnlyList<string> globs)
     {
         var expressions = globs.Select(static glob => new Regex(Pattern(glob))).ToList();
@@ -152,11 +159,21 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
             .. exclusions.Select(entry =>
                 "--exclude=" + anchor + (entry.StartsWith('/') ? Escaped(entry[1..], Wildcards) : "**/" + Escaped(entry, Wildcards)) + "/"),
             "--",
-            .. globs.Select(static glob => ":(glob)" + Escaped(glob, GlobLiterals)),
+            .. globs.Select(static glob => ":(glob)" + Bracketed(glob)),
             .. exclusions.Select(static entry =>
                 entry.StartsWith('/') ? ":(exclude,literal)" + entry[1..] : ":(exclude,glob)**/" + Escaped(entry, Wildcards) + "/**"),
         ];
     }
+
+    /// <implements epic="0001" feature="F6" claim="B-007" />
+    /// <implements epic="0001" feature="F6" claim="B-010" />
+    private static string Bracketed(string glob) => glob switch
+    {
+        [] or ['*' or '\\', ..] => Escaped(glob, GlobLiterals),
+        ['!' or '^', ..] => "[]" + glob[0] + "]" + Escaped(glob[1..], GlobLiterals),
+        [']', ..] => "[]]" + Escaped(glob[1..], GlobLiterals),
+        _ => "[" + glob[0] + "]" + Escaped(glob[1..], GlobLiterals),
+    };
 
     /// <implements epic="0001" feature="F6" claim="B-010" />
     private static string Escaped(string text, string special) =>
@@ -164,12 +181,14 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
 
     /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
+    /// <implements epic="0001" feature="F6" claim="B-007" />
     private List<(string Path, string Relative)> Files(string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
         Listed(root, globs, exclusions) ?? Walked(root, exclusions);
 
     /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
     /// <implements epic="0001" feature="F6" claim="B-010" />
+    /// <implements epic="0001" feature="F6" claim="B-011" />
     private List<(string Path, string Relative)>? Listed(string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions)
     {
         if (exclusions.Any(static entry => entry.EndsWith('/') || entry.Contains("//", StringComparison.Ordinal)))
@@ -213,6 +232,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
+    /// <implements epic="0001" feature="F6" claim="B-011" />
     private List<(string Path, string Relative)> Walked(string root, IReadOnlyList<string> exclusions)
     {
         var origin = fileSystem.Path.GetFullPath(root);
@@ -227,7 +247,8 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
                 files.AddRange(fileSystem.Directory.EnumerateFiles(next.Directory).Select(path => (path, Relative(path))));
             }
 
-            foreach (var child in fileSystem.Directory.EnumerateDirectories(next.Directory).Where(child => !Skips(Relative(child), exclusions)))
+            foreach (var child in fileSystem.Directory.EnumerateDirectories(next.Directory)
+                .Where(child => !Skips(Relative(child), exclusions) && fileSystem.DirectoryInfo.New(child).LinkTarget is null))
             {
                 pending.Push((child, false));
             }
