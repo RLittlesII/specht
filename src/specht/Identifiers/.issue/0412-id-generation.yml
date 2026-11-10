@@ -80,7 +80,7 @@ claims:
   - B-051
 
 created: "2026-11-07"
-updated: "2026-11-08"
+updated: "2026-11-09"
 closed: null
 
 summary: |
@@ -107,7 +107,7 @@ summary: |
 
 acceptance_criteria:
   - "B-001 — a type not opted in, nothing on standard output (0415)"
-  - "B-002 — a type not opted in, exit 2, 3 or 4 (0415)"
+  - "B-002 — a type not opted in, or an entry naming no strategy, exit 4 (0415)"
   - "B-003 — one line, the id alone (0415)"
   - "B-004 — a printed id exits 0 (0415)"
   - "B-005 — Nano ID size (0414)"
