@@ -21,13 +21,13 @@ public static class ExitCodes
 
     /// <summary>
     /// The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects, a <c>mint</c> entry
-    /// that gives no id for the type requested included.
+    /// that names a strategy and gives no id for the type requested included.
     /// </summary>
     public const int InvalidManifest = 3;
 
     /// <summary>
     /// A target named on the command line is not found in the shipped catalog, or the manifest's <c>mint</c> key holds no
-    /// entry object for the type requested.
+    /// entry for the type requested or its entry names no strategy.
     /// </summary>
     public const int NotFound = 4;
 }
