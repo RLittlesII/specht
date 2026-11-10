@@ -1,0 +1,29 @@
+id: "0431"
+type: chore
+title: Cancel a pull request's superseded ci runs
+status: done
+value: 2
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-09"
+updated: "2026-11-09"
+closed: "2026-11-09"
+summary: |
+  The ci workflow has no concurrency group, so each push to a pull request
+  starts a run while the runs for its earlier heads keep going. On the three
+  self-hosted macOS runners that queued a dozen runs at 20 to 30 minutes each,
+  most of them for heads already replaced. The generated ci workflow gets a
+  concurrency group per workflow and pull request that cancels the run in
+  progress when a newer head arrives.
+acceptance_criteria:
+  - The generated ci.yml declares a concurrency group keyed on the workflow and the pull request's ref, with cancel-in-progress true.
+  - A second push to a pull request cancels that pull request's earlier ci run and leaves other pull requests' runs alone.
+  - main.yml declares no concurrency group, so every push to main still runs its build and benchmarks to the end.
+out_of_scope:
+  - Concurrency for the main, release, mirror or renovate workflows.
+  - Changes to the job time limit or the runner pool.
