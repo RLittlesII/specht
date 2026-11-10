@@ -2,7 +2,7 @@ id: "0430"
 type: bug
 title: The process-run integration tests stall the net11.0 step
 
-status: in-progress
+status: done
 
 value: 4
 risk: 3
@@ -19,7 +19,7 @@ claims: [B-040, B-041]
 
 created: "2026-11-08"
 updated: "2026-11-09"
-closed: null
+closed: "2026-11-09"
 
 summary: |
   The Integration Test step under net11.0 stalls in
