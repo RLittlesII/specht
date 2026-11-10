@@ -9,8 +9,8 @@ namespace Specht.Tests.Mint;
 /// The built tool's <c>mint</c> command as a process (<c>0001-F19</c> A-2, item <c>0415</c>): <c>specht mint &lt;type&gt;
 /// [--feature &lt;dir&gt;] [--root &lt;dir&gt;]</c> over a synthetic root whose manifest the test writes whole. An opted-in type
 /// draws from a one-character alphabet, so the id a request mints is known before it is made and no random source is
-/// replaced. A type not opted in exits <c>4</c>, as something named on the command line that is not found (B-002, the
-/// owner's selection on OQ-11), and a refusal exits exactly <c>3</c> where the claim names the invalid manifest (B-015, B-043).
+/// replaced. A type not opted in, or whose entry names no strategy, exits <c>4</c>, as something named on the command line
+/// that is not found (B-002, the owner's selections on OQ-11), and a refusal exits exactly <c>3</c> where the claim names the invalid manifest (B-015, B-043).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class MintCommandIntegrationTests
@@ -32,6 +32,7 @@ public sealed class MintCommandIntegrationTests
 
     [Theory]
     [ClassData(typeof(TypesNotOptedInRequests))]
+    [ClassData(typeof(EntriesNamingNoStrategyRequests))]
     public void ATypeTheManifestDoesNotOptIn_WhenRequested_ShouldExitAsForSomethingNamedOnTheCommandLineThatIsNotFound(string manifest)
     {
         // Given
