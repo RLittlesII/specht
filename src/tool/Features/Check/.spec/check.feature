@@ -96,6 +96,11 @@ Feature: The check command
     Then the output names the root option and the strict option
     And the exit code is 0
 
+  @B-048
+  Scenario: Top-level help opens with the Specht wordmark
+    When the tool is asked for help
+    Then the ASCII Specht wordmark appears above the usage on standard output
+
   @B-009
   Scenario: The product goes to stdout and the tool's own messages to stderr
     Given the root holds a specification with one violation
