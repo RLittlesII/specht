@@ -22,7 +22,7 @@ claims:
   - B-042
 
 created: "2026-11-07"
-updated: "2026-11-08"
+updated: "2026-11-10"
 closed: null
 
 summary: |
@@ -41,8 +41,9 @@ summary: |
   `--feature` takes and what a request does when the folder holds no
   Feature (OQ-16). Every claim here holds for a co-located Feature
   folder, a form OQ-16 keeps under every answer, but the item cannot
-  ship the two cases they leave open. It proceeds on OQ-14's recorded
-  prefix default through 0417.
+  ship the two cases they leave open. Its prefixes are 0417's, the
+  in-tree prefix of a type that names none (B-055), OQ-14's default
+  until its 2026-11-10 answer.
 
 acceptance_criteria:
   - "B-010 — the guard skips a claim id the Feature holds"

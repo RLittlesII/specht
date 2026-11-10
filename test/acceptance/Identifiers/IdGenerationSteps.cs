@@ -18,14 +18,18 @@ namespace Specht.Acceptance.Identifiers;
 /// </summary>
 /// <remarks>
 /// A request (A-2, item <c>0415</c>) launches <c>specht mint &lt;type&gt; --root .</c>, with <c>--feature features/one</c> when
-/// it is made for a Feature, a co-located Feature written there. Only <c>adr</c> and <c>lesson</c> entries are written here,
-/// each with a grammar admitting what it mints (A-6), so the scenarios of other items' types, of Snowflake, of a prefix or an
-/// encoding keep a step no binding matches and stay pending. The built tool's draws are random, so an ADR the tree holds is
-/// written only where the entry's alphabet has one character and its one candidate is known (item <c>0416</c>): the guard's
-/// refusals, B-017's guard row, B-036 and B-037. The scenarios of B-034, B-035, B-038 and B-039 name a first or an eighth
-/// candidate of a random draw and keep a step no binding matches. "No ADR number is minted" is nothing on
+/// it is made for a Feature, a co-located Feature written there. Entries are written for <c>adr</c> and <c>lesson</c> and, where
+/// a scenario names no prefix (B-055, item <c>0417</c>), for each of C-13's types, each with a grammar admitting what it mints
+/// (A-6) under any prefix the type may carry; the scenarios of item <c>0418</c>'s per-Feature types and of Snowflake keep a
+/// step no binding matches and stay pending. An <c>adr</c> entry names a prefix or an encoding where a scenario names one (item
+/// <c>0417</c>): B-009's prefix, B-033's and B-054's encodings, and B-053's prefixes that are not text. The built tool's
+/// draws are random, so an ADR the tree holds is written only where the entry's alphabet has one character and its one
+/// candidate is known (item <c>0416</c>): the guard's refusals, B-017's guard row, B-036 and B-037. The scenarios of B-034,
+/// B-035, B-038 and B-039 name a first or an eighth candidate of a random draw and keep a step no binding matches. "No ADR number is minted" is nothing on
 /// standard output and then an exit of <c>2</c>, <c>3</c> or <c>4</c> (A-8, B-017; OQ-11's default). The part of an id after
-/// its prefix is the line less the entry's <c>prefix</c>; <c>adr</c> and <c>lesson</c> have none under every answer to OQ-14.
+/// its prefix is the line less the entry's <c>prefix</c>; <c>adr</c> and <c>lesson</c> have none (B-055). "The drawn
+/// characters" with a prefix ahead of them is the line starting with that prefix, the rest the entry's size of characters
+/// from its alphabet.
 /// </remarks>
 [Binding]
 [Scope(Feature = "Id generation")]
@@ -243,6 +247,54 @@ public sealed class IdGenerationSteps
             AnyId);
     }
 
+    [Given("^a manifest that opts ADR numbers in with the prefix \"(.*)\"$")]
+    public void GivenAManifestThatOptsAdrNumbersInWithThePrefix(string prefix) =>
+        OptIn(
+            "adr",
+            new JsonObject
+            {
+                ["strategy"] = "nanoid",
+                ["nanoid"] = new JsonObject { ["alphabet"] = Base32, ["size"] = 8 },
+                ["prefix"] = prefix,
+            }.ToJsonString(),
+            $"^{Regex.Escape(prefix)}[{Base32}]{{8}}$");
+
+    [Given("^a manifest that opts ADR numbers in to Nano ID with the encoding \"(.*)\"$")]
+    public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithTheEncoding(string encoding) =>
+        OptIn(
+            "adr",
+            new JsonObject
+            {
+                ["strategy"] = "nanoid",
+                ["nanoid"] = new JsonObject { ["alphabet"] = Base32, ["size"] = 8 },
+                ["encoding"] = encoding,
+            }.ToJsonString(),
+            AnyId);
+
+    [Given("^a manifest that opts ADR numbers in to Nano ID with a prefix given as (the number 7|a list|a group of named settings|a yes-or-no value)$")]
+    public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithAPrefixGivenAs(string prefix) =>
+        OptIn(
+            "adr",
+            new JsonObject
+            {
+                ["strategy"] = "nanoid",
+                ["nanoid"] = new JsonObject { ["alphabet"] = Base32, ["size"] = 8 },
+                ["prefix"] = prefix switch
+                {
+                    "the number 7" => JsonValue.Create(7),
+                    "a list" => new JsonArray("ADR-"),
+                    "a group of named settings" => new JsonObject { ["text"] = "ADR-" },
+                    _ => JsonValue.Create(true),
+                },
+            }.ToJsonString(),
+            AnyId);
+
+    [Given(
+        "^a manifest that opts (ADR numbers|lesson numbers|decision numbers|claim ids|constraint ids|open question ids|scenario ids)"
+        + " in to Nano ID with no prefix$")]
+    public void GivenAManifestThatOptsATypeInToNanoIdWithNoPrefix(string type) =>
+        OptIn(TypeOf(type), $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""", $"^(?:[A-Z]+-)?[{Base32}]{{8}}$");
+
     [Given("^ADRs already numbered with each of the first (?:eight|three) ADR numbers that would be minted$")]
     public void GivenAdrsAlreadyNumberedWithEachOfTheFirstAdrNumbersThatWouldBeMinted() => HoldEveryAdrCandidate();
 
@@ -252,7 +304,7 @@ public sealed class IdGenerationSteps
     [When("^(an ADR number|a lesson number) is requested$")]
     public void WhenATypeIdIsRequested(string id) => _request = Request(TypeOf(id), forFeature: false);
 
-    [When("^(an ADR number|a lesson number) is requested for a Feature$")]
+    [When("^(an ADR number|a lesson number|a decision number|a claim id|a constraint id|an open question id|a scenario id) is requested for a Feature$")]
     public void WhenATypeIdIsRequestedForAFeature(string id) => _request = Request(TypeOf(id), forFeature: true);
 
     [When("^an ADR number and a lesson number are requested$")]
@@ -323,6 +375,22 @@ public sealed class IdGenerationSteps
     public void ThenEveryCharacterIsLowerCaseBase32() =>
         AfterPrefix(LastRequest).Should().NotBeEmpty().And.MatchRegex("^[0-9a-hjkmnp-tv-z]+$");
 
+    [Then("^the minted number starts with \"(.*)\"$")]
+    public void ThenTheMintedNumberStartsWith(string prefix) => LastRequest.Run.Stdout.Should().StartWith(prefix, LastRequest.Run.Stderr);
+
+    [Then("^the minted id is the drawn characters with (nothing|\"[^\"]*\") ahead of them$")]
+    public void ThenTheMintedIdIsTheDrawnCharactersWithAPrefixAheadOfThem(string ahead)
+    {
+        var prefix = ahead == "nothing" ? string.Empty : ahead.Trim('"');
+        var nanoid = ReadManifest()["mint"]![LastRequest.Type]!["nanoid"]!;
+        var line = LastRequest.Run.Stdout.TrimEnd('\n').TrimEnd('\r');
+
+        line.Should().StartWith(prefix, LastRequest.Run.Stderr);
+        line[prefix.Length..].Should().MatchRegex(
+            $"^[{Regex.Escape(nanoid["alphabet"]!.GetValue<string>())}]{{{nanoid["size"]!.GetValue<int>()}}}$",
+            LastRequest.Run.Stderr);
+    }
+
     [Then("^no ADR number is minted$")]
     public void ThenNoAdrNumberIsMinted()
     {
@@ -350,7 +418,7 @@ public sealed class IdGenerationSteps
     private (string Type, (string Stdout, string Stderr, int ExitCode) Run) LastRequest =>
         _request ?? throw new InvalidOperationException("No id was requested.");
 
-    private static string TypeOf(string words) => words.Contains("ADR", StringComparison.Ordinal) ? "adr" : "lesson";
+    private static string TypeOf(string words) => Types.First(pair => words.Contains(pair.Words, StringComparison.Ordinal)).Type;
 
     private JsonObject ReadManifest() => JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
 
@@ -408,6 +476,17 @@ public sealed class IdGenerationSteps
     private const string AnyId = "^[0-9a-z]+$";
 
     private const string Feature = "features/one";
+
+    private static readonly (string Words, string Type)[] Types =
+    [
+        ("ADR", "adr"),
+        ("lesson", "lesson"),
+        ("decision", "decision"),
+        ("claim", "claim"),
+        ("constraint", "constraint"),
+        ("open question", "openQuestion"),
+        ("scenario", "scenario"),
+    ];
 
     private static readonly int[] FailureCodes = [ExitCodes.MissingInput, ExitCodes.InvalidManifest, ExitCodes.NotFound];
 

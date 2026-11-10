@@ -2,7 +2,7 @@ id: "0417"
 type: task
 title: Format a minted id with its prefix, and refuse base32 for Nano ID
 
-status: ready
+status: done
 
 risk: 2
 
@@ -17,21 +17,25 @@ spec: src/specht/Identifiers/.spec/README.md
 claims:
   - B-009
   - B-033
+  - B-053
+  - B-054
+  - B-055
 
 created: "2026-11-07"
-updated: "2026-11-08"
-closed: null
+updated: "2026-11-10"
+closed: "2026-11-10"
 
 summary: |
   The formatting decorator in the engine (C-4, C-9): a type's `prefix`
   starts its id (B-009), and its `encoding` is `none` or `base32`, with
   `base32` refused for a Nano ID type (C-15, B-033).
 
-  Risk 2: one decorator with two settings. It proceeds on two recorded
-  defaults that carry no claim: OQ-14's, a type that names no prefix
-  gets ADR-0033's in-tree prefix (none for `adr`, `lesson` and
-  `decision`; `B-`, `C-`, `OQ-`, `S-` for the rest); and OQ-13's for a
-  Nano ID type, `none`. An unset encoding for a Snowflake type waits
+  Risk 2: one decorator with two settings. A type that names no
+  prefix gets ADR-0033's in-tree prefix (none for `adr`, `lesson` and
+  `decision`; `B-`, `C-`, `OQ-`, `S-` for the rest): OQ-14's recorded
+  default when cut, answered 2026-11-10 and now claimed as B-055. It
+  proceeds on OQ-13's recorded default for a Nano ID type, `none`,
+  which carries no claim. An unset encoding for a Snowflake type waits
   on OQ-13 and is 0419's.
 
   Waits on 0415 alone.
@@ -39,6 +43,9 @@ summary: |
 acceptance_criteria:
   - "B-009 — a named prefix starts the id"
   - "B-033 — Nano ID with `base32`, nothing on standard output"
+  - "B-053 — a prefix that is not text, nothing on standard output"
+  - "B-054 — an encoding neither `none` nor `base32`, nothing on standard output"
+  - "B-055 — no prefix named, the type's in-tree prefix"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -48,6 +55,21 @@ decisions:
     0412's. The `base32` and `none` encodings of a Snowflake number,
     B-030 to B-032, go to 0419 with the strategy that gives the
     number.
+  - |
+    2026-11-10, spec-author: added B-053 and B-054 on the design pass,
+    as B-052 was added on 0416's review. The decorator reads `prefix`
+    and `encoding` from `mint.<type>` (C-12) and refuses a `prefix`
+    that is not text and an `encoding` C-15 does not offer; no claim
+    stated either refusal. The wording is spec-author's; no owner
+    ruled on these.
+  - |
+    2026-11-10, spec-author: OQ-14 answered. Relayed in session by the
+    coordinating session, the repository owner selected "Tree's prefix
+    (Recommended)" among options an agent wrote; the question and the
+    options' wording are an agent's, only the selection is the
+    owner's. Added B-055, a type that names no prefix gets its in-tree
+    prefix, worded by spec-author; it states what this item built, so
+    the code does not change.
 
 out_of_scope:
   - "Writing a Snowflake number in an encoding, and the unset Snowflake encoding - 0419; OQ-13."
