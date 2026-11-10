@@ -378,6 +378,62 @@ Feature: Traceability reconciliation
       | that no claim file set names         |
       | whose claim file set matches no file |
 
+  @B-039
+  Scenario: Claim file two claim file sets match
+    Given a claim file that two claim file sets match
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming that claim file
+
+  @B-040
+  Scenario: Claim file set whose Feature record cannot be read
+    Given a selected Feature whose claim file set matches a claim file
+    And that claim file set names a Feature record that cannot be read
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming that Feature record
+
+  @B-041
+  Scenario Outline: Claim file tagged for another identity
+    Given a claim file of a current selected Feature whose "<scope>" tag names another identity than its claim file set
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming that claim file
+
+    Examples:
+      | scope   |
+      | Feature |
+      | epic    |
+
+  @B-042
+  Scenario Outline: Malformed native claim key
+    Given a consumer reading native claims whose "<defect>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
+    Examples:
+      | defect                                           |
+      | claim source is not Gherkin                      |
+      | claim tag has no claim placeholder               |
+      | scope tag has no placeholder of its own          |
+      | planned tag list holds a tag without a leading @ |
+
+  @B-043
+  Scenario Outline: Malformed claim file set entry
+    Given a consumer reading native claims whose claim file set "<defect>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
+    Examples:
+      | defect                                          |
+      | has no glob                                     |
+      | names a Feature outside its grammar             |
+      | names an epic though the manifest declares none |
+      | names a Feature another claim file set names    |
+
+  @B-044
+  Scenario: Markdown claim input without a claims section
+    Given a consumer whose claims are declared in Feature records and whose manifest maps no claims section
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
   @B-036
   Scenario: Declared production project without evidence
     Given a declared test project whose current evidence passed every required case

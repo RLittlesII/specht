@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
 
@@ -55,6 +56,84 @@ public sealed partial class ReconciliationSteps
         _tree.UseNativeClaims(BoundClaimFile);
         _tree.SelectFeature("cap:list", gap == "whose claim file set matches no file" ? "src/list/.spec/*.feature" : null);
     }
+
+    [Given("a claim file that two claim file sets match")]
+    public void GivenClaimFileOfTwoSets()
+    {
+        _tree.UseNativeClaims(BoundClaimFile);
+        _tree.SelectFeature("cap:list", "src/read/.spec/*.feature");
+    }
+
+    [Given("a selected Feature whose claim file set matches a claim file")]
+    public void GivenSelectedFeatureWithClaimFile() => _tree.UseNativeClaims(BoundClaimFile);
+
+    [Given("that claim file set names a Feature record that cannot be read")]
+    public void GivenUnreadableFeatureRecord() => _tree.NameClaimFileSetRecord(UnreadableRecord);
+
+    [Given("a claim file of a current selected Feature whose {string} tag names another identity than its claim file set")]
+    public void GivenClaimFileTaggedForAnotherIdentity(string scope)
+    {
+        _tree.UseNativeClaims((scope == "epic" ? "@epic:ep2" : "@feature:cap:list") + "\n" + BoundClaimFile);
+        _tree.ScopeClaimFilesToEpic("ep1");
+    }
+
+    [Given("a consumer reading native claims whose {string}")]
+    public void GivenMalformedNativeClaimKey(string defect)
+    {
+        _tree.UseNativeClaims(BoundClaimFile);
+        _tree.EditManifest(manifest =>
+        {
+            var records = manifest["codeAnalysis"]!["records"]!;
+            switch (defect)
+            {
+                case "claim source is not Gherkin":
+                    records["claimSource"] = "markdown";
+                    break;
+                case "claim tag has no claim placeholder":
+                    manifest["claimTag"]!["tag"] = "@claim";
+                    break;
+                case "scope tag has no placeholder of its own":
+                    manifest["codeAnalysis"]!["scenarioScopes"] = new JsonObject { ["featureTag"] = "@feature" };
+                    break;
+                case "planned tag list holds a tag without a leading @":
+                    records["plannedTags"] = new JsonArray("ignore");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(defect), defect, null);
+            }
+        });
+    }
+
+    [Given("a consumer reading native claims whose claim file set {string}")]
+    public void GivenMalformedClaimFileSetEntry(string defect)
+    {
+        _tree.UseNativeClaims(BoundClaimFile);
+        _tree.EditManifest(manifest =>
+        {
+            var sets = manifest["codeAnalysis"]!["records"]!["claimFileSets"]!.AsArray();
+            switch (defect)
+            {
+                case "has no glob":
+                    sets[0]!.AsObject().Remove("glob");
+                    break;
+                case "names a Feature outside its grammar":
+                    sets[0]!["feature"] = "Cap:Read";
+                    break;
+                case "names an epic though the manifest declares none":
+                    sets[0]!["epic"] = "0201";
+                    break;
+                case "names a Feature another claim file set names":
+                    sets.Add(new JsonObject { ["glob"] = "src/list/.spec/*.feature", ["feature"] = "cap:read" });
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(defect), defect, null);
+            }
+        });
+    }
+
+    [Given("a consumer whose claims are declared in Feature records and whose manifest maps no claims section")]
+    public void GivenMarkdownClaimsWithoutClaimsSection() =>
+        _tree.EditManifest(static manifest => manifest["codeAnalysis"]!["mappings"]!.AsObject().Remove("/claimsSection"));
 
     [Given("a declared test project whose current evidence passed every required case")]
     public void GivenPassingTestProject() { }
@@ -114,6 +193,9 @@ public sealed partial class ReconciliationSteps
     [Then("the command fails with invalid input naming the manifest")]
     public void ThenManifestRejected() => ThenInvalidInputNaming(".specht/manifest.json");
 
+    [Then("the command fails with invalid input naming that Feature record")]
+    public void ThenFeatureRecordRejected() => ThenInvalidInputNaming(UnreadableRecord);
+
     [Then("no compilation is reported missing for the production project")]
     public void ThenProductionProjectNotMissing() => Report()["findings"]!.AsArray().Should().NotContain(static item =>
         item!["kind"]!.GetValue<string>() == "missingCompilation" && item["path"]!.GetValue<string>() == "src/app/app.csproj");
@@ -134,6 +216,7 @@ public sealed partial class ReconciliationSteps
 
     private const string BoundClaimFile = "Feature: Read\n\n  @need/7\n  Scenario: Reads a value\n    Then it is read\n";
     private const string PlannedClaimFile = "Feature: Read\n\n  @need/7 @ignore\n  Scenario: Reads a value\n    Then it is read\n";
+    private const string UnreadableRecord = "src/read/.spec/missing.md";
 
     private bool _lockClaimFile;
     private FileStream? _claimFileLock;
