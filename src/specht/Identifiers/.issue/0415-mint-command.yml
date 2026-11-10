@@ -2,7 +2,7 @@ id: "0415"
 type: task
 title: Add the specht mint command
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -25,7 +25,7 @@ claims:
 
 created: "2026-11-07"
 updated: "2026-11-09"
-closed: null
+closed: "2026-11-09"
 
 summary: |
   `specht mint <type> [--feature <dir>] [--root <dir>]` (A-2), a
