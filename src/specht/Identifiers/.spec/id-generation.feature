@@ -338,11 +338,16 @@ Feature: Id generation
     Then the minted id is one no scenario of that Feature is tagged with
 
   @B-043 @boundary
-  Scenario: A type opted in with no grammar is an invalid manifest
+  Scenario Outline: A type opted in with no grammar is an invalid manifest
     Given a manifest that opts ADR numbers in to Nano ID
     And it declares no grammar for ADR numbers
-    When an ADR number is requested
+    When <an id> is requested
     Then the request ends as it does for an invalid manifest
+
+    Examples:
+      | an id           |
+      | an ADR number   |
+      | a lesson number |
 
   @B-044
   Scenario: Schema 0.3.1 accepts the id settings
