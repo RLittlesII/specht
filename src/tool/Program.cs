@@ -26,7 +26,8 @@ var app = new CommandApp(new TypeRegistrar(services));
 app.SetDefaultCommand<CheckCommand>();
 app.Configure(static config =>
 {
-    config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion);
+    config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion)
+        .SetHelpProvider(new SpechtHelpProvider(config.Settings));
     config.AddInit().AddUpgrade().AddSchema().AddFrontmatter().AddRules().AddManifest();
     config.AddCommand<EvidenceCommand>("evidence");
 });
