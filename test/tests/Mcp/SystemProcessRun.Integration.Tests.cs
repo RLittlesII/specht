@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using AwesomeAssertions;
 using Specht.Mcp.Features.PinnedTool;
 
@@ -6,15 +7,16 @@ namespace Specht.Tests.Mcp;
 
 /// <summary>
 /// Holds <see cref="SystemProcessRun"/> against real programs started with <c>sh</c>: what a program writes and how it ends comes
-/// back as it was, a program never reads the session's standard input, a cancelled run leaves no program alive, and a program that
-/// does not exist is none (0132-F3 B-017).
+/// back as it was, a program never reads the session's standard input, and a program that does not exist is none (0132-F3 B-017);
+/// a cancelled run ends cancelled and leaves neither the program nor the program it started alive (0132-F3 B-040, B-041). The
+/// cancelled run waits for the file of process ids on an event of its directory, bounded by the test's token.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SystemProcessRunIntegrationTests
 {
     public static bool IsWindows => OperatingSystem.IsWindows();
 
-    [Fact(Skip = "The fixture program is a shell script.", SkipWhen = nameof(IsWindows))]
+    [Fact(Skip = "The fixture program is a shell script.", SkipWhen = nameof(IsWindows), Timeout = 30_000)]
     public async Task AProgramThatWrites_WhenItEnds_ShouldGiveBackItsCodeAndBothStreamsUnchanged()
     {
         // Given
@@ -40,7 +42,7 @@ public sealed class SystemProcessRunIntegrationTests
         result.Should().Be(new ProcessResult(0, "ended", string.Empty));
     }
 
-    [Fact]
+    [Fact(Timeout = 30_000)]
     public async Task AProgramThatDoesNotExist_WhenItRuns_ShouldGiveBackNothing()
     {
         // Given
@@ -57,46 +59,74 @@ public sealed class SystemProcessRunIntegrationTests
     public async Task AProgramThatIsRunning_WhenTheRunIsCancelled_ShouldThrowCancelledAndLeaveNoProgramAlive()
     {
         // Given
+        var token = TestContext.Current.CancellationToken;
         var directory = Directory.CreateTempSubdirectory("specht-process-").FullName;
         var pids = Path.Combine(directory, "pids");
-        using (var made = Process.Start("mkfifo", pids))
-        {
-            await made.WaitForExitAsync(TestContext.Current.CancellationToken);
-        }
-
-        var opening = Task.Run(() => new StreamReader(File.OpenRead(pids)), TestContext.Current.CancellationToken);
         using var cancel = new CancellationTokenSource();
-        var request = new ProcessRequest("sh", ["-c", "exec 3>\"$1\"; echo $$ >&3; sleep 300 & echo $! >&3; wait", "sh", pids], directory);
+        var request = new ProcessRequest("sh", ["-c", "sleep 300 & printf '%s\\n%s\\n' \"$$\" \"$!\" >pids.next && mv pids.next pids; wait"], directory);
         var run = new SystemProcessRun().RunAsync(request, cancel.Token);
-        var token = TestContext.Current.CancellationToken;
-        using var reader = await opening;
-        var shell = int.Parse((await reader.ReadLineAsync(token))!);
-        var sleeper = int.Parse((await reader.ReadLineAsync(token))!);
-
-        // When
-        await cancel.CancelAsync();
-        var thrown = await Record.ExceptionAsync(() => run);
-        var survivors = new List<int>();
-        foreach (var pid in new[] { shell, sleeper })
+        try
         {
-            try
+            using (var waiting = CancellationTokenSource.CreateLinkedTokenSource(token))
+            using (var watcher = new FileSystemWatcher(directory))
             {
-                using var program = Process.GetProcessById(pid);
-                if (!program.WaitForExit(TimeSpan.FromSeconds(30)))
+                waiting.CancelAfter(TimeSpan.FromSeconds(10));
+                var seen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                void Look()
                 {
-                    survivors.Add(pid);
-                    program.Kill();
+                    if (File.Exists(pids))
+                    {
+                        seen.TrySetResult();
+                    }
+                }
+
+                watcher.Created += (_, _) => Look();
+                watcher.Renamed += (_, _) => Look();
+                watcher.Changed += (_, _) => Look();
+                watcher.EnableRaisingEvents = true;
+                Look();
+                await seen.Task.WaitAsync(waiting.Token);
+            }
+
+            var written = await File.ReadAllLinesAsync(pids, token);
+            var shell = int.Parse(written[0], CultureInfo.InvariantCulture);
+            var sleeper = int.Parse(written[1], CultureInfo.InvariantCulture);
+
+            // When
+            await cancel.CancelAsync();
+            var thrown = await Record.ExceptionAsync(() => run);
+            var survivors = new List<int>();
+            using var exiting = CancellationTokenSource.CreateLinkedTokenSource(token);
+            exiting.CancelAfter(TimeSpan.FromSeconds(10));
+            foreach (var pid in new[] { shell, sleeper })
+            {
+                try
+                {
+                    using var program = Process.GetProcessById(pid);
+                    try
+                    {
+                        await program.WaitForExitAsync(exiting.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        survivors.Add(pid);
+                        program.Kill();
+                    }
+                }
+                catch (ArgumentException)
+                {
                 }
             }
-            catch (ArgumentException)
-            {
-            }
+
+            // Then
+            thrown.Should().BeAssignableTo<OperationCanceledException>();
+            survivors.Should().BeEmpty();
         }
-
-        Directory.Delete(directory, recursive: true);
-
-        // Then
-        thrown.Should().BeAssignableTo<OperationCanceledException>();
-        survivors.Should().BeEmpty();
+        finally
+        {
+            await cancel.CancelAsync();
+            await run.ContinueWith(static _ => { }, TaskScheduler.Default);
+            Directory.Delete(directory, recursive: true);
+        }
     }
 }

@@ -9,6 +9,7 @@ using Nuke.Common.Tooling;
 using Rocket.Surgery.Nuke.ContinuousIntegration;
 using Rocket.Surgery.Nuke.DotNetCore;
 using Rocket.Surgery.Nuke.GithubActions;
+using Specht.Build;
 using static Nuke.Common.Tools.Git.GitTasks;
 
 // 0055-F2: the integration workflow, generated into .github/workflows/ci.yml and committed (C-1).
@@ -103,6 +104,7 @@ internal sealed partial class SpechtBuild
         AddBenchmarkResults(buildJob);
         PassAnnotationContext(buildJob);
         GateOnChangedFiles(buildJob);
+        LimitBuildJobTime(configuration, buildJob);
 
         return configuration;
     }
@@ -187,6 +189,10 @@ internal sealed partial class SpechtBuild
             => !(Host is GitHubActions ||
                  Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == true.ToString());
     }
+
+    /// <summary>Puts the build job's time limit on it, so a hung leg gives its runner back.</summary>
+    private static void LimitBuildJobTime(RocketSurgeonGitHubActionsConfiguration configuration, RocketSurgeonsGithubActionsJob buildJob) =>
+        configuration.Jobs[configuration.Jobs.IndexOf(buildJob)] = new TimeLimitedJob(buildJob, BuildJobMinutes);
 
     /// <summary>Removes the generator's tool-restore and global NUKE install steps and runs every target step through the entry script.</summary>
     private static void RunThroughEntryScript(RocketSurgeonsGithubActionsJob buildJob)
@@ -346,4 +352,6 @@ internal sealed partial class SpechtBuild
 
     // C-12 (decision 0005): the owner's self-hosted macOS pool takes every leg that ran on ubuntu-latest.
     private const string RunnerPool = "[self-hosted, macOS, ARM64]";
+
+    private const int BuildJobMinutes = 45;
 }

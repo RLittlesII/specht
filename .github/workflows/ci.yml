@@ -151,3 +151,4 @@ jobs:
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target ContinuousIntegration --skip Build
+    timeout-minutes: 45
