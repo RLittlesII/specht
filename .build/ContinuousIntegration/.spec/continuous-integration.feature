@@ -242,6 +242,19 @@ Feature: Continuous integration
     When integration runs
     Then the macOS check does not fail because no merged tree was checked
 
+  @B-025
+  Scenario: Passing and skipped acceptance scenarios appear only in the test summary
+    Given the acceptance run includes passing and skipped scenarios
+    When integration runs the acceptance tests
+    Then the test summary includes the passing and skipped counts
+    And the log omits step output from passing scenarios and details for individual skips
+
+  @B-026 @boundary
+  Scenario: The log explains an acceptance failure
+    Given an acceptance scenario fails
+    When integration runs the acceptance tests
+    Then the log identifies the failing scenario and explains its failure
+
   @B-027
   Scenario: A build that runs too long is cancelled and frees its runner
     Given integration is building a pull request or a push to the main branch on a runner

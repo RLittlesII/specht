@@ -48,23 +48,23 @@ Feature: The build
   Scenario: The test gate runs every tier
     Given a failing test in the integration tier only
     When the test gate runs
-    Then the unit, integration and acceptance tiers each ran
+    Then the unit, integration and acceptance tiers each ran on .NET 11 only
     And the test gate fails
 
   @B-006
   Scenario: The unit tier runs alone
     When the unit tier is run
-    Then only unit-tier tests run
+    Then only unit-tier tests run on .NET 11
 
   @B-007
   Scenario: The integration tier runs alone
     When the integration tier is run
-    Then only integration-tier tests run
+    Then only integration-tier tests run on .NET 11
 
   @B-008
   Scenario: The acceptance tier runs the linked scenarios
     When the acceptance tier is run
-    Then the scenarios of every linked specification companion run
+    Then the scenarios of every linked specification companion run on .NET 11 only
 
   @B-009
   Scenario: Packing writes every release package
