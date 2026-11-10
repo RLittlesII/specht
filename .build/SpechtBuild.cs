@@ -16,6 +16,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 // Every gate is a target here (0055-F1 C-1); a target writes only under .artifacts/, bin/ and obj/ (C-5).
 internal partial class SpechtBuild : NukeBuild
 {
+    private const string TestFramework = "net11.0";
+
     // B-001: `./build.sh` with no target name runs Compile, then Test.
     public static int Main() => Execute<SpechtBuild>(static x => x.Build);
 
@@ -145,7 +147,7 @@ internal partial class SpechtBuild : NukeBuild
             var output = GitHubActionsTasks.IsRunningOnGitHubActions() ? "Minimal" : "Normal";
             DotNet(
                 $"test --project {RootDirectory / "test" / "acceptance" / "acceptance.csproj"} --configuration {Configuration} --no-build " +
-                $"--max-parallel-test-modules 1 --coverage --coverage-output-format cobertura --coverage-settings {CoverageSettings} " +
+                $"--framework {TestFramework} --coverage --coverage-output-format cobertura --coverage-settings {CoverageSettings} " +
                 $"--results-directory {coverage} --output {output}",
                 workingDirectory: RootDirectory);
         });
@@ -253,7 +255,7 @@ internal partial class SpechtBuild : NukeBuild
         foreach (var project in Solution.GetTestProjects())
         {
             DotNet(
-                $"test --project {project.FilePath} --configuration {Configuration} --no-build --filter-trait \"Tier={tier}\" " +
+                $"test --project {project.FilePath} --configuration {Configuration} --framework {TestFramework} --no-build --filter-trait \"Tier={tier}\" " +
                 $"--coverage --coverage-output-format cobertura --coverage-settings {CoverageSettings} --results-directory {coverage}",
                 workingDirectory: RootDirectory);
         }

@@ -1,6 +1,6 @@
 id: "0428"
 type: task
-title: Quiet acceptance test logs in CI
+title: Run CI tests on .NET 11 and quiet acceptance logs
 
 status: in-review
 
@@ -17,6 +17,10 @@ spec: .build/ContinuousIntegration/.spec/README.md
 claims:
   - B-025
   - B-026
+  - 0055-F1 B-005
+  - 0055-F1 B-006
+  - 0055-F1 B-007
+  - 0055-F1 B-008
 
 created: "2026-11-09"
 updated: "2026-11-09"
@@ -24,9 +28,11 @@ closed: null
 
 summary: |
   Apply decision 0006 to the acceptance test reporter on the build server.
+  Apply the owner's .NET 11 selection to the shared test targets.
 
 acceptance_criteria:
   - "B-025 — routine output and the summary."
   - "B-026 — scenario failure details."
+  - "0055-F1 B-005 to B-008 — framework selection for all test tiers."
   - "B-004, B-005 and 0055-F3 B-001 — preserve the gate and coverage."
   - "Section 9 records both claims under the workflow's existing no-tests decision."

@@ -182,7 +182,7 @@ Delivered so far by items 0064, 0102, 0066, 0114, 0118, 0140 and 0183.
 - **Published outputs** (B-008, C-3): coverage uploads follow the existing policy. Benchmark Markdown and JSON exporters are uploaded per operating system, as `0109-F1` B-019 and C-13 specify. No package is uploaded or pushed; packing for a selected cold-start benchmark remains inside `Benchmark` (§ 5 #18). Repository permissions stay `contents: read`.
 - **Not in this workflow's claims:** the Codecov upload, which is `0055-F3`'s (B-002) though it is a step here. **Not in this workflow:** the `artifacts/logs/` upload, a path this build never writes, and `DeployMiddleware`'s registry and Azure logins, which belong to a release workflow, not to integration.
 
-The `AcceptanceTest` target selects minimal test reporting on GitHub Actions (B-025, B-026). It still runs both framework modules and requests Cobertura coverage; local runs use the normal reporter.
+The `AcceptanceTest` target selects minimal test reporting on GitHub Actions (B-025, B-026). It requests Cobertura coverage for the test framework selected by `0055-F1` B-008. Local runs use the normal reporter.
 
 ### Benchmark integration
 
