@@ -79,6 +79,9 @@ claims:
   - B-050
   - B-051
   - B-052
+  - B-053
+  - B-054
+  - B-055
 
 created: "2026-11-07"
 updated: "2026-11-10"
@@ -142,6 +145,9 @@ acceptance_criteria:
   - "B-045 — 0.3.1 accepts the four grammars (0413)"
   - "B-047 to B-051 — no id minted for a missing or unknown strategy, or Nano ID settings outside C-12 (0422)"
   - "B-052 — attempts not a positive whole number, nothing printed (0416)"
+  - "B-053 — a prefix that is not text, nothing printed (0417)"
+  - "B-054 — an encoding neither `none` nor `base32`, nothing printed (0417)"
+  - "B-055 — no prefix named, the type's in-tree prefix (0417)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -166,6 +172,11 @@ decisions:
   - |
     2026-11-08, spec-author: B-046 withdrawn on 0422's review, as a
     duplicate of B-001, and removed from `claims:`; its id is retired.
+  - |
+    2026-11-10, spec-author: B-055 added for 0417, on the repository
+    owner's selection "Tree's prefix (Recommended)" for OQ-14, among
+    options an agent wrote. OQ-14 no longer holds a child on a
+    default.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
