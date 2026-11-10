@@ -378,6 +378,30 @@ Feature: Traceability reconciliation
       | that no claim file set names         |
       | whose claim file set matches no file |
 
+  @B-039
+  Scenario: Claim file two claim file sets match
+    Given a claim file that two claim file sets match
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming that claim file
+
+  @B-040
+  Scenario: Claim file set whose Feature record cannot be read
+    Given a selected Feature whose claim file set matches a claim file
+    And that claim file set names a Feature record that cannot be read
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming that Feature record
+
+  @B-041
+  Scenario Outline: Claim file tagged for another identity
+    Given a claim file of a current selected Feature whose "<scope>" tag names another identity than its claim file set
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming that claim file
+
+    Examples:
+      | scope   |
+      | Feature |
+      | epic    |
+
   @B-036
   Scenario: Declared production project without evidence
     Given a declared test project whose current evidence passed every required case

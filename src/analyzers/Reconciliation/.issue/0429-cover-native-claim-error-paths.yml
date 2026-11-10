@@ -23,6 +23,9 @@ claims:
   - B-035
   - B-036
   - B-038
+  - B-039
+  - B-040
+  - B-041
 
 created: "2026-11-08"
 updated: "2026-11-09"
@@ -45,8 +48,13 @@ acceptance_criteria:
   - "No file under src/ other than the specification changes; a test that exposes wrong behaviour is reported, not fixed here."
   - "./build.sh is green and the Codecov patch check passes."
 
-decisions: []
+decisions:
+  - |
+    2026-11-09, spec-author: the repository owner, asked "Should spec-author
+    amend 0201-F5 so the three unstated branches can be tested?", answered
+    "Amend the spec". 0201-F5 B-039 to B-041 state the three branches as new
+    claims (0201-F5 § 10, 2026-11-09).
 
 out_of_scope:
   - "Production code changes; a defect a test exposes becomes its own bug item."
-  - "New claims; this item adds tests to claims 0201-F5 already states."
+  - "Claims beyond 0201-F5 B-039 to B-041; any other branch no claim states is reported in 0201-F5 § 8, not claimed here."
