@@ -42,8 +42,9 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     /// <param name="specifications">The discovered specifications.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <param name="taskGrammar">The manifest's <c>identifiers.task</c> grammar.</param>
-    /// <returns>The root-relative path of each item file, in specification order, each one's in ordinal order of file name.</returns>
+    /// <returns>The root-relative path of each item file, in ordinal order.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-008" />
     public IReadOnlyList<string> FindChildItems(
         string root,
         IEnumerable<SpechtLocation> specifications,
@@ -52,7 +53,10 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     {
         var shapes = new SpechtTaskShapes(inputs.TaskFiles, taskGrammar);
 
-        return specifications.SelectMany(specification => Beside(root, specification, shapes.IsMatch)).ToList();
+        return specifications
+            .SelectMany(specification => Beside(root, specification, shapes.IsMatch))
+            .Order(StringComparer.Ordinal)
+            .ToList();
     }
 
     /// <summary>
@@ -155,7 +159,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
             .. exclusions.Select(entry =>
                 "--exclude=" + anchor + (entry.StartsWith('/') ? Escaped(entry[1..], Wildcards) : "**/" + Escaped(entry, Wildcards)) + "/"),
             "--",
-            .. globs.Select(static glob => ":(glob)" + HeadEscaped(Escaped(glob, GlobLiterals))),
+            .. globs.Select(static glob => ":(glob)" + Bracketed(glob)),
             .. exclusions.Select(static entry =>
                 entry.StartsWith('/') ? ":(exclude,literal)" + entry[1..] : ":(exclude,glob)**/" + Escaped(entry, Wildcards) + "/**"),
         ];
@@ -163,8 +167,13 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
 
     /// <implements epic="0001" feature="F6" claim="B-007" />
     /// <implements epic="0001" feature="F6" claim="B-010" />
-    private static string HeadEscaped(string pathspec) =>
-        pathspec is [not ('*' or '\\'), ..] ? "\\" + pathspec : pathspec;
+    private static string Bracketed(string glob) => glob switch
+    {
+        [] or ['*' or '\\', ..] => Escaped(glob, GlobLiterals),
+        ['!' or '^', ..] => "[]" + glob[0] + "]" + Escaped(glob[1..], GlobLiterals),
+        [']', ..] => "[]]" + Escaped(glob[1..], GlobLiterals),
+        _ => "[" + glob[0] + "]" + Escaped(glob[1..], GlobLiterals),
+    };
 
     /// <implements epic="0001" feature="F6" claim="B-010" />
     private static string Escaped(string text, string special) =>
