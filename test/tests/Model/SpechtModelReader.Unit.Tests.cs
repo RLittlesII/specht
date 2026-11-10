@@ -127,18 +127,24 @@ public sealed class SpechtModelReaderUnitTests
         model.DependencyGraph.DependsOn["0001-F1"].Should().BeEquivalentTo(["0001-F3"]);
     }
 
-    [Fact]
-    public void AnItemIdReusedBesideASpecificationAndBelowItsDirectory_WhenLoaded_ShouldReportSpec044OnTheLaterPathAndDeclareTheEarlierFirst()
+    [Theory]
+    [ClassData(typeof(ReusedItemIds))]
+    public void AnItemIdReusedBesideTwoSpecifications_WhenLoaded_ShouldReportSpec044OnTheLaterPathAndDeclareTheEarlierFirst(
+        string because,
+        string earlierSpecification,
+        string earlierItem,
+        string laterSpecification,
+        string laterItem)
     {
         // Given
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
                 [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}"),
-                [Path.Combine("repo", "epics", "0001-e", "F1-f", "spec.md")] = new("---\nepic: \"0001\"\nid: F1\n---\n"),
-                [Path.Combine("repo", "epics", "0001-e", "F1-f", "0001-01-a.md")] = new("---\nid: \"0001-01\"\n---\n"),
-                [Path.Combine("repo", "epics", "0001-e", "F1-f", "G1-g", "spec.md")] = new("---\nepic: \"0001\"\nid: G1\n---\n"),
-                [Path.Combine("repo", "epics", "0001-e", "F1-f", "G1-g", "0001-01-b.md")] = new("---\nid: \"0001-01\"\n---\n"),
+                [Path.Combine("repo", earlierSpecification)] = new("---\nepic: \"0001\"\nid: F1\n---\n"),
+                [Path.Combine("repo", earlierItem)] = new("---\nid: \"0001-01\"\n---\n"),
+                [Path.Combine("repo", laterSpecification)] = new("---\nepic: \"0001\"\nid: F2\n---\n"),
+                [Path.Combine("repo", laterItem)] = new("---\nid: \"0001-01\"\n---\n"),
             });
         var root = fileSystem.Path.GetFullPath("repo");
         var reader = EngineServices.Reader(fileSystem);
@@ -150,6 +156,6 @@ public sealed class SpechtModelReaderUnitTests
         new ItemSequenceRule().Evaluate(model)
             .Where(static finding => finding.Expected?["firstDeclaration"] is not null)
             .Select(static finding => (finding.File, finding.Expected!["firstDeclaration"]!.GetValue<string>()))
-            .Should().Equal(("epics/0001-e/F1-f/G1-g/0001-01-b.md", "epics/0001-e/F1-f/0001-01-a.md"));
+            .Should().Equal([(laterItem, earlierItem)], because);
     }
 }
