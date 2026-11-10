@@ -60,8 +60,8 @@ Tool restore reads the published checker from nuget.org. The NUKE build also
 restores local tools.
 
 Until that runs, `core.hooksPath` is unset, so neither the formatting pre-commit
-hook nor the self-check fires. The .NET SDK is pinned in `global.json`
-(`allowPrerelease`), with
+hook nor the self-check fires. The .NET SDK is pinned in `global.json` to a
+released SDK (`allowPrerelease` `false`), with
 `"test": { "runner": "Microsoft.Testing.Platform" }`. Every project but
 `.build` targets `net10.0` and `net11.0` (`0001-F2` B-045), so a clone needs
 the .NET 10 runtime beside the .NET 11 SDK.
