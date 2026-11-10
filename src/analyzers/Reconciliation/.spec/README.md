@@ -142,7 +142,7 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-08 (item 0302: 0201-F5 OQ-5 cited as resolved) -->
+<!-- last written by: implementer, 2026-11-09 (item 0429: B-039 to B-041 cited for the shared claim file, the unreadable record and the identity tag) -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -344,16 +344,16 @@ outside the delivered scenario inputs, such as `src/read/claims/read.feature`
 under the default `SpechtScenarioInputs`, is a claim file to the gate and not to
 the analyzer. A non-`.feature` file a consumer delivers by overriding
 `SpechtScenarioInputs` is a claim file to the analyzer and not to the gate. A file two sets match is an
-`invalidInput` finding at that file and contributes no claim. A selected Feature with no set,
+`invalidInput` finding at that file and contributes no claim (B-039). A selected Feature with no set,
 or whose set matches no file, is an `invalidInput` finding at
 `.specht/manifest.json` (B-035). A set's `record` is parsed with the
 `SpechtDocumentParser`, and its `featureLifecycleKey` gates every claim of the
 set as a Markdown record's lifecycle does (B-030); a set with no record is
-current, and an unreadable record is an `invalidInput` finding at the record.
+current, and an unreadable record is an `invalidInput` finding at the record (B-040).
 Each file is read and passed to `GherkinClaimTextReader`; an `IOException` or
-`UnauthorizedAccessException`, a `GherkinClaimTextException`, or a Feature or
-epic tag value differing from the set is an `invalidInput` finding at that claim
-file (B-034), and exit 3. A declaration whose state is `Active` is selected with
+`UnauthorizedAccessException` or a `GherkinClaimTextException` (B-034), or a Feature or
+epic tag value differing from the set (B-041), is an `invalidInput` finding at that claim
+file, and exit 3. A declaration whose state is `Active` is selected with
 the set's epic and Feature, its id, the claim file's root-relative path and the
 declaring element's keyword line (B-028, B-031); `Withdrawn` and `Superseded`
 declarations are not (B-029). The reader's planned case flags are not read: a
