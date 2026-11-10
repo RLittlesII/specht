@@ -254,3 +254,10 @@ Feature: Continuous integration
     Given an acceptance scenario fails
     When integration runs the acceptance tests
     Then the log identifies the failing scenario and explains its failure
+
+  @B-027
+  Scenario: A build that runs too long is cancelled and frees its runner
+    Given integration is building a pull request or a push to the main branch on a runner
+    When the build is still running 45 minutes after it started
+    Then GitHub Actions cancels the build
+    And the runner it held is free to take the next queued run

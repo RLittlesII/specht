@@ -1,0 +1,114 @@
+id: "0430"
+type: bug
+title: The process-run integration tests stall the net11.0 step
+
+status: done
+
+value: 4
+risk: 3
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/mcp/.spec/README.md
+
+claims: [B-040, B-041]
+
+created: "2026-11-08"
+updated: "2026-11-09"
+closed: "2026-11-09"
+
+summary: |
+  The Integration Test step under net11.0 stalls in
+  `test/tests/Mcp/SystemProcessRun.Integration.Tests.cs`, and never ends.
+  Seen on pull request #792, runs 42526206109 (runner vitruvius-3) and
+  42530364175 (runner vitruvius-2): the cancel test timed out at 30 seconds,
+  in the second run the standard-input test 30 seconds later, and the step
+  ran for 48 minutes until it was cancelled. net10.0 passed 641 tests in
+  both runs. It reproduces locally in 1 of 11 full `net11.0`
+  Integration-tier runs on rc.2.
+
+  The cause is the host's own kill, not the tests: on macOS and Linux,
+  .NET 11's `Process.Kill(entireProcessTree: true)` stops the tree before it
+  kills it and can stall between the two, after which every later program
+  start in the host blocks. That finding replaces the item's first reading,
+  a blocking FIFO open and a `Process.Start` that never returns; bounding the
+  tests and removing the FIFO did not stop the stall. The cause and the
+  design are `0132-F3` § 7, "Ending a cancelled run", and the incident is
+  `src/mcp/.spec/lessons/0001-a-tree-kill-that-stops-first-stalls-the-host.md`.
+
+  The item delivers `0132-F3` B-040 and B-041, what a cancelled call does,
+  so it sits beside that Feature's specification. At the coordinating
+  session's request it also delivers `0055-F2` B-027, a `build` job of the
+  `ci` and `main` workflows cancelled once it has run for 45 minutes, so a
+  hung job frees its pool runner instead of holding it until cancelled by
+  hand.
+
+  Value 4: the pull-request build cannot finish while the step stalls, and a
+  48-minute stall holds a runner. Risk 3: a production change to how the
+  host ends a cancelled run, with platform interop on macOS and a `/proc`
+  scan on Linux, where no CI runner runs Linux.
+
+acceptance_criteria:
+  - "B-040 — a cancelled call ends cancelled"
+  - "B-041 — no program of a cancelled call left running"
+  - "Every test in `SystemProcessRunIntegrationTests` is bounded, so a stuck start fails that test instead of stalling the step."
+  - "The cancel test depends on neither a blocking FIFO open nor an extra `mkfifo` process."
+  - "CI passes the net11.0 Integration Test step, and the step ends on its own."
+  - "`0132-F3` B-017 still holds."
+  - "`0055-F2` B-027 — a `build` job still running at 45 minutes is cancelled, freeing its runner"
+  - "§ 9 of `0132-F3` carries a row naming a test for B-040 and B-041; `0055-F2` B-027's row stays `Missing` under that Feature's ruling that CI has no tests (its § 8)."
+
+decisions:
+  - |
+    2026-11-08, spec-author: a root-level bug with `spec: null` and no claim.
+    The tests hold the process boundary beneath `0132-F3` B-017 and the item
+    preserves it; the stall is observed in tests, not in the host. Value and
+    risk are spec-author's scores, not an owner ruling. Superseded by the
+    fourth decision below.
+  - |
+    2026-11-08, coordinator (proposed) and owner (selected): option A. The
+    coordinator wrote the option: specht-mcp stops calling
+    `Kill(entireProcessTree: true)` on macOS and Linux and instead kills the
+    program's descendants, children before parent, without a stop step. The
+    owner's recorded words are that option A was selected.
+  - |
+    2026-11-08, spec-author: runtime finding. The test change alone
+    (`5099c78a`) did not stop the stall; it reproduced in 1 of 11 full
+    `net11.0` Integration-tier runs locally. After the production change
+    (`bb378585`), 26 full `net11.0` tier runs and more than 40 runs of
+    `SystemProcessRunIntegrationTests` passed with 0 stalls, measured
+    locally; CI is still to be confirmed. The cause and the design are in
+    `0132-F3` § 7, "Ending a cancelled run", and the incident in
+    `src/mcp/.spec/lessons/0001-a-tree-kill-that-stops-first-stalls-the-host.md`.
+  - |
+    2026-11-08, spec-author, on the round-8 review of `0132-F3`: the item
+    delivers a Feature claim, so it moves from the root `.issue/` to
+    `src/mcp/.issue/`, with `spec:` the Feature and `claims:` B-040 and
+    B-041, added to `0132-F3` § 3. The rework asked for one claim; its text
+    carried two assertions, the call ending and no program left running, so
+    it is split. Risk is rescored 2 to 3 for the production change.
+  - |
+    2026-11-09, spec-author, on merging `main`: an id collision fix, not an
+    owner decision. The item is renumbered 0426 to 0430, because `main` took
+    0426 and other open branches held 0427 to 0429, and its claims B-036 and
+    B-037 to B-040 and B-041, because `main`'s item 0425 took B-036 to B-039
+    in `0132-F3` § 3. No claim text changes.
+  - |
+    2026-11-09, coordinator (requested), not an owner decision: the item
+    also delivers `0055-F2` B-027. On 2026-11-09 two of the pool's three
+    runners sat in hung `build` jobs, this item's stall, for 80 to 100
+    minutes until cancelled by hand, with 8 runs queued. The build now
+    generates `timeout-minutes: 45` on the `build` job of `ci.yml` and
+    `main.yml` (`LimitBuildJobTime`, `TimeLimitedJob`), about 1.7 times the
+    longest recent successful job, 27.1 minutes. The limit awaits the
+    owner's ratification (`0055-F2` OQ-6).
+
+out_of_scope:
+  - "Changing `global.json`'s SDK pin or roll-forward policy."
+  - "Any production change beyond ending a cancelled run on macOS and Linux (B-040, B-041); the build-job time limit is build configuration (`0055-F2` B-027)."
+  - "A program the cancelled call's tree starts after the cancellation (`0132-F3` § 5 row 20)."
+  - "Masking the stall by skipping a test or removing net11.0 from the Integration Test step."
