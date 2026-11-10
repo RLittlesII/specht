@@ -17,6 +17,7 @@ spec: src/specht/Discovery/.spec/README.md
 claims:
   - B-007
   - B-008
+  - B-010
   - B-011
 
 created: "2026-10-08"
@@ -32,10 +33,16 @@ summary: |
 acceptance_criteria:
   - "B-007 — same set from both modes on this repository's checkout"
   - "B-008 — ordinal root-relative order, both modes"
+  - "B-010 — exclusions as exclude pathspecs hold beside a glob with a leading directory"
   - "B-011 — linked directory not followed, both modes"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-11-10, coordinator: `claims` gains B-010 on spec-reviewer's finding 7.
+    The B-007 proof found git mode losing the exclude pathspecs beside a
+    glob with a leading directory (lesson 0001), and this item changes that
+    mechanism and B-010's § 9 row.
 
 out_of_scope:
   - "Parity on a consumer's tree — § 5 #6, pending OQ-3."
