@@ -910,9 +910,9 @@ public sealed partial class GherkinVsTestConsumerIntegrationTests(GherkinVsTestC
 
     private async Task<ConsumerEvidence> Collected()
     {
-        if (!AppContext.TargetFrameworkName!.EndsWith("v10.0", StringComparison.Ordinal))
+        if (!AppContext.TargetFrameworkName!.EndsWith("v11.0", StringComparison.Ordinal))
         {
-            Assert.Skip("The Gherkin VSTest consumer fixture runs once against the repository's .NET 10 consumer runtime.");
+            Assert.Skip("The Gherkin VSTest consumer fixture runs once in the .NET 11 test gate.");
         }
 
         return await run.Evidence;
