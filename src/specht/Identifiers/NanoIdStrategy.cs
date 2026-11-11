@@ -20,6 +20,7 @@ public sealed class NanoIdStrategy : IIdStrategy
     /// </exception>
     /// <implements epic="0001" feature="F19" claim="B-019" />
     /// <implements epic="0001" feature="F19" claim="B-020" />
+    /// <implements epic="0001" feature="F19" claim="B-021" />
     /// <implements epic="0001" feature="F19" claim="B-049" />
     /// <implements epic="0001" feature="F19" claim="B-050" />
     /// <implements epic="0001" feature="F19" claim="B-051" />
@@ -65,9 +66,16 @@ public sealed class NanoIdStrategy : IIdStrategy
         return new string(characters);
     }
 
-    /// <summary>The size of a type that names none: 8 for the repository-wide <c>adr</c> and <c>lesson</c> (ADR-0033).</summary>
+    /// <summary>
+    /// The size of a type that names none (ADR-0033): 8 for a repository-wide type, 6 for a per-Feature type, and none for a type
+    /// in neither scope.
+    /// </summary>
     /// <implements epic="0001" feature="F19" claim="B-020" />
-    private static int? DefaultSize(string type) => type is "adr" or "lesson" ? 8 : null;
+    /// <implements epic="0001" feature="F19" claim="B-021" />
+    private static int? DefaultSize(string type) =>
+        IdTypes.RepositoryWide.Contains(type) ? 8
+        : IdTypes.PerFeature.Contains(type) ? 6
+        : null;
 
     private readonly string _alphabet;
     private readonly int _size;

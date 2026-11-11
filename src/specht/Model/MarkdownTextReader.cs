@@ -42,7 +42,13 @@ internal sealed class MarkdownTextReader
     }
 
     /// <implements epic="0001" feature="F19" claim="B-041" />
-    public IReadOnlyList<string> FirstCells(string text, MarkdownPipeline pipeline) => [];
+    public IReadOnlyList<string> FirstCells(string text, MarkdownPipeline pipeline) =>
+        Markdown.Parse(text, pipeline).Descendants<Table>()
+            .SelectMany(static table => table.OfType<TableRow>())
+            .Select(static row => row.OfType<TableCell>().FirstOrDefault())
+            .OfType<TableCell>()
+            .Select(CellText)
+            .ToList();
 
     /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string HeadingText(HeadingBlock heading) =>

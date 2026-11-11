@@ -31,7 +31,9 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <exception cref="IdRefusedException">
     /// One of C-13's types <c>mint</c> opts in has no grammar, the type is not opted in or its entry names no strategy (an
     /// <see cref="IdNotOptedInException"/>), its entry names a strategy other than <c>nanoid</c> or <c>snowflake</c>, the
-    /// strategy refuses its settings or its clock reads earlier at a later draw, formatting refuses its <c>prefix</c> or
+    /// type is per-Feature and the request names no Feature (an <see cref="IdFeatureNotNamedException"/>) or a folder that
+    /// holds none (an <see cref="IdFeatureNotFoundException"/>), the strategy refuses its settings or its clock reads earlier
+    /// at a later draw, formatting refuses its <c>prefix</c> or
     /// <c>encoding</c>, the type's <c>identifiers</c> grammar does not match a candidate drawn, the guard refuses its
     /// <c>attempts</c>, or the tree holds every candidate the guard draws.
     /// </exception>
@@ -40,6 +42,7 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-007" />
     /// <implements epic="0001" feature="F19" claim="B-008" />
     /// <implements epic="0001" feature="F19" claim="B-009" />
+    /// <implements epic="0001" feature="F19" claim="B-010" />
     /// <implements epic="0001" feature="F19" claim="B-011" />
     /// <implements epic="0001" feature="F19" claim="B-012" />
     /// <implements epic="0001" feature="F19" claim="B-029" />
@@ -50,6 +53,9 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-037" />
     /// <implements epic="0001" feature="F19" claim="B-038" />
     /// <implements epic="0001" feature="F19" claim="B-039" />
+    /// <implements epic="0001" feature="F19" claim="B-040" />
+    /// <implements epic="0001" feature="F19" claim="B-041" />
+    /// <implements epic="0001" feature="F19" claim="B-042" />
     /// <implements epic="0001" feature="F19" claim="B-043" />
     /// <implements epic="0001" feature="F19" claim="B-047" />
     /// <implements epic="0001" feature="F19" claim="B-048" />
@@ -57,6 +63,10 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-054" />
     /// <implements epic="0001" feature="F19" claim="B-055" />
     /// <implements epic="0001" feature="F19" claim="B-056" />
+    /// <implements epic="0001" feature="F19" claim="B-057" />
+    /// <implements epic="0001" feature="F19" claim="B-058" />
+    /// <implements epic="0001" feature="F19" claim="B-059" />
+    /// <implements epic="0001" feature="F19" claim="B-060" />
     public string Mint(JsonObject manifest, string type, string root, SpechtDiscoveryInputs discovery, string? feature)
     {
         var mint = manifest["mint"] as JsonObject;
@@ -74,16 +84,18 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
             throw new IdNotOptedInException($"The type '{type}' is not opted in under 'mint'.");
         }
 
-        var name = StrategyOf(entry);
+        var name = StrategyOf(entry) ?? throw new IdNotOptedInException($"'mint.{type}' names no strategy, so '{type}' is not opted in.");
+        var location = !IdTypes.PerFeature.Contains(type) ? null
+            : feature is null ? throw new IdFeatureNotNamedException($"A '{type}' id is minted for a Feature, and the request names none.")
+            : held.FeatureAt(root, discovery, feature)
+                ?? throw new IdFeatureNotFoundException($"The folder named for the '{type}' id holds no Feature's '.spec/'.");
         IIdStrategy strategy = name switch
         {
             "nanoid" => new NanoIdStrategy(entry["nanoid"], type, random),
             "snowflake" => new SnowflakeStrategy(entry["snowflake"], type, random, clock),
-            null => throw new IdNotOptedInException($"'mint.{type}' names no strategy, so '{type}' is not opted in."),
             _ => throw new IdRefusedException($"'mint.{type}' names the strategy '{name}', which is neither 'nanoid' nor 'snowflake'."),
         };
 
-        var location = feature is not null && IdTypes.PerFeature.Contains(type) ? held.FeatureAt(root, discovery, feature) : null;
         var formatted = new FormattingDecorator(strategy, entry["prefix"], entry["encoding"], name, type);
         var validated = new ValidationDecorator(formatted, grammars?[type], type);
         return new CollisionGuardDecorator(validated, entry["attempts"], type, held.Of(type, root, discovery, location)).Next();

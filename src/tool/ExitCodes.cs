@@ -15,7 +15,7 @@ public static class ExitCodes
 
     /// <summary>
     /// The root or manifest is missing, a version is required without an interactive terminal, or <c>mint</c> is given
-    /// <c>--feature</c> for a repository-wide type.
+    /// <c>--feature</c> for a repository-wide type or none for a per-Feature type the manifest opts in.
     /// </summary>
     public const int MissingInput = 2;
 
@@ -26,8 +26,9 @@ public static class ExitCodes
     public const int InvalidManifest = 3;
 
     /// <summary>
-    /// A target named on the command line is not found in the shipped catalog, or the manifest's <c>mint</c> key holds no
-    /// entry for the type requested or its entry names no strategy.
+    /// A target named on the command line is not found in the shipped catalog, the manifest's <c>mint</c> key holds no
+    /// entry for the type requested or its entry names no strategy, or the folder <c>mint</c>'s <c>--feature</c> names holds
+    /// no Feature's <c>.spec/</c>.
     /// </summary>
     public const int NotFound = 4;
 }
