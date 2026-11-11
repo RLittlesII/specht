@@ -2,7 +2,7 @@ id: "0418"
 type: task
 title: Mint the per-Feature types for the Feature --feature names
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-11-07"
 updated: "2026-11-11"
-closed: null
+closed: "2026-11-11"
 
 summary: |
   `decision`, `claim`, `constraint`, `openQuestion` and `scenario`
