@@ -2,7 +2,7 @@ id: "0419"
 type: task
 title: Mint Snowflake ids, with their fields and encodings
 
-status: ready
+status: in-progress
 
 risk: 4
 
