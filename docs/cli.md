@@ -535,8 +535,8 @@ no network request and never reserves the id.
 or `--feature` with `adr` or `lesson`; `3` for an invalid manifest, a `mint`
 key the pin does not accept, or an entry that names a strategy and gives no id:
 a record type with no grammar, a strategy other than `nanoid` or `snowflake`,
-settings it cannot draw from, or a Snowflake clock that reads earlier than at
-the draw before it; `4` for a type `mint` holds no entry for, or whose entry names
+settings it cannot draw from, a Snowflake clock that reads earlier than at
+the draw before it, or a candidate its type's grammar rejects; `4` for a type `mint` holds no entry for, or whose entry names
 no strategy.
 
 ```sh

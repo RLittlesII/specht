@@ -28,8 +28,10 @@ namespace Specht.Acceptance.Identifiers;
 /// A request (A-2, item <c>0415</c>) launches <c>specht mint &lt;type&gt; --root .</c>, with <c>--feature features/one</c> when
 /// it is made for a Feature, a co-located Feature written there. Entries are written for <c>adr</c> and <c>lesson</c> and, where
 /// a scenario names no prefix (B-055, item <c>0417</c>), for each of C-13's types, each with a grammar admitting what it mints
-/// (A-6) under any prefix the type may carry; the scenarios of item <c>0418</c>'s per-Feature types and of the grammar check
-/// keep a step no binding matches and stay pending. An <c>adr</c> entry names a prefix or an encoding where a scenario names
+/// (A-6) under any prefix the type may carry; the scenarios of item <c>0418</c>'s per-Feature types keep a step no binding
+/// matches and stay pending. Where a scenario says the ADR grammar admits only four-digit ADR numbers (B-011, B-012, item
+/// <c>0420</c>), it replaces the grammar the entry was written with, and no Snowflake id under either encoding matches it,
+/// so the request launches the built tool whatever its clock reads and its draws are. An <c>adr</c> entry names a prefix or an encoding where a scenario names
 /// one (item <c>0417</c>): B-009's prefix, B-033's and B-054's encodings, and B-053's prefixes that are not text. The built tool's
 /// draws are random, so an ADR the tree holds is written only where the entry's alphabet has one character and its one
 /// candidate is known (item <c>0416</c>): the guard's refusals, B-017's guard row, B-036 and B-037. The scenarios of B-034,
@@ -346,6 +348,14 @@ public sealed class IdGenerationSteps
 
     [Given("^a manifest that opts ADR numbers in to Snowflake with no encoding$")]
     public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithNoEncoding() => OptInSnowflake(EveryField(), null);
+
+    [Given("^its ADR grammar admits only four-digit ADR numbers$")]
+    public void GivenItsAdrGrammarAdmitsOnlyFourDigitAdrNumbers()
+    {
+        var manifest = ReadManifest();
+        manifest["identifiers"]!["adr"] = "^[0-9]{4}$";
+        WriteManifest(manifest);
+    }
 
     [Given("^the time is noon on (\\d{4}-\\d{2}-\\d{2}), universal time$")]
     public void GivenTheTimeIsNoonOn(string date) => Fixed.Readings = [Noon(date)];

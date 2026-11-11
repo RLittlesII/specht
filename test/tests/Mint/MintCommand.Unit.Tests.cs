@@ -19,7 +19,9 @@ namespace Specht.Tests.Mint;
 /// refusal (item <c>0416</c>; B-017, B-036, B-037) mints from a size of 1 over a short alphabet, each draw from
 /// <see cref="FixedRandomSource"/> one candidate, with files named for the held candidates in the root's <c>.spec/adr/</c>.
 /// A request over a tree whose ADRs are already numbered, minted or refused, leaves every file and folder of the file system
-/// it is handed as it was (B-013; C-1; item <c>0419</c>), the time from a <see cref="FixedClock"/>.
+/// it is handed as it was (B-013; C-1; item <c>0419</c>), the time from a <see cref="FixedClock"/>. An <c>adr</c> Snowflake
+/// entry whose grammar admits only four-digit ADR numbers, as the scenarios of B-011 and B-012 arrange it, prints nothing and
+/// exits with a code the check gives (item <c>0420</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class MintCommandUnitTests
@@ -108,6 +110,67 @@ public sealed class MintCommandUnitTests
 
         // Then
         console.Output.Should().BeEmpty(errors.ToString());
+        exit.Should().BeOneOf([2, 3, 4], errors.ToString());
+    }
+
+    [Fact]
+    public async Task AnAdrSnowflakeEntryWhoseGrammarAdmitsOnlyFourDigitNumbers_WhenRequested_ShouldWriteNothingOnStandardOutput()
+    {
+        // Given
+        var files = new MockFileSystem();
+        files.AddFile(
+            "consumer/.specht/manifest.json",
+            new MockFileData(
+                """
+                {
+                  "schemaVersion": "0.3.1",
+                  "identifiers": { "adr": "^[0-9]{4}$" },
+                  "mint": { "adr": { "strategy": "snowflake" } }
+                }
+                """));
+        var console = new TestConsole();
+        using var errors = new StringWriter(CultureInfo.InvariantCulture);
+        var minter = new Minter(
+            new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime));
+        var command = new MintCommand(console, EngineServices.Reader(files), minter, errors);
+
+        // When
+        await command.ExecuteAsync(
+            null!,
+            new MintCommand.Settings { Type = "adr", Root = files.Path.GetFullPath("consumer") },
+            TestContext.Current.CancellationToken);
+
+        // Then
+        console.Output.Should().BeEmpty(errors.ToString());
+    }
+
+    [Fact]
+    public async Task AnAdrSnowflakeEntryWhoseGrammarAdmitsOnlyFourDigitNumbers_WhenRequested_ShouldExitWithACodeTheCheckGives()
+    {
+        // Given
+        var files = new MockFileSystem();
+        files.AddFile(
+            "consumer/.specht/manifest.json",
+            new MockFileData(
+                """
+                {
+                  "schemaVersion": "0.3.1",
+                  "identifiers": { "adr": "^[0-9]{4}$" },
+                  "mint": { "adr": { "strategy": "snowflake" } }
+                }
+                """));
+        using var errors = new StringWriter(CultureInfo.InvariantCulture);
+        var minter = new Minter(
+            new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime));
+        var command = new MintCommand(new TestConsole(), EngineServices.Reader(files), minter, errors);
+
+        // When
+        var exit = await command.ExecuteAsync(
+            null!,
+            new MintCommand.Settings { Type = "adr", Root = files.Path.GetFullPath("consumer") },
+            TestContext.Current.CancellationToken);
+
+        // Then
         exit.Should().BeOneOf([2, 3, 4], errors.ToString());
     }
 

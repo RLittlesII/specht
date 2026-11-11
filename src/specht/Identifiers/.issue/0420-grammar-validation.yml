@@ -2,7 +2,7 @@ id: "0420"
 type: task
 title: Refuse a candidate its type's identifiers grammar rejects
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -19,8 +19,8 @@ claims:
   - B-012
 
 created: "2026-11-07"
-updated: "2026-11-10"
-closed: null
+updated: "2026-11-11"
+closed: "2026-11-11"
 
 summary: |
   The validation decorator in the engine (C-4, C-9): a candidate the
