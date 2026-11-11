@@ -29,11 +29,13 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
     /// <implements epic="0001" feature="F19" claim="B-015" />
     /// <implements epic="0001" feature="F19" claim="B-016" />
     /// <implements epic="0001" feature="F19" claim="B-017" />
+    /// <implements epic="0001" feature="F19" claim="B-018" />
     /// <implements epic="0001" feature="F19" claim="B-043" />
     /// <implements epic="0001" feature="F19" claim="B-057" />
     /// <implements epic="0001" feature="F19" claim="B-058" />
     /// <implements epic="0001" feature="F19" claim="B-059" />
     /// <implements epic="0001" feature="F19" claim="B-060" />
+    /// <implements epic="0001" feature="F19" claim="B-061" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Feature is not null && IdTypes.RepositoryWide.Contains(settings.Type))

@@ -39,9 +39,8 @@ namespace Specht.Acceptance.Identifiers;
 /// it, so the request launches the built tool whatever its clock reads and its draws are. An <c>adr</c> entry names a
 /// prefix or an encoding where a scenario names one (item <c>0417</c>): B-009's prefix, B-033's and B-054's encodings, and
 /// B-053's prefixes that are not text. The built tool's draws are random, so an ADR the tree holds is written only where
-/// the entry's alphabet has one character and its one candidate is known (item <c>0416</c>): the guard's refusals, B-017's
-/// guard row, B-036 and B-037. The scenarios of B-034, B-035, B-038 and B-039 name a first or an eighth candidate of a
-/// random draw and keep a step no binding matches. "No ADR number is minted" is nothing on standard output and then an exit
+/// the entry's alphabet has one character and its one candidate is known (item <c>0416</c>): B-017's guard row. "No ADR
+/// number is minted" is nothing on standard output and then an exit
 /// of <c>2</c>, <c>3</c> or <c>4</c> (A-8, B-017; OQ-11's default). The part of an id after its prefix is the line less the
 /// entry's <c>prefix</c>, or its in-tree prefix when it names none (B-055). "The drawn characters" with a prefix ahead of
 /// them is the line starting with that prefix, the rest the entry's size of characters from its alphabet.
@@ -52,12 +51,24 @@ namespace Specht.Acceptance.Identifiers;
 /// root's file system, with a clock that reads noon on 2026-11-07, universal time, unless the scenario names another time,
 /// and draws of 0 unless it names one (B-007, B-022, B-024 to B-026, B-029). A per-Feature request whose first candidate a
 /// Feature holds (B-010, B-040 to B-042) runs in process for <c>features/one</c>, drawing 0 to 6 in turn, so the candidate after
-/// the first differs from it. Every other request launches the built tool. "The
-/// candidate that would be minted first" is the id the same request mints before the tree holds it. A number is decoded
+/// the first differs from it. A request whose tree holds a candidate of the guard (B-034 to B-039) runs in process, drawing the
+/// nine characters <c>a</c> to <c>j</c> of the entry's base32 alphabet in turn, so each of the first nine candidates of size 8
+/// differs from the others and from itself in capital letters. Every other request launches the built tool. "The candidate
+/// that would be minted first" is the id the same request mints before the tree holds it. "The first seven, eight or three
+/// that would be minted" are the first of the ids a Nano ID strategy built from the entry's own <c>nanoid</c> settings gives
+/// over the same draws; the entry names no prefix and no encoding, so formatting leaves each as drawn. A number is decoded
 /// under the entry's encoding, <c>base32</c> when it names none (B-056), and its widths, 5, 5 and 12 bits when it names none
 /// (B-023). Where a scenario reads a field the launched tool would draw, the entry names it: B-023's sequence start, and the
 /// datacenter, worker and sequence start of the encoding scenarios, B-030 to B-032 and B-056, whose number is read back to
 /// those fields. A scenario leaving one field unnamed names the other two, so its one draw is that field's.
+/// </para>
+/// <para>
+/// A manifest that opts <c>epic</c>, <c>feature</c> or <c>task</c> ids in to Nano ID (B-018, B-061; item <c>0421</c>) writes
+/// the entry with a size of 8 and replaces the type's grammar with one its draw matches, as for C-13's types, so neither the
+/// strategy's missing default size nor the type's shipped grammar refuses the request; the <c>task</c> grammar names the
+/// <c>epic</c> and <c>sequence</c> groups the check requires of it (<c>0001-F5</c> B-050). Where the manifest is pinned to schema
+/// <c>0.3.1</c> and "it opts" one of the three in (B-062), the <c>mint</c> entry is the only difference, and no grammar is
+/// written.
 /// </para>
 /// </remarks>
 [Binding]
@@ -134,6 +145,24 @@ public sealed class IdGenerationSteps
             TypeOf(type),
             $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""",
             $"^{Regex.Escape(InTreePrefix(TypeOf(type)))}[{Base32}]{{8}}$");
+
+    [Given("^a manifest that opts (epic ids|Feature ids|task ids) in to Nano ID$")]
+    public void GivenAManifestThatOptsATypeNotMintedInToNanoId(string type) =>
+        OptIn(
+            TypeOf(type),
+            $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""",
+            TypeOf(type) == "task" ? $"^(?<epic>[{Base32}]{{4}})(?<sequence>[{Base32}]{{4}})$" : $"^[{Base32}]{{8}}$");
+
+    [Given("^it opts (epic ids|Feature ids|task ids) in to Nano ID$")]
+    public void GivenItOptsATypeNotMintedInToNanoId(string type)
+    {
+        var manifest = ReadManifest();
+        manifest["mint"] = new JsonObject
+        {
+            [TypeOf(type)] = JsonNode.Parse($$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }"""),
+        };
+        WriteManifest(manifest);
+    }
 
     [Given("^(?:a manifest that|it) opts (ADR numbers|lesson numbers) in to Nano ID with a size of (.+)$")]
     public void GivenAManifestThatOptsATypeInToNanoIdWithASizeOf(string type, string size)
@@ -267,7 +296,7 @@ public sealed class IdGenerationSteps
 
     [Given("^a manifest that opts ADR numbers in to Nano ID with no number of attempts$")]
     public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithNoNumberOfAttempts() =>
-        OptIn("adr", """{ "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } }""", "^z{3}$");
+        OptIn("adr", $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""", $"^[{Base32}]{{8}}$");
 
     [Given("^a manifest that opts ADR numbers in to Nano ID with (\\d+) attempts$")]
     public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithAttempts(int attempts) =>
@@ -276,10 +305,10 @@ public sealed class IdGenerationSteps
             new JsonObject
             {
                 ["strategy"] = "nanoid",
-                ["nanoid"] = new JsonObject { ["alphabet"] = "z", ["size"] = 3 },
+                ["nanoid"] = new JsonObject { ["alphabet"] = Base32, ["size"] = 8 },
                 ["attempts"] = attempts,
             }.ToJsonString(),
-            "^z{3}$");
+            $"^[{Base32}]{{8}}$");
 
     [Given("^a manifest that opts ADR numbers in to Nano ID with a number of attempts of (.+)$")]
     public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithANumberOfAttemptsOf(string attempts)
@@ -390,12 +419,30 @@ public sealed class IdGenerationSteps
     [Given("^the random draw for the (?:datacenter|worker|sequence start) is (\\d+)$")]
     public void GivenTheRandomDrawIs(int draw) => Fixed.Draws = [draw];
 
-    [Given("^an ADR already numbered with the ADR number that would be minted first$")]
-    public async Task GivenAnAdrAlreadyNumberedWithTheAdrNumberThatWouldBeMintedFirst()
+    [Given("^an ADR already numbered with the ADR number that would be minted first(|, in capital letters)$")]
+    public async Task GivenAnAdrAlreadyNumberedWithTheAdrNumberThatWouldBeMintedFirst(string capitals)
     {
+        if (capitals.Length > 0)
+        {
+            Fixed.Draws = GuardDraws;
+        }
+
         var (_, (stdout, stderr, exitCode)) = await InProcess("adr", Fixed, null);
         exitCode.Should().Be(ExitCodes.Success, stderr);
-        Tree.WriteRaw($".spec/adr/{stdout.TrimEnd('\n').TrimEnd('\r')}-held.md", "# Held\n");
+        var first = stdout.TrimEnd('\n').TrimEnd('\r');
+        var held = capitals.Length > 0 ? first.ToUpperInvariant() : first;
+        held.Equals(first, StringComparison.Ordinal).Should().Be(capitals.Length == 0, $"'{held}' is '{first}' in capital letters");
+        Tree.WriteRaw($".spec/adr/{held}-held.md", "# Held\n");
+    }
+
+    [Given("^a Feature's own (ADR|lesson) already numbered with the (?:ADR|lesson) number that would be minted first$")]
+    public async Task GivenAFeaturesOwnRecordAlreadyNumberedWithTheNumberThatWouldBeMintedFirst(string record)
+    {
+        Tree.WriteCoLocatedFeature(Feature, "0001", "F1");
+        Fixed.Draws = GuardDraws;
+        var (_, (stdout, stderr, exitCode)) = await InProcess(TypeOf(record), Fixed, null);
+        exitCode.Should().Be(ExitCodes.Success, stderr);
+        Tree.WriteRaw($"{Feature}/.spec/{FolderOf(record)}/{stdout.TrimEnd('\n').TrimEnd('\r')}-held.md", "# Held\n");
     }
 
     [Given("^the clock reads earlier for the second ADR number than for the first$")]
@@ -456,13 +503,28 @@ public sealed class IdGenerationSteps
         _before = Snapshot();
     }
 
-    [Given("^ADRs already numbered with each of the first (?:eight|three) ADR numbers that would be minted$")]
-    public void GivenAdrsAlreadyNumberedWithEachOfTheFirstAdrNumbersThatWouldBeMinted() => HoldEveryAdrCandidate();
+    [Given("^ADRs already numbered with each of the first (seven|eight|three) ADR numbers that would be minted$")]
+    public void GivenAdrsAlreadyNumberedWithEachOfTheFirstAdrNumbersThatWouldBeMinted(string count)
+    {
+        var held = count switch
+        {
+            "seven" => 7,
+            "eight" => 8,
+            _ => 3,
+        };
+        Fixed.Draws = GuardDraws;
+        var candidates = Candidates(held + 1);
+        candidates.Should().OnlyHaveUniqueItems("the candidate after the held ones is free");
+        foreach (var candidate in candidates.Take(held))
+        {
+            Tree.WriteRaw($".spec/adr/{candidate}-held.md", "# Held\n");
+        }
+    }
 
     [When("the tree is checked")]
     public void WhenTheTreeIsChecked() => _run = AcceptanceTool.Launch(Tree.Root, "--root", ".");
 
-    [When("^(an ADR number|a lesson number) is requested$")]
+    [When("^(an ADR number|a lesson number|an epic id|a Feature id|a task id) is requested$")]
     public async Task WhenATypeIdIsRequested(string id) =>
         _request = _fixed is null ? Request(TypeOf(id), forFeature: false) : await InProcess(TypeOf(id), _fixed, null);
 
@@ -590,6 +652,20 @@ public sealed class IdGenerationSteps
         firstCells.Should().NotContain(id);
     }
 
+    [Then("^the minted number is one no (ADR|lesson) in the tree is numbered with(|, in any letter case)$")]
+    public void ThenTheMintedNumberIsOneNoRecordInTheTreeIsNumberedWith(string record, string anyCase)
+    {
+        var id = Minted();
+        var comparison = anyCase.Length > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        Directory.EnumerateDirectories(Tree.Root, FolderOf(record), SearchOption.AllDirectories)
+            .SelectMany(static folder => Directory.EnumerateFiles(folder))
+            .Select(Path.GetFileName)
+            .Should().NotContain(name => name!.StartsWith(id, comparison));
+    }
+
+    [Then("^the minted number is the eighth that would be minted$")]
+    public void ThenTheMintedNumberIsTheEighthThatWouldBeMinted() => Minted().Should().Be(Candidates(8)[7], LastRequest.Run.Stderr);
+
     [Then("^the minted number is one no decision of that Feature is numbered with$")]
     public void ThenTheMintedNumberIsOneNoDecisionOfThatFeatureIsNumberedWith()
     {
@@ -688,6 +764,8 @@ public sealed class IdGenerationSteps
 
     private static string TypeOf(string words) => Types.First(pair => words.Contains(pair.Words, StringComparison.Ordinal)).Type;
 
+    private static string FolderOf(string record) => record == "ADR" ? "adr" : "lessons";
+
     private static DateTimeOffset Midnight(string date) =>
         DateTimeOffset.ParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
 
@@ -730,6 +808,12 @@ public sealed class IdGenerationSteps
         }
 
         Tree.WriteRaw($".spec/adr/{new string(alphabet[0], nanoid["size"]!.GetValue<int>())}-held.md", "# Held\n");
+    }
+
+    private string[] Candidates(int count)
+    {
+        var strategy = new NanoIdStrategy(ReadManifest()["mint"]!["adr"]!["nanoid"], "adr", new FixedDraws(Fixed.Draws));
+        return [.. Enumerable.Range(0, count).Select(_ => strategy.Next())];
     }
 
     private (string Type, (string Stdout, string Stderr, int ExitCode) Run) Request(string type, bool forFeature)
@@ -881,7 +965,12 @@ public sealed class IdGenerationSteps
         ("constraint", "constraint"),
         ("open question", "openQuestion"),
         ("scenario", "scenario"),
+        ("epic", "epic"),
+        ("Feature", "feature"),
+        ("task", "task"),
     ];
+
+    private static readonly int[] GuardDraws = [.. Enumerable.Range(10, 9)];
 
     private static readonly int[] FailureCodes = [ExitCodes.MissingInput, ExitCodes.InvalidManifest, ExitCodes.NotFound];
 

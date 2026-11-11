@@ -2,7 +2,7 @@ id: "0421"
 type: task
 title: Mint no epic, Feature or task id
 
-status: ready
+status: done
 
 risk: 1
 
@@ -20,8 +20,8 @@ claims:
   - B-062
 
 created: "2026-11-07"
-updated: "2026-11-10"
-closed: null
+updated: "2026-11-11"
+closed: "2026-11-11"
 
 summary: |
   A request for an `epic`, `feature` or `task` id writes nothing on
