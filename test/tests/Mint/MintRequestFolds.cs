@@ -9,7 +9,10 @@ namespace Specht.Tests.Mint;
 /// (B-043). A <c>mint</c> member with no grammar that opts no C-13 type in, one naming none of C-13's types or a
 /// <c>lesson</c> entry naming no strategy, beside an opted-in <c>adr</c>, leaves the <c>adr</c> request its id (B-003). A per-Feature
 /// type the manifest opts in, requested without <c>--feature</c>, exits <c>2</c> (B-058), and for a folder that holds no
-/// Feature's <c>.spec/</c>, exits <c>4</c> (B-060; item <c>0418</c>).
+/// Feature's <c>.spec/</c>, exits <c>4</c> (B-060; item <c>0418</c>). A manifest opting in an <c>epic</c> type exits <c>3</c>
+/// for an <c>epic</c> request and for an <c>adr</c> request beside it (B-061), a <c>task</c> request of a manifest that does
+/// not opt it in exits <c>4</c> with nothing on standard output (B-018), and an <c>adr</c> request beside a <c>feature</c>
+/// entry naming no strategy mints its id (item <c>0421</c>).
 /// </summary>
 public sealed class MintRequestFolds : TheoryData<string?, string, string?, bool, int>
 {
@@ -67,5 +70,33 @@ public sealed class MintRequestFolds : TheoryData<string?, string, string?, bool
         Add(
             """{"schemaVersion":"0.3.1","identifiers":{"claim":"^B-z{3}$"},"mint":{"claim":{"strategy":"nanoid","nanoid":{"alphabet":"z","size":3}}}}""",
             "claim", "absent", true, 4);
+        Add(
+            """{"schemaVersion":"0.3.1","identifiers":{"epic":"^z{3}$"},"mint":{"epic":{"strategy":"nanoid","nanoid":{"alphabet":"z","size":3}}}}""",
+            "epic", null, true, 3);
+        Add(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^z{3}$" },
+              "mint": {
+                "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } },
+                "epic": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } }
+              }
+            }
+            """,
+            "adr", null, true, 3);
+        Add("""{"schemaVersion":"0.3.1","identifiers":{"task":"^(?<epic>z)(?<sequence>zz)$"}}""", "task", null, true, 4);
+        Add(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^z{3}$" },
+              "mint": {
+                "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } },
+                "feature": { "nanoid": { "alphabet": "z", "size": 3 } }
+              }
+            }
+            """,
+            "adr", null, true, 0);
     }
 }

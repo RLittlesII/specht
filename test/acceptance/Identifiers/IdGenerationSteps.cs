@@ -59,6 +59,14 @@ namespace Specht.Acceptance.Identifiers;
 /// datacenter, worker and sequence start of the encoding scenarios, B-030 to B-032 and B-056, whose number is read back to
 /// those fields. A scenario leaving one field unnamed names the other two, so its one draw is that field's.
 /// </para>
+/// <para>
+/// A manifest that opts <c>epic</c>, <c>feature</c> or <c>task</c> ids in to Nano ID (B-018, B-061; item <c>0421</c>) writes
+/// the entry with a size of 8 and replaces the type's grammar with one its draw matches, as for C-13's types, so neither the
+/// strategy's missing default size nor the type's shipped grammar refuses the request; the <c>task</c> grammar names the
+/// <c>epic</c> and <c>sequence</c> groups the check requires of it (<c>0001-F5</c> B-050). Where the manifest is pinned to schema
+/// <c>0.3.1</c> and "it opts" one of the three in (B-062), the <c>mint</c> entry is the only difference, and no grammar is
+/// written.
+/// </para>
 /// </remarks>
 [Binding]
 [Scope(Feature = "Id generation")]
@@ -134,6 +142,24 @@ public sealed class IdGenerationSteps
             TypeOf(type),
             $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""",
             $"^{Regex.Escape(InTreePrefix(TypeOf(type)))}[{Base32}]{{8}}$");
+
+    [Given("^a manifest that opts (epic ids|Feature ids|task ids) in to Nano ID$")]
+    public void GivenAManifestThatOptsATypeNotMintedInToNanoId(string type) =>
+        OptIn(
+            TypeOf(type),
+            $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""",
+            TypeOf(type) == "task" ? $"^(?<epic>[{Base32}]{{4}})(?<sequence>[{Base32}]{{4}})$" : $"^[{Base32}]{{8}}$");
+
+    [Given("^it opts (epic ids|Feature ids|task ids) in to Nano ID$")]
+    public void GivenItOptsATypeNotMintedInToNanoId(string type)
+    {
+        var manifest = ReadManifest();
+        manifest["mint"] = new JsonObject
+        {
+            [TypeOf(type)] = JsonNode.Parse($$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }"""),
+        };
+        WriteManifest(manifest);
+    }
 
     [Given("^(?:a manifest that|it) opts (ADR numbers|lesson numbers) in to Nano ID with a size of (.+)$")]
     public void GivenAManifestThatOptsATypeInToNanoIdWithASizeOf(string type, string size)
@@ -462,7 +488,7 @@ public sealed class IdGenerationSteps
     [When("the tree is checked")]
     public void WhenTheTreeIsChecked() => _run = AcceptanceTool.Launch(Tree.Root, "--root", ".");
 
-    [When("^(an ADR number|a lesson number) is requested$")]
+    [When("^(an ADR number|a lesson number|an epic id|a Feature id|a task id) is requested$")]
     public async Task WhenATypeIdIsRequested(string id) =>
         _request = _fixed is null ? Request(TypeOf(id), forFeature: false) : await InProcess(TypeOf(id), _fixed, null);
 
@@ -881,6 +907,9 @@ public sealed class IdGenerationSteps
         ("constraint", "constraint"),
         ("open question", "openQuestion"),
         ("scenario", "scenario"),
+        ("epic", "epic"),
+        ("Feature", "feature"),
+        ("task", "task"),
     ];
 
     private static readonly int[] FailureCodes = [ExitCodes.MissingInput, ExitCodes.InvalidManifest, ExitCodes.NotFound];

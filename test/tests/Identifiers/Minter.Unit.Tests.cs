@@ -30,8 +30,10 @@ namespace Specht.Tests.Identifiers;
 /// draws no other, even for a first candidate the tree holds (B-011, B-012; item <c>0420</c>). A per-Feature type the manifest
 /// opts in gives no id without a Feature (B-057, B-058) or for a folder that holds none (B-059, B-060), and neither refusal
 /// pre-empts B-002's or B-043's; its first candidate, held in the Feature's place for the type, is drawn again (B-010, B-040
-/// to B-042; item <c>0418</c>). Each manifest is written in memory, the draws come from a
-/// <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>.
+/// to B-042; item <c>0418</c>). A manifest opting in an <c>epic</c>, <c>feature</c> or <c>task</c> type gives no id for any
+/// request, refused as neither a type not opted in nor a Feature named or found, and draws nothing (B-061); a request for one
+/// of the three the manifest does not opt in is refused as not opted in (B-018, B-002; item <c>0421</c>). Each manifest is
+/// written in memory, the draws come from a <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class MinterUnitTests
@@ -298,6 +300,53 @@ public sealed class MinterUnitTests
 
         // Then
         id.Should().Be("zzz");
+    }
+
+    [Theory]
+    [ClassData(typeof(NotMintedTypesOptedIn))]
+    [ClassData(typeof(RequestsBesideANotMintedTypeOptedIn))]
+    public void AManifestOptingInAnEpicFeatureOrTaskType_WhenAnyTypeIsMinted_ShouldBeRefusedWithNoIdDrawn(string manifest, string type)
+    {
+        // Given
+        var document = JsonNode.Parse(manifest)!.AsObject();
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mint = () => new Minter(
+            random,
+            new HeldIds(
+                new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()),
+                new SpechtTreeStore(new MockFileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime)).Mint(document, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+
+        // Then
+        mint.Should().ThrowExactly<IdRefusedException>();
+        random.Bounds.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(NotMintedTypesLeftOut))]
+    public void AnEpicFeatureOrTaskTypeTheManifestDoesNotOptIn_WhenMinted_ShouldBeRefusedAsNotOptedInWithNoIdDrawn(string manifest, string type)
+    {
+        // Given
+        var document = JsonNode.Parse(manifest)!.AsObject();
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mint = () => new Minter(
+            random,
+            new HeldIds(
+                new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()),
+                new SpechtTreeStore(new MockFileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime)).Mint(document, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+
+        // Then
+        mint.Should().Throw<IdNotOptedInException>();
+        random.Bounds.Should().BeEmpty();
     }
 
     [Fact]

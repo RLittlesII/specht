@@ -14,7 +14,9 @@ namespace Specht.Tests.Mint;
 /// that is not found (B-002, the owner's selections on OQ-11), and a refusal exits exactly <c>3</c> where the claim names the invalid manifest (B-015, B-043).
 /// A per-Feature type the manifest opts in exits <c>2</c> without <c>--feature</c> (B-057, B-058) and <c>4</c> for a folder that
 /// holds no Feature's <c>.spec/</c>, a legacy <c>epics/</c> Feature folder among them (B-059, B-060; item <c>0418</c>), writing
-/// nothing on standard output.
+/// nothing on standard output. A manifest opting in an <c>epic</c>, <c>feature</c> or <c>task</c> type exits <c>3</c> on any
+/// request (B-061), and a request for one of the three writes nothing on standard output, opted in or not (B-018; item
+/// <c>0421</c>).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class MintCommandIntegrationTests
@@ -160,6 +162,38 @@ public sealed class MintCommandIntegrationTests
 
         // Then
         ExitCode.Should().Be(3, Stderr);
+    }
+
+    [Theory]
+    [ClassData(typeof(NotMintedTypesOptedIn))]
+    [ClassData(typeof(RequestsBesideANotMintedTypeOptedIn))]
+    public void AManifestOptingInAnEpicFeatureOrTaskType_WhenAnyTypeIsRequested_ShouldExitAsAnInvalidManifest(string manifest, string type)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, manifest);
+
+        // When
+        var (_, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "mint", type, "--root", ".");
+
+        // Then
+        ExitCode.Should().Be(3, Stderr);
+    }
+
+    [Theory]
+    [ClassData(typeof(NotMintedTypesOptedIn))]
+    [ClassData(typeof(NotMintedTypesLeftOut))]
+    public void AnEpicFeatureOrTaskId_WhenRequested_ShouldWriteNothingOnStandardOutput(string manifest, string type)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, manifest);
+
+        // When
+        var (Stdout, Stderr, _) = AcceptanceTool.Launch(tree.Root, "mint", type, "--root", ".");
+
+        // Then
+        Stdout.Should().BeEmpty(Stderr);
     }
 
     [Theory]

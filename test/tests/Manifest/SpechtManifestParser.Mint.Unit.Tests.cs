@@ -11,7 +11,8 @@ namespace Specht.Tests.Manifest;
 /// for a type C-13 lists is not rejected, and a pin below it that sets the key still rejects it as one the engine does not
 /// know (C-17; item <c>0413</c>, "0.1.0 to 0.3.0 unchanged"); one that declares an <c>adr</c>, <c>lesson</c>, <c>decision</c> or
 /// <c>scenario</c> grammar carries it; and <c>0.3.1</c>'s own defaults hold the <c>0.3.0</c> grammars and none for those
-/// four.
+/// four. A <c>0.3.1</c> manifest whose only difference from a valid one is a <c>mint</c> entry opting in an <c>epic</c>,
+/// <c>feature</c> or <c>task</c> type is not rejected either (B-062; item <c>0421</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtManifestParserMintUnitTests
@@ -26,6 +27,27 @@ public sealed class SpechtManifestParserMintUnitTests
             ["schemaVersion"] = "0.3.1",
             ["identifiers"] = new JsonObject { [type] = grammar },
             ["mint"] = new JsonObject { [type] = JsonNode.Parse(entry) },
+        };
+
+        // When
+        var parse = () => EngineServices.Parser().Parse(manifest.ToJsonString());
+
+        // Then
+        parse.Should().NotThrow();
+    }
+
+    [Theory]
+    [ClassData(typeof(NotMintedTypes))]
+    public void AZeroThreeOneManifestOptingInAnEpicFeatureOrTaskType_WhenParsed_ShouldNotBeRejected(string type)
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.3.1",
+            ["mint"] = new JsonObject
+            {
+                [type] = JsonNode.Parse("""{ "strategy": "nanoid", "nanoid": { "alphabet": "0123456789abcdefghjkmnpqrstvwxyz", "size": 8 } }"""),
+            },
         };
 
         // When
