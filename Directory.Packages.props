@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <SpechtRoslynVersion>5.0.0</SpechtRoslynVersion>
+    <SpechtRoslynVersion>5.9.0</SpechtRoslynVersion>
     <SpechtRoslynVersion Condition="$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)', '$(MSBuildProjectDirectory)').StartsWith('test'))">5.9.0</SpechtRoslynVersion>
   </PropertyGroup>
 
@@ -30,12 +30,12 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(SpechtRoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(SpechtRoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(SpechtRoslynVersion)" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.15" />
+    <PackageVersion Include="System.Text.Json" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Cli">
     <PackageVersion Include="Spectre.Console.Cli" Version="0.57.2" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Mcp">
