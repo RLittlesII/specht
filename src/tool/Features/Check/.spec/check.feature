@@ -294,6 +294,72 @@ Feature: The check command
     Then the package carries the tool for net10.0
     And it carries the tool for net11.0
 
+  @B-049
+  Scenario: The packed tool starts with Tiered PGO off
+    When the tool is packed
+    Then every package that carries the tool turns Tiered PGO off for net10.0
+    And it turns Tiered PGO off for net11.0
+
+  @B-050
+  Scenario: The pack writes a package for each listed platform
+    When the tool is packed
+    Then there is one platform package for each platform the tool lists
+    And each is at the version of the top-level package
+
+  @B-051
+  Scenario: The top-level package points at every platform package and the portable one
+    When the tool is packed
+    Then the top-level package points at each platform package
+    And it points at the portable package
+
+  @B-052
+  Scenario: Each platform package carries precompiled code for its platform
+    When the tool is packed
+    Then every assembly built here that a platform package carries is precompiled for that platform for net10.0
+    And it is precompiled for that platform for net11.0
+
+  @B-053
+  Scenario: The pack writes a portable package
+    When the tool is packed
+    Then there is a portable package at the version of the top-level package
+
+  @B-054 @boundary
+  Scenario: No package carries the .NET runtime
+    When the tool is packed
+    Then no package of the tool carries the .NET runtime
+
+  @B-055
+  Scenario: A consumer on a listed platform restores that platform's package
+    Given a consumer repository whose local tool manifest pins the packed tool
+    And the machine's platform is one the tool lists
+    When the consumer restores its tools
+    Then the package installed is the one for the machine's platform
+
+  @B-056
+  Scenario: A consumer on a listed platform runs the tool as before
+    Given a consumer repository on a listed platform that has restored the packed tool
+    When the consumer runs the tool through its tool manifest and asks for its version
+    Then the standard output is the version line the tool states
+
+  @B-057
+  Scenario: A consumer on an unlisted platform restores the portable package
+    Given a consumer repository whose local tool manifest pins the packed tool
+    And the machine's platform is not one the tool lists
+    When the consumer restores its tools
+    Then the package installed is the portable package
+
+  @B-058
+  Scenario: A consumer on an unlisted platform runs the tool as before
+    Given a consumer repository on an unlisted platform that has restored the packed tool
+    When the consumer runs the tool through its tool manifest and asks for its version
+    Then the standard output is the version line the tool states
+
+  @B-059
+  Scenario: The tool list still names the tool and its command
+    Given a consumer repository on a listed platform that has restored the packed tool
+    When the consumer lists its tools
+    Then the list names specht.tool at the pinned version with the command specht
+
   @B-040
   Scenario: The tool states its version
     When the tool is asked for its version
