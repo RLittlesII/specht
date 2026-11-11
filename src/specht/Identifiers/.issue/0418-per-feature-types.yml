@@ -2,7 +2,7 @@ id: "0418"
 type: task
 title: Mint the per-Feature types for the Feature --feature names
 
-status: blocked
+status: ready
 
 risk: 3
 
@@ -20,6 +20,10 @@ claims:
   - B-040
   - B-041
   - B-042
+  - B-057
+  - B-058
+  - B-059
+  - B-060
 
 created: "2026-11-07"
 updated: "2026-11-10"
@@ -31,17 +35,17 @@ summary: |
   (B-021), and the guard's per-Feature places, the Feature's
   `.spec/decisions/` file names, the first column of its
   `.spec/README.md` tables and its scenarios' tags (B-010, B-040 to
-  B-042; C-18).
+  B-042; C-18). A request without `--feature` writes nothing and
+  exits 2 (B-057, B-058); a `--feature` folder that holds no
+  Feature's `.spec/`, a legacy `epics/<epic>/<feature>/` folder
+  among them, writes nothing and exits 4 (B-059, B-060).
 
   Risk 3: three readers of one Feature's files, each matching the
   check's reading of them.
 
-  Blocked on two open questions with no recorded default: what a
-  per-Feature request without `--feature` does (OQ-15), and what
-  `--feature` takes and what a request does when the folder holds no
-  Feature (OQ-16). Every claim here holds for a co-located Feature
-  folder, a form OQ-16 keeps under every answer, but the item cannot
-  ship the two cases they leave open. Its prefixes are 0417's, the
+  Was blocked on OQ-15 and OQ-16 until their 2026-11-10 answers,
+  B-057 to B-060; `--feature` takes the folder, relative to the root,
+  that holds a Feature's `.spec/` (A-7). Its prefixes are 0417's, the
   in-tree prefix of a type that names none (B-055), OQ-14's default
   until its 2026-11-10 answer.
 
@@ -51,6 +55,10 @@ acceptance_criteria:
   - "B-040 — a `.spec/decisions/` file name held"
   - "B-041 — a claim, constraint or open question id held in a first column"
   - "B-042 — a scenario tag held"
+  - "B-057 — no `--feature`, nothing on standard output"
+  - "B-058 — no `--feature`, exit 2"
+  - "B-059 — a folder holding no Feature, nothing on standard output"
+  - "B-060 — a folder holding no Feature, exit 4"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -58,7 +66,19 @@ decisions:
     2026-11-07, spec-author: cut on ADR-0033; `blocked`, not proceeding,
     because OQ-15 and OQ-16 record no default. Value omitted,
     inheriting 0412's.
+  - |
+    2026-11-10, spec-author: OQ-15 and OQ-16 answered. Relayed in
+    session by the coordinating session, the repository owner selected
+    "Refuse, exit 2 (Recommended)" for OQ-15, and "Co-located only
+    (Recommended)" and "Exit 4, not found (Recommended)" for OQ-16,
+    among options an agent wrote; the questions and the options'
+    wording are an agent's, only the selections are the owner's.
+    Added B-057 to B-060, worded by spec-author, and A-7 names the
+    folder `--feature` takes. `blocked` moves to `ready`, not
+    `ready-for-implementation`: the blockers are resolved and 0416
+    and 0417 are done, but no § 7 design for the per-Feature places
+    exists yet.
 
 out_of_scope:
-  - "A legacy `epics/<epic>/<feature>/` folder - OQ-16."
+  - "Accepting a legacy `epics/<epic>/<feature>/` folder for `--feature` - OQ-16, B-059 and B-060."
   - "The MCP tool's `feature` argument - `0132-F4` OQ-9."

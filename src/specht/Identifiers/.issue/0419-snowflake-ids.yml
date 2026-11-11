@@ -2,7 +2,7 @@ id: "0419"
 type: task
 title: Mint Snowflake ids, with their fields and encodings
 
-status: ready
+status: done
 
 risk: 4
 
@@ -32,7 +32,7 @@ claims:
 
 created: "2026-11-07"
 updated: "2026-11-10"
-closed: null
+closed: "2026-11-10"
 
 summary: |
   The Snowflake strategy in the engine, reading only its own sub-object
