@@ -6,7 +6,8 @@ namespace Specht.Tests.Model;
 /// <summary>
 /// A specification parsed from text held in memory by the instance parser (ADR-0001 stage A, item 0104; item 0166): the frontmatter, the sections, the
 /// table each section opens with, and the one-based line of each, with no file behind it. A grid table is read as no table
-/// (<c>0001-F1</c> B-008).
+/// (<c>0001-F1</c> B-008). The first cell of every table row, under a <c>##</c> section or a subsection, is read for the guard
+/// (<c>0001-F19</c> B-041, item <c>0418</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtDocumentParserUnitTests
@@ -102,6 +103,40 @@ public sealed class SpechtDocumentParserUnitTests
         section.Headers.Should().BeEmpty();
         section.Rows.Should().BeEmpty();
         section.RowLines.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ASpecificationWithTablesUnderItsSectionsAndASubsection_WhenItsFirstCellsAreRead_ShouldGiveTheFirstCellOfEachTableRow()
+    {
+        // Given
+        const string text = """
+            # Specification: Sample
+
+            ## 3. Acceptance Criteria
+
+            | ID    | Claim   |
+            | ----- | ------- |
+            | B-001 | First.  |
+            | B-002 | Second. |
+
+            ## 4. Constraints
+
+            | ID  | Constraint |
+            | --- | ---------- |
+            | C-1 | Fast.      |
+
+            ### Later
+
+            | ID   | Question |
+            | ---- | -------- |
+            | OQ-1 | Which?   |
+            """;
+
+        // When
+        var cells = new SpechtDocumentParser(new FrontmatterReader()).FirstCells(text);
+
+        // Then
+        cells.Should().Contain(["B-001", "B-002", "C-1", "OQ-1"]);
     }
 
     private const string RelativePath = "src/sample/.spec/README.md";

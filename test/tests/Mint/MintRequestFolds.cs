@@ -7,7 +7,9 @@ namespace Specht.Tests.Mint;
 /// an unreadable manifest and <c>mint</c> under a pin before <c>0.3.1</c> (B-015), the minter's refusal of a type not opted
 /// in or an entry naming no strategy, exit <c>4</c> (B-001, B-002, B-047), and its refusal of a type with no grammar
 /// (B-043). A <c>mint</c> member with no grammar that opts no C-13 type in, one naming none of C-13's types or a
-/// <c>lesson</c> entry naming no strategy, beside an opted-in <c>adr</c>, leaves the <c>adr</c> request its id (B-003).
+/// <c>lesson</c> entry naming no strategy, beside an opted-in <c>adr</c>, leaves the <c>adr</c> request its id (B-003). A per-Feature
+/// type the manifest opts in, requested without <c>--feature</c>, exits <c>2</c> (B-058), and for a folder that holds no
+/// Feature's <c>.spec/</c>, exits <c>4</c> (B-060; item <c>0418</c>).
 /// </summary>
 public sealed class MintRequestFolds : TheoryData<string?, string, string?, bool, int>
 {
@@ -59,5 +61,11 @@ public sealed class MintRequestFolds : TheoryData<string?, string, string?, bool
             }
             """,
             "adr", null, true, 0);
+        Add(
+            """{"schemaVersion":"0.3.1","identifiers":{"claim":"^B-z{3}$"},"mint":{"claim":{"strategy":"nanoid","nanoid":{"alphabet":"z","size":3}}}}""",
+            "claim", null, true, 2);
+        Add(
+            """{"schemaVersion":"0.3.1","identifiers":{"claim":"^B-z{3}$"},"mint":{"claim":{"strategy":"nanoid","nanoid":{"alphabet":"z","size":3}}}}""",
+            "claim", "absent", true, 4);
     }
 }

@@ -8,7 +8,8 @@ namespace Specht.Tests.Identifiers;
 /// The Nano ID strategy beneath <c>0001-F19</c> B-005, B-006, B-019 and B-020 (ADR-0033): built from a type's <c>nanoid</c>
 /// sub-object and the type's name, it draws one character for each of the size the sub-object names, each the alphabet's
 /// character at a draw below the alphabet's length; an absent alphabet is lower-case base32 and an absent <c>adr</c> or
-/// <c>lesson</c> size is 8, and an absent sub-object takes both. It mints no id from a sub-object that is not an object
+/// <c>lesson</c> size is 8, an absent <c>decision</c>, <c>claim</c>, <c>constraint</c>, <c>openQuestion</c> or <c>scenario</c> size is 6
+/// (B-021, item <c>0418</c>), and an absent sub-object takes both. It mints no id from a sub-object that is not an object
 /// (B-049), an alphabet that is empty or not a string (B-050), or a size that is not a positive whole number (B-051): its
 /// constructor refuses, and nothing is drawn. The draws come from a <see cref="FixedRandomSource"/>, so nothing here is
 /// random.
@@ -72,6 +73,21 @@ public sealed class NanoIdStrategyUnitTests
 
         // Then
         id.Should().HaveLength(8);
+    }
+
+    [Theory]
+    [ClassData(typeof(PerFeatureTypes))]
+    public void APerFeatureTypesNanoIdNamingNoSize_WhenDrawn_ShouldBeSixCharactersLong(string type)
+    {
+        // Given
+        var settings = new JsonObject { ["alphabet"] = "0123456789abcdefghjkmnpqrstvwxyz" };
+        var strategy = new NanoIdStrategy(settings, type, new FixedRandomSource(0));
+
+        // When
+        var id = strategy.Next();
+
+        // Then
+        id.Should().HaveLength(6);
     }
 
     [Theory]

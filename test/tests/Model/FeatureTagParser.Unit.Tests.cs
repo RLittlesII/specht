@@ -5,7 +5,10 @@ using Specht.Tests.Shared;
 
 namespace Specht.Tests.Model;
 
-/// <summary>The tag parser remains culture independent and recognizes whole literal forms (0001-F5 C-12).</summary>
+/// <summary>
+/// The tag parser remains culture independent and recognizes whole literal forms (0001-F5 C-12). The text after the
+/// <c>@</c> of every tag a scenario carries is read for the guard (<c>0001-F19</c> B-042, C-18, item <c>0418</c>).
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FeatureTagParserUnitTests
 {
@@ -35,5 +38,28 @@ public sealed class FeatureTagParserUnitTests
         {
             CultureInfo.CurrentCulture = previous;
         }
+    }
+
+    [Fact]
+    public void ACompanionWhoseScenariosCarryTags_WhenItsTagNamesAreRead_ShouldGiveTheTextAfterTheAtOfEachTag()
+    {
+        // Given
+        const string text = """
+            Feature: Sample
+
+              @B-001
+              Scenario: It does the thing
+                Given a thing
+
+              @S-abc123 @boundary
+              Scenario: It does another
+                Given a thing
+            """;
+
+        // When
+        var names = new FeatureTagParser().TagNames(text);
+
+        // Then
+        names.Should().Contain(["B-001", "S-abc123", "boundary"]);
     }
 }

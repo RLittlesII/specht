@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Specht.Acceptance;
+using Specht.Tests.Identifiers;
 using Specht.Tests.Manifest;
 using Specht.Tests.Shared;
 
@@ -11,6 +12,9 @@ namespace Specht.Tests.Mint;
 /// draws from a one-character alphabet, so the id a request mints is known before it is made and no random source is
 /// replaced. A type not opted in, or whose entry names no strategy, exits <c>4</c>, as something named on the command line
 /// that is not found (B-002, the owner's selections on OQ-11), and a refusal exits exactly <c>3</c> where the claim names the invalid manifest (B-015, B-043).
+/// A per-Feature type the manifest opts in exits <c>2</c> without <c>--feature</c> (B-057, B-058) and <c>4</c> for a folder that
+/// holds no Feature's <c>.spec/</c>, a legacy <c>epics/</c> Feature folder among them (B-059, B-060; item <c>0418</c>), writing
+/// nothing on standard output.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class MintCommandIntegrationTests
@@ -176,5 +180,105 @@ public sealed class MintCommandIntegrationTests
         // Then
         Stdout.Should().NotContain(tree.Root);
         Stderr.Should().NotContain(tree.Root);
+    }
+
+    [Theory]
+    [ClassData(typeof(PerFeatureTypes))]
+    public void APerFeatureTypeRequestedWithoutAFeature_WhenRequested_ShouldWriteNothingOnStandardOutput(string type)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteCoLocatedFeature("features/one", "0001", "F1");
+        tree.WriteRaw(
+            SpechtTree.ManifestPath,
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "@type@": "^(?:[A-Z]+-)?z{3}$" },
+              "mint": { "@type@": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } } }
+            }
+            """.Replace("@type@", type, StringComparison.Ordinal));
+
+        // When
+        var (Stdout, Stderr, _) = AcceptanceTool.Launch(tree.Root, "mint", type, "--root", ".");
+
+        // Then
+        Stdout.Should().BeEmpty(Stderr);
+    }
+
+    [Theory]
+    [ClassData(typeof(PerFeatureTypes))]
+    public void APerFeatureTypeRequestedWithoutAFeature_WhenRequested_ShouldExitAsAUsageFailure(string type)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteCoLocatedFeature("features/one", "0001", "F1");
+        tree.WriteRaw(
+            SpechtTree.ManifestPath,
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "@type@": "^(?:[A-Z]+-)?z{3}$" },
+              "mint": { "@type@": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } } }
+            }
+            """.Replace("@type@", type, StringComparison.Ordinal));
+
+        // When
+        var (_, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "mint", type, "--root", ".");
+
+        // Then
+        ExitCode.Should().Be(2, Stderr);
+    }
+
+    [Theory]
+    [ClassData(typeof(FoldersHoldingNoFeature))]
+    public void APerFeatureTypeRequestedForAFolderHoldingNoFeature_WhenRequested_ShouldWriteNothingOnStandardOutput(string folder)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteCoLocatedFeature("features/one", "0001", "F1");
+        tree.WriteRaw("features/two/notes.md", "# Notes\n");
+        tree.WriteFeature("0002", "F1");
+        tree.WriteRaw(
+            SpechtTree.ManifestPath,
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "claim": "^B-z{3}$" },
+              "mint": { "claim": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } } }
+            }
+            """);
+
+        // When
+        var (Stdout, Stderr, _) = AcceptanceTool.Launch(tree.Root, "mint", "claim", "--feature", folder, "--root", ".");
+
+        // Then
+        Stdout.Should().BeEmpty(Stderr);
+    }
+
+    [Theory]
+    [ClassData(typeof(FoldersHoldingNoFeature))]
+    public void APerFeatureTypeRequestedForAFolderHoldingNoFeature_WhenRequested_ShouldExitAsForSomethingNamedOnTheCommandLineThatIsNotFound(string folder)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteCoLocatedFeature("features/one", "0001", "F1");
+        tree.WriteRaw("features/two/notes.md", "# Notes\n");
+        tree.WriteFeature("0002", "F1");
+        tree.WriteRaw(
+            SpechtTree.ManifestPath,
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "claim": "^B-z{3}$" },
+              "mint": { "claim": { "strategy": "nanoid", "nanoid": { "alphabet": "z", "size": 3 } } }
+            }
+            """);
+
+        // When
+        var (_, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "mint", "claim", "--feature", folder, "--root", ".");
+
+        // Then
+        ExitCode.Should().Be(4, Stderr);
     }
 }

@@ -6,6 +6,7 @@ using Specht.Identifiers;
 using Specht.Model;
 using Specht.Tests.Discovery;
 using Specht.Tests.Mint;
+using Specht.Tests.Shared;
 using Specht.Tree;
 
 namespace Specht.Tests.Identifiers;
@@ -26,7 +27,10 @@ namespace Specht.Tests.Identifiers;
 /// <c>snowflake</c> sub-object and the clock, in base32 when it names no encoding (B-007, B-056; C-3, item <c>0419</c>), and
 /// a Snowflake entry whose first candidate the tree holds gives no id when the clock reads earlier at the guard's next draw
 /// (B-029). A candidate the type's <c>identifiers</c> grammar does not match, prefix included, gives no id, and the guard
-/// draws no other, even for a first candidate the tree holds (B-011, B-012; item <c>0420</c>). Each manifest is written in memory, the draws come from a
+/// draws no other, even for a first candidate the tree holds (B-011, B-012; item <c>0420</c>). A per-Feature type the manifest
+/// opts in gives no id without a Feature (B-057, B-058) or for a folder that holds none (B-059, B-060), and neither refusal
+/// pre-empts B-002's or B-043's; its first candidate, held in the Feature's place for the type, is drawn again (B-010, B-040
+/// to B-042; item <c>0418</c>). Each manifest is written in memory, the draws come from a
 /// <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -511,5 +515,136 @@ public sealed class MinterUnitTests
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
         random.Bounds.Should().HaveCount(1);
+    }
+
+    [Theory]
+    [ClassData(typeof(PerFeatureTypes))]
+    public void APerFeatureTypeOptedIn_WhenMintedWithoutAFeature_ShouldBeRefusedAsNamingNoFeature(string type)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "@type@": "^(?:[A-Z]+-)?[ab]{2}$" },
+              "mint": { "@type@": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 } } }
+            }
+            """.Replace("@type@", type, StringComparison.Ordinal))!.AsObject();
+        var minter = new Minter(
+            new FixedRandomSource(0),
+            new HeldIds(
+                new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()),
+                new SpechtTreeStore(new MockFileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var mint = () => minter.Mint(manifest, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+
+        // Then
+        mint.Should().Throw<IdFeatureNotNamedException>();
+    }
+
+    [Theory]
+    [ClassData(typeof(FoldersHoldingNoFeature))]
+    public void APerFeatureTypeOptedIn_WhenMintedForAFolderHoldingNoFeature_ShouldBeRefusedAsFindingNoFeature(string folder)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "claim": "^B-[ab]{2}$" },
+              "mint": { "claim": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 } } }
+            }
+            """)!.AsObject();
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.specht/manifest.json"] = new("""{ "schemaVersion": "0.3.1" }"""),
+            ["repo/features/one/.spec/README.md"] = new("# Specification: F1\n"),
+            ["repo/features/two/notes.md"] = new("# Notes\n"),
+            ["repo/epics/0002-epic/F1-feature/spec.md"] = new("# Specification: F1\n"),
+        });
+        var root = files.Path.GetFullPath("repo");
+        var minter = new Minter(
+            new FixedRandomSource(0),
+            new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var mint = () => minter.Mint(manifest, "claim", root, EngineServices.Manifest(files, root).Discovery, folder);
+
+        // Then
+        mint.Should().Throw<IdFeatureNotFoundException>();
+    }
+
+    [Theory]
+    [ClassData(typeof(ManifestsRefusedBeforeTheFeature))]
+    public void AManifestRefusingThePerFeatureType_WhenMintedWithoutAFeatureOrForAFolderHoldingNone_ShouldBeRefusedForTheManifestAndNotTheFeature(
+        string manifest, string type, string? feature)
+    {
+        // Given
+        var document = JsonNode.Parse(manifest)!.AsObject();
+        var minter = new Minter(
+            new FixedRandomSource(0),
+            new HeldIds(
+                new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()),
+                new SpechtTreeStore(new MockFileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var mint = () => minter.Mint(document, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), feature);
+
+        // Then
+        mint.Should().Throw<IdRefusedException>()
+            .Which.Should().NotBeOfType<IdFeatureNotNamedException>()
+            .And.NotBeOfType<IdFeatureNotFoundException>();
+    }
+
+    [Theory]
+    [ClassData(typeof(PerFeatureFirstCandidatesHeld))]
+    public void APerFeatureTypesFirstCandidateHeldInItsFeaturesPlace_WhenMintedForThatFeature_ShouldMintTheNextCandidate(string type, string expected)
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "@type@": "^(?:[A-Z]+-)?[xy]$" },
+              "mint": { "@type@": { "strategy": "nanoid", "nanoid": { "alphabet": "xy", "size": 1 } } }
+            }
+            """.Replace("@type@", type, StringComparison.Ordinal))!.AsObject();
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.specht/manifest.json"] = new("""{ "schemaVersion": "0.3.1" }"""),
+            ["repo/features/one/.spec/README.md"] = new(
+                "# Specification: F1\n\n## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-x | Held. |\n\n"
+                + "## 4. Constraints\n\n| ID | Constraint |\n| -- | ---------- |\n| C-x | Held. |\n\n"
+                + "## 11. Open Questions\n\n| ID | Question |\n| -- | -------- |\n| OQ-x | Held? |\n"),
+            ["repo/features/one/.spec/decisions/x-held.md"] = new("# Held\n"),
+            ["repo/features/one/.spec/one.feature"] = new("Feature: it\n\n  @S-x\n  Scenario: It is held\n    Given a thing\n"),
+        });
+        var root = files.Path.GetFullPath("repo");
+        var minter = new Minter(
+            new FixedRandomSource(0, 1),
+            new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var id = minter.Mint(manifest, type, root, EngineServices.Manifest(files, root).Discovery, "features/one");
+
+        // Then
+        id.Should().Be(expected);
     }
 }
