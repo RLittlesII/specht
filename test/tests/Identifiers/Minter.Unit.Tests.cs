@@ -23,8 +23,9 @@ namespace Specht.Tests.Identifiers;
 /// check, so it leaves a request for an opted-in type to mint its id (B-003). A Snowflake entry is minted from its own
 /// <c>snowflake</c> sub-object and the clock, in base32 when it names no encoding (B-007, B-056; C-3, item <c>0419</c>), and
 /// a Snowflake entry whose first candidate the tree holds gives no id when the clock reads earlier at the guard's next draw
-/// (B-029). Each manifest is written in memory, the draws come from a <see cref="FixedRandomSource"/> and the time from a
-/// <see cref="FixedClock"/>.
+/// (B-029). A candidate the type's <c>identifiers</c> grammar does not match, prefix included, gives no id, and the guard
+/// draws no other, even for a first candidate the tree holds (B-011, B-012; item <c>0420</c>). Each manifest is written in memory, the draws come from a
+/// <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class MinterUnitTests
@@ -391,5 +392,56 @@ public sealed class MinterUnitTests
 
         // Then
         mint.Should().Throw<IdRefusedException>();
+    }
+
+    [Fact]
+    public void AnEntryNamingAPrefixItsGrammarDoesNotAdmit_WhenMinted_ShouldBeRefusedWithOneCandidateDrawn()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[ab]$" },
+              "mint": { "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 1 }, "prefix": "ADR-" } }
+            }
+            """)!.AsObject();
+        var random = new FixedRandomSource(0);
+
+        // When
+        var mintAdr = () => new Minter(
+            random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime))
+            .Mint(manifest, "adr", ".", []);
+
+        // Then
+        mintAdr.Should().Throw<IdRefusedException>();
+        random.Bounds.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void AHeldFirstCandidateItsGrammarRejectsAndAFreeSecondItAdmits_WhenMinted_ShouldBeRefusedWithNoSecondCandidateDrawn()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^b$" },
+              "mint": { "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 1 } } }
+            }
+            """)!.AsObject();
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.spec/adr/a-held.md"] = new("# Held\n"),
+        });
+        var random = new FixedRandomSource(0, 1);
+        var minter = new Minter(random, new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var mintAdr = () => minter.Mint(manifest, "adr", files.Path.GetFullPath("repo"), []);
+
+        // Then
+        mintAdr.Should().Throw<IdRefusedException>();
+        random.Bounds.Should().HaveCount(1);
     }
 }
