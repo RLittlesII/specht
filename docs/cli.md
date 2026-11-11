@@ -520,6 +520,8 @@ Prints one new id for `<type>`, a type the manifest's `mint` key opts in, drawn
 with that type's own strategy settings. Schema `0.3.1` or later accepts the key;
 [Configuration](configuration.md) describes the manifest. Every record type the
 key names, such as `adr` or `lesson`, needs a grammar in `identifiers`.
+`epic`, `feature` and `task` ids are not minted, and an entry that opts one in
+refuses every request.
 
 | Option            | Value   | Default               | Does                                                                                                                                                                                                           |
 | ----------------- | ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -534,7 +536,8 @@ no network request and never reserves the id.
 **Exit codes.** `0` when an id is printed; `2` for a missing root or manifest,
 `--feature` with `adr` or `lesson`, or a per-Feature type requested without
 `--feature`; `3` for an invalid manifest, a `mint`
-key the pin does not accept, or an entry that names a strategy and gives no id:
+key the pin does not accept, a `mint` key that opts in `epic`, `feature` or
+`task`, or an entry that names a strategy and gives no id:
 a record type with no grammar, a strategy other than `nanoid` or `snowflake`,
 settings it cannot draw from, a Snowflake clock that reads earlier than at
 the draw before it, or a candidate its type's grammar rejects; `4` for a type `mint` holds no entry for, or whose entry names

@@ -21,7 +21,8 @@ public static class ExitCodes
 
     /// <summary>
     /// The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects, a <c>mint</c> entry
-    /// that names a strategy and gives no id for the type requested included.
+    /// that opts in <c>epic</c>, <c>feature</c> or <c>task</c> and one that names a strategy and gives no id for the type
+    /// requested included.
     /// </summary>
     public const int InvalidManifest = 3;
 

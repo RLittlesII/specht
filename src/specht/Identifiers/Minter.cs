@@ -29,7 +29,8 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <param name="feature">The folder, relative to the root, of the Feature a per-Feature id is minted for, or nothing.</param>
     /// <returns>The id.</returns>
     /// <exception cref="IdRefusedException">
-    /// One of C-13's types <c>mint</c> opts in has no grammar, the type is not opted in or its entry names no strategy (an
+    /// One of C-13's types <c>mint</c> opts in has no grammar, <c>mint</c> opts in <c>epic</c>, <c>feature</c> or
+    /// <c>task</c>, the type is not opted in or its entry names no strategy (an
     /// <see cref="IdNotOptedInException"/>), its entry names a strategy other than <c>nanoid</c> or <c>snowflake</c>, the
     /// type is per-Feature and the request names no Feature (an <see cref="IdFeatureNotNamedException"/>) or a folder that
     /// holds none (an <see cref="IdFeatureNotFoundException"/>), the strategy refuses its settings or its clock reads earlier
@@ -45,6 +46,7 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-010" />
     /// <implements epic="0001" feature="F19" claim="B-011" />
     /// <implements epic="0001" feature="F19" claim="B-012" />
+    /// <implements epic="0001" feature="F19" claim="B-018" />
     /// <implements epic="0001" feature="F19" claim="B-029" />
     /// <implements epic="0001" feature="F19" claim="B-033" />
     /// <implements epic="0001" feature="F19" claim="B-034" />
@@ -67,6 +69,7 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-058" />
     /// <implements epic="0001" feature="F19" claim="B-059" />
     /// <implements epic="0001" feature="F19" claim="B-060" />
+    /// <implements epic="0001" feature="F19" claim="B-061" />
     public string Mint(JsonObject manifest, string type, string root, SpechtDiscoveryInputs discovery, string? feature)
     {
         var mint = manifest["mint"] as JsonObject;
@@ -76,6 +79,14 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
             if (StrategyOf(mint?[opted]) is not null && grammars?[opted] is null)
             {
                 throw new IdRefusedException($"'mint.{opted}' opts '{opted}' in, and 'identifiers' holds no grammar for it.");
+            }
+        }
+
+        foreach (var refused in NotMinted)
+        {
+            if (StrategyOf(mint?[refused]) is not null)
+            {
+                throw new IdRefusedException($"'mint.{refused}' opts '{refused}' in, and no '{refused}' id is minted under the pinned schema version.");
             }
         }
 
@@ -112,4 +123,9 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <summary>The types of the first slice (C-13), the members of <c>mint</c> whose grammar B-043 requires once they opt in.</summary>
     /// <implements epic="0001" feature="F19" claim="B-043" />
     private static readonly string[] Types = [.. IdTypes.RepositoryWide, .. IdTypes.PerFeature];
+
+    /// <summary>The types C-13 leaves out, the members of <c>mint</c> that refuse every request once they opt in (B-061).</summary>
+    /// <implements epic="0001" feature="F19" claim="B-018" />
+    /// <implements epic="0001" feature="F19" claim="B-061" />
+    private static readonly string[] NotMinted = ["epic", "feature", "task"];
 }
