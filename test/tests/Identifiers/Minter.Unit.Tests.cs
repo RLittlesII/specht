@@ -20,8 +20,11 @@ namespace Specht.Tests.Identifiers;
 /// draws nothing. The refusal of a type not opted in, or of an entry naming no strategy, is an
 /// <see cref="IdNotOptedInException"/>, which the B-043 refusal is not, so the command can give it its own exit (B-002). A
 /// <c>mint</c> member that opts no C-13 type in, one naming no such type or one naming no strategy, is outside the B-043
-/// check, so it leaves a request for an opted-in type to mint its id (B-003). Each manifest is written in memory, and the
-/// draws come from a <see cref="FixedRandomSource"/>.
+/// check, so it leaves a request for an opted-in type to mint its id (B-003). A Snowflake entry is minted from its own
+/// <c>snowflake</c> sub-object and the clock, in base32 when it names no encoding (B-007, B-056; C-3, item <c>0419</c>), and
+/// a Snowflake entry whose first candidate the tree holds gives no id when the clock reads earlier at the guard's next draw
+/// (B-029). Each manifest is written in memory, the draws come from a <see cref="FixedRandomSource"/> and the time from a
+/// <see cref="FixedClock"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class MinterUnitTests
@@ -41,7 +44,10 @@ public sealed class MinterUnitTests
               }
             }
             """)!.AsObject();
-        var minter = new Minter(new FixedRandomSource(1), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())));
+        var minter = new Minter(
+            new FixedRandomSource(1),
+            new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())),
+            new FixedClock(FixedClock.CheckTime));
 
         // When
         var adr = minter.Mint(manifest, "adr", ".", []);
@@ -87,7 +93,10 @@ public sealed class MinterUnitTests
             manifest["mint"]!["adr"]!["nanoid"] = JsonNode.Parse(nanoid);
         }
 
-        var minter = new Minter(new FixedRandomSource(1, 0), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())));
+        var minter = new Minter(
+            new FixedRandomSource(1, 0),
+            new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())),
+            new FixedClock(FixedClock.CheckTime));
 
         // When
         var id = minter.Mint(manifest, "adr", ".", []);
@@ -116,7 +125,8 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+        var mintAdr = () => new Minter(
+            random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime))
             .Mint(manifest, "adr", ".", []);
 
         // Then
@@ -142,7 +152,10 @@ public sealed class MinterUnitTests
         }
 
         // When
-        var mintAdr = () => new Minter(new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+        var mintAdr = () => new Minter(
+            new FixedRandomSource(0),
+            new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())),
+            new FixedClock(FixedClock.CheckTime))
             .Mint(manifest, "adr", ".", []);
 
         // Then
@@ -165,7 +178,8 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+        var mintAdr = () => new Minter(
+            random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime))
             .Mint(manifest, "adr", ".", []);
 
         // Then
@@ -190,7 +204,8 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+        var mintAdr = () => new Minter(
+            random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime))
             .Mint(manifest, "adr", ".", []);
 
         // Then
@@ -207,7 +222,10 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mint = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()))).Mint(document, type, ".", []);
+        var mint = () => new Minter(
+            random,
+            new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())),
+            new FixedClock(FixedClock.CheckTime)).Mint(document, type, ".", []);
 
         // Then
         mint.Should().Throw<IdRefusedException>().Which.Should().NotBeOfType<IdNotOptedInException>();
@@ -233,7 +251,10 @@ public sealed class MinterUnitTests
         }
 
         // When
-        var id = new Minter(new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+        var id = new Minter(
+            new FixedRandomSource(0),
+            new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())),
+            new FixedClock(FixedClock.CheckTime))
             .Mint(manifest, "adr", ".", []);
 
         // Then
@@ -252,7 +273,10 @@ public sealed class MinterUnitTests
               "mint": { "adr": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 }, "prefix": "ADR-" } }
             }
             """)!.AsObject();
-        var minter = new Minter(new FixedRandomSource(1), new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())));
+        var minter = new Minter(
+            new FixedRandomSource(1),
+            new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())),
+            new FixedClock(FixedClock.CheckTime));
 
         // When
         var id = minter.Mint(manifest, "adr", ".", []);
@@ -277,7 +301,8 @@ public sealed class MinterUnitTests
         {
             ["repo/.spec/adr/ADR-x-held.md"] = new("# Held\n"),
         });
-        var minter = new Minter(new FixedRandomSource(0, 1), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())));
+        var minter = new Minter(
+            new FixedRandomSource(0, 1), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime));
 
         // When
         var id = minter.Mint(manifest, "adr", files.Path.GetFullPath("repo"), []);
@@ -301,11 +326,70 @@ public sealed class MinterUnitTests
         var random = new FixedRandomSource(0);
 
         // When
-        var mintAdr = () => new Minter(random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())))
+        var mintAdr = () => new Minter(
+            random, new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime))
             .Mint(manifest, "adr", ".", []);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
         random.Bounds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ASnowflakeEntryNamingNoEncodingWithSettingsOutsideItsSnowflakeSubObject_WhenMinted_ShouldMintFromTheSubObjectAndTheClockInBase32()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[0-9a-z]+$" },
+              "mint": {
+                "adr": {
+                  "strategy": "snowflake",
+                  "epoch": "2025-01-01",
+                  "datacenter": 7,
+                  "nanoid": { "epoch": "2024-01-01", "worker": 5, "sequenceStart": 9 },
+                  "snowflake": { "datacenter": 0, "worker": 0, "sequenceStart": 0 }
+                }
+              }
+            }
+            """)!.AsObject();
+        var minter = new Minter(
+            new FixedRandomSource(1),
+            new HeldIds(new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess())),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var id = minter.Mint(manifest, "adr", ".", []);
+
+        // Then
+        id.Should().Be("033y1mp000000");
+    }
+
+    [Fact]
+    public void ASnowflakeEntryWhoseFirstCandidateIsHeldAndAClockReadingEarlierAtTheNextDraw_WhenMinted_ShouldBeRefused()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "identifiers": { "adr": "^[0-9a-z]+$" },
+              "mint": { "adr": { "strategy": "snowflake", "snowflake": { "datacenter": 0, "worker": 0, "sequenceStart": 0 } } }
+            }
+            """)!.AsObject();
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.spec/adr/033y1mp000000-held.md"] = new("# Held\n"),
+        });
+        var clock = new FixedClock(FixedClock.CheckTime, FixedClock.CheckTime.AddMilliseconds(-1));
+        var minter = new Minter(new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), clock);
+
+        // When
+        var mint = () => minter.Mint(manifest, "adr", files.Path.GetFullPath("repo"), []);
+
+        // Then
+        mint.Should().Throw<IdRefusedException>();
     }
 }
