@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Specht.Discovery;
 
 namespace Specht.Identifiers;
 
@@ -24,7 +25,8 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <param name="manifest">The manifest document, its <c>identifiers</c> filled with the pin's defaults.</param>
     /// <param name="type">The id type, a member of <c>mint</c>.</param>
     /// <param name="root">The repository root the guard reads held ids under.</param>
-    /// <param name="exclusions">The manifest's directory exclusions, which the guard reads no file under.</param>
+    /// <param name="discovery">The manifest's discovery inputs, under which the guard lists the places it reads.</param>
+    /// <param name="feature">The folder, relative to the root, of the Feature a per-Feature id is minted for, or nothing.</param>
     /// <returns>The id.</returns>
     /// <exception cref="IdRefusedException">
     /// One of C-13's types <c>mint</c> opts in has no grammar, the type is not opted in or its entry names no strategy (an
@@ -55,7 +57,7 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-054" />
     /// <implements epic="0001" feature="F19" claim="B-055" />
     /// <implements epic="0001" feature="F19" claim="B-056" />
-    public string Mint(JsonObject manifest, string type, string root, IReadOnlyList<string> exclusions)
+    public string Mint(JsonObject manifest, string type, string root, SpechtDiscoveryInputs discovery, string? feature)
     {
         var mint = manifest["mint"] as JsonObject;
         var grammars = manifest["identifiers"] as JsonObject;
@@ -81,9 +83,10 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
             _ => throw new IdRefusedException($"'mint.{type}' names the strategy '{name}', which is neither 'nanoid' nor 'snowflake'."),
         };
 
+        var location = feature is not null && IdTypes.PerFeature.Contains(type) ? held.FeatureAt(root, discovery, feature) : null;
         var formatted = new FormattingDecorator(strategy, entry["prefix"], entry["encoding"], name, type);
         var validated = new ValidationDecorator(formatted, grammars?[type], type);
-        return new CollisionGuardDecorator(validated, entry["attempts"], type, held.Of(type, root, exclusions)).Next();
+        return new CollisionGuardDecorator(validated, entry["attempts"], type, held.Of(type, root, discovery, location)).Next();
     }
 
     /// <summary>The strategy a <c>mint</c> member names: its <c>strategy</c> when the member is an object and that is a string.</summary>
@@ -96,5 +99,5 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
 
     /// <summary>The types of the first slice (C-13), the members of <c>mint</c> whose grammar B-043 requires once they opt in.</summary>
     /// <implements epic="0001" feature="F19" claim="B-043" />
-    private static readonly string[] Types = ["adr", "lesson", "decision", "claim", "constraint", "openQuestion", "scenario"];
+    private static readonly string[] Types = [.. IdTypes.RepositoryWide, .. IdTypes.PerFeature];
 }

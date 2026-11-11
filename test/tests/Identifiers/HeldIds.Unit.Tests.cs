@@ -2,8 +2,10 @@ using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Discovery;
 using Specht.Identifiers;
+using Specht.Model;
 using Specht.Tests.Discovery;
 using Specht.Tests.Shared;
+using Specht.Tree;
 
 namespace Specht.Tests.Identifiers;
 
@@ -33,7 +35,11 @@ public sealed class HeldIdsUnitTests
         var exclusions = EngineServices.Manifest(files, root).Discovery.Exclusions;
 
         // When
-        var held = new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())).Of(type, root, exclusions);
+        var held = new HeldIds(
+            new SpechtDiscovery(files, new UnexpectedChildProcess()),
+            new SpechtTreeStore(files),
+            new SpechtDocumentParser(new FrontmatterReader()),
+            new FeatureTagParser()).Of(type, root, new SpechtDiscoveryInputs([], exclusions, [], [], []), null);
 
         // Then
         held.Should().Contain(expected);

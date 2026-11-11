@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Identifiers;
@@ -31,7 +32,7 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
     /// <implements epic="0001" feature="F19" claim="B-043" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        if (settings.Feature is not null && settings.Type is "adr" or "lesson")
+        if (settings.Feature is not null && IdTypes.RepositoryWide.Contains(settings.Type))
         {
             return await Fail(ExitCodes.MissingInput, $"specht: '{settings.Type}' ids are repository-wide; mint one without --feature.");
         }
@@ -40,7 +41,7 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
         {
             var root = Path.GetFullPath(settings.Root);
             var manifest = reader.ReadManifestDocument(root);
-            var id = minter.Mint(manifest.Document, settings.Type, root, manifest.Structure.Discovery.Exclusions);
+            var id = minter.Mint(manifest.Document, settings.Type, root, manifest.Structure.Discovery, settings.Feature);
             await console.Profile.Out.Writer.WriteLineAsync(id);
             return ExitCodes.Success;
         }

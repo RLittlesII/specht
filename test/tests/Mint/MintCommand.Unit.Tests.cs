@@ -4,10 +4,12 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Discovery;
 using Specht.Identifiers;
+using Specht.Model;
 using Specht.Tests.Discovery;
 using Specht.Tests.Identifiers;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Mint;
+using Specht.Tree;
 using Spectre.Console.Testing;
 
 namespace Specht.Tests.Mint;
@@ -48,7 +50,14 @@ public sealed class MintCommandUnitTests
         var command = new MintCommand(
             console,
             EngineServices.Reader(files),
-            new Minter(new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime)),
+            new Minter(
+                new FixedRandomSource(0),
+                new HeldIds(
+                    new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                    new SpechtTreeStore(files),
+                    new SpechtDocumentParser(new FrontmatterReader()),
+                    new FeatureTagParser()),
+                new FixedClock(FixedClock.CheckTime)),
             errors);
         var root = files.Path.GetFullPath("consumer");
 
@@ -98,7 +107,11 @@ public sealed class MintCommandUnitTests
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var minter = new Minter(
             new FixedRandomSource([.. Enumerable.Range(0, held + 1)]),
-            new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())),
+            new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
             new FixedClock(FixedClock.CheckTime));
         var command = new MintCommand(console, EngineServices.Reader(files), minter, errors);
 
@@ -131,7 +144,11 @@ public sealed class MintCommandUnitTests
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var minter = new Minter(
-            new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime));
+            new FixedRandomSource(0), new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()), new FixedClock(FixedClock.CheckTime));
         var command = new MintCommand(console, EngineServices.Reader(files), minter, errors);
 
         // When
@@ -161,7 +178,11 @@ public sealed class MintCommandUnitTests
                 """));
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var minter = new Minter(
-            new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime));
+            new FixedRandomSource(0), new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()), new FixedClock(FixedClock.CheckTime));
         var command = new MintCommand(new TestConsole(), EngineServices.Reader(files), minter, errors);
 
         // When
@@ -196,7 +217,14 @@ public sealed class MintCommandUnitTests
         var command = new MintCommand(
             new TestConsole(),
             EngineServices.Reader(files),
-            new Minter(new FixedRandomSource(0), new HeldIds(new SpechtDiscovery(files, new UnexpectedChildProcess())), new FixedClock(FixedClock.CheckTime)),
+            new Minter(
+                new FixedRandomSource(0),
+                new HeldIds(
+                    new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                    new SpechtTreeStore(files),
+                    new SpechtDocumentParser(new FrontmatterReader()),
+                    new FeatureTagParser()),
+                new FixedClock(FixedClock.CheckTime)),
             errors);
 
         // When

@@ -8,6 +8,7 @@ using AwesomeAssertions;
 using Reqnroll;
 using Specht.Discovery;
 using Specht.Identifiers;
+using Specht.Model;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
 using Specht.Tool;
@@ -633,7 +634,11 @@ public sealed class IdGenerationSteps
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var minter = new Minter(
-            new FixedDraws(run.Draws), new HeldIds(new SpechtDiscovery(new FileSystem(), new ChildProcess())), new FixedClock(run.Readings));
+            new FixedDraws(run.Draws), new HeldIds(
+                new SpechtDiscovery(new FileSystem(), new ChildProcess()),
+                new Specht.Tree.SpechtTreeStore(new FileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()), new FixedClock(run.Readings));
         var exitCode = await new MintCommand(console, EngineServices.Reader(), minter, errors)
             .ExecuteAsync(null!, new MintCommand.Settings { Type = type, Root = Tree.Root }, CancellationToken.None);
 

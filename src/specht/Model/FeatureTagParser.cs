@@ -28,6 +28,12 @@ public sealed class FeatureTagParser
         return new FeatureFile(relativePath, tags, scenarios);
     }
 
+    /// <summary>The text after the <c>@</c> of every tag on a tag line of a companion, comment lines skipped.</summary>
+    /// <param name="text">The companion's complete text.</param>
+    /// <returns>Each tag's name, in file order.</returns>
+    /// <implements epic="0001" feature="F19" claim="B-042" />
+    public IReadOnlyList<string> TagNames(string text) => [];
+
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-080" />
     private static (IReadOnlyList<FeatureTag> Tags, IReadOnlyList<FeatureScenario> Scenarios) Scan(

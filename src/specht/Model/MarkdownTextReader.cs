@@ -41,6 +41,9 @@ internal sealed class MarkdownTextReader
         return sections;
     }
 
+    /// <implements epic="0001" feature="F19" claim="B-041" />
+    public IReadOnlyList<string> FirstCells(string text, MarkdownPipeline pipeline) => [];
+
     /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string HeadingText(HeadingBlock heading) =>
         heading.Inline is null ? string.Empty : Flatten(heading.Inline);
