@@ -157,6 +157,34 @@ Feature: Id generation
       | Feature ids | a Feature id |
       | task ids    | a task id    |
 
+  @B-057 @boundary
+  Scenario Outline: A per-Feature id requested without its Feature is not printed
+    Given a manifest that opts <type> in to Nano ID
+    When <a type id> is requested without naming a Feature
+    Then nothing is written on standard output
+
+    Examples:
+      | type              | a type id           |
+      | decision numbers  | a decision number   |
+      | claim ids         | a claim id          |
+      | constraint ids    | a constraint id     |
+      | open question ids | an open question id |
+      | scenario ids      | a scenario id       |
+
+  @B-058 @boundary
+  Scenario Outline: A per-Feature id requested without its Feature is a usage failure
+    Given a manifest that opts <type> in to Nano ID
+    When <a type id> is requested without naming a Feature
+    Then the request ends as a usage failure
+
+    Examples:
+      | type              | a type id           |
+      | decision numbers  | a decision number   |
+      | claim ids         | a claim id          |
+      | constraint ids    | a constraint id     |
+      | open question ids | an open question id |
+      | scenario ids      | a scenario id       |
+
   @B-019
   Scenario: A Nano ID with no alphabet draws from lower-case base32
     Given a manifest that opts ADR numbers in to Nano ID with no alphabet
@@ -405,6 +433,30 @@ Feature: Id generation
     When a scenario id is requested for that Feature
     Then the minted id is one no scenario of that Feature is tagged with
 
+  @B-059 @boundary
+  Scenario Outline: A per-Feature id for a folder that holds no Feature is not printed
+    Given a manifest that opts claim ids in to Nano ID
+    And <a folder>
+    When a claim id is requested for that folder
+    Then nothing is written on standard output
+
+    Examples:
+      | a folder                                            |
+      | a folder under the root that holds no specification |
+      | a Feature folder in the legacy epics layout         |
+
+  @B-060 @boundary
+  Scenario Outline: A per-Feature id for a folder that holds no Feature is not found
+    Given a manifest that opts claim ids in to Nano ID
+    And <a folder>
+    When a claim id is requested for that folder
+    Then the request ends as it does for something named on the command line that is not found
+
+    Examples:
+      | a folder                                            |
+      | a folder under the root that holds no specification |
+      | a Feature folder in the legacy epics layout         |
+
   @B-043 @boundary
   Scenario Outline: A type opted in with no grammar is an invalid manifest
     Given a manifest that opts ADR numbers in to Nano ID
@@ -437,6 +489,32 @@ Feature: Id generation
       | lesson numbers   |
       | decision numbers |
       | scenario ids     |
+
+  @B-061 @boundary
+  Scenario Outline: Opting in an epic, Feature or task type is an invalid manifest for minting
+    Given a manifest that opts <type> in to Nano ID
+    When <an id> is requested
+    Then the request ends as it does for an invalid manifest
+
+    Examples:
+      | type        | an id         |
+      | epic ids    | an epic id    |
+      | Feature ids | a Feature id  |
+      | task ids    | a task id     |
+      | epic ids    | an ADR number |
+
+  @B-062
+  Scenario Outline: The check accepts an epic, Feature or task entry under schema 0.3.1
+    Given a manifest pinned to schema 0.3.1
+    And it opts <type> in to Nano ID
+    When the tree is checked
+    Then the check does not end as it does for an invalid manifest
+
+    Examples:
+      | type        |
+      | epic ids    |
+      | Feature ids |
+      | task ids    |
 
   @B-047 @boundary
   Scenario Outline: No id is minted for an entry that names no strategy

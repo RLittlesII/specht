@@ -1,10 +1,18 @@
+using System.Globalization;
+using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using AwesomeAssertions;
 using Reqnroll;
+using Specht.Discovery;
+using Specht.Identifiers;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
 using Specht.Tool;
+using Specht.Tool.Features.Mint;
+using Spectre.Console.Testing;
 
 namespace Specht.Acceptance.Identifiers;
 
@@ -20,9 +28,9 @@ namespace Specht.Acceptance.Identifiers;
 /// A request (A-2, item <c>0415</c>) launches <c>specht mint &lt;type&gt; --root .</c>, with <c>--feature features/one</c> when
 /// it is made for a Feature, a co-located Feature written there. Entries are written for <c>adr</c> and <c>lesson</c> and, where
 /// a scenario names no prefix (B-055, item <c>0417</c>), for each of C-13's types, each with a grammar admitting what it mints
-/// (A-6) under any prefix the type may carry; the scenarios of item <c>0418</c>'s per-Feature types and of Snowflake keep a
-/// step no binding matches and stay pending. An <c>adr</c> entry names a prefix or an encoding where a scenario names one (item
-/// <c>0417</c>): B-009's prefix, B-033's and B-054's encodings, and B-053's prefixes that are not text. The built tool's
+/// (A-6) under any prefix the type may carry; the scenarios of item <c>0418</c>'s per-Feature types and of the grammar check
+/// keep a step no binding matches and stay pending. An <c>adr</c> entry names a prefix or an encoding where a scenario names
+/// one (item <c>0417</c>): B-009's prefix, B-033's and B-054's encodings, and B-053's prefixes that are not text. The built tool's
 /// draws are random, so an ADR the tree holds is written only where the entry's alphabet has one character and its one
 /// candidate is known (item <c>0416</c>): the guard's refusals, B-017's guard row, B-036 and B-037. The scenarios of B-034,
 /// B-035, B-038 and B-039 name a first or an eighth candidate of a random draw and keep a step no binding matches. "No ADR number is minted" is nothing on
@@ -30,6 +38,18 @@ namespace Specht.Acceptance.Identifiers;
 /// its prefix is the line less the entry's <c>prefix</c>; <c>adr</c> and <c>lesson</c> have none (B-055). "The drawn
 /// characters" with a prefix ahead of them is the line starting with that prefix, the rest the entry's size of characters
 /// from its alphabet.
+/// <para>
+/// A Snowflake entry (item <c>0419</c>) is written for <c>adr</c>. A launched tool reads the machine's clock and draws at
+/// random, and no option fixes either (§ 7), so a scenario that names the time, a draw, or the candidate that would be minted
+/// first runs the request in process: <see cref="MintCommand"/> over the engine's own reader and a <see cref="Minter"/> on the
+/// root's file system, with a clock that reads noon on 2026-11-07, universal time, unless the scenario names another time,
+/// and draws of 0 unless it names one (B-007, B-022, B-024 to B-026, B-029). Every other request launches the built tool. "The
+/// candidate that would be minted first" is the id the same request mints before the tree holds it. A number is decoded
+/// under the entry's encoding, <c>base32</c> when it names none (B-056), and its widths, 5, 5 and 12 bits when it names none
+/// (B-023). Where a scenario reads a field the launched tool would draw, the entry names it: B-023's sequence start, and the
+/// datacenter, worker and sequence start of the encoding scenarios, B-030 to B-032 and B-056, whose number is read back to
+/// those fields. A scenario leaving one field unnamed names the other two, so its one draw is that field's.
+/// </para>
 /// </remarks>
 [Binding]
 [Scope(Feature = "Id generation")]
@@ -295,6 +315,64 @@ public sealed class IdGenerationSteps
     public void GivenAManifestThatOptsATypeInToNanoIdWithNoPrefix(string type) =>
         OptIn(TypeOf(type), $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""", $"^(?:[A-Z]+-)?[{Base32}]{{8}}$");
 
+    [Given("^a manifest that opts ADR numbers in to Snowflake$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflake() => OptIn("adr", """{ "strategy": "snowflake" }""", AnyId);
+
+    [Given("^a manifest that opts ADR numbers in to Snowflake with an epoch of (\\d{4}-\\d{2}-\\d{2})$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithAnEpochOf(string epoch) =>
+        OptInSnowflake(new JsonObject { ["epoch"] = epoch }, null);
+
+    [Given("^a manifest that opts ADR numbers in to Snowflake with no epoch$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithNoEpoch() => OptInSnowflake([], null);
+
+    [Given("^a manifest that opts ADR numbers in to Snowflake with a datacenter of (\\d+), a worker of (\\d+) and no field widths$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithADatacenterAWorkerAndNoFieldWidths(int datacenter, int worker) =>
+        OptInSnowflake(new JsonObject { ["datacenter"] = datacenter, ["worker"] = worker, ["sequenceStart"] = SequenceStart }, null);
+
+    [Given("^a manifest that opts ADR numbers in to Snowflake with no (datacenter|worker|sequence start)$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithNo(string field)
+    {
+        var snowflake = new JsonObject { ["datacenter"] = 0, ["worker"] = 0, ["sequenceStart"] = 0 };
+        snowflake.Remove(FieldOf(field));
+        OptInSnowflake(snowflake, null);
+    }
+
+    [Given("^a manifest that opts ADR numbers in to Snowflake with a (datacenter|worker) of (\\d+)$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithAFieldOf(string field, int value) =>
+        OptInSnowflake(new JsonObject { [FieldOf(field)] = value }, null);
+
+    [Given("^a manifest that opts ADR numbers in to Snowflake with the encoding \"(.*)\"$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithTheEncoding(string encoding) => OptInSnowflake(EveryField(), encoding);
+
+    [Given("^a manifest that opts ADR numbers in to Snowflake with no encoding$")]
+    public void GivenAManifestThatOptsAdrNumbersInToSnowflakeWithNoEncoding() => OptInSnowflake(EveryField(), null);
+
+    [Given("^the time is noon on (\\d{4}-\\d{2}-\\d{2}), universal time$")]
+    public void GivenTheTimeIsNoonOn(string date) => Fixed.Readings = [Noon(date)];
+
+    [Given("^the random draw for the (?:datacenter|worker|sequence start) is (\\d+)$")]
+    public void GivenTheRandomDrawIs(int draw) => Fixed.Draws = [draw];
+
+    [Given("^an ADR already numbered with the ADR number that would be minted first$")]
+    public async Task GivenAnAdrAlreadyNumberedWithTheAdrNumberThatWouldBeMintedFirst()
+    {
+        var (_, (stdout, stderr, exitCode)) = await InProcess("adr", Fixed);
+        exitCode.Should().Be(ExitCodes.Success, stderr);
+        Tree.WriteRaw($".spec/adr/{stdout.TrimEnd('\n').TrimEnd('\r')}-held.md", "# Held\n");
+    }
+
+    [Given("^the clock reads earlier for the second ADR number than for the first$")]
+    public void GivenTheClockReadsEarlierForTheSecondAdrNumberThanForTheFirst() =>
+        Fixed.Readings = [Fixed.Readings[0], Fixed.Readings[0].AddMilliseconds(-1)];
+
+    [Given("^ADRs that are already numbered$")]
+    public void GivenAdrsThatAreAlreadyNumbered()
+    {
+        Tree.WriteRaw(".spec/adr/0001-first.md", "# First\n");
+        Tree.WriteRaw(".spec/adr/0002-second.md", "# Second\n");
+        _before = Snapshot();
+    }
+
     [Given("^ADRs already numbered with each of the first (?:eight|three) ADR numbers that would be minted$")]
     public void GivenAdrsAlreadyNumberedWithEachOfTheFirstAdrNumbersThatWouldBeMinted() => HoldEveryAdrCandidate();
 
@@ -302,7 +380,8 @@ public sealed class IdGenerationSteps
     public void WhenTheTreeIsChecked() => _run = AcceptanceTool.Launch(Tree.Root, "--root", ".");
 
     [When("^(an ADR number|a lesson number) is requested$")]
-    public void WhenATypeIdIsRequested(string id) => _request = Request(TypeOf(id), forFeature: false);
+    public async Task WhenATypeIdIsRequested(string id) =>
+        _request = _fixed is null ? Request(TypeOf(id), forFeature: false) : await InProcess(TypeOf(id), _fixed);
 
     [When("^(an ADR number|a lesson number|a decision number|a claim id|a constraint id|an open question id|a scenario id) is requested for a Feature$")]
     public void WhenATypeIdIsRequestedForAFeature(string id) => _request = Request(TypeOf(id), forFeature: true);
@@ -406,6 +485,56 @@ public sealed class IdGenerationSteps
     public void ThenTheRequestEndsAsItDoesForAnInvalidManifest() =>
         LastRequest.Run.ExitCode.Should().Be(ExitCodes.InvalidManifest, LastRequest.Run.Stderr);
 
+    [Then("^no file under the root or elsewhere has been created, modified or deleted$")]
+    public void ThenNoFileUnderTheRootOrElsewhereHasBeenCreatedModifiedOrDeleted() =>
+        Snapshot().Should().BeEquivalentTo(_before ?? throw new InvalidOperationException("No tree was numbered."), LastRequest.Run.Stderr);
+
+    [Then(
+        "^the minted number, decoded, holds the milliseconds from (?:midnight on )?(\\d{4}-\\d{2}-\\d{2})(?:, universal time,)?"
+        + " to noon on (\\d{4}-\\d{2}-\\d{2})$")]
+    public void ThenTheMintedNumberDecodedHoldsTheMillisecondsFrom(string epoch, string date) =>
+        Decoded().Time.Should().Be((long) (Noon(date) - Midnight(epoch)).TotalMilliseconds, LastRequest.Run.Stderr);
+
+    [Then("^the minted number, decoded, holds the (datacenter|worker|sequence) (\\d+)$")]
+    public void ThenTheMintedNumberDecodedHoldsTheField(string field, long value)
+    {
+        var (_, datacenter, worker, sequence) = Decoded();
+        (field switch
+        {
+            "datacenter" => datacenter,
+            "worker" => worker,
+            _ => sequence,
+        }).Should().Be(value, LastRequest.Run.Stderr);
+    }
+
+    [Then("^the minted number's lowest (\\d+) bits are its sequence$")]
+    public void ThenTheMintedNumbersLowestBitsAreItsSequence(int bits)
+    {
+        (Number() & ((1L << bits) - 1)).Should().Be(SequenceStart, LastRequest.Run.Stderr);
+        _below = bits;
+    }
+
+    [Then("^the (\\d+) bits above (?:them|those) hold the (?:worker|datacenter) (\\d+)$")]
+    public void ThenTheBitsAboveHold(int bits, long value)
+    {
+        ((Number() >> _below) & ((1L << bits) - 1)).Should().Be(value, LastRequest.Run.Stderr);
+        _below += bits;
+    }
+
+    [Then("^the minted number after its prefix, read as lower-case base32, is the Snowflake number$")]
+    public void ThenTheMintedNumberAfterItsPrefixReadAsLowerCaseBase32IsTheSnowflakeNumber()
+    {
+        AfterPrefix(LastRequest).Should().MatchRegex($"^[{Base32}]+$", LastRequest.Run.Stderr);
+        ShouldHoldTheEntrysFields();
+    }
+
+    [Then("^the minted number after its prefix is the Snowflake number in decimal digits$")]
+    public void ThenTheMintedNumberAfterItsPrefixIsTheSnowflakeNumberInDecimalDigits()
+    {
+        AfterPrefix(LastRequest).Should().MatchRegex("^[0-9]+$", LastRequest.Run.Stderr);
+        ShouldHoldTheEntrysFields();
+    }
+
     [AfterScenario]
     public void DisposeTree() => _tree?.Dispose();
 
@@ -418,7 +547,23 @@ public sealed class IdGenerationSteps
     private (string Type, (string Stdout, string Stderr, int ExitCode) Run) LastRequest =>
         _request ?? throw new InvalidOperationException("No id was requested.");
 
+    private FixedRun Fixed => _fixed ??= new FixedRun();
+
     private static string TypeOf(string words) => Types.First(pair => words.Contains(pair.Words, StringComparison.Ordinal)).Type;
+
+    private static DateTimeOffset Midnight(string date) =>
+        DateTimeOffset.ParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+    private static DateTimeOffset Noon(string date) => Midnight(date).AddHours(12);
+
+    private static string FieldOf(string words) => words switch
+    {
+        "datacenter" => "datacenter",
+        "worker" => "worker",
+        _ => "sequenceStart",
+    };
+
+    private static JsonObject EveryField() => new() { ["datacenter"] = 3, ["worker"] = 9, ["sequenceStart"] = SequenceStart };
 
     private JsonObject ReadManifest() => JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
 
@@ -462,6 +607,68 @@ public sealed class IdGenerationSteps
         return (type, AcceptanceTool.Launch(Tree.Root, "mint", type, "--feature", Feature, "--root", "."));
     }
 
+    private void OptInSnowflake(JsonObject snowflake, string? encoding)
+    {
+        var entry = new JsonObject { ["strategy"] = "snowflake", ["snowflake"] = snowflake };
+        if (encoding is not null)
+        {
+            entry["encoding"] = encoding;
+        }
+
+        OptIn("adr", entry.ToJsonString(), AnyId);
+    }
+
+    private async Task<(string Type, (string Stdout, string Stderr, int ExitCode) Run)> InProcess(string type, FixedRun run)
+    {
+        var console = new TestConsole();
+        using var errors = new StringWriter(CultureInfo.InvariantCulture);
+        var minter = new Minter(
+            new FixedDraws(run.Draws), new HeldIds(new SpechtDiscovery(new FileSystem(), new ChildProcess())), new FixedClock(run.Readings));
+        var exitCode = await new MintCommand(console, EngineServices.Reader(), minter, errors)
+            .ExecuteAsync(null!, new MintCommand.Settings { Type = type, Root = Tree.Root }, CancellationToken.None);
+
+        return (type, (console.Output, errors.ToString(), exitCode));
+    }
+
+    private long Number()
+    {
+        var digits = AfterPrefix(LastRequest);
+        var encoding = ReadManifest()["mint"]![LastRequest.Type]!["encoding"]?.GetValue<string>() ?? "base32";
+        return encoding == "none"
+            ? long.Parse(digits, NumberStyles.None, CultureInfo.InvariantCulture)
+            : digits.Aggregate(0L, static (number, character) => (number << 5) | (long) Base32.IndexOf(character, StringComparison.Ordinal));
+    }
+
+    private (long Time, long Datacenter, long Worker, long Sequence) Decoded()
+    {
+        var snowflake = ReadManifest()["mint"]![LastRequest.Type]!["snowflake"];
+        var datacenterBits = snowflake?["datacenterBits"]?.GetValue<int>() ?? 5;
+        var workerBits = snowflake?["workerBits"]?.GetValue<int>() ?? 5;
+        var sequenceBits = snowflake?["sequenceBits"]?.GetValue<int>() ?? 12;
+        var number = Number();
+
+        return (
+            number >> (datacenterBits + workerBits + sequenceBits),
+            (number >> (workerBits + sequenceBits)) & ((1L << datacenterBits) - 1),
+            (number >> sequenceBits) & ((1L << workerBits) - 1),
+            number & ((1L << sequenceBits) - 1));
+    }
+
+    private void ShouldHoldTheEntrysFields()
+    {
+        var snowflake = ReadManifest()["mint"]![LastRequest.Type]!["snowflake"]!;
+        var (_, datacenter, worker, sequence) = Decoded();
+        datacenter.Should().Be(snowflake["datacenter"]!.GetValue<int>(), LastRequest.Run.Stderr);
+        worker.Should().Be(snowflake["worker"]!.GetValue<int>(), LastRequest.Run.Stderr);
+        sequence.Should().Be(snowflake["sequenceStart"]!.GetValue<int>(), LastRequest.Run.Stderr);
+    }
+
+    private Dictionary<string, (string Text, DateTime Written)> Snapshot() =>
+        Directory.EnumerateFileSystemEntries(Tree.Root, "*", SearchOption.AllDirectories).ToDictionary(
+            path => Path.GetRelativePath(Tree.Root, path),
+            static path => File.Exists(path) ? (File.ReadAllText(path), File.GetLastWriteTimeUtc(path)) : (string.Empty, Directory.GetLastWriteTimeUtc(path)),
+            StringComparer.Ordinal);
+
     private string AfterPrefix((string Type, (string Stdout, string Stderr, int ExitCode) Run) request)
     {
         var line = request.Run.Stdout.TrimEnd('\n').TrimEnd('\r');
@@ -471,9 +678,37 @@ public sealed class IdGenerationSteps
         return line[prefix.Length..];
     }
 
+    private sealed class FixedRun
+    {
+        public DateTimeOffset[] Readings { get; set; } = [new(2026, 11, 7, 12, 0, 0, TimeSpan.Zero)];
+
+        public int[] Draws { get; set; } = [0];
+    }
+
+    private sealed class FixedClock(DateTimeOffset[] readings) : IClock
+    {
+        public DateTimeOffset GetUtcNow() => readings[Math.Min(_read++, readings.Length - 1)];
+
+        private int _read;
+    }
+
+    private sealed class FixedDraws(int[] draws) : IRandomSource
+    {
+        public int Next(int maxExclusive)
+        {
+            var draw = draws[_drawn++ % draws.Length];
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(draw, maxExclusive);
+            return draw;
+        }
+
+        private int _drawn;
+    }
+
     private const string Base32 = "0123456789abcdefghjkmnpqrstvwxyz";
 
     private const string AnyId = "^[0-9a-z]+$";
+
+    private const int SequenceStart = 2709;
 
     private const string Feature = "features/one";
 
@@ -499,4 +734,10 @@ public sealed class IdGenerationSteps
     private (string Type, (string Stdout, string Stderr, int ExitCode) Run)? _request;
 
     private (string Type, bool ForFeature)? _pending;
+
+    private FixedRun? _fixed;
+
+    private Dictionary<string, (string Text, DateTime Written)>? _before;
+
+    private int _below;
 }

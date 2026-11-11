@@ -36,7 +36,7 @@ internal sealed class ReleaseRepository : IDisposable
     }
 
     public Task<(int ExitCode, string Output)> RunTarget(string target, string tag) =>
-        Run("dotnet", [typeof(SchemaVersionLock).Assembly.Location,
+        Run("dotnet", [BuildHost.Location(),
             "--root", Path.GetFullPath(Root), "--target", target, "--skip", "Restore", "Build"],
             ("GITHUB_REF_TYPE", "tag"), ("GITHUB_REF_NAME", tag));
 

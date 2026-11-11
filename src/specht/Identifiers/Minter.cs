@@ -5,13 +5,14 @@ namespace Specht.Identifiers;
 /// <summary>
 /// Mints one id for a type from that type's own entry under the manifest's <c>mint</c> key (<c>0001-F19</c> C-12), through
 /// the strategy the entry names, inside the formatting decorator and the collision guard (C-4). It reads the manifest it is
-/// handed and the names the tree holds, and writes nothing (C-1, C-11).
+/// handed, the names the tree holds and the clock, and writes nothing (C-1, C-11).
 /// </summary>
 /// <param name="random">The random source every strategy it builds draws from.</param>
 /// <param name="held">Where the guard reads the ids each type already holds in the tree.</param>
+/// <param name="clock">The clock the Snowflake strategy reads.</param>
 /// <implements epic="0001" feature="F19" claim="B-008" />
 /// <implements epic="0001" feature="F19" claim="B-034" />
-public sealed class Minter(IRandomSource random, HeldIds held)
+public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
 {
     /// <summary>
     /// Builds the strategy <c>mint[type]</c> names from that entry alone and draws one id from it, once every one of C-13's
@@ -26,14 +27,16 @@ public sealed class Minter(IRandomSource random, HeldIds held)
     /// <returns>The id.</returns>
     /// <exception cref="IdRefusedException">
     /// One of C-13's types <c>mint</c> opts in has no grammar, the type is not opted in or its entry names no strategy (an
-    /// <see cref="IdNotOptedInException"/>), its entry names a strategy that is not built, the strategy refuses its settings,
-    /// formatting refuses its <c>prefix</c> or <c>encoding</c>, the guard refuses its <c>attempts</c>, or the tree holds every
-    /// candidate the guard draws.
+    /// <see cref="IdNotOptedInException"/>), its entry names a strategy other than <c>nanoid</c> or <c>snowflake</c>, the
+    /// strategy refuses its settings or its clock reads earlier at a later draw, formatting refuses its <c>prefix</c> or
+    /// <c>encoding</c>, the guard refuses its <c>attempts</c>, or the tree holds every candidate the guard draws.
     /// </exception>
     /// <implements epic="0001" feature="F19" claim="B-001" />
     /// <implements epic="0001" feature="F19" claim="B-002" />
+    /// <implements epic="0001" feature="F19" claim="B-007" />
     /// <implements epic="0001" feature="F19" claim="B-008" />
     /// <implements epic="0001" feature="F19" claim="B-009" />
+    /// <implements epic="0001" feature="F19" claim="B-029" />
     /// <implements epic="0001" feature="F19" claim="B-033" />
     /// <implements epic="0001" feature="F19" claim="B-034" />
     /// <implements epic="0001" feature="F19" claim="B-035" />
@@ -47,6 +50,7 @@ public sealed class Minter(IRandomSource random, HeldIds held)
     /// <implements epic="0001" feature="F19" claim="B-053" />
     /// <implements epic="0001" feature="F19" claim="B-054" />
     /// <implements epic="0001" feature="F19" claim="B-055" />
+    /// <implements epic="0001" feature="F19" claim="B-056" />
     public string Mint(JsonObject manifest, string type, string root, IReadOnlyList<string> exclusions)
     {
         var mint = manifest["mint"] as JsonObject;
@@ -68,8 +72,9 @@ public sealed class Minter(IRandomSource random, HeldIds held)
         IIdStrategy strategy = name switch
         {
             "nanoid" => new NanoIdStrategy(entry["nanoid"], type, random),
+            "snowflake" => new SnowflakeStrategy(entry["snowflake"], type, random, clock),
             null => throw new IdNotOptedInException($"'mint.{type}' names no strategy, so '{type}' is not opted in."),
-            _ => throw new IdRefusedException($"'mint.{type}' names the strategy '{name}', which is not built."),
+            _ => throw new IdRefusedException($"'mint.{type}' names the strategy '{name}', which is neither 'nanoid' nor 'snowflake'."),
         };
 
         var formatted = new FormattingDecorator(strategy, entry["prefix"], entry["encoding"], name, type);

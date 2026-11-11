@@ -2,7 +2,7 @@ id: "0421"
 type: task
 title: Mint no epic, Feature or task id
 
-status: blocked
+status: ready
 
 risk: 1
 
@@ -16,25 +16,28 @@ spec: src/specht/Identifiers/.spec/README.md
 
 claims:
   - B-018
+  - B-061
+  - B-062
 
 created: "2026-11-07"
-updated: "2026-11-08"
+updated: "2026-11-10"
 closed: null
 
 summary: |
   A request for an `epic`, `feature` or `task` id writes nothing on
-  standard output (B-018; C-13).
+  standard output (B-018; C-13). A manifest that opts one of the three
+  in is id settings the pinned schema does not accept, checked when an
+  id is requested, as B-043 is: every request exits 3 (B-015, B-061),
+  and the check is unaffected (B-062).
 
-  Risk 1: B-018 holds under either reading. Blocked on OQ-17, which
-  records no default: a `mint` entry naming one of the three types is
-  either an invalid manifest under the pinned schema, exiting `3`
-  (B-015), or a request the command refuses. The answer decides
-  whether `0.3.1`'s `mint` key, 0413's, admits the three names, so
-  this item settles that key in place while no package carries
-  `0.3.1` (C-17).
+  Risk 1: one more step beside B-043's, and a check verdict that must
+  not move. Was blocked on OQ-17 until its 2026-11-10 answer, B-061
+  and B-062.
 
 acceptance_criteria:
   - "B-018 — epic, Feature and task ids, nothing on standard output"
+  - "B-061 — a manifest opting in epic, Feature or task, exit 3 on any request"
+  - "B-062 — the check unaffected by such an entry under 0.3.1"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -42,6 +45,15 @@ decisions:
     2026-11-07, spec-author: cut on decision 0003; `blocked`, not
     proceeding, because OQ-17 records no default. Value omitted,
     inheriting 0412's.
+  - |
+    2026-11-10, spec-author: OQ-17 answered. Relayed in session by the
+    coordinating session, the repository owner selected "Invalid id
+    settings, exit 3 (Recommended)" among options an agent wrote; the
+    question and the options' wording are an agent's, only the
+    selection is the owner's. Added B-061 and B-062, worded by
+    spec-author. `blocked` moves to `ready`, not
+    `ready-for-implementation`: the blocker is resolved and 0415 is
+    done, but no § 7 design for the step exists yet.
 
 out_of_scope:
   - "Minting the three types, and widening their frontmatter id patterns - § 5 row 10."

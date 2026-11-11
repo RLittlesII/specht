@@ -21,6 +21,7 @@ services.AddSpechtEngine();
 services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtRunner>().Run);
 services.AddInit();
 services.AddUpgrade();
+services.AddMint();
 services.AddSingleton<EvidenceReconciler>();
 
 var app = new CommandApp(new TypeRegistrar(services));

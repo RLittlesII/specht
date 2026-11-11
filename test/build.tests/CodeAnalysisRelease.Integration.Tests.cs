@@ -367,7 +367,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
                 RedirectStandardError = true,
                 UseShellExecute = false,
             };
-            process.StartInfo.ArgumentList.Add(typeof(SchemaVersionLock).Assembly.Location);
+            process.StartInfo.ArgumentList.Add(BuildHost.Location());
             process.StartInfo.ArgumentList.Add("--root");
             process.StartInfo.ArgumentList.Add(Path.GetFullPath(Root));
             process.StartInfo.ArgumentList.Add("--target");
