@@ -262,6 +262,12 @@ Feature: Id generation
     When an ADR number is requested
     Then the minted number after its prefix is the Snowflake number in decimal digits
 
+  @B-056
+  Scenario: A Snowflake id that names no encoding is the number in base32
+    Given a manifest that opts ADR numbers in to Snowflake with no encoding
+    When an ADR number is requested
+    Then the minted number after its prefix, read as lower-case base32, is the Snowflake number
+
   @B-033 @boundary
   Scenario: A Nano ID is not encoded in base32
     Given a manifest that opts ADR numbers in to Nano ID with the encoding "base32"
