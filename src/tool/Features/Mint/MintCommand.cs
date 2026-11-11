@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Identifiers;
@@ -29,9 +30,13 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
     /// <implements epic="0001" feature="F19" claim="B-016" />
     /// <implements epic="0001" feature="F19" claim="B-017" />
     /// <implements epic="0001" feature="F19" claim="B-043" />
+    /// <implements epic="0001" feature="F19" claim="B-057" />
+    /// <implements epic="0001" feature="F19" claim="B-058" />
+    /// <implements epic="0001" feature="F19" claim="B-059" />
+    /// <implements epic="0001" feature="F19" claim="B-060" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        if (settings.Feature is not null && settings.Type is "adr" or "lesson")
+        if (settings.Feature is not null && IdTypes.RepositoryWide.Contains(settings.Type))
         {
             return await Fail(ExitCodes.MissingInput, $"specht: '{settings.Type}' ids are repository-wide; mint one without --feature.");
         }
@@ -40,7 +45,7 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
         {
             var root = Path.GetFullPath(settings.Root);
             var manifest = reader.ReadManifestDocument(root);
-            var id = minter.Mint(manifest.Document, settings.Type, root, manifest.Structure.Discovery.Exclusions);
+            var id = minter.Mint(manifest.Document, settings.Type, root, manifest.Structure.Discovery, settings.Feature);
             await console.Profile.Out.Writer.WriteLineAsync(id);
             return ExitCodes.Success;
         }
@@ -52,7 +57,11 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
         {
             return await Fail(ExitCodes.MissingInput, $"specht: {exception.Message}");
         }
-        catch (IdNotOptedInException exception)
+        catch (IdFeatureNotNamedException exception)
+        {
+            return await Fail(ExitCodes.MissingInput, $"specht: {exception.Message}");
+        }
+        catch (Exception exception) when (exception is IdNotOptedInException or IdFeatureNotFoundException)
         {
             return await Fail(ExitCodes.NotFound, $"specht: {exception.Message}");
         }
@@ -71,9 +80,9 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
         [Description("The id type, as the manifest's mint key names it.")]
         public string Type { get; init; } = string.Empty;
 
-        /// <summary>Gets the folder of the Feature a per-Feature id is minted for, or nothing.</summary>
+        /// <summary>Gets the folder, relative to the root and spelled with <c>/</c>, that holds the Feature's <c>.spec/</c>, or nothing.</summary>
         [CommandOption("--feature <DIR>")]
-        [Description("The Feature a per-Feature id is minted for. Refused for adr and lesson.")]
+        [Description("The folder, relative to the root, that holds the Feature's .spec/. Required for per-Feature types; refused for adr and lesson.")]
         public string? Feature { get; init; }
 
         /// <summary>Gets the repository root.</summary>

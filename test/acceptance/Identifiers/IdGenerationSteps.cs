@@ -8,6 +8,7 @@ using AwesomeAssertions;
 using Reqnroll;
 using Specht.Discovery;
 using Specht.Identifiers;
+using Specht.Model;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
 using Specht.Tool;
@@ -25,27 +26,33 @@ namespace Specht.Acceptance.Identifiers;
 /// <c>mint</c> (A-1). An invalid manifest ends the check with <see cref="ExitCodes.InvalidManifest"/>.
 /// </summary>
 /// <remarks>
-/// A request (A-2, item <c>0415</c>) launches <c>specht mint &lt;type&gt; --root .</c>, with <c>--feature features/one</c> when
-/// it is made for a Feature, a co-located Feature written there. Entries are written for <c>adr</c> and <c>lesson</c> and, where
-/// a scenario names no prefix (B-055, item <c>0417</c>), for each of C-13's types, each with a grammar admitting what it mints
-/// (A-6) under any prefix the type may carry; the scenarios of item <c>0418</c>'s per-Feature types keep a step no binding
-/// matches and stay pending. Where a scenario says the ADR grammar admits only four-digit ADR numbers (B-011, B-012, item
-/// <c>0420</c>), it replaces the grammar the entry was written with, and no Snowflake id under either encoding matches it,
-/// so the request launches the built tool whatever its clock reads and its draws are. An <c>adr</c> entry names a prefix or an encoding where a scenario names
-/// one (item <c>0417</c>): B-009's prefix, B-033's and B-054's encodings, and B-053's prefixes that are not text. The built tool's
-/// draws are random, so an ADR the tree holds is written only where the entry's alphabet has one character and its one
-/// candidate is known (item <c>0416</c>): the guard's refusals, B-017's guard row, B-036 and B-037. The scenarios of B-034,
-/// B-035, B-038 and B-039 name a first or an eighth candidate of a random draw and keep a step no binding matches. "No ADR number is minted" is nothing on
-/// standard output and then an exit of <c>2</c>, <c>3</c> or <c>4</c> (A-8, B-017; OQ-11's default). The part of an id after
-/// its prefix is the line less the entry's <c>prefix</c>; <c>adr</c> and <c>lesson</c> have none (B-055). "The drawn
-/// characters" with a prefix ahead of them is the line starting with that prefix, the rest the entry's size of characters
-/// from its alphabet.
+/// A request (A-2, item <c>0415</c>) launches <c>specht mint &lt;type&gt; --root .</c>, with <c>--feature features/one</c>
+/// when it is made for a Feature, a co-located Feature written there. Entries are written for <c>adr</c> and <c>lesson</c>
+/// and, where a scenario names no prefix (B-055, item <c>0417</c>), for each of C-13's types, each with a grammar admitting
+/// what it mints (A-6) under any prefix the type may carry. A per-Feature entry (item <c>0418</c>) names no prefix unless
+/// the scenario names one, so its grammar admits the type's in-tree prefix ahead of the draw (B-055): none for
+/// <c>decision</c>, and <c>B-</c>, <c>C-</c>, <c>OQ-</c> and <c>S-</c> for <c>claim</c>, <c>constraint</c>,
+/// <c>openQuestion</c> and <c>scenario</c>. A request "without naming a Feature" names no <c>--feature</c>, and one "for
+/// that folder" names the folder the scenario wrote: a folder holding a file and no specification, or a Feature folder in
+/// the legacy <c>epics/</c> layout. Where a scenario says the ADR grammar admits only four-digit ADR numbers (B-011, B-012,
+/// item <c>0420</c>), it replaces the grammar the entry was written with, and no Snowflake id under either encoding matches
+/// it, so the request launches the built tool whatever its clock reads and its draws are. An <c>adr</c> entry names a
+/// prefix or an encoding where a scenario names one (item <c>0417</c>): B-009's prefix, B-033's and B-054's encodings, and
+/// B-053's prefixes that are not text. The built tool's draws are random, so an ADR the tree holds is written only where
+/// the entry's alphabet has one character and its one candidate is known (item <c>0416</c>): the guard's refusals, B-017's
+/// guard row, B-036 and B-037. The scenarios of B-034, B-035, B-038 and B-039 name a first or an eighth candidate of a
+/// random draw and keep a step no binding matches. "No ADR number is minted" is nothing on standard output and then an exit
+/// of <c>2</c>, <c>3</c> or <c>4</c> (A-8, B-017; OQ-11's default). The part of an id after its prefix is the line less the
+/// entry's <c>prefix</c>, or its in-tree prefix when it names none (B-055). "The drawn characters" with a prefix ahead of
+/// them is the line starting with that prefix, the rest the entry's size of characters from its alphabet.
 /// <para>
 /// A Snowflake entry (item <c>0419</c>) is written for <c>adr</c>. A launched tool reads the machine's clock and draws at
 /// random, and no option fixes either (§ 7), so a scenario that names the time, a draw, or the candidate that would be minted
 /// first runs the request in process: <see cref="MintCommand"/> over the engine's own reader and a <see cref="Minter"/> on the
 /// root's file system, with a clock that reads noon on 2026-11-07, universal time, unless the scenario names another time,
-/// and draws of 0 unless it names one (B-007, B-022, B-024 to B-026, B-029). Every other request launches the built tool. "The
+/// and draws of 0 unless it names one (B-007, B-022, B-024 to B-026, B-029). A per-Feature request whose first candidate a
+/// Feature holds (B-010, B-040 to B-042) runs in process for <c>features/one</c>, drawing 0 to 6 in turn, so the candidate after
+/// the first differs from it. Every other request launches the built tool. "The
 /// candidate that would be minted first" is the id the same request mints before the tree holds it. A number is decoded
 /// under the entry's encoding, <c>base32</c> when it names none (B-056), and its widths, 5, 5 and 12 bits when it names none
 /// (B-023). Where a scenario reads a field the launched tool would draw, the entry names it: B-023's sequence start, and the
@@ -121,9 +128,12 @@ public sealed class IdGenerationSteps
         OptIn("lesson", $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""", $"^[{Base32}]{{8}}$");
     }
 
-    [Given("^a manifest that opts (ADR numbers|lesson numbers) in to Nano ID$")]
+    [Given("^a manifest that opts (ADR numbers|lesson numbers|decision numbers|constraint ids|open question ids|scenario ids) in to Nano ID$")]
     public void GivenAManifestThatOptsATypeInToNanoId(string type) =>
-        OptIn(TypeOf(type), $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""", $"^[{Base32}]{{8}}$");
+        OptIn(
+            TypeOf(type),
+            $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}", "size": 8 } }""",
+            $"^{Regex.Escape(InTreePrefix(TypeOf(type)))}[{Base32}]{{8}}$");
 
     [Given("^(?:a manifest that|it) opts (ADR numbers|lesson numbers) in to Nano ID with a size of (.+)$")]
     public void GivenAManifestThatOptsATypeInToNanoIdWithASizeOf(string type, string size)
@@ -141,9 +151,26 @@ public sealed class IdGenerationSteps
     public void GivenAManifestThatOptsAdrNumbersInToNanoIdWithNoAlphabet() =>
         OptIn("adr", """{ "strategy": "nanoid", "nanoid": { "size": 32 } }""", AnyId);
 
-    [Given("^a manifest that opts (ADR numbers|lesson numbers) in to Nano ID with no size$")]
+    [Given(
+        "^a manifest that opts (ADR numbers|lesson numbers|decision numbers|claim ids|constraint ids|open question ids|scenario ids)"
+        + " in to Nano ID with no size$")]
     public void GivenAManifestThatOptsATypeInToNanoIdWithNoSize(string type) =>
-        OptIn(TypeOf(type), $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}" } }""", AnyId);
+        OptIn(
+            TypeOf(type),
+            $$"""{ "strategy": "nanoid", "nanoid": { "alphabet": "{{Base32}}" } }""",
+            $"^{Regex.Escape(InTreePrefix(TypeOf(type)))}[{Base32}]+$");
+
+    [Given("^a manifest that opts scenario ids in to Nano ID with the prefix \"(.*)\"$")]
+    public void GivenAManifestThatOptsScenarioIdsInToNanoIdWithThePrefix(string prefix) =>
+        OptIn(
+            "scenario",
+            new JsonObject
+            {
+                ["strategy"] = "nanoid",
+                ["nanoid"] = new JsonObject { ["alphabet"] = Base32, ["size"] = 8 },
+                ["prefix"] = prefix,
+            }.ToJsonString(),
+            $"^{Regex.Escape(prefix)}[{Base32}]{{8}}$");
 
     [Given("^a manifest that lists ADR numbers (without a strategy|with a number in place of a strategy)$")]
     public void GivenAManifestThatListsAdrNumbersWithNoStrategy(string strategy) =>
@@ -366,7 +393,7 @@ public sealed class IdGenerationSteps
     [Given("^an ADR already numbered with the ADR number that would be minted first$")]
     public async Task GivenAnAdrAlreadyNumberedWithTheAdrNumberThatWouldBeMintedFirst()
     {
-        var (_, (stdout, stderr, exitCode)) = await InProcess("adr", Fixed);
+        var (_, (stdout, stderr, exitCode)) = await InProcess("adr", Fixed, null);
         exitCode.Should().Be(ExitCodes.Success, stderr);
         Tree.WriteRaw($".spec/adr/{stdout.TrimEnd('\n').TrimEnd('\r')}-held.md", "# Held\n");
     }
@@ -374,6 +401,52 @@ public sealed class IdGenerationSteps
     [Given("^the clock reads earlier for the second ADR number than for the first$")]
     public void GivenTheClockReadsEarlierForTheSecondAdrNumberThanForTheFirst() =>
         Fixed.Readings = [Fixed.Readings[0], Fixed.Readings[0].AddMilliseconds(-1)];
+
+    [Given("^a Feature whose specification already holds the (claim id|constraint id|open question id) that would be minted first$")]
+    public async Task GivenAFeatureWhoseSpecificationAlreadyHoldsTheIdThatWouldBeMintedFirst(string id)
+    {
+        var first = await FirstCandidateForTheFeature(TypeOf(id));
+        var (title, table) = TypeOf(id) switch
+        {
+            "claim" => (
+                "3. Acceptance Criteria",
+                "| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n| B-001 | It does the thing. | brd | Active |\n"
+                + $"| {first} | It is held. | brd | Active |\n"),
+            "constraint" => (
+                "4. Constraints",
+                "| ID | Constraint | Rules Out |\n| -- | ---------- | --------- |\n| C-1 | Must be fast. | Slow things |\n"
+                + $"| {first} | It is held. | Nothing |\n"),
+            _ => ("11. Open Questions", $"| ID | Question | Default |\n| -- | -------- | ------- |\n| {first} | Is it held? | Yes |\n"),
+        };
+        Tree.WriteCoLocatedFeature(Feature, "0001", "F1", sections: SpechtTree.SectionsWith(title, $"## {title}\n\n{table}"));
+    }
+
+    [Given("^a Feature with a decision already numbered with the decision number that would be minted first$")]
+    public async Task GivenAFeatureWithADecisionAlreadyNumberedWithTheDecisionNumberThatWouldBeMintedFirst()
+    {
+        var first = await FirstCandidateForTheFeature("decision");
+        Tree.WriteRaw($"{Feature}/.spec/decisions/{first}-held.md", "# Held\n");
+    }
+
+    [Given("^a Feature with a scenario already tagged with the scenario id that would be minted first$")]
+    public async Task GivenAFeatureWithAScenarioAlreadyTaggedWithTheScenarioIdThatWouldBeMintedFirst()
+    {
+        var first = await FirstCandidateForTheFeature("scenario");
+        Tree.WriteRaw(
+            $"{Feature}/.spec/feature.feature",
+            $"Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @{first}\n  Scenario: It is held\n    Given a thing\n");
+    }
+
+    [Given("^a folder under the root that holds no specification$")]
+    public void GivenAFolderUnderTheRootThatHoldsNoSpecification()
+    {
+        Tree.WriteRaw("features/two/notes.md", "# Notes\n");
+        _folder = "features/two";
+    }
+
+    [Given("^a Feature folder in the legacy epics layout$")]
+    public void GivenAFeatureFolderInTheLegacyEpicsLayout() =>
+        _folder = Path.GetRelativePath(Tree.Root, Path.GetDirectoryName(Tree.WriteFeature("0002", "F1"))!).Replace('\\', '/');
 
     [Given("^ADRs that are already numbered$")]
     public void GivenAdrsThatAreAlreadyNumbered()
@@ -391,10 +464,21 @@ public sealed class IdGenerationSteps
 
     [When("^(an ADR number|a lesson number) is requested$")]
     public async Task WhenATypeIdIsRequested(string id) =>
-        _request = _fixed is null ? Request(TypeOf(id), forFeature: false) : await InProcess(TypeOf(id), _fixed);
+        _request = _fixed is null ? Request(TypeOf(id), forFeature: false) : await InProcess(TypeOf(id), _fixed, null);
 
     [When("^(an ADR number|a lesson number|a decision number|a claim id|a constraint id|an open question id|a scenario id) is requested for a Feature$")]
     public void WhenATypeIdIsRequestedForAFeature(string id) => _request = Request(TypeOf(id), forFeature: true);
+
+    [When("^(a decision number|a claim id|a constraint id|an open question id|a scenario id) is requested without naming a Feature$")]
+    public void WhenATypeIdIsRequestedWithoutNamingAFeature(string id) => _request = Request(TypeOf(id), forFeature: false);
+
+    [When("^(a decision number|a claim id|a constraint id|an open question id|a scenario id) is requested for that Feature$")]
+    public async Task WhenATypeIdIsRequestedForThatFeature(string id) => _request = await InProcess(TypeOf(id), Fixed, Feature);
+
+    [When("^a claim id is requested for that folder$")]
+    public void WhenAClaimIdIsRequestedForThatFolder() =>
+        _request = ("claim", AcceptanceTool.Launch(
+            Tree.Root, "mint", "claim", "--feature", _folder ?? throw new InvalidOperationException("No folder was written."), "--root", "."));
 
     [When("^an ADR number and a lesson number are requested$")]
     public void WhenAnAdrNumberAndALessonNumberAreRequested()
@@ -491,6 +575,40 @@ public sealed class IdGenerationSteps
     public void ThenTheRequestEndsAsItDoesForSomethingNamedOnTheCommandLineThatIsNotFound() =>
         LastRequest.Run.ExitCode.Should().Be(ExitCodes.NotFound, LastRequest.Run.Stderr);
 
+    [Then("^the request ends as a usage failure$")]
+    public void ThenTheRequestEndsAsAUsageFailure() =>
+        LastRequest.Run.ExitCode.Should().Be(ExitCodes.MissingInput, LastRequest.Run.Stderr);
+
+    [Then("^the minted id is one that Feature's specification does not hold$")]
+    public void ThenTheMintedIdIsOneThatFeaturesSpecificationDoesNotHold()
+    {
+        var id = Minted();
+        var firstCells = File.ReadAllLines(Path.Combine(Tree.Root, Feature, ".spec", "README.md"))
+            .Where(static line => line.TrimStart().StartsWith('|'))
+            .Select(static line => line.Split('|')[1].Trim());
+
+        firstCells.Should().NotContain(id);
+    }
+
+    [Then("^the minted number is one no decision of that Feature is numbered with$")]
+    public void ThenTheMintedNumberIsOneNoDecisionOfThatFeatureIsNumberedWith()
+    {
+        var id = Minted();
+        Directory.EnumerateFiles(Path.Combine(Tree.Root, Feature, ".spec", "decisions"))
+            .Select(Path.GetFileName)
+            .Should().NotContain(name => name!.StartsWith(id, StringComparison.Ordinal));
+    }
+
+    [Then("^the minted id is one no scenario of that Feature is tagged with$")]
+    public void ThenTheMintedIdIsOneNoScenarioOfThatFeatureIsTaggedWith()
+    {
+        var id = Minted();
+        Directory.EnumerateFiles(Path.Combine(Tree.Root, Feature, ".spec"), "*.feature")
+            .SelectMany(File.ReadAllLines)
+            .SelectMany(static line => line.Split((char[]?) null, StringSplitOptions.RemoveEmptyEntries))
+            .Should().NotContain($"@{id}");
+    }
+
     [Then("^the request ends as it does for an invalid manifest$")]
     public void ThenTheRequestEndsAsItDoesForAnInvalidManifest() =>
         LastRequest.Run.ExitCode.Should().Be(ExitCodes.InvalidManifest, LastRequest.Run.Stderr);
@@ -558,6 +676,15 @@ public sealed class IdGenerationSteps
         _request ?? throw new InvalidOperationException("No id was requested.");
 
     private FixedRun Fixed => _fixed ??= new FixedRun();
+
+    private static string InTreePrefix(string type) => type switch
+    {
+        "claim" => "B-",
+        "constraint" => "C-",
+        "openQuestion" => "OQ-",
+        "scenario" => "S-",
+        _ => string.Empty,
+    };
 
     private static string TypeOf(string words) => Types.First(pair => words.Contains(pair.Words, StringComparison.Ordinal)).Type;
 
@@ -628,14 +755,37 @@ public sealed class IdGenerationSteps
         OptIn("adr", entry.ToJsonString(), AnyId);
     }
 
-    private async Task<(string Type, (string Stdout, string Stderr, int ExitCode) Run)> InProcess(string type, FixedRun run)
+    private async Task<string> FirstCandidateForTheFeature(string type)
+    {
+        Tree.WriteCoLocatedFeature(Feature, "0001", "F1");
+        Fixed.Draws = [.. Enumerable.Range(0, 7)];
+        var (_, (stdout, stderr, exitCode)) = await InProcess(type, Fixed, Feature);
+        exitCode.Should().Be(ExitCodes.Success, stderr);
+
+        return stdout.TrimEnd('\n').TrimEnd('\r');
+    }
+
+    private string Minted()
+    {
+        LastRequest.Run.ExitCode.Should().Be(ExitCodes.Success, LastRequest.Run.Stderr);
+        var id = LastRequest.Run.Stdout.TrimEnd('\n').TrimEnd('\r');
+        id.Should().NotBeEmpty(LastRequest.Run.Stderr);
+
+        return id;
+    }
+
+    private async Task<(string Type, (string Stdout, string Stderr, int ExitCode) Run)> InProcess(string type, FixedRun run, string? feature)
     {
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var minter = new Minter(
-            new FixedDraws(run.Draws), new HeldIds(new SpechtDiscovery(new FileSystem(), new ChildProcess())), new FixedClock(run.Readings));
+            new FixedDraws(run.Draws), new HeldIds(
+                new SpechtDiscovery(new FileSystem(), new ChildProcess()),
+                new Specht.Tree.SpechtTreeStore(new FileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()), new FixedClock(run.Readings));
         var exitCode = await new MintCommand(console, EngineServices.Reader(), minter, errors)
-            .ExecuteAsync(null!, new MintCommand.Settings { Type = type, Root = Tree.Root }, CancellationToken.None);
+            .ExecuteAsync(null!, new MintCommand.Settings { Type = type, Feature = feature, Root = Tree.Root }, CancellationToken.None);
 
         return (type, (console.Output, errors.ToString(), exitCode));
     }
@@ -682,7 +832,7 @@ public sealed class IdGenerationSteps
     private string AfterPrefix((string Type, (string Stdout, string Stderr, int ExitCode) Run) request)
     {
         var line = request.Run.Stdout.TrimEnd('\n').TrimEnd('\r');
-        var prefix = ReadManifest()["mint"]?[request.Type]?["prefix"]?.GetValue<string>() ?? string.Empty;
+        var prefix = ReadManifest()["mint"]?[request.Type]?["prefix"]?.GetValue<string>() ?? InTreePrefix(request.Type);
         line.Should().StartWith(prefix, request.Run.Stderr);
 
         return line[prefix.Length..];
@@ -746,6 +896,8 @@ public sealed class IdGenerationSteps
     private (string Type, bool ForFeature)? _pending;
 
     private FixedRun? _fixed;
+
+    private string? _folder;
 
     private Dictionary<string, (string Text, DateTime Written)>? _before;
 

@@ -28,5 +28,11 @@ public sealed class SpechtDocumentParser(FrontmatterReader frontmatter)
         return new SpechtDocument(relativePath, frontmatter.Parse(text), sections);
     }
 
+    /// <summary>The first cell of every row of every pipe table in <paramref name="text"/>, as the check reads a cell.</summary>
+    /// <param name="text">The document's complete text.</param>
+    /// <returns>Each first cell, in document order.</returns>
+    /// <implements epic="0001" feature="F19" claim="B-041" />
+    public IReadOnlyList<string> FirstCells(string text) => new MarkdownTextReader().FirstCells(text, Pipeline);
+
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
 }

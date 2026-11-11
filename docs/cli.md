@@ -521,24 +521,26 @@ with that type's own strategy settings. Schema `0.3.1` or later accepts the key;
 [Configuration](configuration.md) describes the manifest. Every record type the
 key names, such as `adr` or `lesson`, needs a grammar in `identifiers`.
 
-| Option            | Value   | Default               | Does                                                                       |
-| ----------------- | ------- | --------------------- | -------------------------------------------------------------------------- |
-| `--feature <DIR>` | `<DIR>` | None                  | Names the Feature a per-Feature id is for; refused for `adr` and `lesson`. |
-| `--root <DIR>`    | `<DIR>` | The working directory | Names the repository whose manifest supplies the settings.                 |
-| `-h, --help`      | none    | none                  | Prints the command's help.                                                 |
+| Option            | Value   | Default               | Does                                                                                                                                                                                                           |
+| ----------------- | ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--feature <DIR>` | `<DIR>` | None                  | Names the folder, relative to the root and spelled with `/`, that holds the Feature's `.spec/`; required for `decision`, `claim`, `constraint`, `openQuestion` and `scenario`, refused for `adr` and `lesson`. |
+| `--root <DIR>`    | `<DIR>` | The working directory | Names the repository whose manifest supplies the settings.                                                                                                                                                     |
+| `-h, --help`      | none    | none                  | Prints the command's help.                                                                                                                                                                                     |
 
 **Stdout.** One line holding the id and nothing else. A refused request writes
 nothing on stdout and says why on stderr. The command writes no file, makes
 no network request and never reserves the id.
 
 **Exit codes.** `0` when an id is printed; `2` for a missing root or manifest,
-or `--feature` with `adr` or `lesson`; `3` for an invalid manifest, a `mint`
+`--feature` with `adr` or `lesson`, or a per-Feature type requested without
+`--feature`; `3` for an invalid manifest, a `mint`
 key the pin does not accept, or an entry that names a strategy and gives no id:
 a record type with no grammar, a strategy other than `nanoid` or `snowflake`,
 settings it cannot draw from, a Snowflake clock that reads earlier than at
 the draw before it, or a candidate its type's grammar rejects; `4` for a type `mint` holds no entry for, or whose entry names
-no strategy.
+no strategy, or a `--feature` folder that holds no Feature's `.spec/`.
 
 ```sh
 specht mint adr --root .
+specht mint claim --feature src/specht/Identifiers --root .
 ```
