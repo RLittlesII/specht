@@ -1,0 +1,30 @@
+id: "0435"
+type: chore
+title: Document the mint settings
+status: done
+value: 2
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-12"
+updated: "2026-11-12"
+closed: "2026-11-12"
+summary: |
+  The manifest's mint key already takes each type's strategy, Nano ID
+  alphabet and size, Snowflake settings, prefix, encoding and attempts
+  (0001-F19), but docs/configuration.md names the key only and no page shows
+  its shape. A consumer cannot find that the Nano ID alphabet is
+  configurable, what the defaults are, or that the type's identifiers grammar
+  must accept every character drawn. docs/configuration.md gets a short mint
+  section with one example.
+acceptance_criteria:
+  - docs/configuration.md shows a mint entry naming a Nano ID alphabet and size, and lists each member with its default.
+  - The section says the alphabet must be a non-empty string and the type's identifiers grammar must accept the minted id.
+  - The documented example mints an id drawn from its alphabet when run with specht mint.
+out_of_scope:
+  - Behaviour changes to minting or to the manifest.
+  - docs/cli.md beyond a link to the new section.
