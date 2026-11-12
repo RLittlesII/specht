@@ -9,6 +9,7 @@ type: reference
 | I want to                                                  | Read                                                                                                                   |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | Install Specht and run my first check                      | [Setup](setup.md)                                                                                                      |
+| See the tool, analyzer and MCP server end to end           | [Walkthrough](walkthrough.md)                                                                                          |
 | Configure the manifest, pin a schema, or use local schemas | [Configuration](configuration.md)                                                                                      |
 | Look up commands, options, or CI exit codes                | [Command line](cli.md), [Exit codes](exit-codes.md)                                                                    |
 | See which files and rules Specht checks                    | [What it checks](what-it-checks.md)                                                                                    |
