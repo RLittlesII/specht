@@ -772,6 +772,14 @@ Feature: Schema versioning
     Then nothing is written
     And the exit code is 3
 
+  @B-051 @boundary
+  Scenario: A 0.4.0 pin that still holds the old id settings can be pinned back down
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest still opts claim ids in to Nano ID under the mint key
+    When specht schema pin 0.3.1 runs
+    Then the manifest pins schema version 0.3.1
+    And the opt-in is as the consumer set it
+
   @B-052 @boundary
   Scenario: Upgrade never moves the pin
     Given the tool ships schema versions 0.1.0 and 0.2.0
@@ -1514,3 +1522,84 @@ Feature: Schema versioning
       | 0.1.0   |
       | 0.2.0   |
       | 0.2.1   |
+
+  @B-155
+  Scenario Outline: Upgrade moves a grammar into its ids record
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest declares the customised <type> grammar "<grammar>" under identifiers
+    When upgrade runs against it
+    Then the manifest's <type> record has the plain text "<plain>" and the id "<id>"
+
+    Examples:
+      | type       | grammar                       | plain      | id                        |
+      | claim      | ^B-[0-9]{4}$                  | B-{id}     | [0-9]{4}                  |
+      | constraint | ^CON-[0-9]+$                  | CON-{id}   | [0-9]+                    |
+      | scenario   | ^S-(?:[0-9a-hjkmnp-tv-z]{6})$ | S-{id}     | (?:[0-9a-hjkmnp-tv-z]{6}) |
+      | decision   | ^[0-9]{4}$                    | {id}       | [0-9]{4}                  |
+      | adr        | ^ADR-0[0-9]{3}$               | ADR-0{id}  | [0-9]{3}                  |
+      | claim      | ^B-?[0-9]{3}$                 | B{id}      | -?[0-9]{3}                |
+
+  @B-156
+  Scenario: Upgrade moves a mint entry into its ids record without its prefix
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest opts claim ids in to Nano ID with a size of 9 and the prefix "B-"
+    When upgrade runs against it
+    Then the manifest's claim record opts claim ids in to Nano ID with a size of 9
+    And the claim record's opt-in names no prefix
+
+  @B-157
+  Scenario: Upgrade leaves no old id setting
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest declares claim, constraint and open question grammars under identifiers
+    And its manifest opts ADR numbers in to Nano ID
+    When upgrade runs against it
+    Then the manifest holds no mint key
+    And it declares no claim, constraint or open question grammar under identifiers
+
+  @B-158
+  Scenario: Upgrade keeps every other manifest setting when it moves the id settings
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest declares task, Feature and epic grammars and a claim grammar under identifiers
+    And its manifest lowers one rule to a warning
+    When upgrade runs against it
+    Then the task, Feature and epic grammars and the warning are as the consumer set them
+
+  @B-159
+  Scenario Outline: Upgrade refuses a move it cannot make exactly
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest <setting>
+    When upgrade runs against it
+    Then nothing is written
+    And the exit code is 3
+    And the standard error names <member>
+
+    Examples:
+      | setting                                                                                   | member                          |
+      | declares the claim grammar "B-[0-9]{3}" under identifiers, with no anchors                | the claim grammar               |
+      | opts decision numbers in to Nano ID with the prefix "D-" and declares no decision grammar | the decision prefix             |
+      | declares the claim and scenario grammars "^X-[0-9]+$" under identifiers                   | the claim and scenario grammars |
+      | holds a claim record under ids and a claim grammar under identifiers                      | the claim grammar               |
+
+  @B-160
+  Scenario: Upgrade without old id settings leaves the ids key as it is
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest holds a claim record under ids and no old id setting
+    When upgrade runs against it
+    Then the claim record is as the consumer set it
+    And the manifest holds no other ids record
+
+  @B-160 @boundary
+  Scenario: Upgrade under schema 0.3.1 leaves the id settings where they are
+    Given a root whose manifest pins schema version 0.3.1
+    And its manifest opts claim ids in to Nano ID and declares a claim grammar under identifiers
+    When upgrade runs against it
+    Then the opt-in and the claim grammar are as the consumer set them
+    And the manifest holds no ids key
+
+  @B-161
+  Scenario: Upgrade drops an id setting left at its shipped default
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest declares under identifiers the claim grammar schema 0.3.1 ships
+    When upgrade runs against it
+    Then the manifest holds no claim record under ids
+    And the claim IDs the check accepts are those schema 0.4.0's shipped claim record admits

@@ -21,6 +21,10 @@ amends no claim, renumbers nothing and edits no accepted record. It answers
 § 11); settling them in that specification is a separate change. OQ-11 is not
 this spike's.
 
+No-default-grammar-change judgement, the OQ-12 answer and the top-level
+`mint` key's shape superseded 2026-11-12 from schema `0.4.0` by
+[ADR-0036](0036-schema-0-4-0-holds-one-id-record-per-type.md).
+
 ## Context
 
 ### How to read the evidence

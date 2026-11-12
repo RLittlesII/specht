@@ -459,7 +459,8 @@ Feature: Id generation
 
   @B-043 @boundary
   Scenario Outline: A type opted in with no grammar is an invalid manifest
-    Given a manifest that opts ADR numbers in to Nano ID
+    Given a manifest pinned to schema 0.3.1
+    And it opts ADR numbers in to Nano ID
     And it declares no grammar for ADR numbers
     When <an id> is requested
     Then the request ends as it does for an invalid manifest
@@ -573,3 +574,191 @@ Feature: Id generation
       | -3                 |
       | 2.5                |
       | "8", given as text |
+
+  @B-063
+  Scenario Outline: A Feature that declares a prefix mints its record's form
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And the manifest opts <type> in to Nano ID
+    And its <type> record has the form "<form>"
+    When <a type id> is requested for that Feature
+    Then the minted id is the drawn characters with "<head>" ahead of them
+
+    Examples:
+      | type              | a type id           | form                     | head                 |
+      | claim ids         | a claim id          | {prefix}-{id}            | ACTIVITY-            |
+      | scenario ids      | a scenario id       | {prefix}-SCENARIO-{id}   | ACTIVITY-SCENARIO-   |
+      | constraint ids    | a constraint id     | {prefix}-CONSTRAINT-{id} | ACTIVITY-CONSTRAINT- |
+      | open question ids | an open question id | {prefix}-Q-{id}          | ACTIVITY-Q-          |
+      | decision numbers  | a decision number   | {prefix}-D-{id}          | ACTIVITY-D-          |
+      | claim ids         | a claim id          | {prefix}{id}             | ACTIVITY             |
+
+  @B-065
+  Scenario Outline: A request outside a prefixed Feature mints the record's plain text
+    Given a manifest pinned to schema 0.4.0
+    And the manifest opts <type> in to Nano ID
+    And its <type> record has the plain text "<plain>"
+    When <a type id> is requested
+    Then the minted id is the drawn characters with <a head> ahead of them
+
+    Examples:
+      | type           | plain    | a type id                                              | a head  |
+      | claim ids      | REQ-{id} | a claim id for a Feature that declares no claim prefix | "REQ-"  |
+      | ADR numbers    | ADR-{id} | an ADR number                                          | "ADR-"  |
+      | lesson numbers | {id}     | a lesson number                                        | nothing |
+
+  @B-066 @boundary
+  Scenario Outline: A record with no form keeps its plain text in a prefixed Feature
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And the manifest opts <type> in to Nano ID
+    And its <type> record has no form
+    When <a type id> is requested for that Feature
+    Then the minted id is the drawn characters with <a prefix> ahead of them
+
+    Examples:
+      | type              | a type id           | a prefix |
+      | decision numbers  | a decision number   | nothing  |
+      | constraint ids    | a constraint id     | "C-"     |
+      | open question ids | an open question id | "OQ-"    |
+      | scenario ids      | a scenario id       | "S-"     |
+
+  @B-067 @boundary
+  Scenario Outline: An id for a Feature with an invalid prefix takes its record's plain text
+    Given a manifest pinned to schema 0.4.0 that opts <type> ids in to Nano ID
+    And its constraint record has the form "{prefix}-C-{id}"
+    And its other records leave their forms and plain texts to the shipped records
+    And a Feature whose claim prefix is <prefix>
+    When a <type> id is requested for that Feature
+    Then the minted id begins with "<head>"
+    And the check reads it as an id of that Feature
+
+    Examples:
+      | type       | prefix                                              | head |
+      | claim      | white space alone                                   | B-   |
+      | constraint | white space alone                                   | C-   |
+      | claim      | "S-", which gives its claims and scenarios one head | B-   |
+      | constraint | "S-", which gives its claims and scenarios one head | C-   |
+
+  @B-068 @boundary
+  Scenario: A draw its record's id rejects is not printed
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And the manifest opts claim ids in to Nano ID with a size of 6
+    And its claim record has the form "{prefix}-{id}" and an id that admits only three digits
+    When a claim id is requested for that Feature
+    Then nothing is written on standard output
+
+  @B-070
+  Scenario Outline: A prefixed claim, constraint or question id is checked against its Feature
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And the manifest opts <type> in to Nano ID
+    And its <type> record has the form "{prefix}-{id}"
+    And that Feature's specification already holds the <one id> that would be minted first
+    When <a type id> is requested for that Feature
+    Then the minted id is one that Feature's specification does not hold
+
+    Examples:
+      | type              | one id           | a type id           |
+      | claim ids         | claim id         | a claim id          |
+      | constraint ids    | constraint id    | a constraint id     |
+      | open question ids | open question id | an open question id |
+
+  @B-071
+  Scenario: A prefixed scenario id is checked against the Feature's scenario tags
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And the manifest opts scenario ids in to Nano ID
+    And its scenario record has the form "{prefix}-SCENARIO-{id}"
+    And a scenario of that Feature is already tagged with the scenario id that would be minted first
+    When a scenario id is requested for that Feature
+    Then the minted id is one no scenario of that Feature is tagged with
+
+  @B-072
+  Scenario: A Nano ID after a Feature's head has the configured size
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And the manifest opts claim ids in to Nano ID with a size of 9
+    And its claim record has the form "{prefix}-{id}" and an id that admits nine characters
+    When a claim id is requested for that Feature
+    Then the minted id is 9 characters long after "ACTIVITY-"
+
+  @B-073
+  Scenario: A Snowflake id after a Feature's head carries the time since its epoch
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And the manifest opts claim ids in to Snowflake with an epoch of 2026-01-01
+    And its claim record has the form "{prefix}-{id}"
+    And the time is noon on 2026-10-23, universal time
+    When a claim id is requested for that Feature
+    Then the minted id, decoded after "ACTIVITY-", holds the milliseconds from 2026-01-01 to noon on 2026-10-23
+
+  @B-074
+  Scenario Outline: Schema 0.4.0's records admit every type's default draws
+    Given a manifest pinned to schema 0.4.0
+    And its only record for <type> opts it in to <strategy> with no size or encoding
+    When <a type id> is requested
+    Then exactly one line is written on standard output
+
+    Examples:
+      | type              | strategy  | a type id                                                 |
+      | ADR numbers       | Nano ID   | an ADR number                                             |
+      | ADR numbers       | Snowflake | an ADR number                                             |
+      | lesson numbers    | Nano ID   | a lesson number                                           |
+      | lesson numbers    | Snowflake | a lesson number                                           |
+      | decision numbers  | Nano ID   | a decision number for a Feature that declares no prefix   |
+      | decision numbers  | Snowflake | a decision number for a Feature that declares no prefix   |
+      | claim ids         | Nano ID   | a claim id for a Feature that declares no prefix          |
+      | claim ids         | Snowflake | a claim id for a Feature that declares no prefix          |
+      | claim ids         | Nano ID   | a claim id for a Feature that declares a prefix           |
+      | constraint ids    | Nano ID   | a constraint id for a Feature that declares no prefix     |
+      | constraint ids    | Snowflake | a constraint id for a Feature that declares no prefix     |
+      | open question ids | Nano ID   | an open question id for a Feature that declares no prefix |
+      | open question ids | Snowflake | an open question id for a Feature that declares no prefix |
+      | scenario ids      | Nano ID   | a scenario id for a Feature that declares no prefix       |
+      | scenario ids      | Snowflake | a scenario id for a Feature that declares no prefix       |
+
+  @B-075 @boundary
+  Scenario Outline: Schema 0.4.0 mints nothing under the old id settings
+    Given a manifest pinned to schema 0.4.0
+    And it holds <old setting>
+    When a claim id is requested for a Feature that declares no prefix
+    Then the request ends as it does for an invalid manifest
+
+    Examples:
+      | old setting                                |
+      | a mint key that opts claim ids in          |
+      | a claim grammar under identifiers          |
+      | a claim record whose opt-in names a prefix |
+
+  @B-076 @boundary
+  Scenario: A scenario id the check would read as a claim tag is not printed
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And its claim record has the form "{prefix}-S{id}"
+    And its scenario record has the form "{prefix}-{id}" and an id that admits any text
+    And the manifest opts scenario ids in to Nano ID with an alphabet of the one letter "S"
+    When a scenario id is requested for that Feature
+    Then nothing is written on standard output
+
+  @B-077 @boundary
+  Scenario: A claim id the check would read as a scenario tag is not printed
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And its claim record has the form "{prefix}-{id}" and an id that admits any text
+    And its scenario record has the form "{prefix}-S{id}"
+    And the manifest opts claim ids in to Nano ID with an alphabet of the one letter "S"
+    When a claim id is requested for that Feature
+    Then nothing is written on standard output
+
+  @B-077 @boundary
+  Scenario: A claim id under a longer scenario head is printed
+    Given a manifest pinned to schema 0.4.0
+    And a Feature that declares the claim prefix "ACTIVITY"
+    And its claim record has the form "{prefix}-{id}"
+    And its scenario record has the form "{prefix}-SCENARIO-{id}"
+    And the manifest opts claim ids in to Nano ID
+    When a claim id is requested for that Feature
+    Then the minted id begins with "ACTIVITY-"
+    And the check accepts it as a claim id of that Feature
