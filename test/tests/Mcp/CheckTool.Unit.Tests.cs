@@ -7,7 +7,7 @@ namespace Specht.Tests.Mcp;
 /// <summary>
 /// Holds the tool <c>check</c> as a function of what the command wrote and how it ended, over a scripted set of programs and no
 /// process: the verdict relayed as it was written, what is and is not an error, the result's parts, the tool's declaration and the set
-/// the host registers (0132-F4 B-001, B-002, B-011, B-012, B-015, B-017, B-019; 0132-F3 B-024).
+/// the host registers (0132-F4 B-001, B-002, B-011, B-012, B-015, B-019, B-024; 0132-F3 B-024).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class CheckToolUnitTests
@@ -17,7 +17,7 @@ public sealed class CheckToolUnitTests
     public async Task AVerdictWithNoTrailingNewline_WhenTheCommandEndsWithACleanOrViolatingCode_ShouldBeRelayedUnchangedAndNotMarkedAnError(int exitCode)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(exitCode, "{\"violations\":1,\"dash\":\"— café\"}", "ignored");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -35,7 +35,7 @@ public sealed class CheckToolUnitTests
     public async Task ACommandThatFails_WhenTheCommandEndsWithAFailureCode_ShouldBeAnErrorWhoseTextIsStandardError(int exitCode)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(exitCode, "{}", "the manifest is invalid");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -55,7 +55,7 @@ public sealed class CheckToolUnitTests
         bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned, "0.6.1");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -73,7 +73,7 @@ public sealed class CheckToolUnitTests
     public async Task AnEmptyVerdict_WhenTheCommandEndsWithACleanOrViolatingCode_ShouldCarryNoTextTheCommandWrote(int exitCode, bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned, "0.6.1");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -89,7 +89,7 @@ public sealed class CheckToolUnitTests
     public async Task ACommandThatCannotBeStarted_WhenCheckIsCalled_ShouldBeAnError()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: false, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: false, "0.6.1");
         process.Verdict = null;
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -106,7 +106,7 @@ public sealed class CheckToolUnitTests
     public async Task APinnedTool_WhenCheckIsCalled_ShouldRunTheCommandWithJsonAndAnswerWithOnePart()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
@@ -124,7 +124,7 @@ public sealed class CheckToolUnitTests
     public async Task AGlobalTool_WhenCheckIsCalled_ShouldAnswerWithTheVerdictAndTheUnpinnedReportAsSeparateParts()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: false, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: false, "0.6.1");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
@@ -141,7 +141,7 @@ public sealed class CheckToolUnitTests
     public async Task ATreeEditedBetweenTwoCalls_WhenCheckIsCalledAgain_ShouldAnswerWithWhatTheCommandWritesThen()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
         var first = await tools.CallAsync("check");
         process.Verdict = new ProcessResult(0, "{\"violations\":0}\n", string.Empty);
@@ -173,7 +173,7 @@ public sealed class CheckToolUnitTests
     }
 
     [Fact]
-    public void TheRegisteredTools_WhenResolvedFromTheHostsRegistrations_ShouldBeCheckAndNoWriteAndNoQueue()
+    public void TheRegisteredTools_WhenResolvedFromTheHostsRegistrations_ShouldBeAnswersOrTheMintAndNoWriteAndNoQueue()
     {
         // Given
         using RegisteredTools tools = new RegisteredToolsFixture();
@@ -183,7 +183,8 @@ public sealed class CheckToolUnitTests
 
         // Then
         names.Should().Contain("check");
-        names.Should().BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"]);
+        names.Should().BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list", "mint"]);
         names.Should().NotContain(["init", "upgrade", "schema_pin", "format", "rules_set", "report"]);
+        names.Should().NotContain(static name => name.Contains("queue", StringComparison.OrdinalIgnoreCase));
     }
 }

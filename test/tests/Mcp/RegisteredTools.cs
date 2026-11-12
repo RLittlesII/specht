@@ -23,11 +23,12 @@ internal sealed class RegisteredTools : IDisposable
 
     public ModelContextProtocol.Protocol.Tool Declared(string name) => Find(name).ProtocolTool;
 
-    public async Task<CallToolResult> CallAsync(string name, string? argument = null, object? value = null)
+    public Task<CallToolResult> CallAsync(string name, string? argument = null, object? value = null) =>
+        CallAsync(name, argument is null ? new Dictionary<string, object?>() : new Dictionary<string, object?> { [argument] = value });
+
+    public async Task<CallToolResult> CallAsync(string name, IReadOnlyDictionary<string, object?> values)
     {
-        var arguments = argument is null
-            ? new Dictionary<string, JsonElement>()
-            : new Dictionary<string, JsonElement> { [argument] = JsonSerializer.SerializeToElement(value) };
+        var arguments = values.ToDictionary(static pair => pair.Key, static pair => JsonSerializer.SerializeToElement(pair.Value));
         var parameters = new CallToolRequestParams { Name = name, Arguments = arguments };
         var request = new JsonRpcRequest { Id = new RequestId(1), Method = RequestMethods.ToolsCall };
 

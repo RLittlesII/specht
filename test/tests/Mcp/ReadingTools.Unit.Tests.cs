@@ -8,7 +8,7 @@ namespace Specht.Tests.Mcp;
 /// Holds the tools <c>explain</c>, <c>rules</c> and <c>manifest</c>, and the arguments <c>check</c> and <c>manifest</c> pass on, as a
 /// function of what the command wrote and how it ended, over a scripted set of programs and no process. Each tool is the one the host
 /// registers, found by name, so a tool the host does not register fails here on its absence (0132-F4 B-003, B-004, B-005, B-010, B-012,
-/// B-014, B-019, B-020, B-021, B-022).
+/// B-014, B-019, B-020, B-021, B-022; the declaration and the name of <c>mint</c>, B-025, B-026, C-7, A-5).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class ReadingToolsUnitTests
@@ -22,7 +22,7 @@ public sealed class ReadingToolsUnitTests
         string[] command)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(0, "{\"answer\":\"— café\"}", "ignored");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -44,7 +44,7 @@ public sealed class ReadingToolsUnitTests
         int exitCode)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(exitCode, "{}", "the command's message");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -60,7 +60,7 @@ public sealed class ReadingToolsUnitTests
     public async Task AShippedDefaultsRequest_WhenManifestIsCalled_ShouldRunTheCommandWithDefaultsAndAnswerWithWhatItWrites()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(0, "{\"defaults\":true}", string.Empty);
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -76,7 +76,7 @@ public sealed class ReadingToolsUnitTests
     public async Task ASchemaSourceRequest_WhenCheckIsCalled_ShouldRunTheCommandWithThatSchemaSourceAndAnswerWithWhatItWrites()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(1, "{\"schemaSource\":\"disk\"}", string.Empty);
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -93,7 +93,7 @@ public sealed class ReadingToolsUnitTests
     public async Task AStrictRequest_WhenCheckIsCalled_ShouldRunTheCommandWithStrictAndAnswerWithWhatItWrites()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(1, "{\"strict\":true}", string.Empty);
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -115,7 +115,7 @@ public sealed class ReadingToolsUnitTests
         string[] command)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(0, "under the first pin", string.Empty);
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
         var first = await tools.CallAsync(tool, argument, value);
@@ -144,7 +144,7 @@ public sealed class ReadingToolsUnitTests
         int exitCode)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -165,7 +165,7 @@ public sealed class ReadingToolsUnitTests
         int exitCode)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.Verdict = new ProcessResult(exitCode, string.Empty, "dotnet standard error marker");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
@@ -184,7 +184,7 @@ public sealed class ReadingToolsUnitTests
         string value)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         using RegisteredTools tools = new RegisteredToolsFixture().WithProcess(process);
 
         // When
@@ -227,8 +227,8 @@ public sealed class ReadingToolsUnitTests
         var names = tools.Names;
 
         // Then
-        names.Should().Contain(["check", "explain", "rules", "manifest"]);
-        names.Should().BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"]);
+        names.Should().Contain(["check", "explain", "rules", "manifest", "mint"]);
+        names.Should().BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list", "mint"]);
     }
 
     private static IReadOnlyList<string> Texts(CallToolResult result) =>

@@ -7,7 +7,7 @@ namespace Specht.Tests.Mcp;
 
 /// <summary>
 /// Runs the built MCP as a process against a fake pinned <c>specht</c> and holds what the tool <c>check</c> answers and what the host
-/// lists (0132-F4 B-001, B-002, B-011, B-013, B-015, B-016, B-017, B-019; 0132-F3 B-009). A fake writes a stated stdout for
+/// lists (0132-F4 B-001, B-002, B-011, B-013, B-015, B-016, B-019, B-024; 0132-F3 B-009). A fake writes a stated stdout for
 /// <c>--json</c> derived from the root it runs on, so an answer is compared byte for byte with what the command wrote. Every test that
 /// calls <c>check</c> reads the tool list first and fails when the host offers none, so none passes on the error a missing tool is.
 /// </summary>
@@ -201,7 +201,7 @@ public sealed class McpHostCheckIntegrationTests
         var offered = JsonNode.Parse(listing ?? "null")?["result"]?["tools"] as JsonArray;
         offered.Should().NotBeNull($"the host must list its tools; tools/list answered: {listing ?? "nothing"}");
         var names = offered!.Select(static tool => tool!["name"]!.GetValue<string>()).ToList();
-        names.Should().Contain("check").And.BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"]);
+        names.Should().Contain("check").And.BeSubsetOf(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list", "mint"]);
     }
 
     [Theory(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]

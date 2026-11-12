@@ -656,6 +656,17 @@ internal static class AcceptanceTool
             + (defaults ? ShippedDefaults : File.ReadAllText(Path.Combine(root, ".specht", "manifest.json")));
 
         /// <summary>
+        /// Gets what a fake labelled <paramref name="label"/> writes on standard output for <c>mint</c> of <paramref name="type"/> in the
+        /// run that is the <paramref name="run"/>th line of its world's log: its marker, the type and that number, so each run prints a
+        /// line no other run of the world prints, as a mint prints a new id each time.
+        /// </summary>
+        /// <param name="label">Which fake ran.</param>
+        /// <param name="type">The type it was asked to mint.</param>
+        /// <param name="run">The run's position in <see cref="Runs"/>, counting from one.</param>
+        /// <returns>The text, byte for byte.</returns>
+        public static string MintOutput(string label, string type, int run) => $"{OutputMarker} {label} mint {type} run {run}\n";
+
+        /// <summary>
         /// Gets what a fake writes on standard error, and ends <c>4</c> with, when asked to explain <paramref name="ruleId"/>, a rule it
         /// does not have.
         /// </summary>
@@ -755,6 +766,7 @@ internal static class AcceptanceTool
               --explain) command=explain;;
               rules) command=rules;;
               manifest) command=manifest;;
+              mint) command=mint;;
               *) case " $* " in *" --json "*) command=json;; *) echo @MARKER@ @LABEL@; exit 0;; esac;;
             esac
             root="$PWD"; previous=""; source=""; defaults=""; strict=""
@@ -778,6 +790,8 @@ internal static class AcceptanceTool
                 echo "@MARKER@ @LABEL@ manifest json$defaults"
                 if [ -n "$defaults" ]; then printf '%s\n' '@DEFAULTS@'; else cat "$manifest"; fi
                 exit 0;;
+              mint)
+                echo "@MARKER@ @LABEL@ mint $2 run $(wc -l < "$SPECHT_FAKE_LOG" | tr -d ' ')"; exit 0;;
             esac
             echo "@MARKER@ @LABEL@ json$source$strict"
             cat "$manifest"
