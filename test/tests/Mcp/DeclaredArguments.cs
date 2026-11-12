@@ -9,5 +9,6 @@ public sealed class DeclaredArguments : TheoryData<string, string[], string[]>
         Add("explain", ["rule"], ["rule"]);
         Add("rules", [], []);
         Add("manifest", ["defaults"], []);
+        Add("mint", ["type", "feature"], ["type"]);
     }
 }

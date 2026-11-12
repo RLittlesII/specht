@@ -31,10 +31,11 @@ public sealed class SpechtTool(IProcessRun process, SessionRoot root)
     public const string PackageId = "specht.tool";
 
     /// <summary>
-    /// Gets the oldest <c>specht.tool</c> the host runs: the first release with the <c>rules --json</c> and <c>manifest --json</c> its tools
-    /// call. <c>explain</c> ships in <c>0.2.4</c>, and <c>--version</c> and the check's <c>--json</c> before it.
+    /// Gets the oldest <c>specht.tool</c> the host runs: the first published release with the <c>mint</c> its tools call, one minimum for
+    /// every tool. <c>rules --json</c> and <c>manifest --json</c> ship in <c>0.3.1</c>, <c>explain</c> in <c>0.2.4</c>, and
+    /// <c>--version</c> and the check's <c>--json</c> before it.
     /// </summary>
-    public ToolVersion Minimum { get; } = new(0, 3, 1);
+    public ToolVersion Minimum { get; } = new(0, 6, 1);
 
     /// <summary>Runs <c>specht</c> with <paramref name="arguments"/> in the root.</summary>
     /// <param name="arguments">The command's arguments.</param>

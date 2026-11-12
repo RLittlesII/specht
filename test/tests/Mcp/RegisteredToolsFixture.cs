@@ -9,5 +9,5 @@ internal sealed class RegisteredToolsFixture : AutoFixtureBase<RegisteredToolsFi
 
     public static implicit operator RegisteredTools(RegisteredToolsFixture fixture) => new(fixture._process);
 
-    private ScriptedProcessRun _process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+    private ScriptedProcessRun _process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
 }

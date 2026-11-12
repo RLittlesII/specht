@@ -159,9 +159,21 @@ Feature: Reading through MCP
 
   @B-023
   Scenario: A minted id is what the mint command printed for the call
-    Given the repository's manifest opts claim ids in
-    When a new claim id is asked for
+    Given the repository's manifest opts ADR ids in
+    When a new ADR id is asked for
     Then the answer is exactly what the pinned tool's mint command printed for that call
+
+  @B-025
+  Scenario: The mint command is run for the Feature the call names
+    Given the repository's manifest opts claim ids in
+    When a new claim id is asked for naming the folder of one of the two Feature specifications
+    Then the pinned tool's mint command is run for claim ids in that Feature's folder
+
+  @B-026
+  Scenario: The mint command is run for no Feature when the call names none
+    Given the repository's manifest opts ADR ids in
+    When a new ADR id is asked for naming no Feature
+    Then the pinned tool's mint command is run for ADR ids naming no Feature
 
   @B-018
   Scenario: A Feature specification built from the answers alone passes

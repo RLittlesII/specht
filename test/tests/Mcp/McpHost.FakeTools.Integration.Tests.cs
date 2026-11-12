@@ -210,6 +210,26 @@ public sealed class McpHostFakeToolsIntegrationTests
         stdout.Should().Be(AcceptanceTool.FakeTools.ManifestOutput(AcceptanceTool.FakeTools.Pinned, tree.Root, defaults: true));
     }
 
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void APinnedFake_WhenRunToMintAnIdTwice_ShouldWriteTheStatedOutputOfEachRunAndEndZero()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        ProcessStartInfo start = new SpechtRunFixture().WithRoot(tree.Root).WithTools(tools).WithArguments("mint", "adr");
+
+        // When
+        var (firstOut, firstErr, firstExit) = AcceptanceTool.Run(start);
+        var (secondOut, secondErr, secondExit) = AcceptanceTool.Run(start);
+
+        // Then
+        firstExit.Should().Be(0, firstErr);
+        secondExit.Should().Be(0, secondErr);
+        tools.Runs.Select(static run => run.Arguments).Should().Equal("mint adr", "mint adr");
+        firstOut.Should().Be(AcceptanceTool.FakeTools.MintOutput(AcceptanceTool.FakeTools.Pinned, "adr", 1));
+        secondOut.Should().Be(AcceptanceTool.FakeTools.MintOutput(AcceptanceTool.FakeTools.Pinned, "adr", 2)).And.NotBe(firstOut);
+    }
+
     [Theory(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
     [ClassData(typeof(FailingFakeCommands))]
     public void APinnedFake_WhenRunOnARootItCannotServe_ShouldEndWithTheStatedCodeAndWriteTheStatedMessageOnStandardError(

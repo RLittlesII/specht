@@ -7,8 +7,8 @@ namespace Specht.Acceptance.Mcp;
 
 /// <summary>
 /// The steps of Reading through MCP (0132-F4) that item 0330 delivers: the verdict, the tools the server lists and their names (B-001,
-/// B-002, B-011, B-013, B-015, B-016, B-017, B-019). Each answer is asked for through the tool <c>check</c>; the other answers have no
-/// binding until their items register them.
+/// B-002, B-011, B-013, B-015, B-016, B-019, and B-024, which supersedes B-017 and adds the mint). Each answer is asked for through the
+/// tool <c>check</c>; the other answers have no binding until their items register them.
 /// </summary>
 public sealed partial class McpHostSteps
 {
@@ -98,7 +98,7 @@ public sealed partial class McpHostSteps
     }
 
     [Then("each is one of the verdict, a rule's text, the rule list, the manifest, the tree's facts, claim coverage, " +
-        "the shipped schema versions, and the frontmatter schemas and templates")]
+        "the shipped schema versions, the frontmatter schemas and templates, and a minted id")]
     public void ThenEachIsAnAnswer() => Names().Should().OnlyContain(static name => AnswerTools.Contains(name));
 
     [Then("none initialises, upgrades, pins, formats, sets a rule's level or writes a report")]
@@ -175,7 +175,7 @@ public sealed partial class McpHostSteps
     private static readonly string[] ArgumentsThatNameAPath = ["spec", "path", "file", "feature", "directory"];
 
     private static readonly HashSet<string> AnswerTools =
-        new(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list"], StringComparer.Ordinal);
+        new(["check", "explain", "rules", "manifest", "facts", "trace", "schema_list", "mint"], StringComparer.Ordinal);
 
     private static readonly HashSet<string> WriteTools = new(["init", "upgrade", "schema_pin", "format", "rules_set", "report"], StringComparer.Ordinal);
 

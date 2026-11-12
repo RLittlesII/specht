@@ -82,7 +82,7 @@ public sealed class SpechtToolUnitTests
     public async Task AToolAtTheMinimumVersion_WhenTheToolRuns_ShouldRunTheCommand(bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.3.1");
+        var process = ScriptedProcessRun.Tool(pinned, "0.6.1");
         SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
@@ -97,14 +97,14 @@ public sealed class SpechtToolUnitTests
     public async Task AToolOneBelowTheMinimumVersion_WhenTheToolRuns_ShouldRefuseNamingTheMinimumAndGiveItNoWork(bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.3.0");
+        var process = ScriptedProcessRun.Tool(pinned, "0.6.0");
         SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
         var outcome = await tool.RunAsync(["--json"], CancellationToken.None);
 
         // Then
-        outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().Contain("0.3.1").And.Contain("docs/mcp.md#update-the-tool");
+        outcome.Should().BeOfType<ToolOutcome.Refused>().Which.Message.Should().Contain("0.6.1").And.Contain("docs/mcp.md#update-the-tool");
         process.Requests.SelectMany(static request => request.Arguments).Should().NotContain("--json");
     }
 
@@ -129,7 +129,7 @@ public sealed class SpechtToolUnitTests
     public async Task ASessionOfTwoRuns_WhenTheToolRunsTwice_ShouldAskTheToolForItsVersionOnce(bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.5.0-preview+abc");
+        var process = ScriptedProcessRun.Tool(pinned, "0.6.1-preview+abc");
         SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
         // When
@@ -228,7 +228,7 @@ public sealed class SpechtToolUnitTests
     public async Task TwoFirstCallsInFlight_WhenTheVersionCheckIsHeldOpen_ShouldAskTheToolForItsVersionOnceAndLetBothRun(bool pinned)
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned, "0.6.1");
         process.VersionGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         SpechtTool tool = new SpechtToolFixture().WithProcess(process);
 
@@ -267,7 +267,7 @@ public sealed class SpechtToolUnitTests
     public async Task TwoFirstCallsInFlight_WhenTheFirstCallerIsCancelled_ShouldLetTheSecondCheckTheVersionAndRun()
     {
         // Given
-        var process = ScriptedProcessRun.Tool(pinned: true, "0.5.0");
+        var process = ScriptedProcessRun.Tool(pinned: true, "0.6.1");
         process.VersionGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         SpechtTool tool = new SpechtToolFixture().WithProcess(process);
         using var cancel = new CancellationTokenSource();

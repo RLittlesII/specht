@@ -18,5 +18,7 @@ public static class ReadingRegistration
             .AddSingleton<RulesTool>()
             .AddSingleton(static provider => provider.GetRequiredService<RulesTool>().Declare())
             .AddSingleton<ManifestTool>()
-            .AddSingleton(static provider => provider.GetRequiredService<ManifestTool>().Declare());
+            .AddSingleton(static provider => provider.GetRequiredService<ManifestTool>().Declare())
+            .AddSingleton<MintTool>()
+            .AddSingleton(static provider => provider.GetRequiredService<MintTool>().Declare());
 }

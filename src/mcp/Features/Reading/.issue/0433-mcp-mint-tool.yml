@@ -1,0 +1,51 @@
+id: "0433"
+type: task
+title: A minted id through MCP
+
+status: done
+
+value: 3
+risk: 2
+
+parent: "0132"
+children: []
+
+depends_on: ["0331", "0415", "0418"]
+spikes: []
+
+spec: src/mcp/Features/Reading/.spec/README.md
+
+claims:
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+
+created: "2026-11-11"
+updated: "2026-11-11"
+closed: "2026-11-11"
+
+summary: |
+  As an agent authoring a record in a repository that opts its type in I want a new id through MCP, the pinned tool's own mint, so that I stop taking the next number off my copy of the tree and colliding.
+
+  One tool over the built command, named for it (`0132-F4` C-7, A-5): `mint`, running `specht mint <type> [--feature <dir>]` through the pinned `specht` and relaying its stdout (B-023). The tool list may now hold it (B-024). The `feature` argument reaches the command as `--feature` and its value (B-025); a call without one runs `specht mint <type>` (B-026). The minimum pinned-tool version rises to `0.6.1`, the first published `specht.tool` with the mint command (`0132-F3` OQ-9).
+
+  Waits on 0331, whose tools and relay this one joins; on 0415, the mint command; and on 0418, the per-Feature types `--feature` names.
+
+acceptance_criteria:
+  - "B-023 — a minted id is the mint command's stdout for the call"
+  - "B-024 — the registered tools are the answers or the mint"
+  - "B-025 — `feature` reaches the command as `--feature`"
+  - "B-026 — no `feature` runs `specht mint <type>` alone"
+  - "`SpechtTool.Minimum` is `0.6.1`, held at its boundary by its unit test (`0132-F3` OQ-9)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    The owner's selection, 2026-11-11, among options an agent wrote: asked whether the `feature` argument becomes `--feature <dir>` and a call without `feature` runs `specht mint <type>` with no `--feature`, and whether `SpechtTool.Minimum` rises from 0.3.1 to 0.6.1 for the mint tool, the selection was "Map + raise to 0.6.1", one minimum for every tool the host runs (`0132-F4` OQ-9, `0132-F3` OQ-9).
+  - |
+    2026-11-06, `0132-F4` decision 0001: the mint tool joins `0132-F4` and runs the pinned mint command.
+
+out_of_scope:
+  - "Minting an id in the host's own process — § 5 row 12; `0001-F19` owns the mint."
+  - "Writing a minted id anywhere — § 5 row 12; B-016."

@@ -8,7 +8,8 @@ namespace Specht.Tests.Mcp;
 /// <summary>
 /// Runs the built MCP as a process against a fake pinned <c>specht</c> and holds what the tools <c>explain</c>, <c>rules</c> and
 /// <c>manifest</c> answer, the arguments they and <c>check</c> (its schema source and <c>strict</c>) pass on, the failures a command
-/// reports and a pin moved between two calls (0132-F4 B-003, B-004, B-005, B-010, B-012, B-014, B-022). A fake writes a stated stdout for
+/// reports, a pin moved between two calls and a minted id with the command its call runs (0132-F4 B-003, B-004, B-005, B-010, B-012, B-014,
+/// B-022, B-023, B-025, B-026). A fake writes a stated stdout for
 /// each command derived from the root it runs on, so an answer is compared byte for byte with what the command wrote. Every test reads
 /// the tool list first and fails when the host offers none of the tool, so none passes on the error a missing tool is.
 /// </summary>
@@ -206,5 +207,70 @@ public sealed class McpHostReadingIntegrationTests
         // Then
         AcceptanceTool.McpTextBlocks(second).Should().Equal(AcceptanceTool.FakeTools.RulesOutput(AcceptanceTool.FakeTools.Pinned, tree.Root));
         AcceptanceTool.McpTextBlocks(second).Should().NotEqual(AcceptanceTool.McpTextBlocks(first));
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void TwoCallsForANewId_WhenMintIsCalledTwice_ShouldAnswerEachWithExactlyWhatItsOwnMintRunPrinted()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+
+        // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        var first = session.CallTool(10, "mint", new JsonObject { ["type"] = "adr" });
+        var second = session.CallTool(20, "mint", new JsonObject { ["type"] = "adr" });
+        session.Close();
+
+        // Then
+        var mints = tools.Runs
+            .Select(static (run, index) => (run, position: index + 1))
+            .Where(static entry => !entry.run.IsVersionCheck)
+            .Select(static entry => entry.position)
+            .ToList();
+        mints.Should().HaveCount(2);
+        AcceptanceTool.McpFailure(first).Should().BeNull();
+        AcceptanceTool.McpTextBlocks(first).Should().Equal(AcceptanceTool.FakeTools.MintOutput(AcceptanceTool.FakeTools.Pinned, "adr", mints[0]));
+        AcceptanceTool.McpTextBlocks(second).Should().Equal(AcceptanceTool.FakeTools.MintOutput(AcceptanceTool.FakeTools.Pinned, "adr", mints[1]));
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void ACallNamingAFeature_WhenMintIsCalled_ShouldRunThePinnedMintCommandWithFeatureFollowedByThatFolder()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        AcceptanceTool.FakeTools.WriteSpecifications(tree.Root);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+
+        // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        session.CallTool(10, "mint", new JsonObject { ["type"] = "claim", ["feature"] = "features/clean" });
+        session.Close();
+
+        // Then
+        var run = tools.Runs.Where(static logged => !logged.IsVersionCheck).Should().ContainSingle().Subject;
+        run.Label.Should().Be(AcceptanceTool.FakeTools.Pinned);
+        run.Arguments.Split(' ').Should().HaveCount(4).And.StartWith(["mint", "claim"]).And.ContainInConsecutiveOrder("--feature", "features/clean");
+    }
+
+    [Fact(Skip = "The fake tools are shell scripts, which Windows does not run.", SkipWhen = nameof(IsWindows))]
+    public void ACallNamingNoFeature_WhenMintIsCalled_ShouldRunThePinnedMintCommandForTheTypeAlone()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        using AcceptanceTool.FakeTools tools = new FakeToolsFixture().WithPin(tree.Root);
+        McpSessionStart start = new McpSessionFixture().WithRoot(tree.Root).WithTools(tools);
+
+        // When
+        using var session = AcceptanceTool.McpSession.Start(start.Root, start.Environment, start.Arguments);
+        session.CallTool(10, "mint", new JsonObject { ["type"] = "adr" });
+        session.Close();
+
+        // Then
+        var run = tools.Runs.Where(static logged => !logged.IsVersionCheck).Should().ContainSingle().Subject;
+        run.Label.Should().Be(AcceptanceTool.FakeTools.Pinned);
+        run.Arguments.Should().Be("mint adr");
     }
 }
