@@ -1,0 +1,76 @@
+id: "0437"
+type: task
+title: Upgrade moves the id settings into ids
+
+status: ready
+
+value: 4
+risk: 3
+
+parent: "0041"
+children: []
+
+depends_on: ["0435"]
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-016
+  - B-020
+  - B-051
+  - B-155
+  - B-156
+  - B-157
+  - B-158
+  - B-159
+  - B-160
+  - B-161
+
+created: "2026-11-12"
+updated: "2026-11-12"
+closed: null
+
+summary: |
+  As a consumer moving its pin to schema `0.4.0`, I want `specht
+  upgrade` to move my `mint` entries and my `identifiers` grammars for
+  the seven hand-cited types into `ids` records once, so that my
+  manifest is valid under `0.4.0` without a hand edit (`0001-F5`
+  decision 0024).
+
+  Waits on 0435, which cuts schema `0.4.0` with the `ids` key and
+  rejects the old settings.
+
+  Risk 3: a grammar split into a head and an `id` (B-155), a move that
+  refuses rather than guesses (B-159, OQ-79), and every other manifest
+  setting kept (B-158, C-19). Value 4 is the value of `0041`.
+
+acceptance_criteria:
+  - "B-155 — a customised grammar becomes a record's plain text and id, verbatim, with the literal head ending where B-155 says"
+  - "B-161 — a member byte-equal to a shipped default below 0.4.0 is dropped, and the 0.4.0 shipped record applies"
+  - "B-156 — a mint entry moves without its prefix"
+  - "B-157, B-158 — no old id setting is left, and every other setting is kept"
+  - "B-159 — an unsplittable grammar, a prefix that is not the head, an ids record already present for a moved type, and equal claim and scenario heads each write nothing, exit 3 and name the member on standard error (OQ-79 default (a))"
+  - "B-160, B-016 and B-020 as amended — no change without old settings, and none under a pin below 0.4.0"
+  - "B-051 as amended — `schema pin` moves a 0.4.0 manifest that still holds the old id settings back down"
+  - "AGENTS.md § Configuration says `upgrade` adds only the keys the pinned version defines that are missing, except the 0.4.0 move into `ids`"
+  - "`docs/cli.md` describes the move under `specht upgrade`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-12, spec-author: cut on the repository owner's selection of
+    2026-11-12, "Rejected; upgrade migrates" (`0001-F19` decision 0005;
+    `0001-F5` decision 0024). spec-author's cut, not an owner ruling:
+    one item for the move, after `0001-F5`'s 0435. It proceeds on
+    OQ-79's default (a), refuse an unsplittable grammar.
+  - |
+    2026-11-12, the repository owner, "Drop it, ship default applies
+    (Recommended)": a member byte-equal to the old pin's shipped default
+    is dropped and the 0.4.0 shipped record applies; customised members
+    move verbatim (B-161). B-051 added on spec-reviewer's round 2.
+
+out_of_scope:
+  - "The ids key and the rejection of the old settings - `0001-F5` item 0435."
+  - "Minting from the ids record - `0001-F19` item 0436."
+  - "Moving the id settings under a pin below 0.4.0 - § 5 row 34."

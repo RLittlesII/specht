@@ -1,0 +1,117 @@
+id: "0435"
+type: task
+title: Cut schema 0.4.0 with the ids key
+
+status: ready
+
+value: 4
+risk: 4
+
+parent: "0010"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-007
+  - B-022
+  - B-023
+  - B-076
+  - B-079
+  - B-081
+  - B-082
+  - B-083
+  - B-084
+  - B-085
+  - B-086
+  - B-087
+  - B-088
+  - B-089
+  - B-090
+  - B-091
+  - B-092
+  - B-093
+  - B-094
+  - B-095
+  - B-097
+  - B-098
+  - B-099
+  - B-100
+  - B-101
+
+created: "2026-11-12"
+updated: "2026-11-12"
+closed: null
+
+summary: |
+  As a repository whose Features declare their own claim prefix, I want
+  one manifest record per id type that gives its plain text, its form in
+  a prefixed Feature, its grammar and its mint settings, and shipped
+  records that admit minted ids, so that ids such as `ACTIVITY-k3x9ab`
+  pass the check (decision 0024).
+
+  The cut follows item 0388: `./build.sh CutSchemaVersion` copies
+  `0.3.1` through 0189's target (`0001-F7` B-094 to B-100), then
+  `./build.sh LockSchemaVersion` locks it. `0.4.0` adds the `ids` key
+  and its shipped records, and rejects the top-level `mint` key and the
+  `identifiers` members for the seven types. It is a `0.minor` step, not
+  a patch: the wider `claim` record can fail a tree `0.3.1` accepts,
+  which `0001-F7` C-11 allows only in a `0.minor` below `1.0.0`
+  (`0001-F7` OQ-78, the owner's answer). `0.3.1` is carried by a
+  published package, so it stays byte-identical (`0001-F7` C-1).
+
+  Risk 4: a new key with four members, the claim grammar for a prefixed
+  Feature (A-8), the tag reading between claim and scenario heads
+  (B-094, B-095, B-100, B-101), shipped records that change verdicts, rejected old
+  keys, and this repository's live `.specht/` and pin moving to `0.4.0`
+  in the same pull request, because `0001-F4` B-004 fails from the cut
+  until they do (the precedent is 0388). Value 4 is the value of `0010`.
+  `0001-F19`'s 0436 and `0001-F7`'s 0437 wait on it.
+
+acceptance_criteria:
+  - "B-081 to B-085, B-097 — the ids key accepted from 0.4.0, its shape rejections, and members read from the shipped record; B-022 and B-023 as amended"
+  - "B-086 to B-088, B-098 — the claim grammar for a Feature, SPEC4003 naming the head, matrix and tags"
+  - "B-076, B-079 and B-007 as amended — held below 0.4.0"
+  - "B-089, B-090, B-099 — the 0.4.0 shipped records of decision 0024; B-091 — the other records change no verdict"
+  - "B-092, B-093 — the old mint key and identifiers members rejected, naming ids.<type>; task, feature and epic stay in identifiers"
+  - "B-094, B-095, B-100, B-101 — equal heads rejected in the manifest and reported per Feature, a scenario tag read apart from a claim tag, and a claim ID that would read as a scenario tag reported; a claim head that begins a longer scenario head, as `ACTIVITY-` and `ACTIVITY-SCENARIO-`, stays valid (OQ-33 default (a): SPEC4003)"
+  - "0.4.0 cut through 0189's target and locked through 0188's; 0.1.0 to 0.3.1 byte-identical and their lock entries unchanged (`0001-F7` C-1)"
+  - "The 0.4.0 SPEC4003 page states the head message"
+  - "The 0.minor cut, checked against `0001-F7`: B-095 accepts 0.4.0 as higher than every shipped version; B-096 to B-100 copy 0.3.1 as for a patch; B-066 holds, the minor being greater, and 0.4.0 adds no rule id, so `NewRuleWithoutHigherMinor` stays silent; B-040 reaches no version below 1.0.0; B-154 compares patch neighbours only, and 0.3.1 and 0.4.0 are not"
+  - "No pin floats to 0.4.0: a `latest-patch` pin of 0.3.x stays on 0.3.x (`0001-F7` B-053), `latest-minor` on a 0.y.z pin is rejected (B-150), and `exact` stays (B-147); `specht schema list` and `schema pin 0.4.0` show and move to it"
+  - "This repository's live `.specht/` equals 0.4.0 on its tool-owned files and keys, and its pin moves to 0.4.0 in the same pull request (`0001-F4` B-004)"
+  - "`docs/configuration.md` documents the ids key, its shipped records and the rejected keys"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-12, spec-author: cut on the repository owner's selections
+    of 2026-11-12, "Redesign: one record", "Widen all seven", "Include
+    decision" and "Rejected; upgrade migrates" (`0001-F19` decision
+    0005; decision 0024). spec-author's cut, not an owner ruling: one
+    item for the cut, the key, the shipped records and the pin move,
+    following 0388.
+  - |
+    2026-11-12, the repository owner, answering `0001-F7` OQ-78 with
+    "0.4.0, widen all seven (Recommended)": the change ships in schema
+    0.4.0, a 0.minor step, not a 0.3.x patch; the consumer pins 0.4.0.
+    Which other options were put to the owner is not in this record;
+    OQ-78's readings (a) to (c) are spec-author's, and none was chosen
+    as written.
+  - |
+    2026-11-12, the repository owner, answering OQ-32 with "Later
+    0.minor (Recommended)": 0.4.0 ships without item 0349. B-096
+    withdrawn before merge; B-100 and B-101 added on spec-reviewer's
+    round 2. spec-author's cut.
+
+out_of_scope:
+  - "Minting from the ids record - `0001-F19` item 0436."
+  - "Moving the old settings into ids records on upgrade - `0001-F7` item 0437."
+  - "A form for ADR, lesson, epic, Feature or task ids - § 5 row 26."
+  - "The check reading the records other than claim and the scenario heads - § 5 row 27."
+  - "Widening a grammar the consumer's manifest declares - § 5 row 28."
+  - "The analyzer reading the ids key - § 5 row 25, `0201-F1`."
+  - "The case-insensitive rule level - item 0349, in a 0.minor after 0.4.0 (§ 5 row 23; OQ-32, the owner's answer)."

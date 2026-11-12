@@ -1241,3 +1241,300 @@ Feature: The manifest carries the roles
     Then the only well-formed CI claim is "CI-AC-001a"
     And the well-formed Release claims are "CI-AC-0001" and "REQ-0001"
     And both Features' matrix references and companion claim tags resolve
+
+  @B-081
+  Scenario Outline: An ids record is accepted from schema 0.4.0
+    Given the manifest pins schema version "0.4.0"
+    And the manifest's ids key holds a record for <types>
+    When the check runs
+    Then the manifest is accepted
+
+    Examples:
+      | types                                                       |
+      | claim IDs                                                   |
+      | scenario IDs                                                |
+      | claim, constraint, open question, scenario and decision IDs |
+      | ADR and lesson numbers                                      |
+
+  @B-082 @B-022 @B-023
+  Scenario Outline: An older pin rejects the ids key
+    Given the manifest pins schema version "<version>"
+    And the manifest's ids key holds a record for claim IDs
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard error carries only the rejection naming the ids key
+    And the standard output is empty
+
+    Examples:
+      | version |
+      | 0.3.0   |
+      | 0.3.1   |
+
+  @B-083 @B-022 @B-023
+  Scenario Outline: A malformed ids key is rejected
+    Given the manifest pins schema version "0.4.0"
+    And the manifest's ids key <shape>
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names <member>
+
+    Examples:
+      | shape                                       | member                    |
+      | is a list                                   | the ids key               |
+      | holds a record for task IDs                 | the task member           |
+      | gives claim IDs a text in place of a record | the claim record          |
+      | gives claim IDs a record with a prefix      | the claim record's prefix |
+      | gives claim IDs a record with a size        | the claim record's size   |
+
+  @B-020 @B-081 @boundary
+  Scenario: An annotation in an ids record is ignored
+    Given the manifest pins schema version "0.4.0"
+    And the manifest gives claim IDs a record of a plain text, an id pattern and a "$comment" annotation
+    When the check runs
+    Then the manifest is accepted
+
+  @B-084 @B-022 @B-023
+  Scenario Outline: A plain text or form that is not one closing id is rejected
+    Given the manifest pins schema version "0.4.0"
+    And the manifest gives <type> the <member> "<text>"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names <type> and "<text>"
+
+    Examples:
+      | type        | member     | text                   |
+      | claim IDs   | form       | ACTIVITY-{id}          |
+      | claim IDs   | form       | {prefix}-{prefix}-{id} |
+      | claim IDs   | form       | {id}-{prefix}          |
+      | claim IDs   | form       | {prefix}-{id}-x        |
+      | claim IDs   | form       | {prefix}-{seq}-{id}    |
+      | claim IDs   | plain text | {prefix}-{id}          |
+      | claim IDs   | plain text | B-{id}-{id}            |
+      | claim IDs   | plain text | B-                     |
+      | ADR numbers | form       | {prefix}-{id}          |
+
+  @B-085 @B-022 @B-023
+  Scenario Outline: An ids record id that is not a usable pattern is rejected
+    Given the manifest pins schema version "0.4.0"
+    And the manifest gives claim IDs a record whose id pattern is <pattern>
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names claim IDs and that pattern
+
+    Examples:
+      | pattern                        |
+      | the empty text                 |
+      | a number                       |
+      | "[0-9", which does not compile |
+
+  @B-086
+  Scenario: The claim record sets a prefixed Feature's claim grammar
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the form "{prefix}-{id}" and an id of six or thirteen base32 characters
+    And Activity declares claim_prefix "ACTIVITY"
+    And Activity declares the following claims:
+      | Claim ID               |
+      | ACTIVITY-k3x9ab        |
+      | ACTIVITY-0d2kq8v1m3n4p |
+      | ACTIVITY-001           |
+      | ACTIVITY001            |
+      | ACTIVITY-K3X9AB        |
+      | ACTIVITY-k3x9a         |
+      | B-k3x9ab               |
+    When the check runs
+    Then the claim ID check accepts only "ACTIVITY-k3x9ab" and "ACTIVITY-0d2kq8v1m3n4p"
+
+  @B-086 @B-077 @boundary
+  Scenario: A Feature without a prefix reads the claim record's plain text
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the form "{prefix}-{id}", the plain text "B-{id}" and an id of three digits
+    And Activity declares claim_prefix "ACTIVITY"
+    And another Feature declares no prefix and has claims "B-001" and "ACTIVITY-001"
+    When the check runs
+    Then the claim ID check reports only "ACTIVITY-001" in the Feature without a prefix
+
+  @B-087
+  Scenario: A claim outside the claim record's form names the authored ID and the head
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the form "{prefix}-{id}" and an id of six or thirteen base32 characters
+    And Activity declares claim_prefix "ACTIVITY" and claim "ACTIVITY-001"
+    When the check runs
+    Then SPEC4003 reports the claim at its declaration, naming "ACTIVITY-001" and the required prefix "ACTIVITY-"
+
+  @B-088
+  Scenario: The matrix and companion resolve claim IDs the claim record shapes
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the form "{prefix}-{id}" and an id of six or thirteen base32 characters
+    And Activity declares claim_prefix "ACTIVITY" and claim "ACTIVITY-k3x9ab"
+    And Activity's matrix cites "ACTIVITY-k3x9ab" and "ACTIVITY-m7p2qr"
+    And Activity's companion tags its scenarios with "@ACTIVITY-k3x9ab" and "@ACTIVITY-m7p2qr"
+    When the check runs
+    Then the only unresolved matrix reference is "ACTIVITY-m7p2qr"
+    And the only unresolved claim tag is "@ACTIVITY-m7p2qr", with identifier "ACTIVITY-m7p2qr"
+
+  @B-089
+  Scenario Outline: Schema 0.4.0's default grammars admit minted ids
+    Given the manifest pins schema version "0.4.0" and declares no <type> record
+    Then for a Feature that declares no claim prefix the shipped default <type> grammar admits "<admitted>"
+    And it rejects "<rejected>"
+
+    Examples:
+      | type          | admitted         | rejected     |
+      | claim         | B-k3x9ab         | B-k3x9a      |
+      | claim         | B-0d2kq8v1m3n4p  | B-K3X9AB     |
+      | constraint    | C-k3x9ab         | C-k3x9abc    |
+      | constraint    | C-0d2kq8v1m3n4p  | k3x9ab       |
+      | open question | OQ-k3x9ab        | OQ-k3x9ai    |
+      | open question | OQ-0d2kq8v1m3n4p | Q-k3x9ab     |
+      | scenario      | S-k3x9ab         | S-k3x9a      |
+      | scenario      | S-0d2kq8v1m3n4p  | s-k3x9ab     |
+      | decision      | k3x9ab           | D-k3x9ab     |
+      | decision      | 0d2kq8v1m3n4p    | k3x9abcd     |
+      | ADR           | k3x9abmn         | k3x9ab       |
+      | ADR           | 0d2kq8v1m3n4p    | ADR-k3x9abmn |
+      | lesson        | k3x9abmn         | k3x9abmno    |
+      | lesson        | 0d2kq8v1m3n4p    | k3x9abmnu    |
+
+  @B-090
+  Scenario Outline: Schema 0.4.0's default grammars keep every 0.3.1 id
+    Given the manifest pins schema version "0.4.0" and declares no <type> record
+    Then for a Feature that declares no claim prefix the shipped default <type> grammar admits "<id>"
+
+    Examples:
+      | type          | id     |
+      | claim         | B-001  |
+      | claim         | B-042a |
+      | constraint    | C-1    |
+      | constraint    | C-120  |
+      | open question | OQ-7   |
+      | open question | OQ-78  |
+
+  @B-091
+  Scenario: Records the check does not read leave the check unchanged
+    Given the manifest pins schema version "0.4.0"
+    And the manifest gives constraint, open question, decision, ADR and lesson IDs records of their own
+    And it opts claim IDs in to minting
+    And Activity declares claim_prefix "ACTIVITY" and claim "ACTIVITY-001"
+    When the check runs
+    Then the report equals the report for the same tree with those records and the opt-in removed
+
+  @B-092 @B-022 @B-023
+  Scenario Outline: Schema 0.4.0 rejects the old id settings
+    Given the manifest pins schema version "0.4.0"
+    And the manifest holds <old setting>
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard error carries only the rejection
+    And the standard output is empty
+
+    Examples:
+      | old setting                          |
+      | a mint key that opts claim IDs in    |
+      | a claim grammar under identifiers    |
+      | a scenario grammar under identifiers |
+      | a decision grammar under identifiers |
+
+  @B-092 @boundary
+  Scenario: Schema 0.4.0 keeps the task, Feature and epic grammars under identifiers
+    Given the manifest pins schema version "0.4.0"
+    And the manifest declares task, Feature and epic grammars under identifiers
+    When the check runs
+    Then the manifest is accepted
+
+  @B-093
+  Scenario Outline: The rejection names the ids record to move to
+    Given the manifest pins schema version "0.4.0"
+    And the manifest holds <old setting>
+    When the check runs
+    Then the rejection names the ids record for <type>
+
+    Examples:
+      | old setting                                | type              |
+      | a mint key that opts ADR numbers in        | ADR numbers       |
+      | a constraint grammar under identifiers     | constraint IDs    |
+      | an open question grammar under identifiers | open question IDs |
+
+  @B-094 @B-022 @B-023
+  Scenario Outline: Claim and scenario records with one head are rejected
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the <member> "<claim>" and the scenario record the <member> "<scenario>"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the claim and scenario records
+
+    Examples:
+      | member     | claim         | scenario      |
+      | plain text | X-{id}        | X-{id}        |
+      | form       | {prefix}-{id} | {prefix}-{id} |
+
+  @B-095
+  Scenario: A scenario tag with a longer head is not read as a claim tag
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the form "{prefix}-{id}" and an id that admits any text
+    And the scenario record has the form "{prefix}-SCENARIO-{id}"
+    And Activity declares claim_prefix "ACTIVITY" and claim "ACTIVITY-k3x9ab"
+    And Activity's companion tags one scenario with "@ACTIVITY-k3x9ab" and "@ACTIVITY-SCENARIO-m7p2qr"
+    When the check runs
+    Then no claim tag in Activity's companion is unresolved
+
+  @B-097
+  Scenario: An ids record fills what it leaves out from the shipped record
+    Given the manifest pins schema version "0.4.0"
+    And the claim record holds only an id of six base32 characters
+    And a Feature without a prefix declares claims "B-k3x9ab" and "C-k3x9ab"
+    When the check runs
+    Then the claim ID check reports only "C-k3x9ab"
+
+  @B-098
+  Scenario: The shipped claim form keeps the prefix with no separator
+    Given the manifest pins schema version "0.4.0" and declares no claim record
+    And Activity declares claim_prefix "CI-AC-" and claims "CI-AC-001", "CI-AC-k3x9ab" and "CI-AC-1"
+    When the check runs
+    Then the claim ID check accepts only "CI-AC-001" and "CI-AC-k3x9ab"
+
+  @B-099
+  Scenario Outline: Schema 0.4.0's default grammars admit the numbered ids in the tree
+    Given the manifest pins schema version "0.4.0" and declares no <type> record
+    Then the shipped default <type> grammar admits "<admitted>"
+    And it rejects "<rejected>"
+
+    Examples:
+      | type     | admitted | rejected |
+      | scenario | S-1      | S-       |
+      | scenario | S-120    | S-12a    |
+      | decision | 0005     | 005      |
+      | ADR      | 0036     | ADR-0036 |
+      | lesson   | 0001     | 00001    |
+
+  @B-100
+  Scenario Outline: A Feature whose prefix gives its claims and scenarios one head is reported
+    Given the manifest pins schema version "0.4.0" and declares no scenario record
+    And the claim record has the form "<claim form>"
+    And Activity declares claim_prefix "<prefix>" and claim "B-001"
+    When the check runs
+    Then the claim ID check reports Activity's claim prefix, naming the head "S-"
+    And it reports no claim of Activity
+
+    Examples:
+      | claim form    | prefix |
+      | {prefix}{id}  | S-     |
+      | {prefix}-{id} | S      |
+
+  @B-101
+  Scenario: A claim ID that would read as a scenario tag is reported
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the form "{prefix}-{id}" and an id that admits any text
+    And the scenario record has the form "{prefix}-SCENARIO-{id}"
+    And Activity declares claim_prefix "ACTIVITY" and claims "ACTIVITY-k3x9ab" and "ACTIVITY-SCENARIO-m7p2qr"
+    When the check runs
+    Then the claim ID check reports only "ACTIVITY-SCENARIO-m7p2qr"
+
+  @B-100 @B-101 @boundary
+  Scenario: A claim head that begins a longer scenario head is not reported
+    Given the manifest pins schema version "0.4.0"
+    And the claim record has the form "{prefix}-{id}"
+    And the scenario record has the form "{prefix}-SCENARIO-{id}"
+    And Activity declares claim_prefix "ACTIVITY" and claim "ACTIVITY-k3x9ab"
+    And Activity's companion tags one scenario with "@ACTIVITY-k3x9ab" and "@ACTIVITY-SCENARIO-m7p2qr"
+    When the check runs
+    Then the check reports nothing for Activity
