@@ -50,7 +50,7 @@ Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `with
 - `owners`: a `sections` title mapped to a non-empty list of roles.
 - `requiredSpecifications`: a list of directory globs, empty when left out.
 
-Schema `0.3.1` reads every key and reports every rule `0.3.0` does. It also accepts `mint`, the id settings, an object keyed by record type, and older pins reject it. The check reads nothing from it, so a manifest with it gets the report it gets without it.
+Schema `0.3.1` reads every key and reports every rule `0.3.0` does. It also accepts `mint`, the id settings, an object keyed by record type, and older pins reject it. The check reads nothing from it, so a manifest with it gets the report it gets without it; [Minted ids](#minted-ids) describes it.
 
 Schema `0.3.1` also names `keys.feature.claimPrefix`, default `claim_prefix`: the Feature frontmatter field holding the Feature's own claim prefix, text with at least one non-white-space character, which `SPEC1002` checks. A Feature that declares one, such as `claim_prefix: CI-AC-`, reads its claim ids as that literal, case-sensitive prefix, three ASCII digits and an optional lowercase letter, `CI-AC-001a`; the declaration takes precedence over `identifiers.claim`, which still governs every Feature that declares none. Its matrix and companion tags resolve the complete id under `claim.tag` and `claim.tagIgnoreCase`. Older pins give the field no meaning.
 
@@ -146,6 +146,37 @@ into the root.
 Under schema `0.2.0`, companion claim tags follow `identifiers.claim` inside the literal tag form. For example, `@req:{claim}` recognizes `@req:B-001`; punctuation in the form is literal. SPEC4002 (SPEC021 below `0.3.0`) quotes an unresolved tag exactly as written and carries the claim id alone as its identifier. Claim and matrix ids remain case-sensitive even when tags ignore case. Full-line comments are skipped.
 
 Pin `0.1.0` retains the original `@B-nnn` scanner with an optional lowercase suffix. Pins below `0.3.0` read the frontmatter keys by their default names.
+
+## Minted ids
+
+[`specht mint <type>`](cli.md#specht-mint) draws a new id from the type's
+`mint` entry, under schema `0.3.1` or later. A type with no entry keeps its own
+numbering. The type also needs a grammar in `identifiers`, and that grammar
+must accept every id the entry can draw. This entry mints eight-character ADR
+numbers from digits and lower-case letters:
+
+```json
+"identifiers": { "adr": "^[0-9a-z]{8}$" },
+"mint": {
+  "adr": {
+    "strategy": "nanoid",
+    "nanoid": { "alphabet": "0123456789abcdefghijklmnopqrstuvwxyz", "size": 8 }
+  }
+}
+```
+
+| Member            | Default                                                                         | Does                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `strategy`        | None                                                                            | `nanoid` or `snowflake`. An entry without one mints nothing.                                                                 |
+| `nanoid.alphabet` | `0123456789abcdefghjkmnpqrstvwxyz`                                              | The characters each one is drawn from. A non-empty string.                                                                   |
+| `nanoid.size`     | `8` for `adr` and `lesson`, `6` for per-Feature types                           | How many characters are drawn. A positive whole number.                                                                      |
+| `snowflake`       | Epoch `2026-01-01`, `datacenterBits` `5`, `workerBits` `5`, `sequenceBits` `12` | `epoch` as `yyyy-MM-dd`, the three widths, and `datacenter`, `worker` and `sequenceStart`, each drawn at random when absent. |
+| `prefix`          | `B-`, `C-`, `OQ-`, `S-` for claims, constraints, open questions, scenarios      | Text written before the draw. Empty for any other type.                                                                      |
+| `encoding`        | `base32` for Snowflake, `none` otherwise                                        | `base32` is offered to Snowflake alone.                                                                                      |
+| `attempts`        | `8`                                                                             | Candidates drawn before the request is refused because the tree holds each one.                                              |
+
+A setting no id can be drawn from, such as an empty alphabet, exits `3` and
+prints no id.
 
 ## C# traceability
 
