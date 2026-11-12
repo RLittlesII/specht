@@ -13,10 +13,10 @@ public sealed class AnalysisPolicyReader
 {
     public AnalysisPolicy Read(JsonObject projection)
     {
-        var identifiers = Named(projection["identifiers"]!);
+        var identifiers = Named(projection["identifiers"]);
         if (!identifiers.ContainsKey("feature") || !identifiers.ContainsKey("claim") || identifiers.Values.Any(string.IsNullOrWhiteSpace))
         {
-            throw new ArgumentException("Analysis requires the supplied Feature and claim grammars.");
+            throw Reject("Identifiers must supply nonempty feature and claim grammars.");
         }
 
         foreach (var grammar in identifiers.Values)
@@ -25,32 +25,32 @@ public sealed class AnalysisPolicyReader
         }
 
         var epics = identifiers.ContainsKey("epic");
-        var policy = projection["policy"] as JsonObject ?? throw new ArgumentException("Analysis policy is missing.");
-        var projects = Array(policy["projects"]);
-        var paths = projects.Select(project => _paths.Normalize(Text(project!, "path"))).ToArray();
+        var policy = projection["policy"] as JsonObject ?? throw Reject("Policy is missing.");
+        var projects = Array(policy["projects"], "Policy projects");
+        var paths = projects.Select(project => _paths.Normalize(Text(project!, "path", "Policy projects"))).ToArray();
         if (paths.Distinct(StringComparer.Ordinal).Count() != paths.Length)
         {
-            throw new ArgumentException("Analysis projects must be distinct.");
+            throw Reject("Policy projects path must be distinct.");
         }
 
         foreach (var project in projects)
         {
-            var frameworks = Strings(project!["targetFrameworks"]!);
+            var frameworks = Strings(project!["targetFrameworks"], "Policy projects targetFrameworks");
             if (frameworks.Length == 0 || frameworks.Any(string.IsNullOrWhiteSpace)
                 || frameworks.Distinct(StringComparer.Ordinal).Count() != frameworks.Length)
             {
-                throw new ArgumentException("Analysis projects require distinct nonempty target frameworks.");
+                throw Reject("Policy projects targetFrameworks must be nonempty and distinct.");
             }
         }
 
-        foreach (var feature in Array(policy["features"]))
+        foreach (var feature in Array(policy["features"], "Policy features"))
         {
             Owner(feature!, identifiers, epics);
         }
 
         if (policy["requiredLinks"]?["test"]?.GetValue<bool>() == false)
         {
-            throw new ArgumentException("Selected non-exempt claims require test links.");
+            throw Reject("Policy requiredLinks test must not be false.");
         }
 
         foreach (var key in new[] { "implementation", "scenario" })
@@ -60,23 +60,36 @@ public sealed class AnalysisPolicyReader
 
         foreach (var scope in policy["enforcement"]?.AsArray() ?? new JsonArray())
         {
-            Project(scope!, paths);
-            var role = Text(scope!, "role");
-            var kinds = Strings(scope!["declarationKinds"]!);
-            if (role is not ("verifies" or "implements" or "follows") || kinds.Length == 0
-                || kinds.Any(static kind => !Kinds.Contains(kind, StringComparer.Ordinal))
-                || role == "verifies" && kinds.Any(static kind => kind != "testMethod"))
+            Project(scope!, paths, "Enforcement");
+            var role = Text(scope!, "role", "Enforcement");
+            if (role is not ("verifies" or "implements" or "follows"))
             {
-                throw new ArgumentException("Analysis enforcement must select supported roles and declarations.");
+                throw Reject("Enforcement role must be verifies, implements or follows.");
             }
 
-            var includes = Strings(scope["include"]!);
+            var kinds = Strings(scope!["declarationKinds"], "Enforcement declarationKinds", true);
+            if (kinds.Length == 0)
+            {
+                throw Reject("Enforcement declarationKinds must name at least one declaration kind.");
+            }
+
+            if (kinds.Any(static kind => !Kinds.Contains(kind, StringComparer.Ordinal)))
+            {
+                throw Reject("Enforcement declarationKinds names an unsupported declaration kind.");
+            }
+
+            if (role == "verifies" && kinds.Any(static kind => kind != "testMethod"))
+            {
+                throw Reject("Enforcement declarationKinds may name only testMethod when role is verifies.");
+            }
+
+            var includes = Strings(scope!["include"], "Enforcement include", true);
             if (includes.Length == 0)
             {
-                throw new ArgumentException("An authoring scope requires explicit source selection.");
+                throw Reject("Enforcement include must select at least one source glob.");
             }
 
-            foreach (var glob in includes.Concat(Strings(scope["exclude"]!)))
+            foreach (var glob in includes.Concat(Strings(scope!["exclude"], "Enforcement exclude", true)))
             {
                 _ = _paths.Normalize(glob);
             }
@@ -84,41 +97,41 @@ public sealed class AnalysisPolicyReader
 
         foreach (var exemption in policy["exemptions"]?.AsArray() ?? new JsonArray())
         {
-            _ = Text(exemption!, "reason");
-            var links = Strings(exemption!["links"]!);
+            _ = Text(exemption!, "reason", "Exemptions");
+            var links = Strings(exemption!["links"], "Exemptions links", true);
             if (links.Length == 0 || links.Any(static link => link is not ("test" or "implementation" or "scenario")))
             {
-                throw new ArgumentException("An exemption must name its required link kinds.");
+                throw Reject("Exemptions links must name test, implementation or scenario.");
             }
 
             var target = exemption["target"]!;
             if (target["kind"] is null)
             {
                 Owner(target, identifiers, epics);
-                Identifier("claim", Text(target, "claim"), identifiers);
+                Identifier("claim", Text(target, "claim", "Exemptions target"), identifiers, "Exemptions target claim");
             }
             else
             {
-                if (Text(target, "kind") != "declaration")
+                if (Text(target, "kind", "Exemptions target") != "declaration")
                 {
-                    throw new ArgumentException("An exemption must select an explicit claim or declaration.");
+                    throw Reject("Exemptions target kind must be declaration when present.");
                 }
 
-                Project(target, paths);
-                _ = Text(target, "symbolId");
+                Project(target, paths, "Exemptions target");
+                _ = Text(target, "symbolId", "Exemptions target");
             }
         }
 
         foreach (var profile in policy["records"]?["adrProfiles"]?.AsArray() ?? new JsonArray())
         {
-            _ = _paths.Normalize(Text(profile!, "glob"));
-            if (Text(profile!, "owner") is not ("repository" or "containingFeature"))
+            _ = _paths.Normalize(Text(profile!, "glob", "Records adrProfiles"));
+            if (Text(profile!, "owner", "Records adrProfiles") is not ("repository" or "containingFeature"))
             {
-                throw new ArgumentException("ADR profiles require explicit ownership.");
+                throw Reject("Records adrProfiles owner must be repository or containingFeature.");
             }
 
-            Selector(profile!["identity"]!, false);
-            Selector(profile["lifecycle"]!, true);
+            Selector(profile!["identity"], false, "Records adrProfiles identity");
+            Selector(profile["lifecycle"], true, "Records adrProfiles lifecycle");
         }
 
         foreach (var role in new[] { "feature", "epic" })
@@ -131,7 +144,7 @@ public sealed class AnalysisPolicyReader
                 if (index < 0 || text.IndexOf(marker, index + marker.Length, StringComparison.Ordinal) >= 0
                     || text.Replace(marker, string.Empty).IndexOfAny(new[] { '{', '}' }) >= 0)
                 {
-                    throw new ArgumentException("Scenario encodings must contain exactly their own placeholder.");
+                    throw Reject("ScenarioScopes " + role + "Tag must contain exactly its own placeholder.");
                 }
             }
         }
@@ -141,87 +154,91 @@ public sealed class AnalysisPolicyReader
         var gherkin = new GherkinClaimPolicyReader().Read(projection["claim"], policy["records"] as JsonObject,
             policy["scenarioScopes"] as JsonObject, identifiers, epics);
         var bindings = new BindingPolicy(projection["schemaVersion"]?.GetValue<string>() ?? string.Empty,
-            identifiers, markers, epics, gherkin is null ? Text(projection, "claimsSection") : projection["claimsSection"]?.GetValue<string>() ?? string.Empty,
+            identifiers, markers, epics,
+            gherkin is null ? Text(projection, "claimsSection", "Policy") : projection["claimsSection"]?.GetValue<string>() ?? string.Empty,
             new LifecycleOmissions(
                 omissions?["feature"]?.GetValue<bool>() == true, omissions?["claim"]?.GetValue<bool>() == true,
                 omissions?["adr"]?.GetValue<bool>() == true));
         return new AnalysisPolicy(policy, bindings) { Gherkin = gherkin };
     }
 
+    private static AnalysisPolicyException Reject(string message) => new(message);
+
     private static Dictionary<string, string> Named(JsonNode? node) =>
-        (node as JsonObject ?? throw new ArgumentException("Consumer grammars are missing.")).ToDictionary(
-        static entry => entry.Key,
-            static entry => entry.Value?.GetValue<string>() ?? throw new ArgumentException("A consumer grammar is empty."), StringComparer.Ordinal);
+        (node as JsonObject ?? throw Reject("Identifiers must be an object.")).ToDictionary(
+            static entry => entry.Key,
+            static entry => entry.Value?.GetValue<string>() ?? throw Reject("Identifiers entries must be nonempty text."), StringComparer.Ordinal);
 
-    private static string Text(JsonNode node, string key) => node?[key]?.GetValue<string>() is { } value && !string.IsNullOrWhiteSpace(value)
-        ? value : throw new ArgumentException("An explicitly mapped analysis field is absent or empty.");
+    private static string Text(JsonNode node, string key, string container) => node?[key]?.GetValue<string>() is { } value && !string.IsNullOrWhiteSpace(value)
+        ? value : throw Reject(container + " " + key + " must be present and nonempty.");
 
-    private static JsonArray Array(JsonNode? node) => node as JsonArray ?? throw new ArgumentException("An analysis selection array is missing.");
+    private static JsonArray Array(JsonNode? node, string field) => node as JsonArray ?? throw Reject(field + " must be an array.");
 
-    private static string[] Strings(JsonNode? node) => Array(node).Select(static value => value?.GetValue<string>()
-        ?? throw new ArgumentException("An analysis selection value is missing.")).ToArray();
+    private static string[] Strings(JsonNode? node, string field, bool absentIsEmpty = false) =>
+        node is null && absentIsEmpty ? System.Array.Empty<string>()
+        : Array(node, field).Select(value => value?.GetValue<string>() ?? throw Reject(field + " entries must be text.")).ToArray();
 
     private static void Owner(JsonNode target, IReadOnlyDictionary<string, string> identifiers, bool epics)
     {
-        Identifier("feature", Text(target, "feature"), identifiers);
+        Identifier("feature", Text(target, "feature", "Policy features"), identifiers, "Policy features feature");
         if (epics != (target["epic"] is not null))
         {
-            throw new ArgumentException("Feature selection must follow the consumer's epic tier.");
+            throw Reject("Policy features epic must be present exactly when identifiers supply an epic grammar.");
         }
 
         if (epics)
         {
-            Identifier("epic", Text(target, "epic"), identifiers);
+            Identifier("epic", Text(target, "epic", "Policy features"), identifiers, "Policy features epic");
         }
     }
 
-    private static void Identifier(string role, string value, IReadOnlyDictionary<string, string> identifiers)
+    private static void Identifier(string role, string value, IReadOnlyDictionary<string, string> identifiers, string field)
     {
         if (!identifiers.TryGetValue(role, out var grammar)
             || !new Regex("\\A(?:" + grammar + ")\\z", RegexOptions.CultureInvariant).IsMatch(value))
         {
-            throw new ArgumentException("Analysis identity violates its supplied consumer grammar.");
+            throw Reject(field + " must match its identifiers grammar.");
         }
     }
 
-    private static void Selector(JsonNode selector, bool lifecycle)
+    private static void Selector(JsonNode? selector, bool lifecycle, string field)
     {
         if (selector is not JsonObject)
         {
-            throw new ArgumentException("A record selector is missing.");
+            throw Reject(field + " must be an object.");
         }
 
         if (selector["frontmatterKey"] is not null)
         {
-            _ = Text(selector, "frontmatterKey");
+            _ = Text(selector, "frontmatterKey", field);
             if (selector.AsObject().Count != 1)
             {
-                throw new ArgumentException("Record selectors must select exactly one encoding.");
+                throw Reject(field + " must select exactly one encoding.");
             }
         }
         else if (lifecycle)
         {
-            _ = Text(selector, "section");
+            _ = Text(selector, "section", field);
             if (selector["firstWord"]?.GetValue<bool>() != true)
             {
-                throw new ArgumentException("A lifecycle section selector requires firstWord.");
+                throw Reject(field + " firstWord must be true.");
             }
         }
         else if (selector["headingLevel"]?.GetValue<int>() is not (>= 1 and <= 6))
         {
-            throw new ArgumentException("An identity heading selector requires a valid heading level.");
+            throw Reject(field + " headingLevel must be from 1 to 6.");
         }
         else
         {
-            _ = Text(selector, "separator");
+            _ = Text(selector, "separator", field);
         }
     }
 
-    private void Project(JsonNode node, string[] paths)
+    private void Project(JsonNode node, string[] paths, string container)
     {
-        if (!paths.Contains(_paths.Normalize(Text(node, "project")), StringComparer.Ordinal))
+        if (!paths.Contains(_paths.Normalize(Text(node, "project", container)), StringComparer.Ordinal))
         {
-            throw new ArgumentException("Analysis enforcement references an undeclared project.");
+            throw Reject(container + " project must be a declared project.");
         }
     }
 

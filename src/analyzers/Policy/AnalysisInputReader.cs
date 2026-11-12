@@ -139,6 +139,11 @@ public sealed class AnalysisInputReader
             return new AnalysisSnapshot(contentKey, null, null,
                 new[] { new AnalysisInputFailure(_paths.Normalize(exception.RelativePath ?? configurationPath), exception.Message) });
         }
+        catch (AnalysisPolicyException exception)
+        {
+            return new AnalysisSnapshot(contentKey, null, null,
+                new[] { new AnalysisInputFailure(_paths.Normalize(configurationPath), exception.Message) });
+        }
         catch (FormatException)
         {
             return new AnalysisSnapshot(contentKey, null, null,
