@@ -1,4 +1,4 @@
-id: "0437"
+id: "0438"
 type: task
 title: Upgrade moves the id settings into ids
 
@@ -10,7 +10,7 @@ risk: 3
 parent: "0041"
 children: []
 
-depends_on: ["0435"]
+depends_on: ["0436"]
 spikes: []
 
 spec: src/tool/.spec/README.md
@@ -38,7 +38,7 @@ summary: |
   manifest is valid under `0.4.0` without a hand edit (`0001-F5`
   decision 0024).
 
-  Waits on 0435, which cuts schema `0.4.0` with the `ids` key and
+  Waits on 0436, which cuts schema `0.4.0` with the `ids` key and
   rejects the old settings.
 
   Risk 3: a grammar split into a head and an `id` (B-155), a move that
@@ -62,7 +62,7 @@ decisions:
     2026-11-12, spec-author: cut on the repository owner's selection of
     2026-11-12, "Rejected; upgrade migrates" (`0001-F19` decision 0005;
     `0001-F5` decision 0024). spec-author's cut, not an owner ruling:
-    one item for the move, after `0001-F5`'s 0435. It proceeds on
+    one item for the move, after `0001-F5`'s 0436. It proceeds on
     OQ-79's default (a), refuse an unsplittable grammar.
   - |
     2026-11-12, the repository owner, "Drop it, ship default applies
@@ -71,6 +71,6 @@ decisions:
     move verbatim (B-161). B-051 added on spec-reviewer's round 2.
 
 out_of_scope:
-  - "The ids key and the rejection of the old settings - `0001-F5` item 0435."
-  - "Minting from the ids record - `0001-F19` item 0436."
+  - "The ids key and the rejection of the old settings - `0001-F5` item 0436."
+  - "Minting from the ids record - `0001-F19` item 0437."
   - "Moving the id settings under a pin below 0.4.0 - § 5 row 34."

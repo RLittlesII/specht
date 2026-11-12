@@ -1,4 +1,4 @@
-id: "0435"
+id: "0436"
 type: task
 title: Cut schema 0.4.0 with the ids key
 
@@ -69,7 +69,7 @@ summary: |
   keys, and this repository's live `.specht/` and pin moving to `0.4.0`
   in the same pull request, because `0001-F4` B-004 fails from the cut
   until they do (the precedent is 0388). Value 4 is the value of `0010`.
-  `0001-F19`'s 0436 and `0001-F7`'s 0437 wait on it.
+  `0001-F19`'s 0437 and `0001-F7`'s 0438 wait on it.
 
 acceptance_criteria:
   - "B-081 to B-085, B-097 — the ids key accepted from 0.4.0, its shape rejections, and members read from the shipped record; B-022 and B-023 as amended"
@@ -108,8 +108,8 @@ decisions:
     round 2. spec-author's cut.
 
 out_of_scope:
-  - "Minting from the ids record - `0001-F19` item 0436."
-  - "Moving the old settings into ids records on upgrade - `0001-F7` item 0437."
+  - "Minting from the ids record - `0001-F19` item 0437."
+  - "Moving the old settings into ids records on upgrade - `0001-F7` item 0438."
   - "A form for ADR, lesson, epic, Feature or task ids - § 5 row 26."
   - "The check reading the records other than claim and the scenario heads - § 5 row 27."
   - "Widening a grammar the consumer's manifest declares - § 5 row 28."

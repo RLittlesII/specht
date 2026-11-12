@@ -46,7 +46,7 @@ The other options put to the owner are not in the record this decision was writt
 
 ## Affects
 
-A-1, A-6 (amended); A-9; B-009, B-011, B-012, B-043, B-055 (scoped below `0.4.0`); B-063, B-065 to B-068, B-070 to B-077; B-064, B-069 (withdrawn before merge); C-4, C-6, C-12, C-18 (amended); C-14 (reversed); C-17, C-19, C-21; C-20 (retired before merge); § 5 rows 16, 18, 20, 22 and 23; OQ-12's answer, from `0.4.0`; `0001-F5` decision 0024; `0001-F5` B-100, B-101, OQ-32; `0001-F7` OQ-78, B-016, B-020, B-051, B-155 to B-161; ADR-0036; items `0435`, `0436` and `0437`.
+A-1, A-6 (amended); A-9; B-009, B-011, B-012, B-043, B-055 (scoped below `0.4.0`); B-063, B-065 to B-068, B-070 to B-077; B-064, B-069 (withdrawn before merge); C-4, C-6, C-12, C-18 (amended); C-14 (reversed); C-17, C-19, C-21; C-20 (retired before merge); § 5 rows 16, 18, 20, 22 and 23; OQ-12's answer, from `0.4.0`; `0001-F5` decision 0024; `0001-F5` B-100, B-101, OQ-32; `0001-F7` OQ-78, B-016, B-020, B-051, B-155 to B-161; ADR-0036; items `0436`, `0437` and `0438`.
 
 ## Reversal
 

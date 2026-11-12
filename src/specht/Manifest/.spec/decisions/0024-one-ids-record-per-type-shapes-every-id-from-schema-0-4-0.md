@@ -68,7 +68,7 @@ Considered by spec-author and not chosen:
 
 ## Affects
 
-Need 7; A-8; B-007, B-022, B-023, B-076, B-079 (amended); B-081 to B-095, B-097 to B-101; B-096 (withdrawn before merge); C-2, C-12 (amended); C-14, C-15; § 5 rows 23 (amended) and 25 to 29; OQ-32 (resolved), OQ-33; `0001-F19` decision 0005; `0001-F7` OQ-78, OQ-79, B-051, B-155 to B-161; ADR-0036; item `0435`.
+Need 7; A-8; B-007, B-022, B-023, B-076, B-079 (amended); B-081 to B-095, B-097 to B-101; B-096 (withdrawn before merge); C-2, C-12 (amended); C-14, C-15; § 5 rows 23 (amended) and 25 to 29; OQ-32 (resolved), OQ-33; `0001-F19` decision 0005; `0001-F7` OQ-78, OQ-79, B-051, B-155 to B-161; ADR-0036; item `0436`.
 
 ## Reversal
 

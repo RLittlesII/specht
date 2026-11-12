@@ -1,4 +1,4 @@
-id: "0436"
+id: "0437"
 type: task
 title: Mint from the ids record
 
@@ -10,7 +10,7 @@ risk: 3
 parent: "0412"
 children: []
 
-depends_on: ["0435"]
+depends_on: ["0436"]
 spikes: []
 
 spec: src/specht/Identifiers/.spec/README.md
@@ -46,7 +46,7 @@ summary: |
   the type's `ids` record, so that every minted id is one the check
   accepts (decision 0005).
 
-  Waits on 0435, which cuts schema `0.4.0` with the `ids` key, the claim
+  Waits on 0436, which cuts schema `0.4.0` with the `ids` key, the claim
   grammar the check reads, and the shipped records B-074 relies on.
 
   Risk 3: the record read in place of the `mint` key and `identifiers`
@@ -74,12 +74,12 @@ decisions:
     of 2026-11-12, "Redesign: one record", "Widen all seven", "Same
     opt-in rule", "Include decision" and "Rejected; upgrade migrates"
     (decision 0005). spec-author's cut, not an owner ruling: one item
-    for mint, after `0001-F5`'s 0435. B-064 and B-069 were withdrawn
+    for mint, after `0001-F5`'s 0436. B-064 and B-069 were withdrawn
     before merge.
 
 out_of_scope:
-  - "The ids key, the check's claim grammar and the 0.4.0 cut - `0001-F5` item 0435."
-  - "Moving the old settings on upgrade - `0001-F7` item 0437."
+  - "The ids key, the check's claim grammar and the 0.4.0 cut - `0001-F5` item 0436."
+  - "Moving the old settings on upgrade - `0001-F7` item 0438."
   - "A form for ADR or lesson numbers - § 5 row 16."
   - "Rewriting existing ids - § 5 row 20."
   - "A change to the MCP mint tool - § 5 row 21."
