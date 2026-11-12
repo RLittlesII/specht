@@ -42,7 +42,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-11-11, the owner in session: asked whether the `feature` argument becomes `--feature <dir>` and a call without `feature` runs `specht mint <type>` with no `--feature`, and whether `SpechtTool.Minimum` rises from 0.3.1 to 0.6.1 for the mint tool, the owner selected "Map + raise to 0.6.1" (`0132-F4` OQ-9, `0132-F3` OQ-9).
+    The owner's selection, 2026-11-11, among options an agent wrote: asked whether the `feature` argument becomes `--feature <dir>` and a call without `feature` runs `specht mint <type>` with no `--feature`, and whether `SpechtTool.Minimum` rises from 0.3.1 to 0.6.1 for the mint tool, the selection was "Map + raise to 0.6.1", one minimum for every tool the host runs (`0132-F4` OQ-9, `0132-F3` OQ-9).
   - |
     2026-11-06, `0132-F4` decision 0001: the mint tool joins `0132-F4` and runs the pinned mint command.
 
