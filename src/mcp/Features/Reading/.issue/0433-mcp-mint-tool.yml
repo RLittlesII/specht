@@ -2,7 +2,7 @@ id: "0433"
 type: task
 title: A minted id through MCP
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-11-11"
 updated: "2026-11-11"
-closed: null
+closed: "2026-11-11"
 
 summary: |
   As an agent authoring a record in a repository that opts its type in I want a new id through MCP, the pinned tool's own mint, so that I stop taking the next number off my copy of the tree and colliding.
