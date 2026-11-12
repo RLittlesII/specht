@@ -1,0 +1,31 @@
+id: "0433"
+type: chore
+title: Show the three packages and an end-to-end walkthrough
+status: done
+value: 2
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-11"
+updated: "2026-11-11"
+closed: "2026-11-11"
+summary: |
+  The front page describes only specht.tool. Specht.CodeAnalysis has one
+  sentence under the manifest and specht.mcp is not named, and no page shows a
+  C# binding or an SPCT diagnostic. A reader cannot see the whole offering or
+  what analysis looks like without reading several reference pages. The front
+  page gets a short list of the three packages and a code analysis example,
+  and docs/ gets one walkthrough from init through the check, the analyzer,
+  test evidence and the MCP server, with output taken from real runs.
+acceptance_criteria:
+  - README.md names specht.tool, Specht.CodeAnalysis and specht.mcp, one line each, linked to their pages.
+  - README.md shows one C# binding and one SPCT diagnostic line the analyzer actually reports.
+  - docs/walkthrough.md runs init, a failing and a clean check, the analyzer, test evidence and the MCP check, each output excerpt taken from a real run.
+  - docs/README.md links the walkthrough.
+out_of_scope:
+  - Changes to any reference page beyond the index row and the README pointer.
+  - Behaviour changes to the tool, the analyzer or the MCP server.

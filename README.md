@@ -27,6 +27,18 @@ repository-relative path, a line number, and a rule ID.
 src/checkout/.spec/README.md(42): error SPEC4004: claim 'B-007' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists [B-007]
 ```
 
+## What ships
+
+Three NuGet packages, versioned together.
+
+| Package                                 | Runs as                           | Does                                                                                                     |
+| --------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [`specht.tool`](docs/setup.md)          | `dotnet specht`                   | Checks the `.spec/` tree. Locally, in CI, in a pre-commit hook.                                          |
+| [`Specht.CodeAnalysis`](#code-analysis) | Roslyn analyzer in `dotnet build` | Links C# code and tests to claims. Reports `SPCT` diagnostics in the build.                              |
+| [`specht.mcp`](docs/mcp.md)             | `dotnet specht-mcp`               | MCP server. Runs the repository's pinned `specht` for an agent: `check`, `explain`, `rules`, `manifest`. |
+
+The [walkthrough](docs/walkthrough.md) uses all three on one small repository.
+
 ## Quick start
 
 Install the .NET 10 SDK, then run these commands from your repository root.
@@ -131,12 +143,41 @@ uses the frontmatter schemas written to disk and checks specifications under
 
 Use `spechtSchema` to share frontmatter schemas across repositories with a
 recorded source and hashes. For .NET projects, `codeAnalysis` selects the
-projects and features whose code is checked against the specifications. The
-Configuration guide in the documentation index has examples of both.
+projects and features whose code is checked against the specifications; see
+[Code analysis](#code-analysis). The Configuration guide in the documentation
+index has examples of both.
 
 Run `dotnet specht manifest` to see your effective settings, including defaults
 for omitted keys. Run `dotnet specht manifest --defaults --json` to see the
 manifest for the newest schema shipped by your installed tool.
+
+## Code analysis
+
+`Specht.CodeAnalysis` reads the same `.spec/` tree inside `dotnet build`. Code
+names the claim it implements, and a test names the claim it verifies, in XML
+documentation:
+
+```csharp
+/// <implements feature="F1" claim="B-002" />
+public decimal Total() => _lines.Sum();
+
+/// <verifies feature="F1" claim="B-002" />
+[Fact]
+public void Empty_cart_totals_zero() => Assert.Equal(0, new Cart().Total());
+```
+
+A link to a claim the specification does not have, or a declaration the
+manifest requires a link on, is a build diagnostic:
+
+```text
+src/checkout/Cart.cs(11,34): warning SPCT0004: feature="F1" claim="B-003"
+test/checkout.tests/CartTests.cs(18,17): warning SPCT0007: M:Checkout.Tests.CartTests.Empty_cart_totals_zero requires verifies
+```
+
+After `dotnet test`, `dotnet specht evidence` reports which claims have a
+linked, passing test. Setup is in the [walkthrough](docs/walkthrough.md) and the
+[package guide](src/codeanalysis/README.md); every diagnostic is in the
+[diagnostic reference](src/codeanalysis/docs/README.md).
 
 ## Documentation
 
