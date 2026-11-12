@@ -85,6 +85,12 @@ schema version. It takes no argument.
 Serves [`specht manifest --json`](cli.md#specht-manifest): the manifest in
 effect. Optional `defaults` (true) is `--defaults`.
 
+### `mint`
+
+Serves [`specht mint <type> [--feature <dir>]`](cli.md#specht-mint): one new id
+for a type the manifest opts in. `type` is required, such as `adr`; optional
+`feature`, the Feature's folder, is `--feature`.
+
 ## Restore the tool
 
 The nearest local tool manifest at or above the root, `.config/dotnet-tools.json`,
@@ -109,7 +115,7 @@ dotnet tool install specht.tool   # records the version in .config/dotnet-tools.
 
 ## Update the tool
 
-The server runs a `specht.tool` of `0.3.1` or later. An older one fails a call
+The server runs a `specht.tool` of `0.6.1` or later. An older one fails a call
 with an error naming that minimum, and is run for nothing but its version.
 Update it:
 
