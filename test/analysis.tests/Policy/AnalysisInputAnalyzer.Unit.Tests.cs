@@ -76,4 +76,31 @@ public sealed class AnalysisInputAnalyzerUnitTests
         diagnostic.GetMessage().Should().Be("Project required-case scope is not a valid tag expression.");
         diagnostic.Properties["SpechtRelativePath"].Should().Be("config/consumer.json");
     }
+
+    [Fact]
+    public async Task AnUnsupportedEnforcementRole_WhenAnalyzed_ShouldReportSpct0001WithTheRoleMessage()
+    {
+        // Given
+        var inputs = new AnalysisInputs().Inputs;
+        var configuration = JsonNode.Parse(inputs[0].Text!)!;
+        configuration["codeAnalysis"]!["enforcement"]![0]!["role"] = "invented";
+        inputs[0] = inputs[0] with { Text = configuration.ToJsonString() };
+        var builder = GeneratorTestContextBuilder.Create().WithAnalyzer<AnalysisInputAnalyzer>()
+            .WithDiagnosticSeverity(null).AddSource("src/Example.cs", "public class Example { }");
+        foreach (var input in inputs.Where(static input => input.Kind != "source"))
+        {
+            builder = builder.AddAdditionalText(input.RelativePath, input.Text!)
+                .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtInputKind", input.Kind)
+                .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtRelativePath", input.RelativePath);
+        }
+
+        // When
+        var result = await builder.GenerateAsync(TestContext.Current.CancellationToken);
+
+        // Then
+        var diagnostic = result.AnalyzerResults[typeof(AnalysisInputAnalyzer)].Diagnostics.Should().ContainSingle().Subject;
+        diagnostic.Id.Should().Be("SPCT0001");
+        diagnostic.GetMessage().Should().Be("Enforcement role must be verifies, implements or follows.");
+        diagnostic.Properties["SpechtRelativePath"].Should().Be("config/consumer.json");
+    }
 }

@@ -28,6 +28,57 @@ public sealed class AnalysisInputReaderUnitTests
     }
 
     [Fact]
+    public void AnEnforcementEntryWithoutExclude_WhenRead_ShouldExcludeNoSource()
+    {
+        // Given
+        var inputs = new AnalysisInputs().Inputs;
+        var configuration = JsonNode.Parse(inputs[0].Text!)!;
+        configuration["codeAnalysis"]!["enforcement"]![0]!.AsObject().Remove("exclude");
+        inputs[0] = inputs[0] with { Text = configuration.ToJsonString() };
+        var declaration = new AnalysisDeclaration("test/tests.csproj", "net10.0", "test/Shared/Run.cs", "method", "M:Run", false, true);
+
+        // When
+        var snapshot = new AnalysisInputReader().Read(inputs, TestContext.Current.CancellationToken);
+
+        // Then
+        snapshot.Failures.Should().BeEmpty();
+        snapshot.Policy!.Select(declaration).RequiredRoles.Should().Equal("verifies");
+    }
+
+    [Theory]
+    [ClassData(typeof(InvalidEnforcementEntries))]
+    public void ARejectedEnforcementField_WhenRead_ShouldFailWithItsFieldAndFault(string entry, string message)
+    {
+        // Given
+        var inputs = new AnalysisInputs().Inputs;
+        var configuration = JsonNode.Parse(inputs[0].Text!)!;
+        configuration["codeAnalysis"]!["enforcement"] = new JsonArray(JsonNode.Parse(entry));
+        inputs[0] = inputs[0] with { Text = configuration.ToJsonString() };
+
+        // When
+        var snapshot = new AnalysisInputReader().Read(inputs, TestContext.Current.CancellationToken);
+
+        // Then
+        snapshot.Available.Should().BeFalse();
+        snapshot.Failures.Should().ContainSingle().Which.Message.Should().Be(message);
+    }
+
+    [Fact]
+    public void AMissingSelectedFeatureInput_WhenRead_ShouldKeepTheGenericMessage()
+    {
+        // Given
+        var inputs = new AnalysisInputs().Inputs;
+        inputs.RemoveAll(static input => input.Kind == "feature");
+
+        // When
+        var snapshot = new AnalysisInputReader().Read(inputs, TestContext.Current.CancellationToken);
+
+        // Then
+        snapshot.Failures.Should().ContainSingle().Which.Message
+            .Should().Be("Required consumer input is missing, invalid or incompatible with its explicit mappings.");
+    }
+
+    [Fact]
     public void MissingSuppliedSchema_WhenRead_ShouldFailInsteadOfUsingAnEmbeddedSchema()
     {
         // Given

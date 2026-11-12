@@ -210,7 +210,9 @@ each Feature selection.
 ```
 
 The `enforcement` entry requires implementation links on the selected C#
-declarations. The ADR profile tells the analyzer which files to read and
+declarations. `include` is required and nonempty; `exclude` is optional, and an
+absent `exclude` excludes nothing. A `verifies` entry takes only `testMethod`
+in `declarationKinds`. The ADR profile tells the analyzer which files to read and
 where to find each record's identity and lifecycle status. See the
 [analyzer guide](../src/codeanalysis/README.md) for package setup.
 

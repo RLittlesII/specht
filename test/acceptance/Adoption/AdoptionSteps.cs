@@ -150,6 +150,51 @@ public sealed class AdoptionSteps
         _snapshot.Catalog.Should().BeNull();
     }
 
+    [Given("a consumer whose enforcement entry names a project, a role, declaration kinds and what to include")]
+    public void GivenAnEnforcementEntry()
+    {
+    }
+
+    [Given("the entry names nothing to exclude")]
+    public void GivenNoExclude() => Entry().AsObject().Remove("exclude");
+
+    [Given("a consumer whose enforcement entry selects the verifies role for a kind other than testMethod")]
+    public void GivenVerifiesForAnotherKind() => Entry()["declarationKinds"] = JsonNode.Parse("[\"method\"]");
+
+    [Given("a consumer whose enforcement entry selects an unsupported role")]
+    public void GivenAnUnsupportedRole() => Entry()["role"] = "invented";
+
+    [Given("a consumer whose enforcement entry selects no declaration kind")]
+    public void GivenNoDeclarationKind() => Entry()["declarationKinds"] = JsonNode.Parse("[]");
+
+    [Given("a consumer whose enforcement entry selects an unsupported declaration kind")]
+    public void GivenAnUnsupportedDeclarationKind()
+    {
+        Entry()["role"] = "implements";
+        Entry()["declarationKinds"] = JsonNode.Parse("[\"invented\"]");
+    }
+
+    [Given("a consumer whose enforcement entry includes no source")]
+    public void GivenNoInclude() => Entry()["include"] = JsonNode.Parse("[]");
+
+    [Given("a selected analysis scope with a missing manifest or specification input")]
+    public void GivenAMissingSpecificationInput() => _records.RemoveAll(static record => record.Kind == "feature");
+
+    [Then("the entry is accepted")]
+    public void ThenTheEntryIsAccepted() => _snapshot!.Available.Should().BeTrue();
+
+    [Then("it excludes no source")]
+    public void ThenItExcludesNoSource() =>
+        _snapshot!.Policy!.Select(new AnalysisDeclaration("test/tests.csproj", "net10.0", "test/Shared/Run.cs", "method", "M:Run", false, true))
+            .RequiredRoles.Should().Equal("verifies");
+
+    [Then("analysis reports an input failure with the message {string}")]
+    public void ThenTheFailureHasTheMessage(string message)
+    {
+        _snapshot!.Available.Should().BeFalse();
+        _snapshot.Failures.Should().ContainSingle().Which.Message.Should().Be(message);
+    }
+
     [Then("the explicit binding is still validated")]
     public void ThenExplicitValidation()
     {
@@ -244,6 +289,8 @@ public sealed class AdoptionSteps
 
     [Then("no Specht schema adoption, schema upgrade or pin change is required")]
     public void ThenNoUpgrade() => _configuration["revision"]!.GetValue<string>().Should().Be(_version);
+
+    private JsonNode Entry() => _configuration["codeAnalysis"]!["enforcement"]![0]!;
 
     private AnalysisSnapshot Run()
     {

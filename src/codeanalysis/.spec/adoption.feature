@@ -232,3 +232,31 @@ Feature: Consumer analysis adoption
     And the consumer sets no scenario input property
     When the consumer's project is analyzed
     Then the scenarios in that tree are delivered as scenario inputs
+
+  @B-028
+  Scenario: Enforcement entry without exclusions
+    Given a consumer whose enforcement entry names a project, a role, declaration kinds and what to include
+    And the entry names nothing to exclude
+    When the consumer's policy is read
+    Then the entry is accepted
+    And it excludes no source
+
+  @B-029
+  Scenario Outline: A rejected policy field is named
+    Given a consumer whose enforcement entry <fault>
+    When the consumer's policy is read
+    Then analysis reports an input failure with the message "<message>"
+
+    Examples:
+      | fault                                                  | message                                                                   |
+      | selects the verifies role for a kind other than testMethod | Enforcement declarationKinds may name only testMethod when role is verifies. |
+      | selects an unsupported role                            | Enforcement role must be verifies, implements or follows.                 |
+      | selects no declaration kind                            | Enforcement declarationKinds must name at least one declaration kind.     |
+      | selects an unsupported declaration kind                | Enforcement declarationKinds names an unsupported declaration kind.       |
+      | includes no source                                     | Enforcement include must select at least one source glob.                 |
+
+  @B-029 @boundary
+  Scenario: Other input failures keep the generic message
+    Given a selected analysis scope with a missing manifest or specification input
+    When the consumer's policy is read
+    Then analysis reports an input failure with the message "Required consumer input is missing, invalid or incompatible with its explicit mappings."

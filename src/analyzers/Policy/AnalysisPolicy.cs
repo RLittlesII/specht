@@ -40,7 +40,7 @@ public sealed class AnalysisPolicy
             : (_policy["enforcement"]?.AsArray() ?? new JsonArray())
                 .Where(scope => _paths.Normalize(scope!["project"]!.GetValue<string>()) == project
                     && Strings(scope["include"]!).Any(glob => _paths.Matches(declaration.RelativePath, glob))
-                    && !Strings(scope["exclude"]!).Any(glob => _paths.Matches(declaration.RelativePath, glob))
+                    && (scope["exclude"] is not { } exclude || !Strings(exclude).Any(glob => _paths.Matches(declaration.RelativePath, glob)))
                     && Strings(scope["declarationKinds"]!).Any(kind => kind == declaration.Kind
                         || kind == "testMethod" && declaration.Kind == "method" && declaration.RecognizedTest
                         || kind == "type" && TypeKinds.Contains(declaration.Kind, StringComparer.Ordinal)))
