@@ -2779,6 +2779,8 @@ Cut 2026-11-06 for decision 0022: `0388` cuts schema `0.3.1` and carries B-066 a
 
 Cut 2026-11-12 (`0001-F5` decision 0024): [0438 — Upgrade moves the id settings into ids](../.issue/0438-upgrade-moves-the-id-settings-into-ids.yml), B-155 to B-161 and the amended B-016, B-020 and B-051. It waits on `0001-F5`'s `0436`, which cuts schema `0.4.0`.
 
+Re-cut 2026-11-13 on spec-reviewer's round-2 finding 3: B-016's `ids` clause is carried and delivered by `0001-F5`'s [0436 — Cut schema 0.4.0 with the ids key](../../specht/Manifest/.issue/0436-cut-schema-0-4-0-with-the-ids-key.yml), and B-016 leaves `0438`, which keeps B-155 to B-161 and the amended B-020 and B-051.
+
 ## Scoring
 
 | Field | Value | Basis          |
