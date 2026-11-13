@@ -2,7 +2,7 @@ id: "0436"
 type: task
 title: Cut schema 0.4.0 with the ids key
 
-status: ready
+status: in-progress
 
 value: 4
 risk: 4
@@ -43,7 +43,7 @@ claims:
   - B-101
 
 created: "2026-11-12"
-updated: "2026-11-12"
+updated: "2026-11-13"
 closed: null
 
 summary: |
