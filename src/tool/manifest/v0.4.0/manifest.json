@@ -1,0 +1,180 @@
+{
+  "schemaVersion": "0.4.0",
+  "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC2001 reads, kept as data so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
+  "layouts": [
+    {
+      "name": "epics",
+      "glob": "epics/**/spec.md",
+      "identity": {
+        "epic": 1,
+        "feature": 2
+      }
+    },
+    {
+      "name": "features",
+      "glob": "**/.spec/README.md"
+    }
+  ],
+  "exclusions": [
+    ".git",
+    ".artifacts",
+    ".skillfile",
+    ".claude",
+    "graphify-out",
+    "bin",
+    "obj",
+    "node_modules",
+    "/.spec"
+  ],
+  "taskFiles": [
+    "{task}-*.md"
+  ],
+  "epicFiles": [
+    "epics/**/epic.md"
+  ],
+  "companionFiles": [
+    "*.feature"
+  ],
+  "sections": [
+    "1. Business Goal",
+    "2. User Needs",
+    "3. Acceptance Criteria",
+    "4. Constraints",
+    "5. Out of Scope",
+    "6. Concern Separation",
+    "7. Technical Design",
+    "8. Testing Strategy",
+    "9. Traceability Matrix",
+    "10. Lessons / Spec Deltas",
+    "11. Open Questions",
+    "12. Sign-off",
+    "Tasks",
+    "Scoring"
+  ],
+  "tables": {
+    "matrix": [
+      "Claim ID",
+      "Scenario",
+      "Test",
+      "Status"
+    ],
+    "signOff": [
+      "Section",
+      "Status",
+      "Reviewer",
+      "Note"
+    ]
+  },
+  "identifiers": {
+    "task": "^(?<epic>[0-9]{4})-(?<sequence>[0-9]{2})$",
+    "feature": "^F[0-9]+[a-z]?$",
+    "epic": "^[0-9]{4}$"
+  },
+  "ids": {
+    "claim": {
+      "form": "{prefix}{id}",
+      "plain": "B-{id}",
+      "id": "[0-9]{3}[a-z]?|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "constraint": {
+      "plain": "C-{id}",
+      "id": "[0-9]+|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "openQuestion": {
+      "plain": "OQ-{id}",
+      "id": "[0-9]+|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "scenario": {
+      "plain": "S-{id}",
+      "id": "[0-9]+|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "decision": {
+      "plain": "{id}",
+      "id": "[0-9]{4}|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "adr": {
+      "plain": "{id}",
+      "id": "[0-9]{4}|[0-9a-hjkmnp-tv-z]{8}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "lesson": {
+      "plain": "{id}",
+      "id": "[0-9]{4}|[0-9a-hjkmnp-tv-z]{8}|[0-9a-hjkmnp-tv-z]{13}"
+    }
+  },
+  "keys": {
+    "feature": {
+      "id": "id",
+      "epic": "epic",
+      "specStatus": "spec_status",
+      "status": "status",
+      "children": "children",
+      "spikes": "spikes",
+      "dependsOn": "depends_on",
+      "blocks": "blocks",
+      "claimPrefix": "claim_prefix"
+    },
+    "task": {
+      "id": "id",
+      "parent": "parent",
+      "type": "type"
+    }
+  },
+  "forms": {
+    "identity": "{epic}-{id}",
+    "localEdge": "{id}",
+    "qualifiedEdge": "{epic}/{id}"
+  },
+  "frontmatterSchemas": {
+    "feature": "feature.schema.json",
+    "task": "task.schema.json",
+    "epic": "epic.schema.json"
+  },
+  "roles": {
+    "claims": "3. Acceptance Criteria",
+    "matrix": "9. Traceability Matrix",
+    "signOff": "12. Sign-off"
+  },
+  "markers": {
+    "missing": "Missing",
+    "draft": "🟡",
+    "blocked": "🔴",
+    "approved": "approved",
+    "done": "done",
+    "covered": "Covered",
+    "partial": "Partial",
+    "waived": "Waived",
+    "withdrawn": "Withdrawn",
+    "superseded": "Superseded"
+  },
+  "claim": {
+    "tag": "@{claim}",
+    "tagIgnoreCase": false
+  },
+  "rules": {
+    "SPEC1001": "error",
+    "SPEC1002": "error",
+    "SPEC1003": "error",
+    "SPEC1004": "error",
+    "SPEC2001": "error",
+    "SPEC2002": "error",
+    "SPEC3001": "error",
+    "SPEC3002": "error",
+    "SPEC4001": "error",
+    "SPEC4002": "error",
+    "SPEC4003": "error",
+    "SPEC4004": "error",
+    "SPEC4005": "off",
+    "SPEC4006": "off",
+    "SPEC4007": "error",
+    "SPEC4009": "error",
+    "SPEC5001": "error",
+    "SPEC5002": "error",
+    "SPEC5003": "error",
+    "SPEC5004": "error",
+    "SPEC6001": "error",
+    "SPEC6002": "error",
+    "SPEC6003": "error",
+    "SPEC7001": "error",
+    "SPEC7002": "error"
+  }
+}
