@@ -15,6 +15,8 @@ namespace Specht.Acceptance.Manifest;
 /// its companion one scenario per tag, or else one tagged with each claim. "The claim ID check" is the rule the pin
 /// reports as <c>SPEC4003</c>. Where the manifest and the selected Feature schema name the prefix key, the root's Feature
 /// schema is the one read, and its prefix property is renamed, or added as non-blank text when it has none.
+/// Activity, under <c>activity</c>, is the Feature the schema 0.4.0 scenarios name (item 0436); where it is written, the
+/// steps that read one Feature's claims, matrix or declaration line read Activity, and CI otherwise.
 /// </summary>
 public sealed partial class ManifestSteps
 {
@@ -54,7 +56,7 @@ public sealed partial class ManifestSteps
     public void GivenTheRootsFeatureSchemaPermitsATextFieldNamed(string key) =>
         EditSchema(SpechtTree.FeatureSchemaPath, schema => schema["properties"]![key] = new JsonObject { ["type"] = "string" });
 
-    [Given("^(CI|Release) declares (\\w+) \"(.*)\" and claim \"(.*)\"$")]
+    [Given("^(CI|Release|Activity) declares (\\w+) \"(.*)\" and claim \"(.*)\"$")]
     public void GivenAFeatureDeclaresAPrefixAndAClaim(string name, string key, string prefix, string claim)
     {
         var feature = Prefixed(name);
@@ -119,19 +121,22 @@ public sealed partial class ManifestSteps
         }
     }
 
-    [Given("CI's matrix cites {string} and {string}")]
-    public void GivenCisMatrixCites(string first, string second)
+    [Given("^(CI|Activity)'s matrix cites \"(.*)\" and \"(.*)\"$")]
+    public void GivenCisMatrixCites(string name, string first, string second)
     {
-        var feature = Prefixed("CI");
+        var feature = Prefixed(name);
         feature.Matrix = [first, second];
         WritePrefixed(feature);
     }
 
     [Given("CI's companion tags its scenarios with {string} and {string}")]
     [Given("its companion tags scenarios with {string} and {string}")]
-    public void GivenCisCompanionTagsItsScenariosWith(string first, string second)
+    public void GivenCisCompanionTagsItsScenariosWith(string first, string second) => GivenAFeaturesCompanionTagsItsScenariosWith("CI", first, second);
+
+    [Given("^(Activity)'s companion tags its scenarios with \"(.*)\" and \"(.*)\"$")]
+    public void GivenAFeaturesCompanionTagsItsScenariosWith(string name, string first, string second)
     {
-        var feature = Prefixed("CI");
+        var feature = Prefixed(name);
         feature.Tags = [first, second];
         WritePrefixed(feature);
     }
@@ -168,12 +173,13 @@ public sealed partial class ManifestSteps
 
     [Then("SPEC4003 reports the new CI claim at its declaration, naming {string} and the required prefix {string}")]
     [Then("SPEC4003 reports the CI claim at its declaration, naming {string} and the required prefix {string}")]
+    [Then("SPEC4003 reports the claim at its declaration, naming {string} and the required prefix {string}")]
     public void ThenSpec4003ReportsTheCiClaimAtItsDeclaration(string claim, string prefix)
     {
-        var feature = Prefixed("CI");
+        var feature = Prefixed(Focus);
         var lines = File.ReadAllLines(Path.Combine(Tree.Root, feature.Path));
         var line = Array.FindLastIndex(lines, text => text.StartsWith($"| {claim} | It holds. |", StringComparison.Ordinal)) + 1;
-        var violation = ClaimIdViolations("CI").Should().ContainSingle(violation => violation.Identifier == claim).Subject;
+        var violation = ClaimIdViolations(Focus).Should().ContainSingle(violation => violation.Identifier == claim).Subject;
         violation.RuleId.Should().Be(RuleIds.Named(Manifest["schemaVersion"]?.GetValue<string>(), "SPEC4003"));
         violation.Line.Should().Be(line);
         violation.Message.Should().Contain($"'{claim}'").And.Contain($"'{prefix}'");
@@ -209,9 +215,9 @@ public sealed partial class ManifestSteps
 
     [Then("the claim ID check accepts only {string} and {string}")]
     public void ThenTheClaimIdCheckAcceptsOnly(string first, string second) =>
-        ClaimIdViolations("CI").Select(static violation => violation.Identifier)
+        ClaimIdViolations(Focus).Select(static violation => violation.Identifier)
             .Should()
-            .Equal(Prefixed("CI").Claims.Where(claim => claim != first && claim != second));
+            .Equal(Prefixed(Focus).Claims.Where(claim => claim != first && claim != second));
 
     [Then("the only unresolved matrix reference is {string}")]
     public void ThenTheOnlyUnresolvedMatrixReferenceIs(string claim)
@@ -220,7 +226,7 @@ public sealed partial class ManifestSteps
         _report!.Violations.Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC031"))
             .Select(static violation => (violation.File, violation.Identifier))
             .Should()
-            .Equal((Prefixed("CI").Path, claim));
+            .Equal((Prefixed(Focus).Path, claim));
     }
 
     [Then("the only unresolved claim tag is {string}, with identifier {string}")]
@@ -246,6 +252,8 @@ public sealed partial class ManifestSteps
 
         _report!.Violations.Should().NotContain(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC021"));
     }
+
+    private string Focus => _prefixed.ContainsKey("Activity") ? "Activity" : "CI";
 
     private static string Quoted(string text) =>
         "\"" + text.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
