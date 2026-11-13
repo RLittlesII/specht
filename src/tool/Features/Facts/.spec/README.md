@@ -120,25 +120,30 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-| Concern                                                                                                                        | Classification | Owner                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------ | -------------- | --------------------------------------------------------------------------------------- |
-| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)                         | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)         |
-| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004)               | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From` |
-| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                                         | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                      |
-| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                                   | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`             |
-| Byte-identical serialization (B-022)                                                                                           | Technical      | `FactsDocument.ToJson`                                                                  |
-| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)                         | Both           | `FactsCommand`                                                                          |
-| A claim's id and line as the check reads them, every row kept, two sharing an id included (B-005, B-013; C-1)                  | Business       | `SpechtClaims` through `SpechtModel.Claims`, projected by `FactsDocument.From`          |
-| A claim's text, and its status as its row writes it (B-005, B-012; C-5)                                                        | Business       | `FactsDocument.From`, reading the claims table's cells by header                        |
-| Finding the constraints section under the heading `sections` lists, and its cells under the engine's headers (B-006; C-1, C-7) | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                   |
-| A claim's and a constraint's members, with no coverage member (B-025; C-3)                                                     | Both           | `ClaimFacts` and `ConstraintFacts`, held to `docs/schema/facts.schema.json`             |
+| Concern                                                                                                                                                       | Classification | Owner                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)                                                        | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)                                                                |
+| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004)                                              | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From`                                                        |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                                                                        | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                                                                             |
+| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                                                                  | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`                                                                    |
+| Byte-identical serialization (B-022)                                                                                                                          | Technical      | `FactsDocument.ToJson`                                                                                                                         |
+| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)                                                        | Both           | `FactsCommand`                                                                                                                                 |
+| A claim's id and line as the check reads them, every row kept, two sharing an id included (B-005, B-013; C-1)                                                 | Business       | `SpechtClaims` through `SpechtModel.Claims`, projected by `FactsDocument.From`                                                                 |
+| A claim's text, and its status as its row writes it (B-005, B-012; C-5)                                                                                       | Business       | `FactsDocument.From`, reading the claims table's cells by header                                                                               |
+| Finding the constraints section under the heading `sections` lists, and its cells under the engine's headers (B-006; C-1, C-7)                                | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
+| A claim's and a constraint's members, with no coverage member (B-025; C-3)                                                                                    | Both           | `ClaimFacts` and `ConstraintFacts`, held to `docs/schema/facts.schema.json`                                                                    |
+| Finding the out-of-scope and open-questions sections under the headings `sections` lists, and their cells under the engine's headers (B-007, B-008; C-1, C-7) | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
+| Whether an open question is resolved, on OQ-2's default, its Resolution given as written beside it (B-008; C-5)                                               | Business       | `FactsDocument.From`                                                                                                                           |
+| A missing section, or one with no table the parse reads, emptying only its own member (B-015; C-1)                                                            | Both           | `MarkdownTextReader` through `SpechtDocumentParser`, which gives such a section no table; `FactsDocument.From`, which reads each section alone |
+| An out-of-scope row's and an open question's members (B-007, B-008; C-3)                                                                                      | Both           | `OutOfScopeFacts` and `OpenQuestionFacts`, held to `docs/schema/facts.schema.json`                                                             |
 
 ## 7. Technical Design
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-The design for items `0364` and `0365`, as built. Each type is declared in the file it links; the compiler is the
-authority on its members and signatures.
+The design for items `0364` and `0365`, as built, and for item `0366`, not yet built (§ "Out-of-scope rows and open
+questions"). Each built type is declared in the file it links; the compiler is the authority on its members and
+signatures.
 
 ### Reading the tree
 
@@ -291,15 +296,123 @@ array of objects with `additionalProperties: false`: a claim requires `id` (stri
 No existing member, type or constraint of the schema changes (C-3). The `specht facts` paragraph in
 [`docs/cli.md`](../../../../../docs/cli.md) names the claims and constraints among what is printed.
 
+### Out-of-scope rows and open questions
+
+Item `0366`'s design. `FeatureFacts` gains two members after `constraints`, added there so every earlier member keeps
+its name, type and place (C-3):
+
+| Member          | Value                                                                                                                | Claim        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `outOfScope`    | One `OutOfScopeFacts` per body row of the out-of-scope section, in row order; `[]` with no such section or table     | B-007, B-015 |
+| `openQuestions` | One `OpenQuestionFacts` per body row of the open-questions section, in row order; `[]` with no such section or table | B-008, B-015 |
+
+Two records in `src/specht/Facts/`, each in a file of its own name, carrying values and no logic:
+
+- `OutOfScopeFacts`, written as `number`, `item`, `reason` and `line`.
+- `OpenQuestionFacts`, written as `id`, `question`, `blocks`, `resolution`, `resolved` and `line`.
+
+**The sections.** No role names either section, so `From` finds each as it finds the constraints: under the `sections`
+entries `5. Out of Scope` and `11. Open Questions`, which every shipped manifest lists, `0.1.0` to `0.4.0`, held as
+private constants beside `ConstraintsTitle` and read through `feature.Document.Section` only when
+`model.Schemas.Structure.Sections` lists the title (C-1, C-7). With three sections found this way, the one
+`constraintsListed` test becomes one private method giving the section titled by a constant when `sections` lists it,
+and `null` otherwise, serving all three; the constraints keep their reading. A heading the manifest renames is item
+`0367`'s (B-016).
+
+**The rows.** An out-of-scope row's `number` and an open question's `id` are the row's first cell, as a constraint's
+`id` is and as the check reads an open-question id for `mint` (`HeldIds`, through `SpechtDocumentParser.FirstCells`):
+the string the parse gives, `""` when the row has none, never parsed into a number. `line` is `section.RowLines[row]`.
+The other cells come through `Cell` under the engine's headers (C-7), which every shipped template's tables carry,
+`0.1.0` to `0.4.0`: `Item` and `Exclusion Reason` give `item` and `reason`; `Question`, `Blocks` and `Resolution` give
+`question`, `blocks` and `resolution`. Each is the cell's text as the parse gives it, `null` under a header the table
+lacks; `blocks` is the cell's text, not split into ids. Every body row is given, one whose first cell is no
+open-question id included.
+
+**Whether a question is resolved.** OQ-2's default, `0228-F1` B-009's reading: `resolved` is `false` when the
+`resolution` is `null` or `""`, or its first word is the open marker in exact case, and `true` for any other
+resolution. The first word is the resolution's text up to its first character that is neither a letter nor a digit
+(`char.IsLetterOrDigit`), compared ordinally. So `Open`, `Open. Proceeds on the default.`, `Open; …` and `Open 2026-11-…`
+read unresolved, and `Resolved 2026-10-30 …`, `RESOLVED, …`, `Superseded …`, `open` and `Opened …` read resolved. The
+text is the parse's, so a cell written `**Open**` reads as `Open`.
+
+The open marker read is `Open`, one private constant in `FactsDocument`. The manifest's markers live in
+[`SpechtStructure.Markers`](../../../../specht/Manifest/SpechtStructure.cs), which `SpechtManifestParser` fills from the
+pinned shipped manifest's `markers` and overlays with the consumer's. No shipped manifest declares an `open` marker:
+`0.1.0` declares `missing`, `draft`, `blocked` and `approved`, `0.2.0` adds `covered`, `partial`, `waived`, `withdrawn`
+and `superseded`, and `0.3.0` adds `done`, which `0.3.1` and `0.4.0` keep. So under every shipped pin OQ-2's default reads
+`Open`. `From` reads no entry of `Markers`: C-7 reads only `sections`, `roles` and `tables` from the manifest, and a
+consumer's `markers.open` is a name the parser keeps without checking and no rule reads. The `resolution` is given as
+written beside `resolved`, so a reader can apply a reading of its own (C-5).
+
+**A missing section or an unreadable table.** Each row member is read from its own section alone and no read throws, so
+a fault in one section empties that member and no other (B-015). A specification gives no facts for a section when:
+
+- the section is absent, and `SpechtDocument.Section` gives `null`;
+- the manifest's `sections` does not list its heading;
+- the section has no table the parse reads. `SpechtDocumentParser` reads tables with Markdig's pipe-table extension,
+  which recognises a table only as a header row followed by a delimiter row (`| --- |`); pipe-separated lines with no
+  delimiter row, or a malformed one, parse as a paragraph. `MarkdownTextReader` gives a section the first table between
+  its heading and the next `##` heading, so a section with none has empty `Headers`, `Rows` and `RowLines`, and its
+  member is `[]`. This is B-015's table the parse cannot read: the section the check sees with no table (C-1). A section
+  reading `None.` is another. Where a readable table follows an unreadable one inside the section, that table is the
+  section's, for the check and the facts alike.
+
+A table the parse reads whose headers are not the engine's is read: each row is given with its first cell and line, and
+`null` under each engine header the table lacks, as the claims and constraints are. `From` still runs no rule, and the
+command does not change (C-4).
+
+```json
+{
+  "outOfScope": [
+    {
+      "number": "1",
+      "item": "Any other input",
+      "reason": "Owned by a sibling Feature",
+      "line": 77
+    }
+  ],
+  "openQuestions": [
+    {
+      "id": "OQ-1",
+      "question": "Which input comes first?",
+      "blocks": "B-001",
+      "resolution": "Open. Proceeds on the default.",
+      "resolved": false,
+      "line": 112
+    },
+    {
+      "id": "OQ-2",
+      "question": "Which output comes last?",
+      "blocks": "B-002",
+      "resolution": "Resolved 2026-10-30 by the owner: the answer",
+      "resolved": true,
+      "line": 113
+    }
+  ]
+}
+```
+
+The schema gains, on each specification item, `outOfScope` and `openQuestions` in `properties` and in `required`, so an
+item requires eleven members. Each is an array of objects with `additionalProperties: false`: an out-of-scope row
+requires `number` (string), `item` and `reason` (`["string", "null"]`) and `line` (integer, minimum `1`); an open
+question requires `id` (string), `question`, `blocks` and `resolution` (`["string", "null"]`), `resolved` (boolean) and
+`line` (integer, minimum `1`). No existing member, type or constraint of the schema changes (C-3). The `specht facts`
+paragraph in [`docs/cli.md`](../../../../../docs/cli.md) names the out-of-scope rows and open questions among what is
+printed.
+
 ### Where later items attach
 
 Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
 
 - `0365`, built: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
   `sections` and `roles` name; § "Claims and constraints".
-- `0366` and `0367`: `outOfScope`, `openQuestions`, `deltas` and `signOff` on `FeatureFacts`, each section found through
-  `SpechtDocument.Section` under the manifest's heading (C-7), its cells read through `Cell`. Item `0367` also finds the
-  claims and constraints under a heading the manifest renames (B-016), changing how a section is found and no member.
+- `0366`, designed: `outOfScope` and `openQuestions` on `FeatureFacts`, after `constraints`, from the sections the
+  manifest's `sections` lists, an open question's `resolved` on OQ-2's default; § "Out-of-scope rows and open
+  questions".
+- `0367`: `deltas` and `signOff` on `FeatureFacts`, after `openQuestions`, each section found through the private method
+  § "Out-of-scope rows and open questions" names under the manifest's heading (C-7), its cells read through `Cell`. Item
+  `0367` also finds the claims, constraints, out-of-scope and open-questions sections under a heading the manifest
+  renames (B-016), changing how a section is found and no member.
 - `0368`: `records` on `FeatureFacts`. Records are not in the listing today; that item extends the listing through
   `ISpecDiscovery`, not a read inside `Features/Facts/`.
 - `0369`: the path selector narrows `FactsDocument.Specifications` in the engine; the command maps an empty selection to
@@ -372,6 +485,27 @@ until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` rem
   second read of the file: a second parser (C-1).
 - **One row record shared by claims and constraints.** Their third members differ; they stay two until items `0366` and
   `0367` show whether the rows share a shape.
+- **The open marker from the manifest, `Markers.GetValueOrDefault("open", "Open")`, as `ClaimRowRule` reads
+  `withdrawn`.** No shipped manifest declares `open`, so under a shipped manifest it reads `Open` either way; it differs
+  only for a consumer's `markers.open`, a name no schema version defines and C-7 does not let the facts read. A schema
+  version that declares `markers.open` (`0228-F1` OQ-4) needs C-7 amended before the facts read it.
+- **The first word split at white space alone.** `Open.` would not be `Open`, and `0228-F1` B-009 reads
+  `Open. Proposed default: …` as open.
+- **Resolved only when the Resolution begins `Resolved`.** Not OQ-2's reading: `RESOLVED, …` and `Superseded …` would
+  read open.
+- **`resolved` as `null`, or a state string, when the table has no Resolution cell.** A third state no claim states; B-009
+  reads an empty Resolution as open, and an absent cell is read as empty.
+- **`number` as an integer.** Parsing the cell is a reading of it, and a cell such as `1a` or an empty one would need a
+  fallback; the first cell as the parse gives it is how every other row's id is given.
+- **`number` and `id` from the cells under `#` and `ID`.** The first cell is how the check reads an open-question id
+  (`HeldIds`) and how a constraint's id is given, and every shipped template puts `#` and `ID` first.
+- **`blocks` as a list of ids.** Splitting the cell is the Blocks rule's reading (`0228-F1`), and prose in the cell would
+  need a grammar.
+- **A table whose headers differ from the engine's as unreadable.** The parse reads it (C-1); dropping its rows would put
+  a verdict on the table into the facts (C-5).
+- **One row record for every section, its cells keyed by header.** The schema would follow each table's headers and
+  vary with the tree (C-5), and B-007 and B-008 name the members. The four row shapes share only `line`, so each keeps a
+  record of its own.
 
 ## 8. Testing Strategy
 
