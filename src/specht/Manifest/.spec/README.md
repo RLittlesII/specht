@@ -251,7 +251,7 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-08 (item `0352`: Feature claim prefixes); implementer, 2026-11-03 (item `0347`: item ids renumbered after PR 699); implementer, 2026-11-03 (item `0347`: unread names, white space, annotations and blank file names); implementer, 2026-11-03 (item `0345`: the epics opt-in from schema `0.3.0`); implementer, 2026-11-02 (item `0016`: the epic-less path keeps the `d73b7a51` reads until item `0345`); implementer, 2026-11-02 (item `0016`: keys, forms and grammars); implementer, 2026-11-02 (item `0166`: the model reader); implementer, 2026-11-01 (item `0321`: the done marker); implementer, 2026-11-01 (item `0160`); implementer, 2026-10-16 (own off-level selection); implementer, 2026-11-01 (item `0164`: the evaluator) -->
+<!-- last written by: implementer, 2026-11-13 (item `0436`: the ids key at schema 0.4.0, designed); implementer, 2026-11-08 (item `0352`: Feature claim prefixes); implementer, 2026-11-03 (item `0347`: item ids renumbered after PR 699); implementer, 2026-11-03 (item `0347`: unread names, white space, annotations and blank file names); implementer, 2026-11-03 (item `0345`: the epics opt-in from schema `0.3.0`); implementer, 2026-11-02 (item `0016`: the epic-less path keeps the `d73b7a51` reads until item `0345`); implementer, 2026-11-02 (item `0016`: keys, forms and grammars); implementer, 2026-11-02 (item `0166`: the model reader); implementer, 2026-11-01 (item `0321`: the done marker); implementer, 2026-11-01 (item `0160`); implementer, 2026-10-16 (own off-level selection); implementer, 2026-11-01 (item `0164`: the evaluator) -->
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
@@ -298,6 +298,16 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 | The declaration is text with a non-white-space character (B-078)                                                                                                                                                                                              | Business       | Item `0352`: `claim_prefix` in `src/tool/schema/v0.3.1/frontmatter/feature.schema.json`, checked by the existing `SPEC1002`                                                                                                                                                                                                                                                                                                |
 | The matrix and companion tags resolve a prefixed Feature's complete ids under the tag form and case (B-080, B-007, B-036, B-037)                                                                                                                              | Business       | Item `0352`: `FeatureTagParser.Scan` matches the Feature's grammar inside `claim.tag`, ignoring case under `claim.tagIgnoreCase`; `ClaimRowRule` and `ClaimTagRule` compare with `SpechtClaims.Ids` and `TagIds`, unchanged                                                                                                                                                                                                |
 | A prefixed Feature's grammar is compiled for it alone, interpreted, while the manifest grammar is compiled once for the tree                                                                                                                                  | Technical      | Item `0352`: `SpechtModel`'s constructor                                                                                                                                                                                                                                                                                                                                                                                   |
+| The `ids` key from schema `0.4.0`: seven records of `plain`, `form`, `id` and `mint`, their shapes and annotations; older pins reject it (B-081 to B-085; B-022, B-023)                                                                                       | Business       | Item `0436`: `SpechtManifestParser.Parse`'s `IdsVersion` gate and its `Ids` read, whose faults join `Check`; `SpechtIdRecord`; `SpechtStructure.Ids`, null below `0.4.0`                                                                                                                                                                                                                                                   |
+| A record, or a `plain`, `form` or `id`, left out is read from the shipped record (B-097)                                                                                                                                                                      | Business       | Item `0436`: the parser's `Ids` read overlays the declared members on the pinned default's `ids`                                                                                                                                                                                                                                                                                                                           |
+| A Feature's claim grammar from `0.4.0`: the rendered head as literal text, then a whole match of the claim record's `id`, case-sensitive (A-8, B-086, B-098)                                                                                                  | Business       | Item `0436`: `SpechtIdRecord.Head` and `Grammar`, chosen once per Feature by `SpechtStructure.ClaimGrammar`; `SpechtModel` and `FeatureTagParser` read the tree's grammar through `ClaimGrammar(null)`                                                                                                                                                                                                                     |
+| `SPEC4003` names the head, reports a prefix that gives claims and scenarios one head, and a claim that would read as a scenario tag (B-087, B-100, B-101; OQ-33)                                                                                              | Business       | Item `0436`: `ClaimIdRule.Evaluate`, by the Feature's `SpechtClaimGrammar` members `Head`, `ScenarioHead` and `SharedHead`                                                                                                                                                                                                                                                                                                 |
+| A tag beginning with a longer scenario head is not a claim tag; the matrix and companion resolve as before (B-095, B-088)                                                                                                                                     | Business       | Item `0436`: `FeatureTagParser.Scan` skips the token before the grammar match; `ClaimRowRule`, `CompanionFileRule` and `ClaimTagRule` unchanged                                                                                                                                                                                                                                                                            |
+| Claim and scenario records with one head are rejected in the manifest (B-094)                                                                                                                                                                                 | Business       | Item `0436`: the parser's `Ids` read, comparing under `claim.tagIgnoreCase`                                                                                                                                                                                                                                                                                                                                                |
+| The old `mint` key and the seven `identifiers` members rejected, naming `ids.<type>`; `task`, `feature` and `epic` stay (B-092, B-093)                                                                                                                        | Business       | Item `0436`: the parser's `OldIdFaults`, under the `IdsVersion` gate                                                                                                                                                                                                                                                                                                                                                       |
+| The shipped `0.4.0` records; the records, the scenario `id` and every `mint` the check does not read leave its verdicts unchanged (B-089 to B-091, B-099; C-14, C-15)                                                                                         | Business       | Item `0436`: `src/tool/manifest/v0.4.0/manifest.json`; `SpechtIdRecord` holds no `mint`, and only the `claim` record and the `scenario` heads are read                                                                                                                                                                                                                                                                     |
+| Cutting and locking `0.4.0` from `0.3.1`, with `0.1.0` to `0.3.1` and their lock entries unchanged and no rule id added (A-8; `0001-F7` C-1, C-17, B-066)                                                                                                     | Technical      | Item `0436`: `./build.sh CutSchemaVersion --cut-version 0.4.0`, the hand edits of § 7, then `./build.sh LockSchemaVersion`; `SchemaVersions.Shipped` gives `0.4.0` the `0.3.x` vocabulary                                                                                                                                                                                                                                  |
+| Verdicts below `0.4.0` unchanged: B-076, B-079 and B-007 as amended, and the `0.3.1` message (B-049; `0001-F7` C-1)                                                                                                                                           | Both           | Item `0436`: each new branch sits behind `SpechtStructure.Ids is null` or the `IdsVersion` gate; there `ClaimGrammar(null).Pattern` is `identifiers.claim`                                                                                                                                                                                                                                                                 |
 
 The own off level and its manifest override are a Business concern; the existing runner selects, filters and counts them through one predicate (B-061, B-062), as designed in § 7.
 
@@ -835,6 +845,175 @@ top-level manifest keys, so `.specht/manifest.json` gained
 - A new schema version, `0.3.2` or `0.4.0`: under decision 0023 a change
   goes to one only from a version that has gone out in a NuGet package, and
   `0.3.1` has not (A-7).
+
+### The ids key at schema 0.4.0
+
+<!-- last written by: implementer, 2026-11-13 (item `0436`, designed; not built) -->
+
+Designed for item `0436`; not built. Schema `0.4.0` is cut from `0.3.1` by
+`./build.sh CutSchemaVersion --cut-version 0.4.0` (`0001-F7` B-094 to B-100),
+edited by hand in the files below, and locked by `./build.sh LockSchemaVersion`,
+as item `0388` cut `0.3.1`. No file and no lock entry of `0.1.0` to `0.3.1`
+changes (`0001-F7` C-1, C-17). A-8 says why the step is a `0.minor`.
+
+**The shipped files.** `src/tool/manifest/v0.4.0/manifest.json` keeps
+`identifiers` to `task`, `feature` and `epic`, and gains a top-level `ids`
+after it holding [decision 0024](decisions/0024-one-ids-record-per-type-shapes-every-id-from-schema-0-4-0.md)'s
+seven records, `b32` written out as `[0-9a-hjkmnp-tv-z]` and each `id`
+unanchored, the shape `0001-F7` B-155 moves a grammar into. The `claim` record
+is `{ "form": "{prefix}{id}", "plain": "B-{id}", "id":
+"[0-9]{3}[a-z]?|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}" }`; the other six
+have no `form`. No record carries a `mint`: minting stays opted out until a
+consumer writes one (`0001-F19`). `docs/rules/v0.4.0/SPEC4003.md` states the
+head message and B-100 and B-101. The frontmatter schemas, templates and other
+rule pages are the cut's copies. [`SchemaVersions.Shipped`](../../Versioning/SchemaVersions.cs)
+gives `0.4.0` the `0.3.x` vocabulary: no rule id enters, so
+`SchemaVersionNumbering` reports nothing (`0001-F7` B-066), and B-040 and
+B-154 reach no pair `0.3.1` and `0.4.0` form.
+
+**The gate.** [`SpechtManifestParser.Parse`](../SpechtManifestParser.cs) gains
+`IdsVersion`, `0.4.0`, compared as the other gates compare theirs, for a shipped
+pin. Below it `ids` is not a known key, so the existing unknown-key fault names
+it (B-082). The `mint` gate stays `0.3.1` and later, so from `0.4.0` the key
+reaches B-092's fault rather than the generic one.
+
+**The read.** A private `Ids` read in the parser, beside `MatrixKeyFaults`,
+starts from the pinned default's `ids` and, for each type the manifest names,
+overlays the `plain`, `form` and `id` it declares (B-097). The seven names are
+[`IdTypes`](../../Identifiers/IdTypes.cs)' `RepositoryWide` and `PerFeature`,
+the list mint already holds. Its faults join the others in `Check`, so a
+rejection is one `SpechtManifestException`, exit `3` and stderr alone through
+the existing command catch (B-022, B-023):
+
+- `ids` not an object; a member that is neither one of the seven nor
+  `$`-prefixed; a record not an object; a record member other than `plain`,
+  `form`, `id`, `mint` or a `$`-prefixed one, each named as
+  `ids.<type>.<member>` (B-083).
+- A `plain` that is not text, does not end with `{id}`, or holds another `{` or
+  `}` ahead of it; a `form` that is not text, does not hold `{prefix}` once by
+  the existing `Count` helper, does not end with `{id}`, or holds another brace;
+  a `form` in `adr` or `lesson` - each naming the type and the text (B-084).
+- An `id` that is not text, is empty, or does not compile by the existing
+  `Compiled` helper, naming the type and the value (B-085).
+- Effective `claim` and `scenario` records with one head in their `plain`, or
+  each a `form` with one text ahead of `{id}`, compared ordinally and ignoring
+  case under `claim.tagIgnoreCase`, naming both records (B-094). The effective
+  records are compared, not only the declared ones: a manifest giving
+  `scenario` the `plain` `B-{id}` and no `claim` record would otherwise pass,
+  and every unprefixed Feature would meet the case B-096 was withdrawn for.
+
+`mint` is accepted as a member and not read (B-091; § 5 row 27); item `0437`
+reads it from the manifest document.
+
+**The old settings.** A private `OldIdFaults`, under the same gate, rejects the
+top-level `mint` and each `identifiers` member among the seven (B-092), naming
+`ids.<type>` for each such member: `identifiers.claim is not read from schema
+0.4.0; its grammar goes in ids.claim`, and `mint is not read from schema 0.4.0;
+mint.adr goes in ids.adr` (B-093). `task`, `feature` and `epic` stay in
+`identifiers` and are filled and checked as before.
+
+**The domain objects.** A record `SpechtIdRecord(string Plain, string? Form,
+string Id)`, in `src/specht/Manifest/SpechtIdRecord.cs`, holds one effective
+record and renders it (A-8): `Head(prefix)` is the `form` with the prefix for
+`{prefix}`, where both exist, otherwise the `plain`, without its closing `{id}`;
+`Grammar(prefix)` is `^`, the head through `Regex.Escape`, then `(?:id)$`. The
+group keeps an alternation such as the shipped `claim` `id` inside the whole
+match, the escape makes the head literal, and no option folds case.
+[`SpechtStructure`](../SpechtStructure.cs) gains `Ids`, the seven records keyed
+by type, null below `0.4.0`. [`SpechtClaimGrammar`](../SpechtClaimGrammar.cs)
+gains three init members, null below `0.4.0`: `Head`, `ScenarioHead` and
+`SharedHead`.
+
+**The claim grammar.** `SpechtStructure.ClaimGrammar(prefix)` keeps its body
+while `Ids` is null. From `0.4.0`, a prefix that is null or white space alone is
+none, and `Frontmatter.Text` gives null for a value that is not text, so a
+prefix B-078 reports reads as none (OQ-31's proposed default; A-8). For a
+declared prefix it renders the `claim` and `scenario` heads with it; when they
+are equal under `claim.tagIgnoreCase` it sets `SharedHead` and reads the
+Feature as declaring none (B-100). The result is the `claim` record's
+`Grammar` with the prefix in effect, that prefix as `Prefix`, and both heads.
+[`SpechtModelBuilder.Build`](../../Model/SpechtModelBuilder.cs) still calls it
+once per Feature and hands the value to the tag parser and `FeatureSpec`, so a
+prefixed Feature's grammar is the claim record's (B-086, B-098) and an
+unprefixed one's is the `plain`'s (B-077).
+
+**One tree grammar.** `0.4.0` fills no `identifiers.claim`, so the two readers
+that index it read `ClaimGrammar(null).Pattern` instead, which below `0.4.0` is
+that same string: [`SpechtModel`](../../Model/SpechtModel.cs)'s constructor,
+compiling the tree's grammar with its deferred failure, and
+[`FeatureTagParser.Scan`](../../Model/FeatureTagParser.cs)'s fallback for a
+companion read without a Feature grammar, which takes `ClaimGrammar(null)`
+whole so it has the heads too. `ClaimTagFaults` keeps its compile check while
+`Ids` is null; from `0.4.0` B-085 has compiled `id` and an escaped head cannot
+fail, so the check is skipped rather than report one fault twice.
+
+**`SPEC4003`.** [`ClaimIdRule`](../../Rules/ClaimIdRule.cs) keeps its messages
+below `0.4.0`. From it:
+
+- A prefixed Feature's malformed id reads, for B-087:
+  `claim id 'ACTIVITY-001' does not match the claim prefix 'ACTIVITY-' followed by a whole match of ids.claim.id - claim ids are permanent, so the form is fixed`.
+  `expected.grammar` is the Feature's pattern. An unprefixed Feature's message
+  names the pattern, as now.
+- A Feature with a `SharedHead` gets one finding at
+  `Frontmatter.LineOf(FeatureKeys.ClaimPrefix)`, identifier the head, for B-100:
+  `claim_prefix gives claims and scenarios the one head 'S-', so the Feature is read as declaring no prefix`.
+  Its claims are then checked by the `plain` grammar, so `B-001` passes.
+- Where `ScenarioHead` is longer than `Head` and begins with it, a claim the
+  grammar admits whose text after `Head` begins with the rest of
+  `ScenarioHead`, compared under `claim.tagIgnoreCase`, reads, for B-101:
+  `claim id 'ACTIVITY-SCENARIO-m7p2qr' begins with the scenario head 'ACTIVITY-SCENARIO-', so its tag would read as a scenario tag`.
+  A claim the grammar rejects keeps the one grammar finding.
+
+Both reports are `SPEC4003`'s, OQ-33's proposed default (a), so `0.4.0` adds no
+rule id; a ruling for (b) would move them to a new rule.
+
+**The tag split.** `FeatureTagParser.Scan`, in the claim-tag-form branch, skips
+a token whose `{claim}` text begins with the grammar's `ScenarioHead` where that
+is longer than `Head`, under the existing case comparison, before the grammar
+match (B-095). Under the shipped records an unprefixed Feature's heads are `B-`
+and `S-`, the same length, so nothing is skipped. The legacy scanner and
+`TagNames`, which mint's held scenario ids read, are unchanged. `ClaimRowRule`,
+`CompanionFileRule` and `ClaimTagRule` compare with `SpechtClaims.Ids` and
+`TagIds` as at `0.3.1` (B-088, B-080).
+
+**The effective manifest.** `ParseDocument` projects `ids` as it projects
+`claim`: an absent `ids` takes the pinned default's whole through `Selected`,
+and a declared record gains each of `plain`, `form` and `id` the shipped record
+holds and it leaves out; a declared `mint` stays as declared (`0001-F9` B-003,
+B-004).
+
+**Below `0.4.0`.** Each new branch is behind the `IdsVersion` gate or
+`Ids is null`, and there `ClaimGrammar(null).Pattern` is `identifiers.claim`, so
+the `0.3.1` grammar, message and tag scan are what they were (B-007, B-076,
+B-079 as amended; B-049).
+
+**This repository's pin.** `0001-F4` B-004 holds the live manifest to the newest
+shipped one on every key it carries, `ids` included, so the pin moves in the
+same pull request: `specht schema pin 0.4.0`; `identifiers.claim`,
+`constraint` and `openQuestion` removed by hand, since B-092 rejects them and
+`upgrade` cannot move them before item `0438`; then `specht upgrade`, which adds
+`ids` and rewrites the schema files and templates. `docs/configuration.md`
+documents `ids`, its shipped records and the rejected keys.
+
+**Not settled here.** This repository's `codeAnalysis.mappings` projects the
+raw `/identifiers` to the analyzer, whose `AnalysisPolicyReader.Read` rejects a
+projection without `identifiers.claim` at error severity, and `specht evidence`
+reads the same projection through `EvidencePolicy`. B-092 removes that member
+at `0.4.0`, and § 5 row 25 leaves the analyzer reading `ids` to `0201-F1`, so
+the pin move fails the `CodeAnalysis` target. The resolution is escalated to the
+repository owner; this design records none.
+
+**Rejected.**
+
+- Filling `identifiers.claim` in the structure from the claim record, so the
+  readers stay as they are: a second home for the claim grammar under a name
+  `0.4.0` rejects, which the effective manifest would then print (C-14).
+- Matching the head with `StartsWith` and `id` on the rest: `SpechtClaims` takes
+  one compiled `Regex` and `Scan` matches one pattern inside the tag form, so
+  the escaped head goes into the pattern.
+- A record type, or an interface, per id type: one shape serves all seven.
+- Parsing `mint` into `SpechtIdRecord`: the check reads none of it (B-091).
+- Comparing only the declared records for B-094: see the read above.
 
 ## 8. Testing Strategy
 
