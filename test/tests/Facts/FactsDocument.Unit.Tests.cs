@@ -8,10 +8,12 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Facts;
 
 /// <summary>
-/// The facts document projected from a model built in memory (<c>0132-F2</c> B-001, B-003 to B-006, B-012, B-013, B-017,
-/// B-022, B-025, B-026): every Feature specification in the model's order and no epic, each with the path, identity,
-/// statuses and dependency lists its frontmatter gives, every claim and constraint row with its cells and line and no
-/// coverage, the same members under two pins, and the same text for the same model.
+/// The facts document projected from a model built in memory (<c>0132-F2</c> B-001, B-003 to B-008, B-012, B-013, B-015,
+/// B-017, B-022, B-025, B-026): every Feature specification in the model's order and no epic, each with the path,
+/// identity, statuses and dependency lists its frontmatter gives, every claim, constraint, out-of-scope and open-question
+/// row with its cells and line and no coverage, each open question's resolved state on OQ-2's default, an out-of-scope
+/// section missing or with no table leaving only its own rows out, the same members under two pins, and the same text for
+/// the same model.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FactsDocumentUnitTests
@@ -323,5 +325,95 @@ public sealed class FactsDocumentUnitTests
         JsonNode.Parse(json)!["specifications"]![0]!["claims"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle()
             .Which!["id"]!.GetValue<string>().Should().Be("B-001");
         json.Should().NotContainEquivalentOf("zebra").And.NotContain("Covered");
+    }
+
+    [Fact]
+    public void OutOfScopeRows_WhenTheDocumentIsMade_ShouldCarryEachRowsNumberItemReasonAndLine()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection(
+                        "5. Out of Scope",
+                        30,
+                        ["#", "Item", "Exclusion Reason"],
+                        [["1", "Any other input", "Owned by a sibling Feature"], ["2", "Any write", "Not asked for"]],
+                        [34, 35]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["outOfScope"].Should().BeOfType<JsonArray>().Which.Select(static row => (
+                row!["number"]!.GetValue<string>(),
+                row["item"]!.GetValue<string>(),
+                row["reason"]!.GetValue<string>(),
+                row["line"]!.GetValue<int>()))
+            .Should().Equal(("1", "Any other input", "Owned by a sibling Feature", 34), ("2", "Any write", "Not asked for", 35));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsOpenQuestionResolutions))]
+    public void AnOpenQuestionsResolution_WhenTheDocumentIsMade_ShouldCarryItsIdQuestionBlocksResolutionLineAndWhetherItIsResolved(
+        string resolution, bool resolved)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection(
+                        "11. Open Questions",
+                        110,
+                        ["ID", "Question", "Blocks", "Resolution"],
+                        [["OQ-1", "Which input comes first?", "B-001, B-002", resolution]],
+                        [114]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["openQuestions"].Should().BeOfType<JsonArray>().Which.Select(static question => (
+                question!["id"]!.GetValue<string>(),
+                question["question"]!.GetValue<string>(),
+                question["blocks"]!.GetValue<string>(),
+                question["resolution"]!.GetValue<string>(),
+                question["resolved"]!.GetValue<bool>(),
+                question["line"]!.GetValue<int>()))
+            .Should().Equal(("OQ-1", "Which input comes first?", "B-001, B-002", resolution, resolved, 114));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsOutOfScopeFaults))]
+    public void AnOutOfScopeSectionMissingOrWithNoTable_WhenTheDocumentIsMade_ShouldGiveNoOutOfScopeRowsAndEveryOtherRow(bool sectionPresent)
+    {
+        // Given
+        SpechtSection[] sections =
+        [
+            new("3. Acceptance Criteria", 10, ["ID", "Claim", "Source", "Status"], [["B-001", "It holds.", "the owner", "Active"]], [14]),
+            new("4. Constraints", 20, ["ID", "Constraint", "Rules Out"], [["C-1", "Offline and read-only.", "A network call."]], [24]),
+            .. sectionPresent ? new SpechtSection[] { new("5. Out of Scope", 30, [], [], []) } : [],
+            new("11. Open Questions", 110, ["ID", "Question", "Blocks", "Resolution"], [["OQ-1", "Which input comes first?", "B-001", "Open"]], [114]),
+        ];
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture().WithRelativePath("src/first/.spec/README.md").WithSections(sections)));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["outOfScope"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
+        specification["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["line"]!.GetValue<int>())).Should().Equal(("B-001", 14));
+        specification["constraints"].Should().BeOfType<JsonArray>().Which
+            .Select(static constraint => (constraint!["id"]!.GetValue<string>(), constraint["line"]!.GetValue<int>())).Should().Equal(("C-1", 24));
+        specification["openQuestions"].Should().BeOfType<JsonArray>().Which
+            .Select(static question => (question!["id"]!.GetValue<string>(), question["line"]!.GetValue<int>())).Should().Equal(("OQ-1", 114));
     }
 }

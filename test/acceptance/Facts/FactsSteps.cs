@@ -9,7 +9,8 @@ namespace Specht.Acceptance.Facts;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Facts/.spec/facts.feature</c> (<c>0132-F2</c>): item 0364 binds B-001 to B-004, B-014,
-/// B-017, B-021 to B-023 and B-026, and item 0365 binds B-005, B-006, B-012, B-013 and B-025. Each launches the built
+/// B-017, B-021 to B-023 and B-026, item 0365 binds B-005, B-006, B-012, B-013 and B-025, and item 0366 binds B-007,
+/// B-008 and B-015. Each launches the built
 /// tool over a synthetic tree, and a scenario naming no form runs <c>specht facts --json</c>, since the text form is item
 /// 0370's. The root sits one folder below a temporary directory, so a run that writes beside the root is seen. The rest
 /// of the file's scenarios stay pending for their items.
@@ -83,6 +84,37 @@ public sealed class FactsSteps
         var first = EngineServices.Reader().Read(Tree.Root, null).Features.Single(static feature => feature.RelativePath == FirstPath);
         first.FeatureFiles.SelectMany(static file => file.Scenarios)
             .Should().Contain(static scenario => scenario.Title == "Crossing the zebra" && scenario.Tags.Any(static tag => tag.Id == "B-001"));
+    }
+
+    [Given("an open question whose resolution reads {string}")]
+    public void GivenOpenQuestionResolution(string resolution)
+    {
+        _firstSections = Replace(_firstSections, "11. Open Questions", OpenQuestionsSection($"| OQ-1 | Which one? | B-001 | {resolution} |"));
+        _resolution = resolution;
+        WriteSpecifications(Tree);
+    }
+
+    [Given("the first specification has no out-of-scope section")]
+    public void GivenNoOutOfScopeSection()
+    {
+        _firstSections = _firstSections.Where(static section => !section.StartsWith("## 5. Out of Scope\n", StringComparison.Ordinal)).ToList();
+        WriteSpecifications(Tree);
+        EngineServices.Reader().Read(Tree.Root, null).Features.Single(static feature => feature.RelativePath == FirstPath)
+            .Document.Section("5. Out of Scope").Should().BeNull();
+    }
+
+    [Given("the first specification has an out-of-scope section whose table the parse cannot read")]
+    public void GivenUnreadableOutOfScopeTable()
+    {
+        _firstSections = Replace(
+            _firstSections,
+            "5. Out of Scope",
+            "## 5. Out of Scope\n\n| # | Item | Exclusion Reason |\n| 1 | Claim coverage | Owned by the trace command |\n");
+        WriteSpecifications(Tree);
+        var section = EngineServices.Reader().Read(Tree.Root, null).Features.Single(static feature => feature.RelativePath == FirstPath)
+            .Document.Section("5. Out of Scope");
+        section.Should().NotBeNull();
+        section!.Rows.Should().BeEmpty();
     }
 
     [Given("the same specifications under a manifest pinning schema version {word}")]
@@ -242,6 +274,59 @@ public sealed class FactsSteps
         }
     }
 
+    [Then("each out-of-scope row carries its number, its item, its reason and the line it is on")]
+    public void ThenEachOutOfScopeRow()
+    {
+        foreach (var path in new[] { FirstPath, SecondPath })
+        {
+            Specification(path)["outOfScope"].Should().BeOfType<JsonArray>().Which.Select(static row => (
+                    row!["number"]!.GetValue<string>(),
+                    row["item"]!.GetValue<string>(),
+                    row["reason"]!.GetValue<string>(),
+                    row["line"]!.GetValue<int>()))
+                .Should().Equal(
+                    ("1", "Claim coverage", "Owned by the trace command", LineOf(path, "| 1 | Claim coverage |")),
+                    ("2", "Any write", "Not asked for", LineOf(path, "| 2 | Any write |")));
+        }
+    }
+
+    [Then("the open question carries its id, its question, what it blocks, its resolution and the line it is on")]
+    public void ThenOpenQuestion() =>
+        Specification(FirstPath)["openQuestions"].Should().BeOfType<JsonArray>().Which.Select(static question => (
+                question!["id"]!.GetValue<string>(),
+                question["question"]!.GetValue<string>(),
+                question["blocks"]!.GetValue<string>(),
+                question["resolution"]!.GetValue<string>(),
+                question["line"]!.GetValue<int>()))
+            .Should().Equal(("OQ-1", "Which one?", "B-001", _resolution, LineOf(FirstPath, "| OQ-1 |")));
+
+    [Then("it is given as {word}")]
+    public void ThenGivenAs(string state)
+    {
+        state.Should().BeOneOf("resolved", "unresolved");
+        Specification(FirstPath)["openQuestions"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle()
+            .Which!["resolved"]!.GetValue<bool>().Should().Be(state == "resolved");
+    }
+
+    [Then("the first specification carries no out-of-scope rows")]
+    public void ThenNoOutOfScopeRows() =>
+        Specification(FirstPath)["outOfScope"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
+
+    [Then("it still carries its claims, constraints and open questions")]
+    public void ThenStillCarriesOtherRows()
+    {
+        var first = Specification(FirstPath);
+        first["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(("B-001", LineOf(FirstPath, "| B-001 |")), ("B-002", LineOf(FirstPath, "| B-002 |")));
+        first["constraints"].Should().BeOfType<JsonArray>().Which
+            .Select(static constraint => (constraint!["id"]!.GetValue<string>(), constraint["line"]!.GetValue<int>()))
+            .Should().Equal(("C-1", LineOf(FirstPath, "| C-1 |")), ("C-2", LineOf(FirstPath, "| C-2 |")));
+        first["openQuestions"].Should().BeOfType<JsonArray>().Which
+            .Select(static question => (question!["id"]!.GetValue<string>(), question["line"]!.GetValue<int>()))
+            .Should().Equal(("OQ-1", LineOf(FirstPath, "| OQ-1 |")));
+    }
+
     [Then("that claim is given with the withdrawn status")]
     public void ThenWithdrawnClaimGiven() =>
         Specification(FirstPath)["claims"].Should().BeOfType<JsonArray>().Which
@@ -324,6 +409,10 @@ public sealed class FactsSteps
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
             + string.Concat(rows.Select(static row => row + "\n"));
 
+    private static string OpenQuestionsSection(params string[] rows) =>
+        "## 11. Open Questions\n\n| ID | Question | Blocks | Resolution |\n| -- | -------- | ------ | ---------- |\n"
+            + string.Concat(rows.Select(static row => row + "\n"));
+
     private static string MatrixSection(params string[] rows) =>
         "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
             + string.Concat(rows.Select(static row => row + "\n"));
@@ -359,15 +448,16 @@ public sealed class FactsSteps
     private static readonly IReadOnlyList<string> Sections = Replace(
         Replace(
             Replace(
-                SpechtTree.SectionsWith(
-                    "11. Open Questions",
-                    "## 11. Open Questions\n\n| ID | Question | Blocks | Resolution |\n| -- | -------- | ------ | ---------- |\n"
-                        + "| OQ-1 | Which one? | B-001 | Open |\n"),
-                "3. Acceptance Criteria",
-                ClaimsSection(FirstClaim, "| B-002 | It gives them as JSON. | brd | Active |")),
-            "4. Constraints",
-            "## 4. Constraints\n\n| ID | Constraint | Rules Out |\n| -- | ---------- | --------- |\n"
-                + "| C-1 | Offline and read-only. | A network call. |\n| C-2 | One parser. | A second parser. |\n"),
+                Replace(
+                    SpechtTree.SectionsWith("11. Open Questions", OpenQuestionsSection("| OQ-1 | Which one? | B-001 | Open |")),
+                    "3. Acceptance Criteria",
+                    ClaimsSection(FirstClaim, "| B-002 | It gives them as JSON. | brd | Active |")),
+                "4. Constraints",
+                "## 4. Constraints\n\n| ID | Constraint | Rules Out |\n| -- | ---------- | --------- |\n"
+                    + "| C-1 | Offline and read-only. | A network call. |\n| C-2 | One parser. | A second parser. |\n"),
+            "5. Out of Scope",
+            "## 5. Out of Scope\n\n| # | Item | Exclusion Reason |\n| - | ---- | ---------------- |\n"
+                + "| 1 | Claim coverage | Owned by the trace command |\n| 2 | Any write | Not asked for |\n"),
         "9. Traceability Matrix",
         MatrixSection("| B-001 | It gives the facts | Missing | Missing |", "| B-002 | It gives them as JSON | Missing | Missing |"));
 
@@ -376,6 +466,7 @@ public sealed class FactsSteps
     private IReadOnlyList<string> _firstSections = Sections;
     private string _firstFeatureFile = FeatureFile;
     private string _withdrawn = string.Empty;
+    private string _resolution = string.Empty;
     private SpechtTree? _tree;
     private SpechtTree? _other;
     private string _rootArgument = ".";
