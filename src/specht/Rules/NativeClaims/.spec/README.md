@@ -129,7 +129,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-13 (item 0389 built; B-031 row) -->
+<!-- last written by: implementer, 2026-11-13 (item 0390 designed: the native claim reader's rows) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -145,10 +145,20 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | A member of the wrong JSON type outside a claim file set takes the path every key of the wrong type takes                                                  | Technical      | `SpechtManifestUnreadableException`, exit `3` (`0001-F2` B-007)                                                                                                             |
 | `specht manifest` prints the filled members (`0001-F9` B-004)                                                                                              | Technical      | The existing `claimDocument` projection                                                                                                                                     |
 | The shipped defaults join `0.4.0` with a relock while no published package carries it (`0001-F7` C-1, C-17; decision 0001)                                 | Technical      | `src/tool/manifest/v0.4.0/manifest.json`, `./build.sh LockSchemaVersion`                                                                                                    |
+| The native reading runs only under `claim.source` `gherkin`; otherwise the listing, the texts and the model are today's (B-001, B-002, C-3)                | Business       | `SpechtModelReader.Read` and `SpechtModelBuilder.Build`, on `ClaimInput.Source`                                                                                             |
+| A set's claim files: the `.feature` files its glob matches outside `exclusions`, root-relative, in ordinal order (B-001, B-030)                            | Both           | `ISpecDiscovery.FindTestFiles` once per set, onto `SpechtListing.ClaimFiles`                                                                                                |
+| Claim files are read as text through `IFileSystem`, each once (C-2)                                                                                        | Technical      | `SpechtTreeStore.Load`, with every other listed path                                                                                                                        |
+| One tag reading: `claim.tag`, `tagIgnoreCase`, the Feature's claim grammar and `0001-F5` B-095's scenario head (C-1, A-1, B-004, B-005)                    | Business       | The `GherkinClaimTagForm` `SpechtModelBuilder` composes                                                                                                                     |
+| What declares, an outline once, a Rule once, inheritance (B-004, B-006, B-007; A-3)                                                                        | Business       | `GherkinClaimTextReader`, the reader the analyzer compiles, unchanged in what it reads                                                                                      |
+| Lifecycle from the declaring element's tags, planned cases from the tags in effect, every list from the manifest (B-012, B-013, C-4)                       | Business       | The reader's `State` and `Cases`, over `ClaimInput`'s three tag lists                                                                                                       |
+| The scenarios carrying a claim (B-025)                                                                                                                     | Business       | `GherkinClaimDeclaration.Scenarios`                                                                                                                                         |
+| A native claim is the record a § 3 row becomes, its source as provenance (C-5)                                                                             | Both           | `SpechtClaim.Path` and `SpechtClaim.Declaration`; `SpechtClaims`' set constructor; `SpechtModel.ClaimSets`                                                                  |
+| A claim file the reader cannot read declares nothing, and the run goes on                                                                                  | Technical      | `GherkinClaimTextException` caught per file in `SpechtModelBuilder.Build`; item `0395` reports it                                                                           |
+| The same tree gives the same catalogue (B-030, B-011)                                                                                                      | Technical      | Manifest order, ordinal path order, document order; nothing ordered by a hash                                                                                               |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 (item 0389 built; type faults cite no claim, as § 10 records) -->
+<!-- last written by: implementer, 2026-11-13 (item 0390 designed: the native claim reader) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -313,6 +323,185 @@ composes it from `SpechtClaimInput` and the Feature.
 - `GherkinClaimTags` on the structure: see Reuse.
 - Validating the scope forms and the tag-list entries at parse time, as the
   analyzer does: no claim of this item states it.
+
+### The native claim reader (item `0390`)
+
+Designed, not built. The engine already holds the reader:
+[`GherkinClaimTextReader`](../../../Model/GherkinClaimTextReader.cs), which the
+analyzer compiles through its source link (`0201-F7` decision 0004) and
+`specht evidence` calls. This item calls it from the model build, so an
+element, a lifecycle and a planned case mean what the analyzer reads them to
+mean by construction (A-3), and the check gains no second Gherkin reading.
+
+**When.** Only when `SpechtStructure.ClaimInput` is set and its `Source` is
+`Gherkin`, which is schema `0.4.0` or later with `claim.source` `gherkin`
+(B-001). Otherwise the listing, the texts and the model are today's, and no
+rule reads what this item adds, so no verdict moves (B-002, C-3).
+
+**Expanding a set.** `SpechtModelReader.Read` calls
+`ISpecDiscovery.FindTestFiles(root, [set.Glob], structure.Discovery.Exclusions)`
+once per entry of `ClaimInput.Files`, in the manifest's order, and keeps the
+paths ending `.feature`, B-001's words. That method already lists each file a
+glob matches once, outside `exclusions`, root-relative, in ordinal order,
+through the check's one listing: git, or a walk through `IFileSystem`
+(`0001-F6` B-001, B-005, B-008). The lists go on `SpechtListing.ClaimFiles`,
+a new init member at the index of `ClaimInput.Files`, empty by default, as
+`Companions` sits beside `Specifications`. Their paths join the distinct list
+`SpechtTreeStore.Load` reads through `IFileSystem` (C-2), so a file that two
+sets match, or that is also a companion, is read once. The builder takes each
+text from that dictionary and touches no file system.
+
+**The tag forms.** `SpechtModelBuilder` composes one `GherkinClaimTags` per
+set:
+
+| Member                                           | Composed from                                                                                                                       |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `Claim`                                          | `new GherkinClaimTagForm(structure.ClaimTagForm, "claim", structure.ClaimTagIgnoreCase, grammar)`                                   |
+| `grammar`                                        | `structure.ClaimGrammar(null).Pattern`, after a negative lookahead for the escaped `ScenarioHead` when `LongerScenarioHead` is true |
+| `FeatureScope`, `EpicScope`                      | `null`                                                                                                                              |
+| `PlannedTags`, `WithdrawnTags`, `SupersededTags` | `ClaimInput`'s, each the shipped `0.4.0` default when the manifest leaves it out (item `0389`)                                      |
+
+That is the reading `FeatureTagParser` gives a companion token: the text
+between `claim.tag`'s prefix and suffix, compared under `tagIgnoreCase`, and a
+whole match of the Feature's claim grammar under the same case setting
+(`0001-F5` decision 0013, B-086). The lookahead is `0001-F5` B-095: a captured
+text that begins with a longer scenario head is not a claim tag.
+`FeatureTagParser` tests that with `StartsWith`; the composed grammar tests it
+with `(?!…)` under the same case option, so a token has one reading (C-1). No
+tag is written in code; the form and every list come from the manifest (C-4).
+The parser already refuses a `claim.tag` without `{claim}` exactly once, so the
+form's constructor does not throw. The scope forms stay `null`: they fill
+`FeatureTagValues` and `EpicTagValues` alone, which only B-019 reads, and a
+scope form without its placeholder throws in that constructor; both are item
+`0395`'s.
+
+The grammar is `ClaimGrammar(null)`, the tree's: this item reads no `record`,
+so no Feature declares a prefix. Whether a record's claim prefix selects a
+native Feature's grammar is not decided here (item `0391`, below).
+
+**Reading a file.** `GherkinClaimTextReader.Read(path, text)` per claim file,
+in ordinal order. What it already does answers the claims:
+
+| Claim | The reader as built                                                                                                                                                                     |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-004 | A Feature, a Rule, a Scenario or `Example`, or a Scenario Outline or `Scenario Template`, declares each claim id its own tags give, once per element, at its keyword line, as captured  |
+| B-005 | A tag the form or the grammar rejects declares nothing, and the reader makes no finding of it                                                                                           |
+| B-006 | An outline declares once, at the outline; each Examples body row is one of its cases                                                                                                    |
+| B-007 | A Rule declares once, at the Rule; its scenarios are its cases and declare nothing of it                                                                                                |
+| B-012 | `State` from the declaring element's own tags: `Superseded` when one is in `supersededTags`, else `Withdrawn` when one is in `withdrawnTags`, else `Active`                             |
+| B-013 | `Cases`: a Scenario's keyword line, or each Examples body row of an outline, `Planned` when the Feature, the Rule, the scenario or, for a row, its Examples block carries a planned tag |
+
+A claim file the reader cannot read, a `GherkinClaimTextException` for a
+language other than `en`, no `Feature:` line or text it does not parse,
+declares no claim, and the run goes on; reporting it is item `0395`'s (B-014,
+B-015). Nothing in this item reads the reader's `SPCT0011` and `SPCT0012`
+findings.
+
+**B-025's scenario set.** `GherkinClaimDeclaration`, declared in
+[`GherkinClaimDeclaration.cs`](../../../Model/GherkinClaimDeclaration.cs),
+gains one positional member, `Scenarios`: the keyword lines of the Scenarios
+and Scenario Outlines carrying the claim, in document order. For a declaring
+Scenario or outline that is its own line, for a Rule every scenario under it,
+and for the Feature every scenario in the file. The reader already holds that
+set, as `covered`, when it builds `Cases`; it is kept as keyword lines because
+an outline's cases are its rows, not the outline. The reader's one constructor
+call is the only one. The analyzer and `specht evidence` read neither the
+member nor its value, so their reading, diagnostics and export do not change
+(§ 5 row 1), and the analyzer's link list is unchanged. `0001-F13` B-001 counts
+the set; `0001-F12` A-1 resolves a row's scenario against it, which needs each
+scenario's title as well, and adding titles is item `0396`'s.
+
+**The catalogue record (C-5).** A native claim is the record a § 3 row
+becomes, [`SpechtClaim`](../../../Model/SpechtClaim.cs), with its source as
+provenance:
+
+| `SpechtClaim` member             | A § 3 row                   | A native claim                                                          |
+| -------------------------------- | --------------------------- | ----------------------------------------------------------------------- |
+| `Id`                             | its trimmed first cell      | the declaration's id, as authored                                       |
+| `Line`                           | its line                    | the declaring element's keyword line                                    |
+| `IsValid`                        | the grammar's verdict       | `true`: the reader declares only what the grammar matches               |
+| `FirstDeclarationLine`           | an earlier row's line       | `null`; B-008 reports each declaration, item `0392`                     |
+| `Path`, a new init member        | `null`, the specification's | the claim file's root-relative path                                     |
+| `Declaration`, a new init member | `null`                      | the `GherkinClaimDeclaration`: `Element`, `State`, `Cases`, `Scenarios` |
+
+[`SpechtClaims`](../../../Model/SpechtClaims.cs) gains a second constructor,
+from a `SpechtClaimFileSet`, the files read from it in ordinal order and the
+structure: `Rows` holds every declaration, in file then document order; `Ids`
+and `TagIds` are built as the table's are, an id's first declaration keeping
+its line; `Section` is `null`, since no claims table is read (B-001); and a new
+`FileSet` names the set, `null` for a table. The Feature identity is the set's
+`Epic` and `Feature` (B-001, B-027).
+
+`SpechtModel.ClaimSets`, new, holds one such `SpechtClaims` per entry of
+`ClaimInput.Files`, in the manifest's order, empty unless the source is
+`gherkin`; the builder passes it to a new optional constructor parameter. It
+sits beside `SpechtModel.Claims`, not in it: that dictionary is keyed by a
+`FeatureSpec`, and a native Feature has none until item `0391` gives it a
+document, an identity and a report entry. `0391` keys the same `SpechtClaims`
+under that Feature in `Claims`, in place of the one the record's table would
+give; no claim file is read twice. Until then `Features` holds no native
+Feature, so no rule, summary count or report line changes (B-002; B-026 is
+`0391`'s).
+
+**Determinism (B-030, B-011).** Sets in manifest order, files in ordinal path
+order from discovery, declarations in document order, and within an element
+its ids in tag order, line by line. Nothing orders output by a hash, reads a
+clock or holds an absolute path, and this item prints nothing new, so the
+output of the same tree is byte-identical. Reordering or retitling a file
+moves `Line`, `Cases`, `Scenarios` and row order, and leaves each claim's id,
+set identity and `State` (B-011): none is read from a title or a position.
+
+**Testability.** Each mechanism is reachable in memory:
+`SpechtModelBuilder.Build` over a `SpechtListing` with `ClaimFiles` and a text
+dictionary, or `SpechtModelReader.Read` over a `MockFileSystem` tree through
+`EngineServices`, reading `model.ClaimSets`. The item `0389` review asked that
+this item's § 9 rows for B-012 and B-013 name a test of the shipped default
+fill of `plannedTags`, `withdrawnTags`, `supersededTags` and `lifecycleKey`.
+That fill is two observations: `SpechtManifestParser.Parse` fills all four from
+the shipped `0.4.0` manifest when the manifest leaves them out, and the
+composition reads the filled lists, so a scenario tagged `@ignore` under a
+manifest with no `plannedTags` is planned, and one tagged with a lifecycle tag
+the manifest does not list is `Active`. `lifecycleKey` takes effect where the
+record is read, item `0391` (B-003).
+
+**What stays.**
+
+| Item   | Takes                                                                                                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0391` | A native Feature as a `FeatureSpec` from the set's `record` or its first claim file; its identity check and report entry; keying `ClaimSets` into `Claims`; the record-prefix question |
+| `0392` | `SPEC4003` over native rows across files (B-008); a record's sections (B-020); `SPEC4001` and `SPEC4002` silent (B-021)                                                                |
+| `0393` | `SPEC025` from the reader's scenario-without-claim finding (B-010)                                                                                                                     |
+| `0394` | `SPEC026` from the reader's Examples-tag finding (B-009)                                                                                                                               |
+| `0395` | `SPEC027`: an unreadable file, an empty set, a file two sets match with its claims under neither, and the scope forms (B-014 to B-016, B-018, B-019)                                   |
+| `0396` | Scenario titles, the matrix and the trace over `ClaimSets` (B-022 to B-024)                                                                                                            |
+
+The record-prefix question, for item `0391`: when a set's `record` declares a
+claim prefix, does it select the native Feature's claim grammar, as it does a
+layout's Feature (`0001-F5` B-086), or does the record supply frontmatter,
+lifecycle and edges only, the tree's grammar reading the tags (B-003;
+`0201-F7` ADR-0001 item 8)? No claim of this Feature says, and the answer
+changes which tags declare.
+
+**Reuse.** `GherkinClaimTextReader` and its records, `GherkinClaimTagForm`,
+`ISpecDiscovery.FindTestFiles`, `SpechtTreeStore.Load`,
+`SpechtStructure.ClaimGrammar`, `SpechtClaim` and `SpechtClaims` carry the
+reading. No type is added.
+
+**Rejected.**
+
+- Reading claim files with `FeatureTagParser`: a second Gherkin reading, which
+  differs from the analyzer's on `Example:`, `Scenario Template:` and an
+  Examples block's tags (A-3, C-1).
+- A native Feature in `Features` now: every rule would run on a Feature with no
+  document before items `0391` and `0392` say what it obeys, and the summary
+  would count it before B-026.
+- A per-file scenario record with titles now: a new type, and a new source link
+  into the analyzer, which decision 0004 of `0201-F7` does not cover; no claim
+  of this item reads a title.
+- One listing of every `.feature` file, each glob matched after it: the glob's
+  reading, `SpechtDiscovery.Pattern`, is discovery's own; one listing per set
+  reuses its public method.
+- Dropping a repeated id from the rows: B-008 reports every declaration.
 
 ## 8. Testing Strategy
 
