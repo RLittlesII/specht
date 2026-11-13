@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Discovery;
 using Specht.Facts;
 using Specht.Model;
 using Specht.Tests.Shared;
@@ -7,9 +8,10 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Facts;
 
 /// <summary>
-/// The facts document projected from a model built in memory (<c>0132-F2</c> B-001, B-003, B-004, B-017, B-022, B-026):
-/// every Feature specification in the model's order and no epic, each with the path, identity, statuses and dependency
-/// lists its frontmatter gives, the same members under two pins, and the same text for the same model.
+/// The facts document projected from a model built in memory (<c>0132-F2</c> B-001, B-003 to B-006, B-012, B-013, B-017,
+/// B-022, B-025, B-026): every Feature specification in the model's order and no epic, each with the path, identity,
+/// statuses and dependency lists its frontmatter gives, every claim and constraint row with its cells and line and no
+/// coverage, the same members under two pins, and the same text for the same model.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FactsDocumentUnitTests
@@ -171,5 +173,155 @@ public sealed class FactsDocumentUnitTests
         first.Should().NotBeEmpty();
         again.Should().Be(first);
         second.Should().Be(first);
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsClaimTables))]
+    public void ClaimRowsUnderTheirTablesHeaders_WhenTheDocumentIsMade_ShouldCarryEachClaimsIdTextStatusAndLine(
+        string[] headers, string[] first, string[] second)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection("3. Acceptance Criteria", 10, headers, [first, second], [14, 15]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["claims"].Should().BeOfType<JsonArray>().Which.Select(static claim => (
+                claim!["id"]!.GetValue<string>(),
+                claim["text"]!.GetValue<string>(),
+                claim["status"]!.GetValue<string>(),
+                claim["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("B-001", "Given a tree, this Feature gives its facts.", "Active", 14),
+                ("B-002", "Given a flag, this Feature writes one document.", "Proposed", 15));
+    }
+
+    [Fact]
+    public void ConstraintRows_WhenTheDocumentIsMade_ShouldCarryEachConstraintsIdTextWhatItRulesOutAndLine()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection(
+                        "4. Constraints",
+                        20,
+                        ["ID", "Constraint", "Rules Out"],
+                        [["C-1", "Offline and read-only.", "A network call."], ["C-2", "One parser.", "A second parser."]],
+                        [24, 25]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["constraints"].Should().BeOfType<JsonArray>().Which.Select(static constraint => (
+                constraint!["id"]!.GetValue<string>(),
+                constraint["text"]!.GetValue<string>(),
+                constraint["rulesOut"]!.GetValue<string>(),
+                constraint["line"]!.GetValue<int>()))
+            .Should().Equal(("C-1", "Offline and read-only.", "A network call.", 24), ("C-2", "One parser.", "A second parser.", 25));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsRetiredClaimStatuses))]
+    public void AClaimWhoseStatusIsTheWithdrawnOrSupersededMarker_WhenTheDocumentIsMade_ShouldStillGiveItWithThatStatus(string status)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection(
+                        "3. Acceptance Criteria",
+                        10,
+                        ["ID", "Claim", "Source", "Status"],
+                        [["B-001", "It holds.", "the owner", "Active"], ["B-002", "It held.", "the owner", status]],
+                        [14, 15]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["status"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(("B-001", "Active", 14), ("B-002", status, 15));
+    }
+
+    [Fact]
+    public void TwoClaimsSharingAnIdBesideOneTheGrammarRefuses_WhenTheDocumentIsMade_ShouldGiveEveryRowInItsOrder()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection(
+                        "3. Acceptance Criteria",
+                        10,
+                        ["ID", "Claim", "Source", "Status"],
+                        [
+                            ["B-001", "It holds.", "the owner", "Active"],
+                            ["B-001", "It holds again.", "the owner", "Active"],
+                            ["claim one", "It has no id.", "the owner", "Active"],
+                        ],
+                        [14, 15, 16]))));
+        model.Claims[model.Features[0]].Rows.Select(static row => (row.Id, row.IsValid)).Should().Equal(
+            ("B-001", true), ("B-001", true), ("claim one", false));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["text"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(("B-001", "It holds.", 14), ("B-001", "It holds again.", 15), ("claim one", "It has no id.", 16));
+    }
+
+    [Fact]
+    public void AClaimWithATraceabilityRowATaggedScenarioAndATestFile_WhenTheDocumentIsMade_ShouldCarryNoneOfThem()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture()
+            .WithList([new SpechtTestFile("test/ZebraTests.cs", "public void Crossing() { } // B-001")])
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(
+                        new SpechtSection(
+                            "3. Acceptance Criteria",
+                            10,
+                            ["ID", "Claim", "Source", "Status"],
+                            [["B-001", "It holds.", "the owner", "Active"]],
+                            [14]),
+                        new SpechtSection(
+                            "9. Traceability Matrix",
+                            40,
+                            ["Claim ID", "Scenario", "Test", "Status"],
+                            [["B-001", "Crossing the zebra", "ZebraTests.Crossing", "Covered"]],
+                            [44])))
+                .WithFeatureFiles(new FeatureTagParser().Read(
+                    "src/first/.spec/first.feature",
+                    "Feature: it\n\n  @B-001\n  Scenario: Crossing the zebra\n    Given a thing\n")));
+        model.MatrixSections[model.Features[0]]!.Rows.Should().ContainSingle();
+        model.Features[0].FeatureFiles.Should().ContainSingle().Which.Scenarios.Should().ContainSingle();
+
+        // When
+        var json = FactsDocument.From(model).ToJson();
+
+        // Then
+        JsonNode.Parse(json)!["specifications"]![0]!["claims"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle()
+            .Which!["id"]!.GetValue<string>().Should().Be("B-001");
+        json.Should().NotContainEquivalentOf("zebra").And.NotContain("Covered");
     }
 }

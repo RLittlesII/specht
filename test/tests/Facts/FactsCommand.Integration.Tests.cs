@@ -8,8 +8,8 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Facts;
 
 /// <summary>
-/// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-004, B-014, B-017,
-/// B-021 to B-023, B-026), launched as a shell launches it, its output validated against the published facts schema at
+/// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-006, B-012 to
+/// B-014, B-017, B-021 to B-023, B-025, B-026), launched as a shell launches it, its output validated against the published facts schema at
 /// <c>docs/schema/facts.schema.json</c> (OQ-1's default), copied into the output from that one file.
 /// </summary>
 [Trait("Tier", "Integration")]
@@ -286,6 +286,168 @@ public sealed class FactsCommandIntegrationTests
             .Should().Equal(model.Features.Select(static feature => feature.RelativePath)).And.NotContain("epics/0001-epic/epic.md");
     }
 
+    [Fact]
+    public void AFeatureWithClaims_WhenFactsAreGivenAsJson_ShouldCarryEachClaimsIdTextStatusAndTheLineItIsOn()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "3. Acceptance Criteria",
+            "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+                + "| B-001 | Given a tree, this Feature gives its facts. | the owner | Active |\n"
+                + "| B-002 | Given a flag, this Feature writes one document. | the owner | Proposed |\n"));
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        var specification = JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        specification["claims"].Should().BeOfType<JsonArray>().Which.Select(static claim => (
+                claim!["id"]!.GetValue<string>(),
+                claim["text"]!.GetValue<string>(),
+                claim["status"]!.GetValue<string>(),
+                claim["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("B-001", "Given a tree, this Feature gives its facts.", "Active", LineOf(lines, "| B-001 |")),
+                ("B-002", "Given a flag, this Feature writes one document.", "Proposed", LineOf(lines, "| B-002 |")));
+    }
+
+    [Fact]
+    public void AFeatureWithConstraints_WhenFactsAreGivenAsJson_ShouldCarryEachConstraintsIdTextWhatItRulesOutAndTheLineItIsOn()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "4. Constraints",
+            "## 4. Constraints\n\n| ID | Constraint | Rules Out |\n| -- | ---------- | --------- |\n"
+                + "| C-1 | Offline and read-only. | A network call. |\n"
+                + "| C-2 | One parser. | A second parser. |\n"));
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        var specification = JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        specification["constraints"].Should().BeOfType<JsonArray>().Which.Select(static constraint => (
+                constraint!["id"]!.GetValue<string>(),
+                constraint["text"]!.GetValue<string>(),
+                constraint["rulesOut"]!.GetValue<string>(),
+                constraint["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("C-1", "Offline and read-only.", "A network call.", LineOf(lines, "| C-1 |")),
+                ("C-2", "One parser.", "A second parser.", LineOf(lines, "| C-2 |")));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsRetiredClaimStatuses))]
+    public void AClaimWhoseStatusIsTheWithdrawnOrSupersededMarker_WhenFactsAreGivenAsJson_ShouldStillGiveItWithThatStatus(string status)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "3. Acceptance Criteria",
+            "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+                + "| B-001 | It does the thing. | brd | Active |\n"
+                + $"| B-002 | It did the other thing. | brd | {status} |\n"));
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        JsonNode.Parse(Stdout)!["specifications"]![0]!["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["status"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(("B-001", "Active", LineOf(lines, "| B-001 |")), ("B-002", status, LineOf(lines, "| B-002 |")));
+    }
+
+    [Fact]
+    public void TwoClaimsSharingAnIdTheCheckReports_WhenFactsAreGivenAsJson_ShouldExitZeroAndGiveBoth()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "3. Acceptance Criteria",
+            "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+                + "| B-001 | It does the thing. | brd | Active |\n"
+                + "| B-001 | It does the thing twice. | brd | Active |\n"));
+        var lines = File.ReadAllLines(path);
+        var first = LineOf(lines, "| B-001 | It does the thing. |");
+        var second = LineOf(lines, "| B-001 | It does the thing twice. |");
+        var check = AcceptanceTool.Launch(tree.Root, "--json");
+        check.ExitCode.Should().Be(1, check.Stderr);
+        JsonNode.Parse(check.Stdout)!["violations"]!.AsArray().Select(static violation => violation!["line"]!.GetValue<int>()).Should().Contain(second);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        JsonNode.Parse(Stdout)!["specifications"]![0]!["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["text"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(("B-001", "It does the thing.", first), ("B-001", "It does the thing twice.", second));
+    }
+
+    [Fact]
+    public void AClaimWithATraceabilityRowAndATaggedScenario_WhenFactsAreGivenAsJson_ShouldCarryNoRowScenarioOrTest()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "9. Traceability Matrix",
+            "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
+                + "| B-001 | Crossing the zebra | `ZebraTests.Crossing` | Covered |\n"));
+        tree.WriteFeatureFile(path, "Feature: it\n\n  @B-001\n  Scenario: Crossing the zebra\n    Given a thing\n");
+        var check = AcceptanceTool.Launch(tree.Root, "--json");
+        check.ExitCode.Should().Be(0, check.Stdout);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        JsonNode.Parse(Stdout)!["specifications"]![0]!["claims"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle()
+            .Which!["id"]!.GetValue<string>().Should().Be("B-001");
+        Stdout.Should().NotContainEquivalentOf("zebra").And.NotContain("Covered");
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsCoverageMembers))]
+    public void AClaimGivenACoverageMember_WhenValidatedAgainstThePublishedFactsSchema_ShouldBeRejected(string member, string value)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        tree.WriteCoLocatedFeature("src/area", "0001", "F1");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+        ExitCode.Should().Be(0, Stderr);
+        var document = JsonNode.Parse(Stdout)!;
+        var claim = document["specifications"]![0]!["claims"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle().Which!.AsObject();
+        using (var given = JsonDocument.Parse(document.ToJsonString()))
+        {
+            var unchanged = Evaluate(given.RootElement);
+            unchanged.IsValid.Should().BeTrue(Errors(unchanged));
+        }
+
+        claim[member] = JsonNode.Parse(value);
+
+        // When
+        using var json = JsonDocument.Parse(document.ToJsonString());
+        var result = Evaluate(json.RootElement);
+
+        // Then
+        result.IsValid.Should().BeFalse($"a {member} member on a claim is coverage, not a fact");
+    }
+
     private static EvaluationResults Evaluate(JsonElement document)
     {
         var path = Path.Combine(AppContext.BaseDirectory, "docs", "schema", "facts.schema.json");
@@ -296,6 +458,9 @@ public sealed class FactsCommandIntegrationTests
     private static string Errors(EvaluationResults result) =>
         string.Join("; ", (result.Details ?? []).Where(static detail => detail.Errors is not null)
             .SelectMany(static detail => detail.Errors!.Select(error => $"{detail.InstanceLocation} {error.Value}")));
+
+    private static int LineOf(string[] lines, string prefix) =>
+        Array.FindIndex(lines, line => line.StartsWith(prefix, StringComparison.Ordinal)) + 1;
 
     private static IEnumerable<string> MemberPaths(JsonNode? node, string prefix) => node switch
     {
