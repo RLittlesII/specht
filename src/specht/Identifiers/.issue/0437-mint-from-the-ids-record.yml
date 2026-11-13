@@ -2,7 +2,7 @@ id: "0437"
 type: task
 title: Mint from the ids record
 
-status: in-progress
+status: done
 
 value: 4
 risk: 3
@@ -37,7 +37,7 @@ claims:
 
 created: "2026-11-12"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   As a repository whose Features declare `claim_prefix: ACTIVITY`, I
@@ -76,6 +76,18 @@ decisions:
     (decision 0005). spec-author's cut, not an owner ruling: one item
     for mint, after `0001-F5`'s 0436. B-064 and B-069 were withdrawn
     before merge.
+  - |
+    2026-11-13, implementer's design pass, taken by the coordinator:
+    a candidate refused under B-076 or B-077 exits 3 without a redraw,
+    on B-012's precedent (item 0420). The owner may revise it.
+  - |
+    2026-11-13, coordinator, on the implementer's design-pass
+    recommendation: from schema 0.4.0 a refusal message names
+    `ids.<type>.mint.<member>` (option b); below 0.4.0 the messages are
+    unchanged.
+  - |
+    2026-11-13, spec-author: B-067's scenario split into a claim outline
+    and a constraint outline (commit 7263d45b).
 
 out_of_scope:
   - "The ids key, the check's claim grammar and the 0.4.0 cut - `0001-F5` item 0436."
