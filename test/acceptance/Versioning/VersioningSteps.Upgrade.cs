@@ -64,6 +64,24 @@ public sealed partial class VersioningSteps
     public void GivenItsManifestDeclaresNoEpicGrammar() =>
         EditManifest(static manifest => manifest.Remove("identifiers").Should().BeTrue());
 
+    [Given("a root whose manifest pins schema version {word}")]
+    public void GivenARootWhoseManifestPinsSchemaVersion(string version) => GivenTheManifestPinsVersion(version);
+
+    [Given("its manifest holds no ids key and no old id setting")]
+    public void GivenItsManifestHoldsNoIdsKeyAndNoOldIdSetting() =>
+        EditManifest(static manifest =>
+        {
+            manifest.Remove("ids");
+            manifest.Remove("mint");
+            if (manifest["identifiers"] is JsonObject identifiers)
+            {
+                foreach (var type in identifiers.Select(static member => member.Key).Where(static key => key is not ("task" or "feature" or "epic")).ToList())
+                {
+                    identifiers.Remove(type);
+                }
+            }
+        });
+
     [Given("its manifest sets section owners, test files, scenario title matching and required specification directories of the consumer's")]
     public void GivenItsManifestSetsTheConsumersMatrixSettings()
     {
@@ -210,6 +228,13 @@ public sealed partial class VersioningSteps
     {
         _exitCode.Should().Be(0, _stderr);
         ManifestAfter()["identifiers"]?["epic"].Should().BeNull();
+    }
+
+    [Then("the manifest holds no ids key")]
+    public void ThenTheManifestHoldsNoIdsKey()
+    {
+        _exitCode.Should().Be(0, _stderr);
+        ManifestAfter().ContainsKey("ids").Should().BeFalse();
     }
 
     [Then("the standard output names version {word} and each file rewritten")]

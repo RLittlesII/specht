@@ -65,7 +65,9 @@ namespace Specht.Acceptance.Versioning;
 /// changed by a line feed; a check over a built set that throws a manifest rejection gives the command's standard error
 /// line and exit code 3, and an upgrade over that copy runs in process. Item 0388 binds B-154 over the versions the tool
 /// ships: the built tool checks the baseline tree with <c>--json</c> under each shipped version below 1.0.0 and each shipped
-/// version higher than it in its patch alone, and the documents are compared with their <c>schemaVersion</c> removed. The
+/// version higher than it in its patch alone, and the documents are compared with their <c>schemaVersion</c> removed. Item
+/// 0436 binds B-016's schema 0.4.0 boundary: the Background root pinned to 0.4.0, without <c>ids</c>, <c>mint</c> or an
+/// <c>identifiers</c> grammar other than the task, Feature and epic ones, upgraded by the built tool. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>
