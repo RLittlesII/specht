@@ -1,6 +1,6 @@
 id: "0389"
 type: task
-title: Add the claim members to the manifest under schema 0.3.1, and refuse an invalid claim file set
+title: Add the claim members to the manifest under schema 0.4.0, and refuse an invalid claim file set
 
 status: in-progress
 
@@ -9,7 +9,7 @@ risk: 3
 parent: "0387"
 children: []
 
-depends_on: ["0388"] # 0388 cuts schema 0.3.1, the version whose manifest schema these members join
+depends_on: ["0388", "0436"] # 0388 cut schema 0.3.1; 0436 cuts schema 0.4.0, the version whose manifest schema these members join
 spikes: []
 
 spec: src/specht/Rules/NativeClaims/.spec/README.md
@@ -28,26 +28,28 @@ summary: |
   The `claim` members the reader selects on: `claim.source`,
   `claim.files` with each entry's `glob`, `feature`, `epic` and
   `record`, and the tag lists, read from the manifest (C-4) as
-  top-level keys the checker owns (C-7; ADR-0023). They join `0.3.1`'s
-  manifest schema with a relock; `0.3.0` and earlier stay as published.
+  top-level keys the checker owns (C-7; ADR-0023). They join `0.4.0`'s
+  manifest schema with a relock, which `0001-F7` C-17 allows while no
+  published package carries `0.4.0`; `0.3.1` and earlier stay as
+  published (`0001-F7` C-1).
 
   Risk 3: a member is optional, so a manifest without `claim.source`
-  gives the report it gives today (B-002; `0001-F7` B-154), while an
-  invalid set exits `3` before any rule runs (B-029), and a pin of
-  `0.3.0` or earlier refuses the members as keys it does not define
-  (B-028).
+  gives the verdicts it gives under `0.4.0` today (B-002), while an
+  invalid set exits `3` before any rule runs (B-029), and a pin below
+  `0.4.0` refuses the members as keys it does not define (B-028).
 
-  Waits on 0388 alone: the `0.3.1` it adds the members to. The epic
-  grammar the identity follows (B-027) is `0001-F5`'s, built.
+  Waits on 0436, which cuts `0.4.0`, the version it adds the members
+  to (decision 0001), and on 0388, done. The epic grammar the identity
+  follows (B-027) is `0001-F5`'s, built.
 
 acceptance_criteria:
   - "B-002 — no `claim.source`, or `markdown`: no verdict changes, no `codeAnalysis` key read"
   - "B-027 — identity is epic and feature under an epic grammar, feature alone without; an `epic` without the grammar exits 3"
-  - "B-028 — pinned to 0.3.0 or earlier: a `claim` member exits 3 as today; a passing tree passes"
+  - "B-028 — pinned below 0.4.0, 0.3.1 included: a `claim` member exits 3 as today; a passing tree passes"
   - "B-029 — `claim.files` absent, empty, or an entry without `glob` or `feature` under `gherkin`, or present beside another source: exit 3 naming the key"
   - "Every key read from the manifest, none under `codeAnalysis` (C-4, C-7)"
-  - "The members join 0.3.1 with a relock (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.0 unchanged (`0001-F7` C-1)"
-  - "`0001-F7` B-154 — same report under 0.3.0 and 0.3.1 for a tree without `claim.source: gherkin`"
+  - "The members join 0.4.0 with a relock while no published package carries it (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
+  - "Under 0.4.0, a tree without `claim.source: gherkin` gets the verdicts it got before this item (B-002); `0001-F7` B-154 does not apply, since 0.3.1 and 0.4.0 are not patch neighbours (`0001-F7` OQ-78)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -57,6 +59,15 @@ decisions:
     `0001-F7` decision 0022), as proposed. Value omitted, inheriting
     0387's. Not a prerequisite: 0352 (`0001-F5`), whose Feature claim
     prefixes exclude standalone Gherkin (`0001-F5` § 5 row 24).
+  - |
+    2026-11-12, the repository owner, selecting "Fold into 0.4.0" over
+    "0.3.2 patch": the members join schema 0.4.0, and this item waits on
+    0436, which cuts it (decision 0001). spec-author's reading, not the
+    owner's: `0.3.1` has gone out in NuGet packages, so `0001-F7` C-1
+    and C-17 forbid the relock this item planned; `0.4.0` is a
+    `0.minor` step, which `0001-F7` C-11 lets add the members, and
+    `0001-F7` B-154's `0.3.0` and `0.3.1` comparison leaves the
+    acceptance criteria. Status stays in-progress.
 
 out_of_scope:
   - "Reading claims from the selected files - 0390."
