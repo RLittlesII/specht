@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Specht.Discovery;
+using Specht.Identifiers;
 using Specht.Versioning;
 
 namespace Specht.Manifest;
@@ -73,6 +74,11 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             yield return $"claim.tag '{form}' must hold '{{claim}}' exactly once";
         }
 
+        if (structure.Ids is not null)
+        {
+            yield break;
+        }
+
         var grammar = structure.Identifiers["claim"];
         string? fault = null;
         try
@@ -87,6 +93,171 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         if (fault is not null)
         {
             yield return fault;
+        }
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-081" />
+    /// <implements epic="0001" feature="F5" claim="B-083" />
+    /// <implements epic="0001" feature="F5" claim="B-084" />
+    /// <implements epic="0001" feature="F5" claim="B-085" />
+    /// <implements epic="0001" feature="F5" claim="B-094" />
+    /// <implements epic="0001" feature="F5" claim="B-097" />
+    private static Dictionary<string, SpechtIdRecord> Ids(
+        JsonObject manifest, JsonObject defaults, StringComparison comparison, List<string> faults, JsonObject? document)
+    {
+        var shipped = Present(defaults["ids"]).AsObject();
+        var records = IdTypes.RepositoryWide.Concat(IdTypes.PerFeature).ToDictionary(
+            static type => type,
+            type => new SpechtIdRecord(Text(shipped[type]?["plain"])!, Text(shipped[type]?["form"]), Text(shipped[type]?["id"])!),
+            StringComparer.Ordinal);
+
+        if (!manifest.TryGetPropertyValue("ids", out var node))
+        {
+            document?["ids"] = shipped.DeepClone();
+        }
+        else if (node is not JsonObject declared)
+        {
+            faults.Add($"ids {node?.ToJsonString() ?? "null"} is not an object of id records");
+        }
+        else
+        {
+            foreach (var (type, value) in declared)
+            {
+                if (type.StartsWith('$'))
+                {
+                    continue;
+                }
+
+                if (!records.TryGetValue(type, out var filled))
+                {
+                    faults.Add($"ids.{type} is not an id type; ids names {string.Join(", ", records.Keys.Select(static name => $"'{name}'"))}");
+                    continue;
+                }
+
+                if (value is not JsonObject record)
+                {
+                    faults.Add($"ids.{type} {value?.ToJsonString() ?? "null"} is not a record");
+                    continue;
+                }
+
+                faults.AddRange(record
+                    .Select(static member => member.Key)
+                    .Where(static member => !member.StartsWith('$') && member is not ("plain" or "form" or "id" or "mint"))
+                    .Select(member => $"ids.{type}.{member} is not 'plain', 'form', 'id' or 'mint'"));
+
+                records[type] = new SpechtIdRecord(
+                    record.TryGetPropertyValue("plain", out var plain) ? Plain(type, plain, faults) ?? filled.Plain : filled.Plain,
+                    record.TryGetPropertyValue("form", out var form) ? Form(type, form, faults) : filled.Form,
+                    record.TryGetPropertyValue("id", out var id) ? Id(type, id, faults) ?? filled.Id : filled.Id);
+
+                if (document?["ids"]?[type] is JsonObject projected)
+                {
+                    var defaultRecord = shipped[type]!.AsObject();
+                    foreach (var member in new[] { "plain", "form", "id" }.Where(member => !projected.ContainsKey(member) && defaultRecord[member] is not null))
+                    {
+                        projected[member] = defaultRecord[member]!.DeepClone();
+                    }
+                }
+            }
+
+            if (document?["ids"] is JsonObject projectedIds)
+            {
+                foreach (var (type, record) in shipped.Where(entry => !entry.Key.StartsWith('$') && !declared.ContainsKey(entry.Key)))
+                {
+                    projectedIds[type] = record!.DeepClone();
+                }
+            }
+        }
+
+        var claim = records["claim"];
+        var scenario = records["scenario"];
+        var shared = string.Equals(claim.Head(null), scenario.Head(null), comparison) ? claim.Plain
+            : claim.Form is not null && scenario.Form is not null
+                && string.Equals(claim.Form[..^SpechtIdRecord.IdPlaceholder.Length], scenario.Form[..^SpechtIdRecord.IdPlaceholder.Length], comparison)
+                ? claim.Form
+                : null;
+        if (shared is not null)
+        {
+            faults.Add($"ids.claim and ids.scenario give claims and scenarios the one head '{shared[..^SpechtIdRecord.IdPlaceholder.Length]}'");
+        }
+
+        return records;
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-084" />
+    private static string? Plain(string type, JsonNode? node, List<string> faults)
+    {
+        if (Text(node) is { } plain && plain.EndsWith(SpechtIdRecord.IdPlaceholder, StringComparison.Ordinal)
+            && plain[..^SpechtIdRecord.IdPlaceholder.Length].IndexOfAny(Braces) < 0)
+        {
+            return plain;
+        }
+
+        faults.Add($"ids.{type}.plain {Quoted(node)} must end with its only '{SpechtIdRecord.IdPlaceholder}' and hold no other brace");
+        return null;
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-084" />
+    private static string? Form(string type, JsonNode? node, List<string> faults)
+    {
+        if (type is "adr" or "lesson")
+        {
+            faults.Add($"ids.{type}.form {Quoted(node)} is not read: an {type} id has no form in a Feature");
+            return null;
+        }
+
+        if (Text(node) is { } form && Count(form, SpechtIdRecord.PrefixPlaceholder) == 1
+            && form.EndsWith(SpechtIdRecord.IdPlaceholder, StringComparison.Ordinal)
+            && form[..^SpechtIdRecord.IdPlaceholder.Length].Replace(SpechtIdRecord.PrefixPlaceholder, string.Empty, StringComparison.Ordinal)
+                .IndexOfAny(Braces) < 0)
+        {
+            return form;
+        }
+
+        faults.Add(
+            $"ids.{type}.form {Quoted(node)} must hold '{SpechtIdRecord.PrefixPlaceholder}' once, end with its only "
+            + $"'{SpechtIdRecord.IdPlaceholder}' and hold no other brace");
+        return null;
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-085" />
+    private static string? Id(string type, JsonNode? node, List<string> faults)
+    {
+        switch (Text(node))
+        {
+            case null:
+                faults.Add($"ids.{type}.id {Quoted(node)} is not text");
+                return null;
+            case "":
+                faults.Add($"ids.{type}.id is empty");
+                return null;
+            case { } id when Compiled(id) is null:
+                faults.Add($"ids.{type}.id '{id}' does not compile");
+                return null;
+            case { } id:
+                return id;
+        }
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-084" />
+    private static string Quoted(JsonNode? node) => Text(node) is { } text ? $"'{text}'" : node?.ToJsonString() ?? "null";
+
+    /// <implements epic="0001" feature="F5" claim="B-092" />
+    /// <implements epic="0001" feature="F5" claim="B-093" />
+    private static IEnumerable<string> OldIdFaults(JsonObject manifest)
+    {
+        if (manifest.TryGetPropertyValue("mint", out var mint))
+        {
+            var types = (mint as JsonObject ?? []).Select(static member => member.Key).Where(static member => !member.StartsWith('$')).ToList();
+            yield return types.Count == 0
+                ? "mint is not read from schema 0.4.0; a type's mint settings go in its ids record"
+                : $"mint is not read from schema 0.4.0; {string.Join(", ", types.Select(static type => $"mint.{type} goes in ids.{type}.mint"))}";
+        }
+
+        foreach (var type in (manifest["identifiers"] as JsonObject ?? []).Select(static member => member.Key)
+                     .Where(static member => IdTypes.RepositoryWide.Contains(member) || IdTypes.PerFeature.Contains(member)))
+        {
+            yield return $"identifiers.{type} is not read from schema 0.4.0; its grammar goes in ids.{type}";
         }
     }
 
@@ -578,6 +749,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     /// <implements epic="0001" feature="F7" claim="B-153" />
     /// <implements epic="0001" feature="F19" claim="B-014" />
     /// <implements epic="0001" feature="F19" claim="B-044" />
+    /// <implements epic="0001" feature="F5" claim="B-082" />
+    /// <implements epic="0001" feature="F5" claim="B-092" />
     private SpechtStructure Parse(string text, bool includeDocument, out JsonObject? document)
     {
         var manifest = Present(JsonNode.Parse(text)).AsObject();
@@ -600,13 +773,15 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         var blanks = number.CompareTo(BlankValuesVersion) >= 0 && shipped is not null;
         var mint = number.CompareTo(MintVersion) >= 0 && shipped is not null;
         var claimPrefix = number.CompareTo(ClaimPrefixVersion) >= 0 && shipped is not null;
+        var ids = number.CompareTo(IdsVersion) >= 0 && shipped is not null && defaults.ContainsKey("ids");
         var unknown = manifest
             .Select(static entry => entry.Key)
             .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
                 && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key))
                 && !(policy && key == "pinPolicy")
                 && !(keysAndForms && key is "keys" or "forms")
-                && !(mint && key == "mint"))
+                && !(mint && key == "mint")
+                && !(ids && key == "ids"))
             .Select(static key => $"'{key}'")
             .ToList();
 
@@ -705,10 +880,18 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             };
         }
 
+        List<string> idFaults = [];
+        if (ids)
+        {
+            structure = structure with { Ids = Ids(manifest, defaults, structure.TagComparison, idFaults, document) };
+            idFaults.AddRange(OldIdFaults(manifest));
+        }
+
         Check(
             structure,
             defaults,
             IdentityFaults(manifest, blanks)
+                .Concat(idFaults)
                 .Concat(sourceFaults)
                 .Concat(ClaimTagFaults(structure))
                 .Concat(MatrixKeyFaults(structure))
@@ -769,4 +952,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static readonly SemanticVersion MintVersion = new(0, 3, 1);
 
     private static readonly SemanticVersion ClaimPrefixVersion = new(0, 3, 1);
+
+    private static readonly SemanticVersion IdsVersion = new(0, 4, 0);
+
+    private static readonly char[] Braces = ['{', '}'];
 }
