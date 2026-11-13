@@ -1,0 +1,68 @@
+id: "0439"
+type: refactor
+title: Guard the order of the engine's namespaces
+
+status: blocked
+
+value: 2
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0167"] # the guard test and its I/O half, built on test/tests/Shared/EngineAssembly.cs, land with 0167
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-11-13"
+updated: "2026-11-13"
+closed: null
+
+summary: |
+  The namespace-order half of the guard ADR-0010 § "The guard" decides
+  (.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md):
+  a test that asserts, from the engine assembly's metadata, that no
+  namespace references one above it in ADR-0010 § "The layout". Item 0167
+  builds the guard with its I/O half only (`0001-F1` C-12); this half was
+  cut out of it on the repository owner's selection of 2026-11-13, recorded
+  in item 0167's decisions.
+
+  Blocked on a decision this item does not make. The source does not follow
+  ADR-0010 § "The layout", as found while building item 0167:
+  `Specht.Manifest` references `Specht.Model`, `Specht.Rules`, `Specht.Tree`
+  and `Specht.Identifiers`; `Specht.Identifiers` references
+  `Specht.Manifest`; and `Specht.Identifiers`, `Specht.Facts`,
+  `Specht.Resources` and `Specht.Rules.Matrix` have no place in the layout.
+  The layout also still lists `Specht.Cqrs`, which ADR-0026 superseded.
+  Before an order can be asserted, someone with the authority to decide
+  must say, for each upward reference, whether the layout changes or the
+  code moves, and where each unplaced namespace sits. ADR-0010 is accepted
+  and so immutable: a changed layout is a new record that supersedes that
+  section. The item is released when that decision is recorded.
+
+  It touches the engine of `0001-F1` and its tests, and may move code across
+  namespaces of several Features, so it sits at the repository root with
+  `spec: null`.
+
+acceptance_criteria:
+  - "1. Before any test: a decision on ADR-0010 § 'The layout', recorded as a new record or as code moves that bring the source to the layout, placing `Specht.Identifiers`, `Specht.Facts`, `Specht.Resources` and `Specht.Rules.Matrix` and resolving each upward reference. This item records no choice between them."
+  - "2. `spec-author` writes the order, as decided, as a constraint of `0001-F1` and amends § 5 row 15; no claim is added."
+  - "3. Item 0167's guard gains the order check: it fails when a namespace references one above it in the layout as decided, and passes on this item's tree with no exemption beyond `Specht.Composition`, which stands outside the order. No new package."
+  - "No .feature change needed: refactor - a structure test is added and, where the decision moves code, types move between namespaces; no verdict, report, output or exit code changes."
+  - "Constraints preserved: 0001-F1 C-7, 0001-F1 C-9, 0001-F1 C-12"
+
+decisions:
+  - |
+    2026-11-13, spec-author: cut from item 0167 on the repository owner's
+    selection of 2026-11-13 recorded there, the option labelled "A: I/O
+    now, order later (Recommended)", worded by the coordinator. Status
+    `blocked`: it waits on item 0167 and on the layout decision of
+    criterion 1, which nobody has made. Not added to `.issue/.goal`: no
+    milestone names it, and adding one is the owner's call.
+
+out_of_scope:
+  - "The I/O half of the guard - item 0167; `0001-F1` C-12."
+  - "Any change to a verdict, to the report or to an exit code - `0001-F1` C-9."
