@@ -9,7 +9,7 @@ namespace Specht.Acceptance.Bindings;
 
 [Binding]
 [Scope(Tag = "0201-F1")]
-public sealed class BindingSteps
+public sealed partial class BindingSteps
 {
     [Given("a manifest defining custom Feature and claim grammars and records using them")]
     public void GivenCustomGrammars()
@@ -239,6 +239,12 @@ public sealed class BindingSteps
     [When("its binding is evaluated")]
     public void WhenResolved()
     {
+        if (_claimRecordPolicy is not null)
+        {
+            WhenTheClaimRecordPolicyIsRead();
+            return;
+        }
+
         var resolver = new BindingResolver(new BindingCatalog(_features, _adrs), _policy);
         Result = _adr is null ? resolver.Resolve(_claim!) : resolver.Resolve(_adr);
     }
