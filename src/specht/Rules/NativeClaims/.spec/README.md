@@ -148,7 +148,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 (item 0389 built) -->
+<!-- last written by: implementer, 2026-11-13 (item 0389 built; type faults cite no claim, as § 10 records) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -220,19 +220,19 @@ only. `epicGrammar` is the `identifiers.epic` test, hoisted to a local that
 the `DeclaresEpicGrammar` initializer reads too, so the record and the
 structure read one answer. Each fault names its key first:
 
-| Manifest                                                | Fault text                                                                             | Claim |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----- |
-| `files` declared while the source is not `gherkin`      | `claim.files is set, and only claim.source 'gherkin' reads claim files`                | B-029 |
-| `gherkin`, `files` absent                               | `claim.files is missing, and claim.source 'gherkin' needs at least one claim file set` | B-029 |
-| `gherkin`, `files` not an array, `null` included        | `claim.files is not a list of claim file sets`                                         | B-029 |
-| `gherkin`, `files` empty                                | `claim.files is empty, and claim.source 'gherkin' needs at least one claim file set`   | B-029 |
-| an entry that is not an object                          | `claim.files[<n>] is not an object`                                                    | B-029 |
-| an entry whose `glob` is absent or not text             | `claim.files[<n>] has no text 'glob'`                                                  | B-029 |
-| an entry whose `feature` is absent or not text          | `claim.files[<n>] has no text 'feature'`                                               | B-029 |
-| an entry with `epic` and no `identifiers.epic`          | `claim.files[<n>] has an 'epic', and the manifest declares no epic grammar`            | B-027 |
-| an entry without a text `epic` under `identifiers.epic` | `claim.files[<n>] has no text 'epic', which identifiers.epic requires`                 | B-027 |
-| an entry whose `record` is present and not text         | `claim.files[<n>] has a 'record' that is not text`                                     | B-029 |
-| `source` that is neither `"markdown"` nor `"gherkin"`   | `claim.source must be 'markdown' or 'gherkin'`                                         | B-031 |
+| Manifest                                                | Fault text                                                                             | Claim                                               |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `files` declared while the source is not `gherkin`      | `claim.files is set, and only claim.source 'gherkin' reads claim files`                | B-029                                               |
+| `gherkin`, `files` absent                               | `claim.files is missing, and claim.source 'gherkin' needs at least one claim file set` | B-029                                               |
+| `gherkin`, `files` not an array, `null` included        | `claim.files is not a list of claim file sets`                                         | unclaimed; `0001-F2` B-007                          |
+| `gherkin`, `files` empty                                | `claim.files is empty, and claim.source 'gherkin' needs at least one claim file set`   | B-029                                               |
+| an entry that is not an object                          | `claim.files[<n>] is not an object`                                                    | unclaimed; `0001-F2` B-007                          |
+| an entry whose `glob` is absent or not text             | `claim.files[<n>] has no text 'glob'`                                                  | B-029 (absent); not text unclaimed, `0001-F2` B-007 |
+| an entry whose `feature` is absent or not text          | `claim.files[<n>] has no text 'feature'`                                               | B-029 (absent); not text unclaimed, `0001-F2` B-007 |
+| an entry with `epic` and no `identifiers.epic`          | `claim.files[<n>] has an 'epic', and the manifest declares no epic grammar`            | B-027                                               |
+| an entry without a text `epic` under `identifiers.epic` | `claim.files[<n>] has no text 'epic', which identifiers.epic requires`                 | B-027                                               |
+| an entry whose `record` is present and not text         | `claim.files[<n>] has a 'record' that is not text`                                     | unclaimed; `0001-F2` B-007                          |
+| `source` that is neither `"markdown"` nor `"gherkin"`   | `claim.source must be 'markdown' or 'gherkin'`                                         | B-031                                               |
 
 `<n>` is the entry's zero-based index. No fault repeats a value: a glob or a
 record may be rooted, and an absolute path is in no output (brief § 9; the
@@ -258,7 +258,9 @@ text, and a `scopes` that is not an object take the path every key of the
 wrong JSON type takes: `Strings`, `GetValue<string>` or `AsObject` throws, the
 model reader raises `SpechtManifestUnreadableException`, exit `3`, without the
 key (`0001-F2` B-007), as `claim.tag` does today. Inside a set every fault
-names `claim.files`, because B-029 asks each fault of a set to name the key.
+names `claim.files`: B-029 asks its faults to name the key, and the type faults
+inside a set, which § 10 leaves unclaimed because each exits `3` either way
+(`0001-F2` B-007), name it by this design.
 Whether a tag list entry must be an `@`-led tag, and whether a scope form must
 hold its placeholder once, no claim of this item states; item `0390` reads the
 forms and item `0395` reports B-019.
