@@ -301,12 +301,13 @@ Feature: Native Gherkin claims
     Then the output equals the output of the same tree before this Feature
 
   @B-028
-  Scenario: An earlier pin refuses the new members as today
+  Scenario: An earlier pin ignores claim.source
     Given the manifest is pinned to schema "0.3.1"
+    And a tree the check passes without "claim.source"
     And the manifest sets "claim.source" to "gherkin"
     When the check runs
-    Then the exit code is 3
-    And stderr names "claim.source"
+    Then the exit code is 0
+    And the output equals the output without "claim.source"
 
   @B-029
   Scenario Outline: An invalid claim file set exits before any rule
