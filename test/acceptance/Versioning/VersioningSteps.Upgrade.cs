@@ -270,7 +270,7 @@ public sealed partial class VersioningSteps
 
     private static List<KeyValuePair<string, JsonNode?>> DefinedKeys(string version) =>
         JsonNode.Parse(InitWriter.ShippingCopy(typeof(InitWriter).Assembly)[$"manifest/v{version}/manifest.json"])!.AsObject()
-            .Where(static member => member.Key is not ("schemaVersion" or "identifiers") && !member.Key.StartsWith('$'))
+            .Where(static member => member.Key is not ("schemaVersion" or "identifiers" or "ids") && !member.Key.StartsWith('$'))
             .ToList();
 
     private static void WriteShippedFiles(SpechtTree tree, string version)
