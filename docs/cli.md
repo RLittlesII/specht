@@ -446,6 +446,7 @@ Listing reads no schema or specification files and fetches nothing.
 0.2.1 (pinned)
 0.3.0
 0.3.1
+0.4.0
 ```
 
 ## `specht schema pin`
@@ -549,8 +550,9 @@ specht mint <type> [--feature <DIR>] [--root <DIR>]
 ```
 
 Prints one new id for `<type>`, a type the manifest's `mint` key opts in, drawn
-with that type's own strategy settings. Schema `0.3.1` or later accepts the key;
-[Configuration](configuration.md) describes the manifest. Every record type the
+with that type's own strategy settings. Schema `0.3.1` accepts the key, and
+schema `0.4.0` rejects it in favour of `ids.<type>.mint`, which this command
+does not read yet; [Configuration](configuration.md) describes the manifest. Every record type the
 key names, such as `adr` or `lesson`, needs a grammar in `identifiers`.
 `epic`, `feature` and `task` ids are not minted, and an entry that opts one in
 refuses every request.

@@ -11,7 +11,7 @@ naming the group; under `0.1.0` to `0.2.1` it is the three-digit id in
 brackets below. No version accepts the other form.
 [brief § 4](../.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)
 summarises them, each has a page under the pinned version's folder, such as
-[`rules/v0.3.1/`](rules/v0.3.1/), and each finding says what the rule expected.
+[`rules/v0.4.0/`](rules/v0.4.0/), and each finding says what the rule expected.
 
 A specification is a `<area>/.spec/README.md` beside the code it covers, with
 its `.feature` file in the same folder. The repository-root `.spec/` holds the
@@ -53,7 +53,7 @@ specification reaching approved, lowers the rule in its manifest:
 ```
 
 That is the sanctioned way to choose otherwise. `warning` still fails a run
-under `--strict`; `off` stops the rule. This repository pins `0.3.1` and
+under `--strict`; `off` stops the rule. This repository pins `0.4.0` and
 sets no level.
 `specht rules set <id> <level>` sets one rule's level
 ([command line](cli.md#specht-rules-set)), or edit `rules` by hand

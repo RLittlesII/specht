@@ -41,7 +41,8 @@ that the next check rejects; edit those settings after pinning.
 | `roles`             | The `sections` title that holds the claims, the matrix and the sign-off, which `SPEC2002`, `SPEC4002`, `SPEC4003`, `SPEC4004`, `SPEC7001` and `SPEC7002` look up.                                                                                                                                                                                                                                                                                                                  |
 | `markers`           | The text of a missing-test cell, a draft and a blocked sign-off row and the approved status, which `SPEC7001` and `SPEC7002` look for.                                                                                                                                                                                                                                                                                                                                             |
 | `rules`             | Each rule id's level: `error` or `warning` re-grades its violations, `off` drops them. A rule left out keeps its own severity; an id outside the pinned vocabulary, or any other level, exits `3`.                                                                                                                                                                                                                                                                                 |
-| `identifiers.claim` | The claim id grammar `SPEC4003` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC4002`.                                                                                                                                                                                                                                                                                                                                                                            |
+| `identifiers.claim` | Below schema `0.4.0`, the claim id grammar `SPEC4003` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC4002`.                                                                                                                                                                                                                                                                                                                                                      |
+| `ids`               | From schema `0.4.0`, one record per id type that shapes its ids; `ids.claim` is the claim grammar. See [Id records](#id-records).                                                                                                                                                                                                                                                                                                                                                  |
 
 Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `withdrawn` and `superseded`, default `Covered`, `Partial`, `Waived`, `Withdrawn` and `Superseded`. Four more keys are accepted; none is filled from a default, and older pins reject them:
 
@@ -53,6 +54,8 @@ Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `with
 Schema `0.3.1` reads every key and reports every rule `0.3.0` does. It also accepts `mint`, the id settings, an object keyed by record type, and older pins reject it. The check reads nothing from it, so a manifest with it gets the report it gets without it; [Minted ids](#minted-ids) describes it.
 
 Schema `0.3.1` also names `keys.feature.claimPrefix`, default `claim_prefix`: the Feature frontmatter field holding the Feature's own claim prefix, text with at least one non-white-space character, which `SPEC1002` checks. A Feature that declares one, such as `claim_prefix: CI-AC-`, reads its claim ids as that literal, case-sensitive prefix, three ASCII digits and an optional lowercase letter, `CI-AC-001a`; the declaration takes precedence over `identifiers.claim`, which still governs every Feature that declares none. Its matrix and companion tags resolve the complete id under `claim.tag` and `claim.tagIgnoreCase`. Older pins give the field no meaning.
+
+Schema `0.4.0` adds `ids` and moves the claim, constraint and open-question grammars out of `identifiers`, and `mint`, into it; [Id records](#id-records) describes it. It reports every rule `0.3.1` does.
 
 Under schema `0.3.0`, `markers` also names `done`, default `done`: the delivery `status` at which `SPEC7001` reports a `Missing` cell. An empty one exits `3`. From schema `0.3.0` any marker of white space alone exits `3` too.
 
@@ -147,13 +150,66 @@ Under schema `0.2.0`, companion claim tags follow `identifiers.claim` inside the
 
 Pin `0.1.0` retains the original `@B-nnn` scanner with an optional lowercase suffix. Pins below `0.3.0` read the frontmatter keys by their default names.
 
+## Id records
+
+From schema `0.4.0` the manifest's `ids` holds one record per id type:
+`claim`, `constraint`, `openQuestion`, `scenario`, `decision`, `adr` and
+`lesson`. A record has three members:
+
+| Member  | Does                                                                                                                        |
+| ------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `plain` | The id where no claim prefix applies: literal text ending with its only `{id}`, no other brace.                             |
+| `form`  | The id in a Feature that declares a claim prefix: holds `{prefix}` once and ends with `{id}`. `adr` and `lesson` take none. |
+| `id`    | A regular expression the text in the `{id}` place matches whole. It must compile and not be empty.                          |
+
+A type or member left out takes the shipped record's value. These are the
+shipped records, with `[0-9a-hjkmnp-tv-z]` written `b32`:
+
+| Type           | `plain`   | `form`         | `id`                              |
+| -------------- | --------- | -------------- | --------------------------------- |
+| `claim`        | `B-{id}`  | `{prefix}{id}` | `[0-9]{3}[a-z]?\|b32{6}\|b32{13}` |
+| `constraint`   | `C-{id}`  |                | `[0-9]+\|b32{6}\|b32{13}`         |
+| `openQuestion` | `OQ-{id}` |                | `[0-9]+\|b32{6}\|b32{13}`         |
+| `scenario`     | `S-{id}`  |                | `[0-9]+\|b32{6}\|b32{13}`         |
+| `decision`     | `{id}`    |                | `[0-9]{4}\|b32{6}\|b32{13}`       |
+| `adr`          | `{id}`    |                | `[0-9]{4}\|b32{8}\|b32{13}`       |
+| `lesson`       | `{id}`    |                | `[0-9]{4}\|b32{8}\|b32{13}`       |
+
+`SPEC4003` reads a claim id as its head, then a whole match of `ids.claim.id`,
+case-sensitive. The head is `plain` without its `{id}`, `B-`; in a Feature that
+declares a claim prefix it is `form` with the prefix in place of `{prefix}`, so
+`claim_prefix: CI-AC-` reads `CI-AC-001a` and `CI-AC-m7p2qr`. A prefix whose
+claim head equals its scenario head, rendered the same way from `ids.scenario`,
+is reported and read as none. `ids.claim` and `ids.scenario` must not give the
+same head, compared as `claim.tagIgnoreCase` compares tags.
+
+Under schema `0.4.0` these exit `3`, each message naming where the setting goes:
+
+- `identifiers.claim`, `identifiers.constraint`, `identifiers.openQuestion`,
+  and an `identifiers` entry for any other of the seven types. `task`, `feature`
+  and `epic` stay in `identifiers`.
+- The top-level `mint`; its entries go in `ids.<type>.mint`. The check accepts
+  that member and reads nothing from it, and `specht mint` does not read it yet.
+- An `ids` member that is not one of the seven or `$`-led, a record member
+  other than the three above, `mint` or a `$`-led one, and a `plain`, `form` or
+  `id` the rules above reject.
+
+To move a manifest to `0.4.0`, remove those `identifiers` entries and the
+top-level `mint`, run `specht schema pin 0.4.0`, then `specht upgrade`, which
+adds `ids` with the shipped records when the manifest has none. A manifest that
+maps the claim grammar to `Specht.CodeAnalysis` maps `"/ids/claim":
+"/ids/claim"` in place of `identifiers.claim`, keeping `/identifiers` for the
+Feature grammar; the analyzer and `specht evidence` read the claim record's
+`plain` and `id`.
+
 ## Minted ids
 
 [`specht mint <type>`](cli.md#specht-mint) draws a new id from the type's
-`mint` entry, under schema `0.3.1` or later. A type with no entry keeps its own
+`mint` entry, under schema `0.3.1`. A type with no entry keeps its own
 numbering. The type also needs a grammar in `identifiers`, and that grammar
 must accept every id the entry can draw. This entry mints eight-character ADR
-numbers from digits and lower-case letters:
+numbers from digits and lower-case letters, under schema `0.3.1`; schema
+`0.4.0` rejects the top-level `mint` (see [Id records](#id-records)):
 
 ```json
 "identifiers": { "adr": "^[0-9a-z]{8}$" },
