@@ -43,7 +43,7 @@ claims:
   - B-025
 
 created: "2026-10-15"
-updated: "2026-11-02"
+updated: "2026-11-12"
 closed: null
 
 summary: |
@@ -88,6 +88,16 @@ summary: |
   through 0334. 0335 does not wait on it, since this manifest sets no
   `matrix.scenarioTitles` and SPEC022 is silent here (B-010).
 
+  Re-cut 2026-11-12 (decision 0005): specht.tool 0.4.2-preview published
+  schema 0.3.0 with SPEC4007 (0335) and SPEC4009 (0334) and without
+  SPEC4008 and SPEC4010, so 0.3.0 is frozen (0001-F7 C-1). SPEC4008
+  (0336) and SPEC4010 (0337) join schema 0.4.0, which 0436 (`0001-F5`)
+  cuts, each relocking it while no published package embeds it. 0336,
+  0337 and 0338 wait on 0436, which also moves this repository's pin to
+  0.4.0, so each rule still runs on this tree in the pull request that
+  builds it (decision 0002 call 3). The guard (0338) proves each rule
+  silent below the version it enters (B-021).
+
 acceptance_criteria:
   - "B-001 — § 9 columns by position (0225; scenarios 0334)"
   - "B-002 — unresolved test name, SPEC032 (0334)"
@@ -109,7 +119,7 @@ acceptance_criteria:
   - "B-018 — waiver without a signed-off approver and date, SPEC034 (0227)"
   - "B-019 — retired claim still carried, SPEC035 (0227)"
   - "B-020 — SPEC034 and SPEC035 off unless raised (0227, after 0223)"
-  - "B-021 — below 0.3.0 the four rules do not run (0338)"
+  - "B-021 — each rule silent below the version it enters, 0.3.0 or 0.4.0 (0338)"
   - "B-022 — Feature, Rule and Examples tags carried, SPEC022 (0335)"
   - "B-023 — titles compared trimmed and case-sensitive, SPEC022 (0335)"
   - "B-024 — claim tag case under claim.tagIgnoreCase, SPEC022 (0335)"
@@ -169,6 +179,16 @@ decisions:
     Addendum). spec-author's reading: 0334 and 0336 wait on 0339, and
     0335 does not, since SPEC022 reports nothing here without
     `matrix.scenarioTitles`.
+  - |
+    2026-11-12, the repository owner, answering `0001-F12` OQ-4: "0.4.0",
+    the next minor, with 0336 waiting on 0436, which cuts 0.4.0
+    (decision 0005). 0.3.0 was published by specht.tool 0.4.2-preview
+    before SPEC4008 and SPEC4010 were built. spec-author's reading, not
+    the owner's: SPEC4010 enters 0.4.0 too; 0337 and 0338 also wait on
+    0436; SPEC4007 and SPEC4009 stay in 0.3.0 and 0.3.1 as built; each of
+    the two rules relocks 0.4.0 while no published package embeds it,
+    and stops for the owner if one does; 0436's pin move takes the role
+    0339 had for 0.3.0.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

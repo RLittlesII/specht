@@ -212,7 +212,7 @@ Feature: Matrix resolution
 
   @B-011
   Scenario: A live claim no scenario carries is reported unless its row is missing
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And an active claim B-004 whose tag no scenario carries
     And its matrix row's Status is "Covered"
     When the check runs
@@ -220,7 +220,7 @@ Feature: Matrix resolution
 
   @B-011 @boundary
   Scenario: A live claim no scenario carries is not reported while its row is missing
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And an active claim B-004 whose tag no scenario carries
     And its matrix row's Status is the missing marker
     When the check runs
@@ -228,7 +228,7 @@ Feature: Matrix resolution
 
   @B-011 @boundary
   Scenario: A withdrawn claim no scenario carries is not reported for it
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And a claim B-004 marked "Withdrawn" whose tag no scenario carries
     And its matrix row's Status is "Withdrawn"
     When the check runs
@@ -236,7 +236,7 @@ Feature: Matrix resolution
 
   @B-011 @boundary
   Scenario: A waived row whose claim no scenario carries is not reported for it
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And an active claim B-004 whose tag no scenario carries
     And its matrix row's Status is "Waived"
     When the check runs
@@ -244,7 +244,7 @@ Feature: Matrix resolution
 
   @B-012
   Scenario: A row reported for its missing scenario is not reported for its status
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And an active claim B-004 whose tag no scenario carries
     And its matrix row's Status is "Covered"
     When the check runs
@@ -253,7 +253,7 @@ Feature: Matrix resolution
 
   @B-013
   Scenario Outline: A covered row whose scenario or tests do not resolve is reported
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares the test files "test/**/*.cs"
     And the manifest turns scenario title matching on
     And a row whose Status is "Covered", whose scenario <scenario> and whose tests <tests>
@@ -269,7 +269,7 @@ Feature: Matrix resolution
 
   @B-013
   Scenario: A covered row whose Test cell is the missing marker is reported
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares the test files "test/**/*.cs"
     And a row whose Status is "Covered", whose scenario resolves and whose Test cell is the missing marker
     When the check runs
@@ -277,7 +277,7 @@ Feature: Matrix resolution
 
   @B-014
   Scenario Outline: A partial row with nothing resolved is reported
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares the test files "test/**/*.cs"
     And the manifest turns scenario title matching on
     And a row whose Status is "Partial", whose scenario <scenario> and whose tests <tests>
@@ -292,7 +292,7 @@ Feature: Matrix resolution
 
   @B-015
   Scenario: A missing row whose tests all resolve is reported as stale
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares the test files "test/**/*.cs"
     And a row whose Status is "Missing" and whose Test cell names tests that all resolve
     When the check runs
@@ -300,7 +300,7 @@ Feature: Matrix resolution
 
   @B-015 @boundary
   Scenario: A missing row whose tests do not all resolve is not stale
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares the test files "test/**/*.cs"
     And a row whose Status is "Missing" and whose Test cell names one test that resolves and one that does not
     When the check runs
@@ -308,7 +308,7 @@ Feature: Matrix resolution
 
   @B-016
   Scenario: With no test files declared a covered row is judged by its scenario and a named test
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares no tests
     And a row whose Status is "Covered", whose scenario resolves and whose Test cell names a test no file holds
     When the check runs
@@ -316,7 +316,7 @@ Feature: Matrix resolution
 
   @B-016
   Scenario: With no test files declared a missing row is never stale
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares no tests
     And a row whose Status is "Missing" and whose Test cell names a test
     When the check runs
@@ -324,7 +324,7 @@ Feature: Matrix resolution
 
   @B-016
   Scenario: With no test files declared a covered row naming no test is reported
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And the manifest declares no tests
     And a row whose Status is "Covered", whose scenario resolves and whose Test cell is the missing marker
     When the check runs
@@ -332,7 +332,7 @@ Feature: Matrix resolution
 
   @B-017
   Scenario: A status that is no known marker is reported
-    Given the manifest pins schema version 0.3.0 instead
+    Given the manifest pins schema version 0.4.0 instead
     And a row whose Status is "Done"
     When the check runs
     Then the status rule reports that row, expecting one of the covered, partial, missing, waived, withdrawn and superseded markers
@@ -417,6 +417,19 @@ Feature: Matrix resolution
       | 0.1.0   |
       | 0.2.0   |
       | 0.2.1   |
+
+  @B-021 @boundary
+  Scenario Outline: Under schema 0.3.0 or 0.3.1 the missing-scenario and status rules do not run
+    Given the manifest pins schema version <version> instead
+    And the specification's matrix has a covered row no scenario carries and a status that is no known marker
+    When the check runs
+    Then no missing-scenario or status finding is reported
+    And the report is byte-for-byte the one the tool gives that tree without the missing-scenario and status rules
+
+    Examples:
+      | version |
+      | 0.3.0   |
+      | 0.3.1   |
 
   @B-021 @boundary
   Scenario: Under schema 0.2.0 a raised waiver rule runs and the scenario, test and status rules do not

@@ -110,7 +110,18 @@ Spec-author's readings, not stated by the owner:
 
 ## Reversal
 
-None.
+2026-11-12, calls 1 and 2 for `SPEC023` and `SPEC033`, now `SPEC4008` and
+`SPEC4010` (ADR-0029), on the repository owner's answer to OQ-4 (decision
+0005); recorded by spec-author. `specht.tool` `0.4.2-preview` published
+`0.3.0` with `SPEC4007` and `SPEC4009` and without the other two, so
+`0001-F7` C-1 freezes it and call 3 no longer allows a relock. The owner
+selected "0.4.0", the next minor; the two rules enter it. Calls 1 to 3 stand
+for `SPEC4007` and `SPEC4009`, built into `0.3.0` while it was unpublished,
+and call 4 stands. As spec-author reads it, the two rules now take rejected
+option (c), a later `0.minor` after a published package embeds `0.3.0`,
+though in `0.4.0`, which `0001-F5` cuts, and not a version of their own.
+
+Considered and not chosen: the options decision 0005 records as ruled out.
 
 ## Addendum - 2026-11-01
 
