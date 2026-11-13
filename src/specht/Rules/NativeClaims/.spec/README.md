@@ -129,7 +129,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-13 -->
+<!-- last written by: implementer, 2026-11-13 (item 0389 built; B-031 row) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -140,6 +140,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | No `claim.source`, or `markdown`, changes no verdict (B-002)                                                                                               | Business       | `SpechtClaimInput.Source` is `Markdown`; no rule reads the record until item `0390`                                                                                         |
 | A claim file set's members and its identity under the epic grammar (B-027, B-029)                                                                          | Business       | `SpechtManifestParser.ClaimInput`, over the `DeclaresEpicGrammar` reading                                                                                                   |
 | An invalid claim file set exits `3`, naming the key, before any rule runs (B-029; `0001-F5` B-018, C-5)                                                    | Both           | The faults join `SpechtManifestParser.Check`'s list; `SpechtModelReader.Read` reads the manifest before discovery; each command folds `SpechtManifestException` to exit `3` |
+| A `claim.source` outside `markdown` and `gherkin` exits `3`, naming `claim.source` (B-031; decision 0003)                                                  | Both           | `SpechtManifestParser.ClaimInput` adds the fault to the same list                                                                                                           |
 | Every member is a top-level key the checker owns; nothing is read under `codeAnalysis` (C-4, C-7; ADR-0023)                                                | Business       | The parser reads `manifest["claim"]` alone; `codeAnalysis` stays in `KnownKeys` and unread                                                                                  |
 | A member of the wrong JSON type outside a claim file set takes the path every key of the wrong type takes                                                  | Technical      | `SpechtManifestUnreadableException`, exit `3` (`0001-F2` B-007)                                                                                                             |
 | `specht manifest` prints the filled members (`0001-F9` B-004)                                                                                              | Technical      | The existing `claimDocument` projection                                                                                                                                     |
@@ -147,24 +148,23 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 -->
+<!-- last written by: implementer, 2026-11-13 (item 0389 built) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
 ### The claim members at schema 0.4.0 (item `0389`)
 
-Designed, not built. Schema `0.4.0` is cut by item `0436` on its own branch;
-this design reads it as `0001-F5` B-081 to B-097 and decision 0024 specify it.
-`identifiers.epic` stays a grammar under `0.4.0` (`0001-F5` B-092), so the
-epic reading below holds there.
+Built. Schema `0.4.0` is cut by item `0436`, as `0001-F5` B-081 to B-097 and
+decision 0024 specify it. `identifiers.epic` stays a grammar under `0.4.0`
+(`0001-F5` B-092), so the epic reading below holds there.
 
 **The gate.** One constant beside the parser's others,
-`ClaimMembersVersion = new(0, 4, 0)`. `Parse` sets `claimMembers` as it sets
-`keysAndForms`: the pin is at least `ClaimMembersVersion`, the pin is shipped,
-and the pin's shipped `claim` object holds `source`. The last test is the
-`keysAndForms` precedent, which asks the pinned default for `keys` and
-`forms`: until this item adds the defaults, a shipped `0.4.0` reads as it
-reads today.
+`ClaimMembersVersion`, in
+[`SpechtManifestParser.cs`](../../../Manifest/SpechtManifestParser.cs).
+`Parse` sets `claimMembers` as it sets `keysAndForms`: the pin reads `claim`
+at all, is at least `ClaimMembersVersion`, and its shipped `claim` object
+holds `source`. The last test is the `keysAndForms` precedent, which asks the
+pinned default for `keys` and `forms`.
 
 **Below the gate.** Nothing changes. The parser reads `tag` and
 `tagIgnoreCase` and leaves every other `claim` member unread, as it does at
@@ -176,8 +176,9 @@ amends in § 2, § 3, § 10 and the `.feature` file. Both B-028 scenarios are th
 parser as built, green when written, as `0001-F5` B-072's are. `ClaimInput` is
 null below the gate.
 
-**The record.** `SpechtStructure` gains one property,
-`ClaimInput`, of a new record `SpechtClaimInput`, null below the gate:
+**The record.** `SpechtStructure.ClaimInput`, declared in
+[`SpechtStructure.cs`](../../../Manifest/SpechtStructure.cs), holds a
+`SpechtClaimInput`, null below the gate:
 
 | Member                                         | Read from                                         | Shipped `0.4.0` default |
 | ---------------------------------------------- | ------------------------------------------------- | ----------------------- |
@@ -192,43 +193,46 @@ null below the gate.
 `SpechtClaimSource` is an enum, `Markdown` and `Gherkin`, as
 `SchemaSourceSelection` is for `schemaSource`; the text `"gherkin"` is then
 written in the parser alone, and item `0390` branches on the value (C-4).
-`SpechtClaimFileSet(Glob, Feature, Epic, Record)` holds one entry, `Epic` and
-`Record` null when the entry has none. `Files` is empty under `Markdown`. Each
-type has its own file under `src/specht/Manifest/`, as `SchemaSourceSelection`
-does: `SpechtClaimInput.cs`, `SpechtClaimSource.cs` and
-`SpechtClaimFileSet.cs`.
+`SpechtClaimFileSet` holds one entry, `Epic` and `Record` null when the entry
+has none. `Files` is empty under `Markdown`. Each type has its own file, as
+`SchemaSourceSelection` does:
+[`SpechtClaimInput.cs`](../../../Manifest/SpechtClaimInput.cs),
+[`SpechtClaimSource.cs`](../../../Manifest/SpechtClaimSource.cs) and
+[`SpechtClaimFileSet.cs`](../../../Manifest/SpechtClaimFileSet.cs).
 
 **The fill.** `Parse` already holds `claim`, `claimDefaults` and
 `claimDocument`. `source`, the three tag lists and `lifecycleKey` are read
 through `Selected`, the way `tag` and `tagIgnoreCase` are, so a member left
 out is the shipped default's, a partial `claim` object included, and the
-projection copies the filled value into the document. `files` and `scopes`
-have no shipped default and are read only as declared: `Selected` requires
-one. The tag lists read through `Strings`, `lifecycleKey` and the scope forms
-through `GetValue<string>`.
+projection copies the filled value into the document. A declared `source` is
+read as written, JSON `null` included, so a `null` source is refused rather
+than filled. `files` and `scopes` have no shipped default and are read only as
+declared: `Selected` requires one. The tag lists read through `Strings`,
+`lifecycleKey` and the scope forms through `GetValue<string>`.
 
-**The faults.** A private static `ClaimInput(claim, claimDefaults,
-claimDocument, epicGrammar, faults)` reads the record and adds each fault to
-the list `SourceSelection` and `Policy` already fill, so they reach `Check`
+**The faults.** The private static `ClaimInput` reads the record, with
+`FileSets` reading `claim.files` under `gherkin` and `NoFileSets` refusing it
+under `markdown`, and adds each fault to the list `SourceSelection` and
+`Policy` already fill, so they reach `Check`
 with every other fault and throw one `SpechtManifestException` before a schema
 is read or a rule runs; each command already folds that to exit `3`, stderr
 only. `epicGrammar` is the `identifiers.epic` test, hoisted to a local that
 the `DeclaresEpicGrammar` initializer reads too, so the record and the
 structure read one answer. Each fault names its key first:
 
-| Manifest                                                | Fault text                                                                             | Claim           |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------- |
-| `files` declared while the source is not `gherkin`      | `claim.files is set, and only claim.source 'gherkin' reads claim files`                | B-029           |
-| `gherkin`, `files` absent                               | `claim.files is missing, and claim.source 'gherkin' needs at least one claim file set` | B-029           |
-| `gherkin`, `files` not an array, `null` included        | `claim.files is not a list of claim file sets`                                         | B-029           |
-| `gherkin`, `files` empty                                | `claim.files is empty, and claim.source 'gherkin' needs at least one claim file set`   | B-029           |
-| an entry that is not an object                          | `claim.files[<n>] is not an object`                                                    | B-029           |
-| an entry whose `glob` is absent or not text             | `claim.files[<n>] has no text 'glob'`                                                  | B-029           |
-| an entry whose `feature` is absent or not text          | `claim.files[<n>] has no text 'feature'`                                               | B-029           |
-| an entry with `epic` and no `identifiers.epic`          | `claim.files[<n>] has an 'epic', and the manifest declares no epic grammar`            | B-027           |
-| an entry without a text `epic` under `identifiers.epic` | `claim.files[<n>] has no text 'epic', which identifiers.epic requires`                 | B-027           |
-| an entry whose `record` is present and not text         | `claim.files[<n>] has a 'record' that is not text`                                     | B-029           |
-| `source` that is neither `"markdown"` nor `"gherkin"`   | `claim.source must be 'markdown' or 'gherkin'`                                         | none; see below |
+| Manifest                                                | Fault text                                                                             | Claim |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----- |
+| `files` declared while the source is not `gherkin`      | `claim.files is set, and only claim.source 'gherkin' reads claim files`                | B-029 |
+| `gherkin`, `files` absent                               | `claim.files is missing, and claim.source 'gherkin' needs at least one claim file set` | B-029 |
+| `gherkin`, `files` not an array, `null` included        | `claim.files is not a list of claim file sets`                                         | B-029 |
+| `gherkin`, `files` empty                                | `claim.files is empty, and claim.source 'gherkin' needs at least one claim file set`   | B-029 |
+| an entry that is not an object                          | `claim.files[<n>] is not an object`                                                    | B-029 |
+| an entry whose `glob` is absent or not text             | `claim.files[<n>] has no text 'glob'`                                                  | B-029 |
+| an entry whose `feature` is absent or not text          | `claim.files[<n>] has no text 'feature'`                                               | B-029 |
+| an entry with `epic` and no `identifiers.epic`          | `claim.files[<n>] has an 'epic', and the manifest declares no epic grammar`            | B-027 |
+| an entry without a text `epic` under `identifiers.epic` | `claim.files[<n>] has no text 'epic', which identifiers.epic requires`                 | B-027 |
+| an entry whose `record` is present and not text         | `claim.files[<n>] has a 'record' that is not text`                                     | B-029 |
+| `source` that is neither `"markdown"` nor `"gherkin"`   | `claim.source must be 'markdown' or 'gherkin'`                                         | B-031 |
 
 `<n>` is the entry's zero-based index. No fault repeats a value: a glob or a
 record may be rooted, and an absolute path is in no output (brief § 9; the
@@ -242,11 +246,11 @@ requires `epic` on every entry; one that declares none refuses it. The
 grammar's own match against `epic` and `feature` is not this item's: no claim
 of this Feature states it, and a set's identity is item `0391`'s (B-017).
 
-**A source value outside the two.** No claim of this Feature states what
-`claim.source` of `"yaml"`, `"Gherkin"` or a number does. The design rejects
-it, as `schemaSource` and `pinPolicy` reject theirs, because a misread value
-would check the tree as Markdown in silence. Until spec-author states it as a
-claim, the row stays out of the build.
+**A source value outside the two.** B-031 (decision 0003): `"yaml"`,
+`"Gherkin"`, a number or `null` is refused, as `schemaSource` and `pinPolicy`
+refuse theirs, because a misread value would check the tree as Markdown in
+silence. A refused source reads as `Markdown`, so `claim.files` beside it adds
+its own fault as well.
 
 **Type faults outside a set.** A tag list that is not an array, an entry in
 one that is not text, a `lifecycleKey`, `featureTag` or `epicTag` that is not
@@ -272,15 +276,16 @@ parser reads it. `files` and `scopes` print as declared, and are absent when
 not declared. `--defaults` prints the shipped `0.4.0` `claim` object. The MCP
 `manifest` tool runs the same command.
 
-**The files.** The shipped `0.4.0` manifest's `claim` gains `source`,
-`plannedTags`, `withdrawnTags`, `supersededTags` and `lifecycleKey` with the
-defaults above, and `./build.sh LockSchemaVersion` relocks `0.4.0` after its
-entry is removed by hand, as item `0352` relocked `0.3.1`; `0.1.0` to `0.3.1`
-and their lock entries stay byte-identical (`0001-F7` C-1, C-17). Once item
-`0436` moves this repository's pin to `0.4.0`, the live
-`.specht/manifest.json` takes the five members by hand if `0001-F4` B-004's
-test compares `claim`'s members; `upgrade` adds only missing top-level keys.
-`docs/configuration.md`'s `claim` paragraph names the `0.4.0` members.
+**The files.** The shipped
+[`0.4.0` manifest](../../../../tool/manifest/v0.4.0/manifest.json)'s `claim`
+carries `source`, `plannedTags`, `withdrawnTags`, `supersededTags` and
+`lifecycleKey` with the defaults above, and `./build.sh LockSchemaVersion`
+relocked `0.4.0` after its entry was removed by hand, as item `0352` relocked
+`0.3.1`; `0.1.0` to `0.3.1` and their lock entries are byte-identical
+(`0001-F7` C-1, C-17). The live `.specht/manifest.json` carries the five
+members, because `0001-F4` B-004's test compares `claim` whole; `upgrade` adds
+only missing top-level keys. `docs/configuration.md` names the `0.4.0`
+members.
 
 **Reuse.** `Selected`, `Strings`, `Text`, the fault list and `Check` carry the
 reading; no new helper is needed. Three records of the same shape already
