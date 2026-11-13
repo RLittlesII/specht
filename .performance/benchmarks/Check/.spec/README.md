@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-13"
+updated: "2026-11-13"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ The check runs at three call sites, one a pre-commit hook a person waits on (bri
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-09, 2026-11-13 (A-2, item 0167) -->
 
 | #   | Persona                             | Need                                                                      | Pain Point Today                                              |
 | --- | ----------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------- |
@@ -45,10 +45,10 @@ The check runs at three call sites, one a pre-commit hook a person waits on (bri
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                           |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The tree sizes and the generated, clean tree are `0109-F1`'s (`0109-F1` decision 0004, B-015).                                                       |
-| A-2 | The whole check is the engine's run from a root - `SpechtRunner`'s entry that takes one, as ADR-0005 § Decision (a) shapes it - and not the command. |
+| ID  | Assumption                                                                                                                                                                                          |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The tree sizes and the generated, clean tree are `0109-F1`'s (`0109-F1` decision 0004, B-015).                                                                                                      |
+| A-2 | The whole check is the engine's check entry point, `SpechtCheck`, called with a root and no schema-source selection (ADR-0026 § "The revised migration design"; item `0167`) - and not the command. |
 
 ## 3. Acceptance Criteria
 
@@ -87,17 +87,17 @@ The check runs at three call sites, one a pre-commit hook a person waits on (bri
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-02 (item 0153: row 5, the tree types are the engine's) -->
+<!-- last written by: implementer, 2026-11-02 (item 0153: row 5, the tree types are the engine's); spec-author, 2026-11-13 (item 0167: row 2, the check entry point) -->
 
-| #   | Concern                                                                                                                 | Classification | Where                                                                                                                 |
-| --- | ----------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 1   | Which tree sizes are measured, and the size named in each result (B-001, B-004; C-1)                                    | Business       | `CheckBenchmarks.Specifications`, a `[Params(1, 10, 100, 1000)]` property                                             |
-| 2   | What the measured call is: the engine's whole run from a root, and no host (C-2)                                        | Business       | `CheckBenchmarks.Check`, which returns `_runner.Run(_root)` on the runner the setup resolved                          |
-| 3   | The tree is on disk, built once per size and outside the measured call (C-3, C-4)                                       | Both           | `CheckBenchmarks.GenerateTree`, the `[GlobalSetup]`; `DeleteTree`, the `[GlobalCleanup]`                              |
-| 4   | A size is measured only when the check counts its whole tree and finds it clean (B-002)                                 | Business       | `CheckBenchmarks.GenerateTree`, which throws otherwise                                                                |
-| 5   | What the tree holds and how it is laid out (B-003)                                                                      | Business       | Not this Feature's: the engine's `SpechtTreeGenerator` and `SpechtTreeStore` (`0109-F1` § 7 `### The tree generator`) |
-| 6   | Allocated memory in the result, and which result files a run writes                                                     | Technical      | Not this Feature's: the shared `BenchmarkConfiguration` (`0109-F1` § 7)                                               |
-| 7   | Where the measured runner comes from: the engine's own registration, composed outside the measured call (C-2; ADR-0003) | Technical      | `CheckBenchmarks.GenerateTree`, through `TypeRegistrar.Build()`; the `src/tool` reference in `benchmarks.csproj`      |
+| #   | Concern                                                                                                                 | Classification | Where                                                                                                                                               |
+| --- | ----------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Which tree sizes are measured, and the size named in each result (B-001, B-004; C-1)                                    | Business       | `CheckBenchmarks.Specifications`, a `[Params(1, 10, 100, 1000)]` property                                                                           |
+| 2   | What the measured call is: the engine's whole run from a root, and no host (C-2)                                        | Business       | `CheckBenchmarks.Check`, which returns the report of the `SpechtCheck` the setup resolved, called with `_root` and a `null` schema-source selection |
+| 3   | The tree is on disk, built once per size and outside the measured call (C-3, C-4)                                       | Both           | `CheckBenchmarks.GenerateTree`, the `[GlobalSetup]`; `DeleteTree`, the `[GlobalCleanup]`                                                            |
+| 4   | A size is measured only when the check counts its whole tree and finds it clean (B-002)                                 | Business       | `CheckBenchmarks.GenerateTree`, which throws otherwise                                                                                              |
+| 5   | What the tree holds and how it is laid out (B-003)                                                                      | Business       | Not this Feature's: the engine's `SpechtTreeGenerator` and `SpechtTreeStore` (`0109-F1` § 7 `### The tree generator`)                               |
+| 6   | Allocated memory in the result, and which result files a run writes                                                     | Technical      | Not this Feature's: the shared `BenchmarkConfiguration` (`0109-F1` § 7)                                                                             |
+| 7   | Where the measured runner comes from: the engine's own registration, composed outside the measured call (C-2; ADR-0003) | Technical      | `CheckBenchmarks.GenerateTree`, through `TypeRegistrar.Build()`; the `src/tool` reference in `benchmarks.csproj`                                    |
 
 ## 7. Technical Design
 
@@ -191,13 +191,14 @@ Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are �
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-11-13 (item 0167) -->
 
 - 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-002 to B-004 restated with this Feature as subject. C-3's exclusion no longer calls `0109-F2` B-007's evaluation in-memory; it reads `.feature` files from disk too.
 - 2026-10-09, the owner resolved OQ-1: co-located only. B-003 stands; § 5 row 4 cites the decision.
 - 2026-10-11, item `0150` delivered and the finding recorded in § 8 `### Performance`. No claim or constraint changed. `benchmarker` escalated two things the first measurement showed; neither has an item, and neither is a claim:
   - To `implementer`: a check allocates about 310 KB for each added specification, and `benchmarker` reported a generated specification as about 2.4 KB on disk. Whether the engine's load allocates more than it needs is `implementer`'s judgement; which stage holds the allocation is `0109-F2`'s to measure (§ 5 row 1).
   - To `spec-author`: no constraint states what a first check costs on a tree the file-system cache does not hold. C-3 requires only that the finding say the cache is in the number, and § 8 measures a warm cache. No constraint is added: whether that cost is a concern is the owner's to decide.
+- 2026-11-13, A-2 and § 6 row 2 re-pointed for item `0167`, which deletes `SpechtRunner` for one engine check entry point, `SpechtCheck` ([ADR-0026](../../../../.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md) § "The revised migration design"). The measured call is `SpechtCheck` called with the root and no schema-source selection, as the runner's `Run(root)` was. No claim or constraint changed; C-2 holds. A finding recorded before item `0167` and one after it are measured through different entry points. Owed to the `implementer`: § 6 row 7, § 7 and § 8 `### Performance` where they name the runner; to the `test-writer`: § 8 and § 9.
 
 ## 11. Open Questions
 
