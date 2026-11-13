@@ -137,8 +137,8 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-The design for item `0364`, as built, and for item `0365`, to build (§ "Claims and constraints"). Each built type is
-declared in the file it links; the compiler is the authority on its members and signatures.
+The design for items `0364` and `0365`, as built. Each type is declared in the file it links; the compiler is the
+authority on its members and signatures.
 
 ### Reading the tree
 
@@ -160,8 +160,8 @@ included, exit `ExitCodes.InvalidManifest` (`3`). Each writes one `specht: ` lin
 
 ### The document
 
-Two records in the engine folder `src/specht/Facts/`, namespace `Specht.Facts`. The folder sits beside `Report/` in
-ADR-0010's list and reads only `Model/` below it.
+Two records in the engine folder `src/specht/Facts/`, namespace `Specht.Facts`, and the two row records of § "Claims
+and constraints". The folder sits beside `Report/` in ADR-0010's list and reads only `Model/` below it.
 
 - [`FactsDocument`](../../../../specht/Facts/FactsDocument.cs): the document. Its `From` projects a model, as
   [`SpechtReportDocument.From`](../../../../specht/Report/SpechtReportDocument.cs) makes the report: a function of the
@@ -192,7 +192,8 @@ the consumer's frontmatter key: from schema `0.3.0` the manifest's `featureKeys`
 member stays `specStatus` (`0001-F5` B-004). Names are camelCase, as in the published report document
 (`docs/schema/report.schema.json`, `0001-F3`).
 
-A Feature's document for this repository's own specification:
+A Feature's document for this repository's own specification, its `claims` and `constraints` left out (§ "Claims and
+constraints"):
 
 ```json
 {
@@ -216,8 +217,8 @@ out in declaration order and lists in model order, so the same tree and argument
 
 ### Claims and constraints
 
-Item `0365`'s design, to build. `FeatureFacts` gains two members after `children`, so every earlier member keeps its
-name, type and place (C-3):
+Item `0365`'s design, as built. `FeatureFacts` has two members after `children`, added there so every earlier member
+keeps its name, type and place (C-3):
 
 | Member        | Value                                                                                                              | Claim               |
 | ------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------- |
@@ -226,8 +227,8 @@ name, type and place (C-3):
 
 Two records in `src/specht/Facts/`, carrying values and no logic:
 
-- `ClaimFacts(string Id, string? Text, string? Status, int Line)`, written as `id`, `text`, `status` and `line`.
-- `ConstraintFacts(string Id, string? Text, string? RulesOut, int Line)`, written as `id`, `text`, `rulesOut` and `line`.
+- [`ClaimFacts`](../../../../specht/Facts/ClaimFacts.cs), written as `id`, `text`, `status` and `line`.
+- [`ConstraintFacts`](../../../../specht/Facts/ConstraintFacts.cs), written as `id`, `text`, `rulesOut` and `line`.
 
 **The claims.** `From` reads `model.Claims[feature]`, the [`SpechtClaims`](../../../../specht/Model/SpechtClaims.cs) the
 check's claim rules read, found under the manifest's `roles.claims` heading (C-1). Each `SpechtClaim` gives `id`, its
@@ -240,8 +241,8 @@ as written: a withdrawn claim carries `Withdrawn`, the text the manifest's `with
 with no markers whatever its row writes (B-012). Nothing maps it to a marker or tests it against one.
 
 **The constraints.** No role names the constraints section, so `From` takes its heading from the manifest's `sections`:
-the entry `4. Constraints`, which every shipped manifest lists, read through `feature.Document.Section` when
-`model.Schemas.Structure.Sections` lists it, as `SectionContractRule` finds a section by the titles `sections` lists
+the entry `4. Constraints`, which every shipped manifest lists and `FactsDocument` holds as one private constant, read
+through `feature.Document.Section` when `model.Schemas.Structure.Sections` lists it, as `SectionContractRule` finds a section by the titles `sections` lists
 (C-1, C-7). Under a manifest whose `sections` does not list it, `constraints` is `[]`; a heading the manifest renames is
 item `0367`'s (B-016). A row's `id` is its first cell, as the check reads a constraint id for `mint`
 (`SpechtDocumentParser.FirstCells`, `0001-F19`), and `line` its row line; `text` and `rulesOut` are the cells under the
@@ -294,7 +295,7 @@ No existing member, type or constraint of the schema changes (C-3). The `specht 
 
 Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
 
-- `0365`: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
+- `0365`, built: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
   `sections` and `roles` name; § "Claims and constraints".
 - `0366` and `0367`: `outOfScope`, `openQuestions`, `deltas` and `signOff` on `FeatureFacts`, each section found through
   `SpechtDocument.Section` under the manifest's heading (C-7), its cells read through `Cell`. Item `0367` also finds the
@@ -309,7 +310,7 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
 ### The published schema
 
 [`docs/schema/facts.schema.json`](../../../../../docs/schema/facts.schema.json), OQ-1's default, draft 2020-12 as the
-report schema is. A root object requiring `specifications`; each item requiring the seven members above, with `id`,
+report schema is. A root object requiring `specifications`; each item requiring the nine members above, with `id`,
 `specStatus` and `status` typed `["string", "null"]` and the three lists arrays of strings. `path` takes the report schema's `file` pattern: non-empty,
 not starting with `/`, no drive letter, no `\`. `additionalProperties` is `false` at every level, as in the report
 schema, so a violation, a count or a verdict member fails validation (B-014), and each later item that adds a member

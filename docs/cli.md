@@ -191,7 +191,10 @@ specht facts [--root <DIR>] --json
 Prints what the specification tree holds, read as the check reads it: every
 Feature specification the check discovers, in discovery order, with its path,
 qualified id, `spec_status`, `status`, and its `depends_on`, `blocks` and
-`children` lists as the frontmatter writes them. Epic files are not given.
+`children` lists as the frontmatter writes them, then each claim with its id,
+text, status and line, and each constraint with its id, text, what it rules
+out and line. Every row is given, a withdrawn claim and two claims sharing an
+id included, and a claim carries no coverage. Epic files are not given.
 No rule runs, so the document carries no violation, count or verdict.
 
 | Option         | Value   | Default               | Does                                                     |
