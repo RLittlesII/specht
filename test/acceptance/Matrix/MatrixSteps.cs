@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-010, B-018 to B-020, B-022 to B-025).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-011, B-018 to B-020, B-022 to B-025).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -77,6 +77,12 @@ public sealed class MatrixSteps
     [Given("its matrix row's Status is {string}")]
     public void GivenMatrixStatus(string status) => _status = status;
 
+    [Given("an active claim B-004 whose tag no scenario carries")]
+    public void GivenActiveUntaggedClaim() => GivenUntaggedClaim("Active");
+
+    [Given("its matrix row's Status is the missing marker")]
+    public void GivenMissingStatus() => _status = Manifest["markers"]!["missing"]!.GetValue<string>();
+
     [Given("a claim marked {string} that a scenario still carries")]
     public void GivenRetiredTaggedClaim(string status)
     {
@@ -92,6 +98,9 @@ public sealed class MatrixSteps
 
     [Given("the manifest pins schema version 0.3.0 instead")]
     public void GivenMatrixPin() => GivenPin("0.3.0");
+
+    [Given("the manifest pins schema version 0.4.0 instead")]
+    public void GivenMissingScenarioPin() => GivenPin("0.4.0");
 
     [Given("the manifest names the matrix headers {string}, {string}, {string} and {string}")]
     public void GivenMatrixHeaders(string claim, string scenario, string test, string status)
@@ -357,6 +366,12 @@ public sealed class MatrixSteps
 
     [Then("the scenario-title rule reports nothing")]
     public void ThenNoTitle() => Findings(RuleIds.Under(Manifest, "SPEC022")).Should().BeEmpty();
+
+    [Then("the missing-scenario rule reports that row")]
+    public void ThenMissingScenarioRow() => Findings(RuleIds.Under(Manifest, "SPEC023")).Should().ContainSingle().Which.Line.Should().Be(_row);
+
+    [Then("the missing-scenario rule reports nothing")]
+    public void ThenNoMissingScenario() => Findings(RuleIds.Under(Manifest, "SPEC023")).Should().BeEmpty();
 
     [Then("the waiver rule reports nothing")]
     public void ThenNoWaiver() => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().BeEmpty();
