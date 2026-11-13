@@ -158,6 +158,13 @@ Feature: Schema versioning
     And the key version 0.2.0 defines keeps the consumer's value
     And every other key version 0.2.0 defines is added
 
+  @B-016 @boundary
+  Scenario: Upgrade under schema 0.4.0 adds no ids key
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest holds no ids key and no old id setting
+    When upgrade runs against it
+    Then the manifest holds no ids key
+
   @B-138 @boundary
   Scenario: Upgrade never opts a repository into epics
     Given the tool ships schema versions 0.1.0 and 0.2.0

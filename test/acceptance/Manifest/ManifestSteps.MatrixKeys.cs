@@ -4,6 +4,7 @@ using Reqnroll;
 using Specht.Manifest;
 using Specht.Tests.Shared;
 using Specht.Tool;
+using Specht.Versioning;
 
 namespace Specht.Acceptance.Manifest;
 
@@ -13,11 +14,25 @@ namespace Specht.Acceptance.Manifest;
 /// parser, and "the run exits with the invalid-manifest code" launches the built tool on the root the check ran on.
 /// The done marker at schema 0.3.0 (B-063, B-064; item 0321) is removed from, or written empty into, the same
 /// <c>markers</c>; an empty one is rejected by the engine's runner, and its rejection names the marker in quotes.
+/// A pin of 0.4.0 or later also takes the old id settings out of the default manifest - the <c>mint</c> key and the
+/// claim, constraint, open question, scenario, decision, ADR and lesson grammars under <c>identifiers</c> - since that
+/// version rejects them (B-092; item 0436); a step that writes one back writes it after the pin.
 /// </summary>
 public sealed partial class ManifestSteps
 {
     [Given("the manifest pins schema version {string}")]
-    public void GivenTheManifestPinsSchemaVersion(string pin) => Manifest["schemaVersion"] = pin;
+    public void GivenTheManifestPinsSchemaVersion(string pin)
+    {
+        Manifest["schemaVersion"] = pin;
+        if (SemanticVersion.TryParse(pin, out var version) && version.CompareTo(IdsFrom) >= 0)
+        {
+            Manifest.Remove("mint");
+            foreach (var type in OldIdGrammars)
+            {
+                Named("identifiers").Remove(type);
+            }
+        }
+    }
 
     [Given("the manifest declares the test files {string} and the declaration form {string}")]
     public void GivenTheManifestDeclaresTheTestFilesAndTheDeclarationForm(string files, string form) =>

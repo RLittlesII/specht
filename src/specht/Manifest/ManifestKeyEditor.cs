@@ -6,7 +6,8 @@ namespace Specht.Manifest;
 /// <summary>
 /// Adds the top-level keys a shipped manifest defines and a consumer's lacks, copying each shipped member's text and keeping
 /// every byte already there (0001-F7 B-016, B-052, C-13); <c>identifiers</c> is never added, so an upgrade never opts a
-/// manifest into the epic grammar (0001-F7 B-138, OQ-68; 0001-F5 decision 0004).
+/// manifest into the epic grammar (0001-F7 B-138, OQ-68; 0001-F5 decision 0004), and <c>ids</c> is never added, so a manifest
+/// without it reads the shipped records (0001-F7 B-016, B-160; 0001-F5 B-097).
 /// </summary>
 /// <param name="manifest">The pin editor whose encoding detection and offset arithmetic this edit shares.</param>
 /// <implements epic="0001" feature="F7" claim="B-016" />
@@ -15,7 +16,8 @@ public sealed class ManifestKeyEditor(ManifestPinEditor manifest)
 {
     /// <summary>
     /// Appends each defined key the consumer's manifest lacks, in shipped order, after its last member; a defined key is a
-    /// top-level member other than <c>schemaVersion</c> and <c>identifiers</c> whose name does not begin with <c>$</c>.
+    /// top-level member other than <c>schemaVersion</c>, <c>identifiers</c> and <c>ids</c> whose name does not begin with
+    /// <c>$</c>.
     /// </summary>
     /// <param name="bytes">The consumer's manifest, as read.</param>
     /// <param name="shipped">The shipped manifest, UTF-8 without a BOM.</param>
@@ -32,7 +34,7 @@ public sealed class ManifestKeyEditor(ManifestPinEditor manifest)
         var (present, insert) = Members(utf8);
         var names = present.Select(static member => member.Name).ToHashSet(StringComparer.Ordinal);
         var missing = Members(shipped).Members
-            .Where(member => member.Name is not ("schemaVersion" or "identifiers") && !member.Name.StartsWith('$') && !names.Contains(member.Name))
+            .Where(member => member.Name is not ("schemaVersion" or "identifiers" or "ids") && !member.Name.StartsWith('$') && !names.Contains(member.Name))
             .ToList();
         if (missing.Count == 0)
         {

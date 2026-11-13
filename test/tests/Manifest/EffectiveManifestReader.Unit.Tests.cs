@@ -11,7 +11,10 @@ using Specht.Versioning;
 
 namespace Specht.Tests.Manifest;
 
-/// <summary>Pins the effective document's preservation, defaulting and reparse boundaries (0001-F9 B-003 to B-007).</summary>
+/// <summary>
+/// Pins the effective document's preservation, defaulting and reparse boundaries (0001-F9 B-003 to B-007); under schema 0.4.0
+/// each <c>ids</c> record and member left out is the pin's default (0001-F5 B-097), and below it no <c>ids</c> is carried.
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class EffectiveManifestReaderUnitTests
 {
@@ -114,6 +117,55 @@ public sealed class EffectiveManifestReaderUnitTests
         document["identifiers"]!.AsObject().Should().ContainKey("task").And.NotContainKey("epic");
         JsonNode.DeepEquals(document["tables"]!["claims"], new JsonArray("Consumer ID")).Should().BeTrue();
         document["tables"]!.AsObject().ContainsKey("matrix").Should().Be(pin == "0.2.0");
+    }
+
+    [Theory]
+    [ClassData(typeof(EffectiveIdsDeclarations))]
+    public void IdsUnderAZeroFourZeroPin_WhenProjected_ShouldKeepEachDeclaredMemberAndFillEveryRecordAndMemberLeftOutFromThePinsDefault(string? ids)
+    {
+        // Given
+        var input = new JsonObject { ["schemaVersion"] = "0.4.0" };
+        if (ids is not null)
+        {
+            input["ids"] = JsonNode.Parse(ids);
+        }
+
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["consumer/.specht/manifest.json"] = new(input.ToJsonString()),
+        });
+
+        // When
+        var document = EngineServices.EffectiveManifest("consumer", files, IdsVersion.Catalog());
+
+        // Then
+        var expected = IdsVersion.Defaults()["ids"]!.AsObject();
+        foreach (var (type, record) in JsonNode.Parse(ids ?? "{}")!.AsObject())
+        {
+            foreach (var (member, value) in record!.AsObject())
+            {
+                expected[type]![member] = value!.DeepClone();
+            }
+        }
+
+        JsonNode.DeepEquals(document["ids"], expected).Should().BeTrue(document["ids"]?.ToJsonString());
+    }
+
+    [Theory]
+    [ClassData(typeof(PinsBeforeIds))]
+    public void APinBelowZeroFourZero_WhenProjected_ShouldCarryNoIds(string pin)
+    {
+        // Given
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["consumer/.specht/manifest.json"] = new($$"""{"schemaVersion":"{{pin}}"}"""),
+        });
+
+        // When
+        var document = EngineServices.EffectiveManifest("consumer", files);
+
+        // Then
+        document.Should().NotContainKey("ids");
     }
 
     [Theory]

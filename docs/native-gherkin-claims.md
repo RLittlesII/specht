@@ -129,7 +129,8 @@ Feature: Arithmetic
 ```
 
 A claim tag matches the existing `claim.tag` form and `identifiers.claim`
-grammar. Here `@REQ-FIX-001` declares `REQ-FIX-001`, exactly as captured by
+grammar, or from schema `0.4.0` the `ids.claim` record mapped through
+`/ids/claim` ([Id records](configuration.md#id-records)). Here `@REQ-FIX-001` declares `REQ-FIX-001`, exactly as captured by
 `{claim}`. Declare `claim.tag` explicitly and map its object through `/claim`;
 the analyzer does not fill it from the schema pin. Other tags, including a tag
 whose captured text fails the grammar, are ordinary tags that declare no claim.

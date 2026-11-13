@@ -13,8 +13,8 @@ namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// The comparison and rewrite beneath <c>specht upgrade</c> (<c>0001-F7</c> B-005, B-006, B-007, B-016, B-017, B-018, B-019,
-/// B-020, B-021, B-029, B-031, B-052, B-059, B-116, B-138, B-139; C-2): the manifest is planned like any file, its planned
-/// bytes those with the pinned version's missing keys added and its <c>owners</c>, <c>tests</c>, <c>matrix</c> and
+/// B-020, B-021, B-029, B-031, B-052, B-059, B-116, B-138, B-139, B-160; C-2): the manifest is planned like any file, its
+/// planned bytes those with the pinned version's missing keys added, never <c>ids</c>, and its <c>owners</c>, <c>tests</c>, <c>matrix</c> and
 /// <c>requiredSpecifications</c> as the consumer set them, and a missing root or manifest, or a manifest the loader rejects,
 /// throws before any file is written; a pin the check rejects throws the rejection the check's schema loader throws for the
 /// same root. Under a recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-074, B-082, B-083, B-140;
@@ -308,6 +308,31 @@ public sealed class UpgradeWriterUnitTests
         {
             fileSystem.File.GetLastWriteTimeUtc("repo/" + file.Relative).Should().Be(stamp, file.Relative);
         }
+    }
+
+    [Fact]
+    public async Task CurrentFilesAndAZeroFourZeroManifestWithoutIds_WhenUpgraded_ShouldRewriteNothingAndAddNoIds()
+    {
+        // Given
+        var pinned = _shipped.At(new SemanticVersion(0, 4, 0));
+        var fileSystem = new MockFileSystem();
+        foreach (var file in pinned)
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        var manifest = JsonNode.Parse(fileSystem.File.ReadAllBytes("repo/.specht/manifest.json"))!.AsObject();
+        manifest.Remove("ids").Should().BeTrue();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest.ToJsonString()));
+
+        // When
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Rewritten.Should().BeEmpty();
+        fileSystem.File.ReadAllText("repo/.specht/manifest.json").Should().Be(manifest.ToJsonString());
+        JsonNode.Parse(fileSystem.File.ReadAllBytes("repo/.specht/manifest.json"))!.AsObject().Should().NotContainKey("ids");
     }
 
     [Fact]

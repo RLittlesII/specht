@@ -257,3 +257,33 @@ Feature: Binding identity
       | a nested repository-relative path                     |
       | a repository-relative path with backslash separators  |
       | an internal parent segment that stays inside the root |
+
+  @B-023
+  Scenario: The ids claim record gives the claim grammar
+    Given analysis policy that supplies the manifest's ids claim record and no older claim grammar
+    And a claim ID that is the record's plain text ahead of its id followed by a whole match of its id
+    And a claim ID with the same id under different leading text
+    When the declared analysis is requested
+    Then the first claim ID is valid
+    And the second claim ID is invalid
+
+  @B-024
+  Scenario: The older claim grammar without an ids claim record is read as before
+    Given analysis policy that supplies the older claim grammar and no ids claim record
+    When the declared analysis is requested
+    Then claim IDs and claim references are validated by the older claim grammar
+    And the findings are those the analysis gave before the ids claim record was read
+
+  @B-025 @boundary
+  Scenario Outline: An ids claim record the analysis cannot read alone is rejected
+    Given analysis policy that supplies an ids claim record that <defect>
+    When the declared analysis is requested
+    Then the policy is rejected as invalid
+
+    Examples:
+      | defect                                            |
+      | sits beside the older claim grammar               |
+      | has no plain text                                 |
+      | has no id                                         |
+      | has plain text that does not end with its only id |
+      | has an id that is not a usable pattern            |

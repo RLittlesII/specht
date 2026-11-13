@@ -315,6 +315,42 @@ public sealed class CheckCommandIntegrationTests
                 3
             },
             {
+                "a manifest pinning schema 0.4.0 whose ids key is a list (0001-F5 B-083, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.4.0", "ids": [] }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning schema 0.4.0 whose claim record's plain text does not end with its id (0001-F5 B-084, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.4.0", "ids": { "claim": { "plain": "{id}-B" } } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning schema 0.4.0 whose claim record's id does not compile (0001-F5 B-085, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.4.0", "ids": { "claim": { "id": "[0-9" } } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning schema 0.4.0 whose claim and scenario records share a head (0001-F5 B-094, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpechtTree.ManifestPath, """{ "schemaVersion": "0.4.0", "ids": { "claim": { "plain": "S-{id}" } } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
                 "a manifest pinning a schema version the tool does not ship (0001-F7 B-003)",
                 static tree =>
                 {
@@ -641,6 +677,7 @@ public sealed class CheckCommandIntegrationTests
             manifest["schemaVersion"] = pin;
         }
 
+        manifest["identifiers"]!["claim"] = "^B-[0-9]{3}[a-z]?$";
         manifest.Remove("rules");
         manifest["markers"]!.AsObject().Remove("missing");
         if (explicitMarker is not null)

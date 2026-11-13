@@ -94,10 +94,12 @@ the epic schema and its manifest settings.
 
 ## Manifest
 
-For the `specht.tool` 0.5.0 release, `dotnet specht init` pins schema `0.3.1`
-in a new `.specht/manifest.json`. The package and schema have independent
-versions. The sample below uses that schema pin and shows how to change
-settings. Specht ignores keys starting with `$`, so they can hold comments.
+`dotnet specht init` pins the newest schema the installed tool ships in a new
+`.specht/manifest.json`. The package and schema have independent versions: the
+`specht.tool` packages released so far, through `0.6.4-preview`, ship schemas
+up to `0.3.1`, and schema `0.4.0` ships in a later release. The sample below
+uses the `0.4.0` pin and shows how to change settings; under `0.3.1` the same
+keys apply. Specht ignores keys starting with `$`, so they can hold comments.
 
 After running `dotnet specht init --all` in a fresh repository, this example
 uses the frontmatter schemas written to disk and checks specifications under
@@ -105,7 +107,7 @@ uses the frontmatter schemas written to disk and checks specifications under
 
 ```json
 {
-  "schemaVersion": "0.3.1",
+  "schemaVersion": "0.4.0",
   "$comment.pinPolicy": "Use the exact pin. Set latest-patch to allow newer shipped patches in the same minor.",
   "pinPolicy": "exact",
   "$comment.layouts": "Find feature specifications beside the code under src/.",

@@ -7,6 +7,7 @@ using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
+using Specht.Versioning;
 
 namespace Specht.Acceptance.Manifest;
 
@@ -57,9 +58,16 @@ public sealed partial class ManifestSteps
     [Given("the manifest declares no claim grammar")]
     public void GivenTheManifestDeclaresNoClaimGrammar()
     {
-        var identifiers = Manifest["identifiers"]!.AsObject();
-        _defaultClaimGrammar = identifiers["claim"]!.GetValue<string>();
-        identifiers.Remove("claim");
+        SemanticVersion.TryParse(Manifest["schemaVersion"]!.GetValue<string>(), out var pin).Should().BeTrue();
+        var shipped = JsonNode.Parse(EngineServices.Versions().Find(pin!)!.Manifest)!;
+        _defaultClaimGrammar = shipped["ids"]?["claim"] is { } claim
+            ? new SpechtIdRecord(
+                claim["plain"]!.GetValue<string>(),
+                claim["form"]?.GetValue<string>(),
+                claim["id"]!.GetValue<string>()).Grammar(null)
+            : shipped["identifiers"]!["claim"]!.GetValue<string>();
+        (Manifest["ids"] as JsonObject)?.Remove("claim");
+        (Manifest["identifiers"] as JsonObject)?.Remove("claim");
     }
 
     [Given("the root holds a specification declaring claim {string}")]

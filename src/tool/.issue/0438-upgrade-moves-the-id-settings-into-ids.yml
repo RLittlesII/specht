@@ -16,7 +16,6 @@ spikes: []
 spec: src/tool/.spec/README.md
 
 claims:
-  - B-016
   - B-020
   - B-051
   - B-155
@@ -28,7 +27,7 @@ claims:
   - B-161
 
 created: "2026-11-12"
-updated: "2026-11-12"
+updated: "2026-11-13"
 closed: null
 
 summary: |
@@ -51,7 +50,7 @@ acceptance_criteria:
   - "B-156 — a mint entry moves without its prefix"
   - "B-157, B-158 — no old id setting is left, and every other setting is kept"
   - "B-159 — an unsplittable grammar, a prefix that is not the head, an ids record already present for a moved type, and equal claim and scenario heads each write nothing, exit 3 and name the member on standard error (OQ-79 default (a))"
-  - "B-160, B-016 and B-020 as amended — no change without old settings, and none under a pin below 0.4.0"
+  - "B-160 and B-020 as amended — no change without old settings, and none under a pin below 0.4.0"
   - "B-051 as amended — `schema pin` moves a 0.4.0 manifest that still holds the old id settings back down"
   - "AGENTS.md § Configuration says `upgrade` adds only the keys the pinned version defines that are missing, except the 0.4.0 move into `ids`"
   - "`docs/cli.md` describes the move under `specht upgrade`"
@@ -69,8 +68,14 @@ decisions:
     (Recommended)": a member byte-equal to the old pin's shipped default
     is dropped and the 0.4.0 shipped record applies; customised members
     move verbatim (B-161). B-051 added on spec-reviewer's round 2.
+  - |
+    2026-11-13, spec-author, on spec-reviewer's round-2 finding 3 for
+    item 0436: B-016 leaves this item. Its `ids` clause, that `upgrade`
+    adds no `ids` key, is item 0436's and delivered there; nothing of
+    B-016 is left here.
 
 out_of_scope:
   - "The ids key and the rejection of the old settings - `0001-F5` item 0436."
+  - "B-016's `ids` clause, that upgrade adds no ids key - `0001-F5` item 0436, delivered."
   - "Minting from the ids record - `0001-F19` item 0437."
   - "Moving the id settings under a pin below 0.4.0 - § 5 row 34."

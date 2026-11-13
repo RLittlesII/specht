@@ -52,6 +52,7 @@ public sealed class FeatureTagParser
 
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-080" />
+    /// <implements epic="0001" feature="F5" claim="B-095" />
     private static (IReadOnlyList<FeatureTag> Tags, IReadOnlyList<FeatureScenario> Scenarios) Scan(
         string text,
         SpechtStructure? structure,
@@ -62,9 +63,11 @@ public sealed class FeatureTagParser
         var parts = form?.Split("{claim}", StringSplitOptions.None);
         var ignoreCase = structure?.ClaimTagIgnoreCase == true;
         var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var grammar = form is null ? null : new Regex(
-            $"\\A(?:{claimGrammar?.Pattern ?? structure!.Identifiers["claim"]})\\z",
+        var effective = form is null ? null : claimGrammar ?? structure!.ClaimGrammar(null);
+        var grammar = effective is null ? null : new Regex(
+            $"\\A(?:{effective.Pattern})\\z",
             RegexOptions.CultureInvariant | (ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None));
+        var scenarioHead = effective is { LongerScenarioHead: true } ? effective.ScenarioHead : null;
         var scenarios = new List<(string Title, int Line, List<FeatureTag> Tags)>();
         List<FeatureTag> pending = [];
         List<FeatureTag> feature = [];
@@ -97,6 +100,11 @@ public sealed class FeatureTagParser
                     }
 
                     var claim = token.Substring(parts[0].Length, length);
+                    if (scenarioHead is not null && claim.StartsWith(scenarioHead, comparison))
+                    {
+                        continue;
+                    }
+
                     if (grammar!.IsMatch(claim))
                     {
                         found.Add(new FeatureTag(claim, lineNumber) { Text = token });

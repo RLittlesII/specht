@@ -95,19 +95,52 @@ public sealed record SpechtStructure(
     /// </summary>
     public bool EpicLess => Forms is not null && !DeclaresEpicGrammar;
 
+    /// <summary>The seven effective <c>ids</c> records, keyed by type, from schema 0.4.0; null below it (C-14, B-097).</summary>
+    public IReadOnlyDictionary<string, SpechtIdRecord>? Ids { get; init; }
+
+    /// <summary>How claim tags, and the heads they are told apart by, are compared under <see cref="ClaimTagIgnoreCase"/>.</summary>
+    public StringComparison TagComparison => ClaimTagIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
     /// <summary>
-    /// The grammar a Feature's claim ids are read with: a declared prefix, escaped so it matches only itself, followed by
-    /// three ASCII digits and an optional lowercase ASCII letter (B-079, decision 0022); for a Feature declaring none, or
-    /// only white space, the manifest's <c>identifiers.claim</c> (B-077).
+    /// The grammar a Feature's claim ids are read with. Below schema 0.4.0: a declared prefix, escaped so it matches only
+    /// itself, followed by three ASCII digits and an optional lowercase ASCII letter (B-079, decision 0022); for a Feature
+    /// declaring none, or only white space, the manifest's <c>identifiers.claim</c> (B-077). From 0.4.0: the claim record's
+    /// head for the prefix, as literal text, then a whole match of its <c>id</c>, with the claim and scenario heads; a prefix
+    /// that gives both the one head is read as none (A-8; B-086, B-098, B-100).
     /// </summary>
     /// <param name="prefix">The value the Feature writes under its claim prefix key, or null.</param>
     /// <returns>The Feature's claim grammar.</returns>
     /// <implements epic="0001" feature="F5" claim="B-077" />
     /// <implements epic="0001" feature="F5" claim="B-079" />
-    public SpechtClaimGrammar ClaimGrammar(string? prefix) =>
-        string.IsNullOrWhiteSpace(prefix)
-            ? new SpechtClaimGrammar(Identifiers["claim"], null)
-            : new SpechtClaimGrammar($"^{Regex.Escape(prefix)}[0-9]{{3}}[a-z]?$", prefix);
+    /// <implements epic="0001" feature="F5" claim="B-086" />
+    /// <implements epic="0001" feature="F5" claim="B-098" />
+    /// <implements epic="0001" feature="F5" claim="B-100" />
+    public SpechtClaimGrammar ClaimGrammar(string? prefix)
+    {
+        if (Ids is null)
+        {
+            return string.IsNullOrWhiteSpace(prefix)
+                ? new SpechtClaimGrammar(Identifiers["claim"], null)
+                : new SpechtClaimGrammar($"^{Regex.Escape(prefix)}[0-9]{{3}}[a-z]?$", prefix);
+        }
+
+        var claim = Ids["claim"];
+        var scenario = Ids["scenario"];
+        var declared = string.IsNullOrWhiteSpace(prefix) ? null : prefix;
+        string? shared = null;
+        if (declared is not null && string.Equals(claim.Head(declared), scenario.Head(declared), TagComparison))
+        {
+            shared = claim.Head(declared);
+            declared = null;
+        }
+
+        return new SpechtClaimGrammar(claim.Grammar(declared), declared)
+        {
+            Head = claim.Head(declared),
+            ScenarioHead = scenario.Head(declared),
+            SharedHead = shared,
+        };
+    }
 
     /// <summary>
     /// How a message cites the section a role names: <c>§ N</c> by the leading number of the role's title, or
