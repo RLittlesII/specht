@@ -2,7 +2,7 @@ id: "0167"
 type: refactor
 title: Run the check through one engine entry point, and delete the runner
 
-status: blocked
+status: ready
 
 value: 4
 risk: 4
@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-11-08"
+updated: "2026-11-13"
 closed: null
 
 summary: |
@@ -33,8 +33,8 @@ summary: |
   assigns this item the engine's direct check entry point in their place.
 
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31; the pull request
-  carries the no-regression guard. Still `blocked`: see the decision of
-  2026-10-31 on ADR-0027.
+  carries the no-regression guard. Released: see the decision of
+  2026-11-13, the owner's acceptance of the rescoping.
 
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
@@ -168,6 +168,17 @@ decisions:
     the judgements of 2026-10-31, `SpecCheck` taking the schema-source
     selection and the `--report` row, stay open for the owner. Status stays
     `blocked`.
+  - |
+    2026-11-13, repository owner, recorded by spec-author: asked by the
+    coordinator whether to accept this item's rescoping of 2026-10-31 as
+    written, a question that named the two open judgements of 2026-10-31,
+    `SpecCheck` taking the root and the schema-source selection, and the
+    `--report` row left to item 0036, the owner selected the option
+    labelled "Accept as written". The question's wording is the
+    coordinator's, not the owner's. The rescoping is accepted and both
+    judgements stand as written; the deferral of 2026-11-08 ends. The item
+    is released: status `ready`, since 0164, 0166 and 0216 are done. Item
+    0036 follows this item.
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."
