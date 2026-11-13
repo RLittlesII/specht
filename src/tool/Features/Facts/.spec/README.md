@@ -118,23 +118,27 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-12 -->
+<!-- last written by: implementer, 2026-11-13 -->
 
-| Concern                                                                                                          | Classification | Owner                                                                                   |
-| ---------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------- |
-| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)           | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)         |
-| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004) | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From` |
-| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                           | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                      |
-| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                     | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`             |
-| Byte-identical serialization (B-022)                                                                             | Technical      | `FactsDocument.ToJson`                                                                  |
-| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)           | Both           | `FactsCommand`                                                                          |
+| Concern                                                                                                                        | Classification | Owner                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------- | --------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)                         | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)         |
+| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004)               | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From` |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                                         | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                      |
+| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                                   | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`             |
+| Byte-identical serialization (B-022)                                                                                           | Technical      | `FactsDocument.ToJson`                                                                  |
+| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)                         | Both           | `FactsCommand`                                                                          |
+| A claim's id and line as the check reads them, every row kept, two sharing an id included (B-005, B-013; C-1)                  | Business       | `SpechtClaims` through `SpechtModel.Claims`, projected by `FactsDocument.From`          |
+| A claim's text, and its status as its row writes it (B-005, B-012; C-5)                                                        | Business       | `FactsDocument.From`, reading the claims table's cells by header                        |
+| Finding the constraints section under the heading `sections` lists, and its cells under the engine's headers (B-006; C-1, C-7) | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                   |
+| A claim's and a constraint's members, with no coverage member (B-025; C-3)                                                     | Both           | `ClaimFacts` and `ConstraintFacts`, held to `docs/schema/facts.schema.json`             |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-12 -->
+<!-- last written by: implementer, 2026-11-13 -->
 
-The design for item `0364`, as built. Each type is declared in the file it links; the compiler is the authority on its
-members and signatures.
+The design for item `0364`, as built, and for item `0365`, to build (§ "Claims and constraints"). Each built type is
+declared in the file it links; the compiler is the authority on its members and signatures.
 
 ### Reading the tree
 
@@ -210,14 +214,91 @@ A Feature's document for this repository's own specification:
 indented, `\n` line endings whatever the platform, camelCase names, and, unlike the report, nulls written. Members come
 out in declaration order and lists in model order, so the same tree and arguments give the same bytes (B-022).
 
+### Claims and constraints
+
+Item `0365`'s design, to build. `FeatureFacts` gains two members after `children`, so every earlier member keeps its
+name, type and place (C-3):
+
+| Member        | Value                                                                                                              | Claim               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| `claims`      | One `ClaimFacts` per row of `SpechtModel.Claims[feature].Rows`, in row order; `[]` with no claims section or table | B-005, B-012, B-013 |
+| `constraints` | One `ConstraintFacts` per body row of the constraints section, in row order; `[]` with no such section or table    | B-006               |
+
+Two records in `src/specht/Facts/`, carrying values and no logic:
+
+- `ClaimFacts(string Id, string? Text, string? Status, int Line)`, written as `id`, `text`, `status` and `line`.
+- `ConstraintFacts(string Id, string? Text, string? RulesOut, int Line)`, written as `id`, `text`, `rulesOut` and `line`.
+
+**The claims.** `From` reads `model.Claims[feature]`, the [`SpechtClaims`](../../../../specht/Model/SpechtClaims.cs) the
+check's claim rules read, found under the manifest's `roles.claims` heading (C-1). Each `SpechtClaim` gives `id`, its
+trimmed first cell as written (`""` when the cell is empty), and `line`, its one-based row line, so no fact can disagree
+with a violation about a claim's id or line. Every row is given: two rows sharing an id both (B-013), and a row whose id
+the claim grammar refuses, since the row parses and judging its id is the check's (C-5). `Rows` runs parallel to
+`Section.Rows`, so row _i_'s `text` and `status` are the cells of `Section.Rows[i]` under the headers `Claim` and
+`Status`, which every shipped template's claims table carries (`ID | Claim | Source | Status`). The status is the cell
+as written: a withdrawn claim carries `Withdrawn`, the text the manifest's `withdrawn` marker writes, and under a pin
+with no markers whatever its row writes (B-012). Nothing maps it to a marker or tests it against one.
+
+**The constraints.** No role names the constraints section, so `From` takes its heading from the manifest's `sections`:
+the entry `4. Constraints`, which every shipped manifest lists, read through `feature.Document.Section` when
+`model.Schemas.Structure.Sections` lists it, as `SectionContractRule` finds a section by the titles `sections` lists
+(C-1, C-7). Under a manifest whose `sections` does not list it, `constraints` is `[]`; a heading the manifest renames is
+item `0367`'s (B-016). A row's `id` is its first cell, as the check reads a constraint id for `mint`
+(`SpechtDocumentParser.FirstCells`, `0001-F19`), and `line` its row line; `text` and `rulesOut` are the cells under the
+engine's headers `Constraint` and `Rules Out` (C-7).
+
+**The cells.** One private `Cell(SpechtSection section, int row, string header)` in `FactsDocument` serves both: the
+index of `header` in `section.Headers`, compared ordinally as `TableHeaderRule` compares headers, and the row's cell at
+that index. A header the table lacks, or a row shorter than that index, gives `null`; an empty cell gives `""`. A cell's
+text is the parse's, from `MarkdownTextReader`: its literals and code-span contents, trimmed, with no Markdown marker -
+the text the check reads, not the source bytes.
+
+Neither record has a traceability row, scenario or test member, and `From` reads no `MatrixSections`, companion or test
+file (B-025). `From` still runs no rule, so a tree the check fails gives every row and the command exits
+`ExitCodes.Success` on the path item `0364` built (B-013). The command does not change (C-4).
+
+```json
+{
+  "claims": [
+    {
+      "id": "B-001",
+      "text": "Given a tree, this Feature gives its facts.",
+      "status": "Active",
+      "line": 61
+    },
+    {
+      "id": "B-001",
+      "text": "Given a flag, this Feature writes one document.",
+      "status": "Withdrawn",
+      "line": 62
+    }
+  ],
+  "constraints": [
+    {
+      "id": "C-1",
+      "text": "Offline and read-only.",
+      "rulesOut": "A network call.",
+      "line": 68
+    }
+  ]
+}
+```
+
+The schema gains, on each specification item, `claims` and `constraints` in `properties` and in `required`. Each is an
+array of objects with `additionalProperties: false`: a claim requires `id` (string), `text` and `status`
+(`["string", "null"]`) and `line` (integer, minimum `1`); a constraint the same, with `rulesOut` in place of `status`.
+No existing member, type or constraint of the schema changes (C-3). The `specht facts` paragraph in
+[`docs/cli.md`](../../../../../docs/cli.md) names the claims and constraints among what is printed.
+
 ### Where later items attach
 
 Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
 
 - `0365`: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
-  `sections` and `roles` name.
+  `sections` and `roles` name; § "Claims and constraints".
 - `0366` and `0367`: `outOfScope`, `openQuestions`, `deltas` and `signOff` on `FeatureFacts`, each section found through
-  `SpechtDocument.Section` under the manifest's heading (C-7).
+  `SpechtDocument.Section` under the manifest's heading (C-7), its cells read through `Cell`. Item `0367` also finds the
+  claims and constraints under a heading the manifest renames (B-016), changing how a section is found and no member.
 - `0368`: `records` on `FeatureFacts`. Records are not in the listing today; that item extends the listing through
   `ISpecDiscovery`, not a read inside `Features/Facts/`.
 - `0369`: the path selector narrows `FactsDocument.Specifications` in the engine; the command maps an empty selection to
@@ -271,6 +352,25 @@ until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` rem
   output would change when the text form lands.
 - **A per-specification text line now.** No claim states it, and OQ-5's line shape is for claims, constraints, § 5 rows
   and open questions.
+- **A claim's status mapped to a marker name (`withdrawn`, `superseded`).** A reading of the row, not the row (C-5); a
+  status no marker names would need a fallback, and a pin with no markers has nothing to map to.
+- **Only the claims whose id the grammar accepts, or the first of two sharing an id.** B-013 gives every fact that
+  parses; dropping a row puts the check's verdict in the facts.
+- **`SpechtClaim.IsValid` or `FirstDeclarationLine` as a member.** Each is a verdict on the row (B-014, C-5).
+- **A claim's text and status by column position, cells 1 and 3.** A claims table with no `Source` column,
+  `ID | Claim | Status`, would give no status; the header says which cell is which.
+- **The claims table's headers from the manifest's `tables`.** The shipped manifest's `tables` names only `matrix` and
+  `signOff` (C-7), and a consumer's `tables.claims`, which the check accepts, lists headers without saying which is the
+  text or the status.
+- **The constraints heading by its position, or by its leading number, in `sections`.** Either reads a heading the
+  manifest renames, which is item `0367`'s (B-016) and which the specification does not settle; the listed entry reads
+  what item `0365` claims and leaves that open, with no member to change when it is settled (C-3).
+- **A constraints member on `SpechtModel` beside `Claims`.** No rule reads the constraints section; the facts read the
+  parsed section the model already holds, and an engine member waits for a rule that needs it.
+- **A cell's Markdown source, backticks and emphasis kept.** The parse keeps no source span per cell, so it would take a
+  second read of the file: a second parser (C-1).
+- **One row record shared by claims and constraints.** Their third members differ; they stay two until items `0366` and
+  `0367` show whether the rows share a shape.
 
 ## 8. Testing Strategy
 
