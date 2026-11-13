@@ -7,10 +7,11 @@ using Specht.Versioning;
 namespace Specht.Tests.Manifest;
 
 /// <summary>
-/// The <c>claim</c> members beneath <c>0001-F16</c> B-002, B-027, B-028 and B-029 (item <c>0389</c>): from schema
+/// The <c>claim</c> members beneath <c>0001-F16</c> B-002, B-027, B-028, B-029 and B-031 (item <c>0389</c>): from schema
 /// <c>0.4.0</c> the parser reads the claim source and the claim file sets, a source left out or <c>markdown</c> reads as
-/// Markdown with no set, a set's identity follows the epic grammar, and an invalid set is rejected naming
-/// <c>claim.files</c>; below <c>0.4.0</c> the members go unread. Each catalog holds the shipped versions and a
+/// Markdown with no set, a set's identity follows the epic grammar, an invalid set is rejected naming
+/// <c>claim.files</c>, and a source outside the two is rejected naming <c>claim.source</c>; below <c>0.4.0</c> the
+/// members go unread. Each catalog holds the shipped versions and a
 /// <c>0.4.0</c> whose shipped <c>claim</c> carries the defaults <c>0001-F16</c> § 7 names, so no test waits on the
 /// shipped <c>0.4.0</c>.
 /// </summary>
@@ -66,6 +67,24 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
 
         // Then
         parse.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("claim.files");
+    }
+
+    [Theory]
+    [ClassData(typeof(UndefinedClaimSources))]
+    public void AClaimSourceOutsideTheTwo_WhenParsedUnderZeroFourZero_ShouldBeRejectedNamingClaimSource(string source)
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.4.0",
+            ["claim"] = new JsonObject { ["source"] = JsonNode.Parse(source) },
+        };
+
+        // When
+        var parse = () => WithZeroFourZero().Parse(manifest.ToJsonString());
+
+        // Then
+        parse.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("claim.source");
     }
 
     [Theory]
