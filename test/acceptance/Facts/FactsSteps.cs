@@ -9,9 +9,10 @@ namespace Specht.Acceptance.Facts;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Facts/.spec/facts.feature</c> (<c>0132-F2</c>): item 0364 binds B-001 to B-004, B-014,
-/// B-017, B-021 to B-023 and B-026. Each launches the built tool over a synthetic tree, and a scenario naming no form runs
-/// <c>specht facts --json</c>, since the text form is item 0370's. The root sits one folder below a temporary directory,
-/// so a run that writes beside the root is seen. The rest of the file's scenarios stay pending for their items.
+/// B-017, B-021 to B-023 and B-026, and item 0365 binds B-005, B-006, B-012, B-013 and B-025. Each launches the built
+/// tool over a synthetic tree, and a scenario naming no form runs <c>specht facts --json</c>, since the text form is item
+/// 0370's. The root sits one folder below a temporary directory, so a run that writes beside the root is seen. The rest
+/// of the file's scenarios stay pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "The facts command")]
@@ -50,6 +51,38 @@ public sealed class FactsSteps
         ExitCode.Should().Be(1, Stderr);
         _violations = JsonNode.Parse(Stdout)!["violations"]!.AsArray();
         _violations.Should().NotBeEmpty();
+    }
+
+    [Given("a claim of the first specification is withdrawn")]
+    public void GivenWithdrawnClaim()
+    {
+        var marker = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!["markers"]!["withdrawn"]!.GetValue<string>();
+        _firstSections = Replace(_firstSections, "3. Acceptance Criteria", ClaimsSection(FirstClaim, $"| B-002 | It gives them as JSON. | brd | {marker} |"));
+        _withdrawn = marker;
+        WriteSpecifications(Tree);
+    }
+
+    [Given("the first specification has two claims sharing one id")]
+    public void GivenTwoClaimsSharingOneId()
+    {
+        _firstSections = Replace(_firstSections, "3. Acceptance Criteria", ClaimsSection(FirstClaim, "| B-001 | It gives the facts again. | brd | Active |"));
+        WriteSpecifications(Tree);
+        var (_, Stderr, ExitCode) = AcceptanceTool.Launch(Tree.Root, "--json");
+        ExitCode.Should().Be(1, Stderr);
+    }
+
+    [Given("a claim with a traceability row and a scenario carrying its tag")]
+    public void GivenClaimWithCoverage()
+    {
+        _firstSections = Replace(
+            _firstSections,
+            "9. Traceability Matrix",
+            MatrixSection("| B-001 | Crossing the zebra | `ZebraTests.Crossing` | Covered |", "| B-002 | It gives them as JSON | Missing | Missing |"));
+        _firstFeatureFile = FeatureFile.Replace("It gives the facts", "Crossing the zebra", StringComparison.Ordinal);
+        WriteSpecifications(Tree);
+        var first = EngineServices.Reader().Read(Tree.Root, null).Features.Single(static feature => feature.RelativePath == FirstPath);
+        first.FeatureFiles.SelectMany(static file => file.Scenarios)
+            .Should().Contain(static scenario => scenario.Title == "Crossing the zebra" && scenario.Tags.Any(static tag => tag.Id == "B-001"));
     }
 
     [Given("the same specifications under a manifest pinning schema version {word}")]
@@ -177,6 +210,63 @@ public sealed class FactsSteps
         members[1].Should().Equal(members[0]);
     }
 
+    [Then("each claim carries its id, its text, its status and the line it is on")]
+    public void ThenEachClaim()
+    {
+        foreach (var path in new[] { FirstPath, SecondPath })
+        {
+            Specification(path)["claims"].Should().BeOfType<JsonArray>().Which.Select(static claim => (
+                    claim!["id"]!.GetValue<string>(),
+                    claim["text"]!.GetValue<string>(),
+                    claim["status"]!.GetValue<string>(),
+                    claim["line"]!.GetValue<int>()))
+                .Should().Equal(
+                    ("B-001", "It gives the facts.", "Active", LineOf(path, "| B-001 |")),
+                    ("B-002", "It gives them as JSON.", "Active", LineOf(path, "| B-002 |")));
+        }
+    }
+
+    [Then("each constraint carries its id, its text, what it rules out and the line it is on")]
+    public void ThenEachConstraint()
+    {
+        foreach (var path in new[] { FirstPath, SecondPath })
+        {
+            Specification(path)["constraints"].Should().BeOfType<JsonArray>().Which.Select(static constraint => (
+                    constraint!["id"]!.GetValue<string>(),
+                    constraint["text"]!.GetValue<string>(),
+                    constraint["rulesOut"]!.GetValue<string>(),
+                    constraint["line"]!.GetValue<int>()))
+                .Should().Equal(
+                    ("C-1", "Offline and read-only.", "A network call.", LineOf(path, "| C-1 |")),
+                    ("C-2", "One parser.", "A second parser.", LineOf(path, "| C-2 |")));
+        }
+    }
+
+    [Then("that claim is given with the withdrawn status")]
+    public void ThenWithdrawnClaimGiven() =>
+        Specification(FirstPath)["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["status"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Contain(("B-002", _withdrawn, LineOf(FirstPath, "| B-002 |")));
+
+    [Then("the command succeeds")]
+    public void ThenSucceeds() => _result.ExitCode.Should().Be(0, _result.Stderr);
+
+    [Then("both claims are given")]
+    public void ThenBothClaimsGiven() =>
+        Specification(FirstPath)["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["text"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("B-001", "It gives the facts.", LineOf(FirstPath, "| B-001 | It gives the facts. |")),
+                ("B-001", "It gives the facts again.", LineOf(FirstPath, "| B-001 | It gives the facts again. |")));
+
+    [Then("the claim carries no traceability row, no scenario and no test")]
+    public void ThenNoCoverage()
+    {
+        Specification(FirstPath)["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => claim!["id"]!.GetValue<string>()).Should().Contain("B-001");
+        _result.Stdout.Should().NotContainEquivalentOf("zebra").And.NotContain("Covered");
+    }
+
     [Then("the command exits with code {int}")]
     public void ThenExitCode(int code) => _result.ExitCode.Should().Be(code, _result.Stderr);
 
@@ -227,11 +317,25 @@ public sealed class FactsSteps
         _ => [],
     };
 
+    private static IReadOnlyList<string> Replace(IReadOnlyList<string> sections, string title, string replacement) =>
+        sections.Select(section => section.StartsWith($"## {title}\n", StringComparison.Ordinal) ? replacement : section).ToList();
+
+    private static string ClaimsSection(params string[] rows) =>
+        "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+            + string.Concat(rows.Select(static row => row + "\n"));
+
+    private static string MatrixSection(params string[] rows) =>
+        "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
+            + string.Concat(rows.Select(static row => row + "\n"));
+
     private void WriteSpecifications(SpechtTree tree)
     {
-        tree.WriteCoLocatedFeature("src/first", "0001", "F1", _first, Sections);
-        tree.WriteCoLocatedFeature("src/second", "0001", "F2", _second, Sections);
+        tree.WriteFeatureFile(tree.WriteCoLocatedFeature("src/first", "0001", "F1", _first, _firstSections), _firstFeatureFile);
+        tree.WriteFeatureFile(tree.WriteCoLocatedFeature("src/second", "0001", "F2", _second, Sections), FeatureFile);
     }
+
+    private int LineOf(string path, string prefix) =>
+        Array.FindIndex(File.ReadAllLines(Path.Combine(Tree.Root, path)), line => line.StartsWith(prefix, StringComparison.Ordinal)) + 1;
 
     private Dictionary<string, byte[]> Snapshot()
     {
@@ -247,12 +351,31 @@ public sealed class FactsSteps
     private const string SecondPath = "src/second/.spec/README.md";
     private const string EpicPath = "epics/0001-epic/epic.md";
 
-    private static readonly IReadOnlyList<string> Sections = SpechtTree.SectionsWith(
-        "11. Open Questions",
-        "## 11. Open Questions\n\n| ID | Question | Blocks | Resolution |\n| -- | -------- | ------ | ---------- |\n| OQ-1 | Which one? | B-001 | Open |\n");
+    private const string FirstClaim = "| B-001 | It gives the facts. | brd | Active |";
+
+    private const string FeatureFile =
+        "Feature: it\n\n  @B-001\n  Scenario: It gives the facts\n    Given a thing\n\n  @B-002\n  Scenario: It gives them as JSON\n    Given a thing\n";
+
+    private static readonly IReadOnlyList<string> Sections = Replace(
+        Replace(
+            Replace(
+                SpechtTree.SectionsWith(
+                    "11. Open Questions",
+                    "## 11. Open Questions\n\n| ID | Question | Blocks | Resolution |\n| -- | -------- | ------ | ---------- |\n"
+                        + "| OQ-1 | Which one? | B-001 | Open |\n"),
+                "3. Acceptance Criteria",
+                ClaimsSection(FirstClaim, "| B-002 | It gives them as JSON. | brd | Active |")),
+            "4. Constraints",
+            "## 4. Constraints\n\n| ID | Constraint | Rules Out |\n| -- | ---------- | --------- |\n"
+                + "| C-1 | Offline and read-only. | A network call. |\n| C-2 | One parser. | A second parser. |\n"),
+        "9. Traceability Matrix",
+        MatrixSection("| B-001 | It gives the facts | Missing | Missing |", "| B-002 | It gives them as JSON | Missing | Missing |"));
 
     private readonly Dictionary<string, string> _first = new(StringComparer.Ordinal) { ["spec_status"] = "approved", ["status"] = "ready" };
     private readonly Dictionary<string, string> _second = new(StringComparer.Ordinal) { ["spec_status"] = "draft", ["status"] = "in-progress" };
+    private IReadOnlyList<string> _firstSections = Sections;
+    private string _firstFeatureFile = FeatureFile;
+    private string _withdrawn = string.Empty;
     private SpechtTree? _tree;
     private SpechtTree? _other;
     private string _rootArgument = ".";

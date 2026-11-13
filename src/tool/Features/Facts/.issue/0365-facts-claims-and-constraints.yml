@@ -2,7 +2,7 @@ id: "0365"
 type: task
 title: Claims and constraints in the facts
 
-status: ready
+status: done
 
 value: 3
 risk: 2
@@ -23,8 +23,8 @@ claims:
   - B-025
 
 created: "2026-11-06"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-13"
+closed: "2026-11-13"
 
 summary: |
   As a coding agent I want each Feature's § 3 claims and § 4 constraints in the facts, with their text, status and line, so that I learn where a claim stands without reading the Markdown.

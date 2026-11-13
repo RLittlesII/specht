@@ -11,8 +11,12 @@ namespace Specht.Facts;
 /// <param name="DependsOn">The depends-on list as the frontmatter writes it, unresolved.</param>
 /// <param name="Blocks">The blocks list as the frontmatter writes it, unresolved.</param>
 /// <param name="Children">The children list as the frontmatter writes it.</param>
+/// <param name="Claims">Every row of the claims table, in row order; empty without a claims section or table.</param>
+/// <param name="Constraints">Every row of the constraints table, in row order; empty without a constraints section or table.</param>
 /// <implements epic="0132" feature="F2" claim="B-003" />
 /// <implements epic="0132" feature="F2" claim="B-004" />
+/// <implements epic="0132" feature="F2" claim="B-005" />
+/// <implements epic="0132" feature="F2" claim="B-006" />
 public sealed record FeatureFacts(
     string Path,
     string? Id,
@@ -20,4 +24,6 @@ public sealed record FeatureFacts(
     string? Status,
     IReadOnlyList<string> DependsOn,
     IReadOnlyList<string> Blocks,
-    IReadOnlyList<string> Children);
+    IReadOnlyList<string> Children,
+    IReadOnlyList<ClaimFacts> Claims,
+    IReadOnlyList<ConstraintFacts> Constraints);

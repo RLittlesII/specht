@@ -19,7 +19,9 @@
           "status",
           "dependsOn",
           "blocks",
-          "children"
+          "children",
+          "claims",
+          "constraints"
         ],
         "properties": {
           "path": {
@@ -60,6 +62,62 @@
             "description": "The children list as the frontmatter writes it; empty when absent.",
             "type": "array",
             "items": { "type": "string" }
+          },
+          "claims": {
+            "description": "Every row of the claims table, in row order, two sharing an id and a withdrawn or superseded one included; empty without a claims section or table. A claim carries no traceability row, scenario or test.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "text", "status", "line"],
+              "properties": {
+                "id": {
+                  "description": "The row's id as the check reads it, its first cell; empty when the cell is.",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "The cell under the Claim header, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "description": "The cell under the Status header as written, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "line": {
+                  "description": "The row's one-based line.",
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "constraints": {
+            "description": "Every row of the constraints table, in row order; empty without a constraints section or table.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "text", "rulesOut", "line"],
+              "properties": {
+                "id": {
+                  "description": "The row's first cell; empty when the row has none.",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "The cell under the Constraint header, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "rulesOut": {
+                  "description": "The cell under the Rules Out header, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "line": {
+                  "description": "The row's one-based line.",
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
           }
         }
       }
