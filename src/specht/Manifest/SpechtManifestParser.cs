@@ -389,6 +389,129 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         }
     }
 
+    /// <implements epic="0001" feature="F16" claim="B-002" />
+    /// <implements epic="0001" feature="F16" claim="B-027" />
+    /// <implements epic="0001" feature="F16" claim="B-029" />
+    /// <implements epic="0001" feature="F16" claim="B-031" />
+    private static SpechtClaimInput ClaimInput(
+        JsonObject? claim, JsonObject claimDefaults, JsonObject? claimDocument, bool epicGrammar, List<string> faults)
+    {
+        var sourceNode = claim is not null && claim.TryGetPropertyValue("source", out var declaredSource)
+            ? declaredSource
+            : Selected(claim, claimDefaults, "source", claimDocument);
+        var source = SpechtClaimSource.Markdown;
+        switch (Text(sourceNode))
+        {
+            case "markdown":
+                break;
+            case "gherkin":
+                source = SpechtClaimSource.Gherkin;
+                break;
+            default:
+                faults.Add("claim.source must be 'markdown' or 'gherkin'");
+                break;
+        }
+
+        var planned = Strings(Selected(claim, claimDefaults, "plannedTags", claimDocument));
+        var withdrawn = Strings(Selected(claim, claimDefaults, "withdrawnTags", claimDocument));
+        var superseded = Strings(Selected(claim, claimDefaults, "supersededTags", claimDocument));
+        var lifecycleKey = Selected(claim, claimDefaults, "lifecycleKey", claimDocument).GetValue<string>();
+        var scopes = claim?["scopes"]?.AsObject();
+
+        return new SpechtClaimInput(
+            source,
+            source == SpechtClaimSource.Gherkin ? FileSets(claim, epicGrammar, faults) : NoFileSets(claim?.ContainsKey("files") == true, faults),
+            planned,
+            withdrawn,
+            superseded,
+            lifecycleKey,
+            scopes?["featureTag"]?.GetValue<string>(),
+            scopes?["epicTag"]?.GetValue<string>());
+    }
+
+    /// <implements epic="0001" feature="F16" claim="B-029" />
+    private static List<SpechtClaimFileSet> NoFileSets(bool declared, List<string> faults)
+    {
+        if (declared)
+        {
+            faults.Add("claim.files is set, and only claim.source 'gherkin' reads claim files");
+        }
+
+        return [];
+    }
+
+    /// <implements epic="0001" feature="F16" claim="B-027" />
+    /// <implements epic="0001" feature="F16" claim="B-029" />
+    private static List<SpechtClaimFileSet> FileSets(JsonObject? claim, bool epicGrammar, List<string> faults)
+    {
+        List<SpechtClaimFileSet> sets = [];
+        if (claim is null || !claim.TryGetPropertyValue("files", out var files))
+        {
+            faults.Add("claim.files is missing, and claim.source 'gherkin' needs at least one claim file set");
+            return sets;
+        }
+
+        if (files is not JsonArray entries)
+        {
+            faults.Add("claim.files is not a list of claim file sets");
+            return sets;
+        }
+
+        if (entries.Count == 0)
+        {
+            faults.Add("claim.files is empty, and claim.source 'gherkin' needs at least one claim file set");
+            return sets;
+        }
+
+        for (var index = 0; index < entries.Count; index++)
+        {
+            if (entries[index] is not JsonObject entry)
+            {
+                faults.Add($"claim.files[{index}] is not an object");
+                continue;
+            }
+
+            var count = faults.Count;
+            var glob = Text(entry["glob"]);
+            var feature = Text(entry["feature"]);
+            var hasEpic = entry.TryGetPropertyValue("epic", out var epicNode);
+            var epic = Text(epicNode);
+            var hasRecord = entry.TryGetPropertyValue("record", out var recordNode);
+            var record = Text(recordNode);
+
+            if (glob is null)
+            {
+                faults.Add($"claim.files[{index}] has no text 'glob'");
+            }
+
+            if (feature is null)
+            {
+                faults.Add($"claim.files[{index}] has no text 'feature'");
+            }
+
+            if (!epicGrammar && hasEpic)
+            {
+                faults.Add($"claim.files[{index}] has an 'epic', and the manifest declares no epic grammar");
+            }
+            else if (epicGrammar && epic is null)
+            {
+                faults.Add($"claim.files[{index}] has no text 'epic', which identifiers.epic requires");
+            }
+
+            if (hasRecord && record is null)
+            {
+                faults.Add($"claim.files[{index}] has a 'record' that is not text");
+            }
+
+            if (faults.Count == count)
+            {
+                sets.Add(new SpechtClaimFileSet(glob!, feature!, epic, record));
+            }
+        }
+
+        return sets;
+    }
+
     /// <implements epic="0001" feature="F7" claim="B-056" />
     /// <implements epic="0001" feature="F7" claim="B-150" />
     private static PinPolicy Policy(JsonObject manifest, SemanticVersion pin, List<string> faults)
@@ -751,6 +874,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     /// <implements epic="0001" feature="F19" claim="B-044" />
     /// <implements epic="0001" feature="F5" claim="B-082" />
     /// <implements epic="0001" feature="F5" claim="B-092" />
+    /// <implements epic="0001" feature="F16" claim="B-002" />
+    /// <implements epic="0001" feature="F16" claim="B-028" />
     private SpechtStructure Parse(string text, bool includeDocument, out JsonObject? document)
     {
         var manifest = Present(JsonNode.Parse(text)).AsObject();
@@ -817,6 +942,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             claimDocument = document["claim"]!.AsObject();
         }
 
+        var claimMembers = tags && number.CompareTo(ClaimMembersVersion) >= 0 && claimDefaults!.ContainsKey("source");
+        var epicGrammar = manifest["identifiers"]?["epic"] is not null;
         var sourceFaults = new List<string>();
         Dictionary<string, string> levels = [];
         var structure = new SpechtStructure(
@@ -838,9 +965,10 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
                 }))),
             ClaimTagForm = tags ? Selected(claim, claimDefaults!, "tag", claimDocument).GetValue<string>() : null,
             ClaimTagIgnoreCase = tags && Selected(claim, claimDefaults!, "tagIgnoreCase", claimDocument).GetValue<bool>(),
+            ClaimInput = claimMembers ? ClaimInput(claim, claimDefaults!, claimDocument, epicGrammar, sourceFaults) : null,
             SchemaSource = SourceSelection(manifest, sourceFaults),
             PinPolicy = Policy(manifest, number, sourceFaults),
-            DeclaresEpicGrammar = manifest["identifiers"]?["epic"] is not null,
+            DeclaresEpicGrammar = epicGrammar,
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, versions.Find(number), sourceFaults),
             Tests = matrix ? TestSettings(manifest["tests"]) : null,
             MatrixScenarioTitles = matrix && manifest["matrix"]?["scenarioTitles"] is { } titles && titles.GetValue<bool>(),
@@ -954,6 +1082,8 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static readonly SemanticVersion ClaimPrefixVersion = new(0, 3, 1);
 
     private static readonly SemanticVersion IdsVersion = new(0, 4, 0);
+
+    private static readonly SemanticVersion ClaimMembersVersion = new(0, 4, 0);
 
     private static readonly char[] Braces = ['{', '}'];
 }

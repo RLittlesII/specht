@@ -148,7 +148,14 @@
   },
   "claim": {
     "tag": "@{claim}",
-    "tagIgnoreCase": false
+    "tagIgnoreCase": false,
+    "source": "markdown",
+    "plannedTags": [
+      "@ignore"
+    ],
+    "withdrawnTags": [],
+    "supersededTags": [],
+    "lifecycleKey": "spec_status"
   },
   "rules": {
     "SPEC1001": "error",

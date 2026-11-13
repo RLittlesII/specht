@@ -286,6 +286,14 @@ Feature: Native Gherkin claims
     Then Feature "arithmetic" has the identity "0001" "arithmetic"
 
   @B-027
+  Scenario: A set without an epic under the epic grammar is an invalid manifest
+    Given the manifest declares "identifiers.epic"
+    And the claim file set has no epic
+    When the check runs
+    Then the exit code is 3
+    And stderr names "claim.files"
+
+  @B-027
   Scenario: A set with an epic under no epic grammar is an invalid manifest
     Given the manifest declares no epic grammar
     And the claim file set has epic "0001"
@@ -301,12 +309,13 @@ Feature: Native Gherkin claims
     Then the output equals the output of the same tree before this Feature
 
   @B-028
-  Scenario: An earlier pin refuses the new members as today
+  Scenario: An earlier pin ignores claim.source
     Given the manifest is pinned to schema "0.3.1"
+    And a tree the check passes without "claim.source"
     And the manifest sets "claim.source" to "gherkin"
     When the check runs
-    Then the exit code is 3
-    And stderr names "claim.source"
+    Then the exit code is 0
+    And the output equals the output without "claim.source"
 
   @B-029
   Scenario Outline: An invalid claim file set exits before any rule
@@ -323,6 +332,7 @@ Feature: Native Gherkin claims
       | one entry with no "glob"                     |
       | one entry with no "feature"                  |
       | one entry beside "claim.source" "markdown"   |
+      | one entry beside no "claim.source"           |
 
   @B-030
   Scenario: The same tree gives the same output
@@ -330,6 +340,21 @@ Feature: Native Gherkin claims
     When the check runs twice
     Then the two outputs are byte-identical
     And the claims of ".spec/features/arithmetic/add.feature" precede those of ".spec/features/arithmetic/subtract.feature"
+
+  @B-031
+  Scenario Outline: A claim source outside the two is an invalid manifest
+    Given the manifest sets "claim.source" to <value>
+    And the manifest has no "claim.files"
+    When the check runs
+    Then the exit code is 3
+    And stderr names "claim.source"
+    And no violation is printed
+
+    Examples:
+      | value        |
+      | "yaml"       |
+      | "Gherkin"    |
+      | the number 1 |
 
   @boundary
   Scenario: A claim is never inferred from a title or a step

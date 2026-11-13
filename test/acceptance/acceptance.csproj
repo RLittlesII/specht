@@ -25,6 +25,7 @@
     <ReqnrollFeatureFile Include="..\..\src\specht\Manifest\.spec\manifest.feature" Link="Features\manifest.feature" />
     <ReqnrollFeatureFile Include="../../src/specht/Identifiers/.spec/id-generation.feature" Link="Features/id-generation.feature" />
     <ReqnrollFeatureFile Include="../../src/specht/Rules/Matrix/.spec/matrix-resolution.feature" Link="Features/matrix-resolution.feature" />
+    <ReqnrollFeatureFile Include="../../src/specht/Rules/NativeClaims/.spec/native-claims.feature" Link="Features/native-claims.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\Report\.spec\report.feature" Link="Features\report.feature" />
     <ReqnrollFeatureFile Include="..\..\.build\Versioning\.spec\versioning.feature" Link="Features\package-versioning.feature" />
     <ReqnrollFeatureFile Include="..\..\src\tool\.spec\versioning.feature" Link="Features\versioning.feature" />

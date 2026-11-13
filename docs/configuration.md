@@ -72,6 +72,8 @@ Without `identifiers.epic`, under schema `0.3.0`, a Feature's identity is its `i
 
 Under schema `0.2.0`, `claim.tag` is literal text around exactly one `{claim}` placeholder, default `@{claim}`. `claim.tagIgnoreCase` is Boolean, default `false`; when true it covers the entire tag and resolution uses ordinal comparison. Missing values come from the pinned version's shipped manifest. Older pins reject `claim`; flat tag keys are rejected at every pin. Each missing member of `claim` uses the pinned default, including a partially declared object.
 
+Schema `0.4.0` adds the `claim` members that select native claim input; older pins leave them unread. `claim.source` is `markdown`, the default, or `gherkin`; any other value exits `3`. Under `gherkin`, `claim.files` lists the claim file sets, each with a text `glob` and `feature`, an `epic` exactly when the manifest declares `identifiers.epic`, and an optional `record`; a missing, empty or malformed list exits `3`, and so does `claim.files` beside any other source. `claim.plannedTags`, default `["@ignore"]`, `claim.withdrawnTags` and `claim.supersededTags`, default empty, are tag lists, and `claim.lifecycleKey`, default `spec_status`, names a record's lifecycle key. `claim.scopes.featureTag` and `claim.scopes.epicTag` are optional tag forms. No rule reads Gherkin claims yet.
+
 A key left out takes its value from the default manifest, except `rules`, which
 is never filled: a manifest without it sets no level. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
