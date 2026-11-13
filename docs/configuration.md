@@ -194,13 +194,23 @@ Under schema `0.4.0` these exit `3`, each message naming where the setting goes:
   other than the three above, `mint` or a `$`-led one, and a `plain`, `form` or
   `id` the rules above reject.
 
-To move a manifest to `0.4.0`, remove those `identifiers` entries and the
-top-level `mint`, run `specht schema pin 0.4.0`, then `specht upgrade`, which
-adds `ids` with the shipped records when the manifest has none. A manifest that
-maps the claim grammar to `Specht.CodeAnalysis` maps `"/ids/claim":
-"/ids/claim"` in place of `identifiers.claim`, keeping `/identifiers` for the
-Feature grammar; the analyzer and `specht evidence` read the claim record's
-`plain` and `id`.
+To move a manifest to `0.4.0`, move those settings into `ids` by hand first;
+`specht upgrade` does not move them yet. An `identifiers` entry that is the
+shipped default of your old pin can be removed, and the type reads the shipped
+record. A customised one goes into `ids.<type>`: `plain` is the literal head
+after `^` followed by `{id}`, and `id` is the rest of the pattern before `$`, so
+`"claim": "^REQ-[0-9]{4}$"` becomes
+`"ids": { "claim": { "plain": "REQ-{id}", "id": "[0-9]{4}" } }`. Removing a
+customised entry instead swaps its grammar for the shipped record without a
+word. Each top-level `mint` entry's members other than `prefix` go into
+`ids.<type>.mint`. Then run `specht schema pin 0.4.0` and `specht upgrade`.
+`upgrade` adds no `ids`: a manifest without it reads the shipped records.
+
+A manifest that maps the claim grammar to `Specht.CodeAnalysis` maps
+`"/ids/claim": "/ids/claim"` in place of `identifiers.claim`, keeping
+`/identifiers` for the Feature grammar; the analyzer and `specht evidence` read
+the claim record's `plain` and `id` from the manifest as written, and fill
+neither from the shipped record, so that manifest writes both.
 
 ## Minted ids
 

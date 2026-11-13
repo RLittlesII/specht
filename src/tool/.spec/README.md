@@ -927,11 +927,15 @@ _Which keys._ The keys a version defines are read from the
 writes for that version. The engine's per-version default manifests come from
 the same `src/tool/manifest/v<version>/manifest.json` files (`specht.csproj`),
 so `upgrade`'s keys and the parser's omission defaults have one source. A key is defined when it is a top-level member of that manifest, is
-neither `schemaVersion` nor `identifiers`, and does not begin with `$`.
+none of `schemaVersion`, `identifiers` and `ids`, and does not begin with `$`.
 `identifiers` is excluded by the owner's ruling on OQ-68: every shipped
 manifest's `identifiers` declares the epic grammar, the one value the check
 never fills from the default manifest (`0001-F5` decision 0004), so copying it
-would opt a manifest that lacks it into epics (B-138). A key is present when the
+would opt a manifest that lacks it into epics (B-138). `ids`, which schema
+`0.4.0` ships, is excluded by B-016 as amended and B-160 (item `0436`): a
+manifest without it reads the shipped records (`0001-F5` B-097), so adding it
+would change no verdict and would write the defaults into a consumer's file;
+writing an `ids` record is the move's alone (B-155 to B-161, item `0438`). A key is present when the
 consumer's manifest holds a top-level member of that name, ordinal, whatever
 its value, `null` included. Only top-level keys are compared; nothing inside a
 present value is read or added.

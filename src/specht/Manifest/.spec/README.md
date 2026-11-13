@@ -994,13 +994,18 @@ shipped one on every key it carries, `ids` included, so the pin moves in the
 same pull request. `identifiers.claim`, `constraint` and `openQuestion` are
 removed by hand, since B-092 rejects them and `upgrade` cannot move them before
 item `0438`; `specht schema pin 0.4.0` moves the pin; `specht upgrade` rewrites
-the three frontmatter schemas, leaves the templates, whose `0.4.0` bytes are
-`0.3.1`'s, and adds `ids` whole as a key the pinned version defines and the
-manifest lacks (`0001-F7` decision 0006), after the manifest's last key. That
-step adds `ids` only to a manifest that names none; reading an `identifiers`
-member into `ids` is item `0438`'s. The tree has no top-level `mint`.
-`docs/configuration.md` documents `ids`, its shipped records and the rejected
-keys.
+the three frontmatter schemas and leaves the templates, whose `0.4.0` bytes are
+`0.3.1`'s. `upgrade` adds no `ids`: `ManifestKeyEditor.AddMissing` excludes it
+beside `schemaVersion` and `identifiers` (`0001-F7` B-016 as amended, B-160),
+and a `0.4.0` manifest without `ids` reads the shipped records (B-097), so a
+consumer that pins `0.4.0` loses nothing by its absence. This repository's
+`ids` is copied by hand from the shipped `0.4.0` manifest, after the manifest's
+last key, because `0001-F4` B-004 holds the live manifest equal to the shipped
+one on every tool-owned key, `ids` among them, and this repository's `codeAnalysis.mappings` projects `/ids/claim`, which the
+analyzer reads from the manifest as written. Reading an `identifiers` member
+into `ids` is item `0438`'s. The tree has no top-level `mint`.
+`docs/configuration.md` documents `ids`, its shipped records, the rejected keys
+and the move by hand until item `0438`.
 
 **The analyzer and evidence projection.** The repository owner selected "A,
 built in 0436", and `0201-F1` decision 0006 records it with spec-author's
