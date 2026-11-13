@@ -20,7 +20,7 @@ depends_on: ["0001/F2", "0001/F5", "0001/F6"]
 blocks: ["F4"]
 spikes: []
 created: "2026-10-30"
-updated: "2026-11-06"
+updated: "2026-11-12"
 github_issue: null
 synced_at: null
 ---
@@ -118,15 +118,160 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-30 -->
+<!-- last written by: implementer, 2026-11-12 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                                                          | Classification | Owner                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)           | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)         |
+| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004) | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From` |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                           | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                      |
+| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                     | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`             |
+| Byte-identical serialization (B-022)                                                                             | Technical      | `FactsDocument.ToJson`                                                                  |
+| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)           | Both           | `FactsCommand`                                                                          |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-30 -->
+<!-- last written by: implementer, 2026-11-12 -->
 
-Pending: owned by `implementer`, written after agreement.
+The design for item `0364`. The types below are not built yet; once they are, each entry points at the file that declares
+it and stops restating it.
+
+### Reading the tree
+
+The command calls the check's own read,
+[`SpechtModelReader.Read(root, null)`](../../../../specht/Model/SpechtModelReader.cs), the same call
+[`SpechtRunner.Run`](../../../../specht/SpechtRunner.cs) makes, with the manifest's own schema source. That one call
+checks the root, reads, parses and pins the manifest, compiles the selected frontmatter schemas, discovers through
+[`SpechtDiscovery`](../../../../specht/Discovery/SpechtDiscovery.cs), loads through `SpechtTreeStore` and parses through
+[`SpechtModelBuilder`](../../../../specht/Model/SpechtModelBuilder.cs), so every fact comes from the parse the check
+evaluates and no second parser exists (C-1). No rule runs: the model is projected, never evaluated, so nothing in the
+document can be a violation, a count or a verdict (B-014, C-5). [`MintCommand`](../../Mint/MintCommand.cs) already
+injects `SpechtModelReader` directly; this follows it.
+
+The read throws the check's typed exceptions, and the command folds them exactly as
+[`CheckCommand`](../../Check/CheckCommand.cs) and [`RulesCommand`](../../Rules/RulesCommand.cs) do (B-021):
+`SpechtRootNotFoundException` and `SpechtManifestNotFoundException` exit `ExitCodes.MissingInput` (`2`);
+`SpechtManifestUnreadableException` and `SpechtManifestException`, an unshipped pin and a rejected disk schema
+included, exit `ExitCodes.InvalidManifest` (`3`). Each writes one `specht: ` line to stderr and nothing to stdout.
+
+### The document
+
+Two records in a new engine folder, `src/specht/Facts/`, namespace `Specht.Facts`. The folder sits beside `Report/` in
+ADR-0010's list and reads only `Model/`, `Manifest/` and `Discovery/` below it.
+
+- `FactsDocument` (`src/specht/Facts/FactsDocument.cs`): one member, `Specifications`, a list of `FeatureFacts`.
+  `FactsDocument.From(SpechtModel model)` makes it, as
+  [`SpechtReportDocument.From`](../../../../specht/Report/SpechtReportDocument.cs) makes the report: a function of the
+  model alone, with no clock, machine or environment in it. `ToJson()` serializes it.
+- `FeatureFacts` (`src/specht/Facts/FeatureFacts.cs`): one discovered Feature specification.
+
+`From` walks `model.Features`, which `SpechtModelBuilder` fills in the listing's order, so the document lists every
+Feature specification in discovery order (B-001). `model.Epics` is never read, so an epic file gives no facts (B-026,
+OQ-6); a Feature specification in the legacy `epics/**/spec.md` layout is a Feature and is given. Each member is taken
+from a [`FeatureSpec`](../../../../specht/Model/FeatureSpec.cs) as the check reads it:
+
+| Member       | Value                                                                                                                                       | Claim |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `path`       | `FeatureSpec.RelativePath`: root-relative, `/`-separated, from `SpechtLocation`                                                             | B-003 |
+| `id`         | `FeatureSpec.Identity` when the Feature is in `SpechtModel.FeaturesWithIdentity`, else `null`; the check's identity form, such as `0132-F2` | B-003 |
+| `specStatus` | `FeatureSpec.SpecStatus`, read through the manifest's frontmatter key, or `null`                                                            | B-003 |
+| `status`     | `FeatureSpec.Status`, or `null`                                                                                                             | B-003 |
+| `dependsOn`  | `FeatureSpec.Strings(Keys.DependsOn)`: the list as written, unresolved, `[]` when absent                                                    | B-004 |
+| `blocks`     | `FeatureSpec.Strings(Keys.Blocks)`                                                                                                          | B-004 |
+| `children`   | `FeatureSpec.Strings(Keys.Children)`                                                                                                        | B-004 |
+
+The dependency lists come from the frontmatter, not from `SpechtDependencyGraph`, which resolves edges to identities:
+B-004 gives the lists as the frontmatter has them, and an edge the check cannot resolve is still given.
+
+Every member is always present, with `null` or `[]` when the frontmatter has no value, so a reader never has to tell an
+absent member from an empty one and no member's presence depends on a pin (B-017, C-5). Member names are the role, not
+the consumer's frontmatter key: from schema `0.3.0` the manifest's `featureKeys` can rename `spec_status`, and the
+member stays `specStatus` (`0001-F5` B-004). Names are camelCase, as in the published report document
+(`docs/schema/report.schema.json`, `0001-F3`).
+
+A Feature's document for this repository's own specification:
+
+```json
+{
+  "specifications": [
+    {
+      "path": "src/tool/Features/Facts/.spec/README.md",
+      "id": "0132-F2",
+      "specStatus": "approved",
+      "status": "ready",
+      "dependsOn": ["0001/F2", "0001/F5", "0001/F6"],
+      "blocks": ["F4"],
+      "children": []
+    }
+  ]
+}
+```
+
+`ToJson()` uses `System.Text.Json` with options held in one `static readonly` field, as `SpechtReportDocument` does:
+indented, `\n` line endings whatever the platform, camelCase names, nulls written. Members come out in declaration
+order and lists in model order, so the same tree and arguments give the same bytes (B-022).
+
+### Where later items attach
+
+Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
+
+- `0365`: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
+  `sections` and `roles` name.
+- `0366` and `0367`: `outOfScope`, `openQuestions`, `deltas` and `signOff` on `FeatureFacts`, each section found through
+  `SpechtDocument.Section` under the manifest's heading (C-7).
+- `0368`: `records` on `FeatureFacts`. Records are not in the listing today; that item extends the listing through
+  `ISpecDiscovery`, not a read inside `Features/Facts/`.
+- `0369`: the path selector narrows `FactsDocument.Specifications` in the engine; the command maps an empty selection to
+  `ExitCodes.NotFound`.
+- `0370`: the text lines, made by the engine from `FactsDocument` as `SpechtReportDocument.SummaryLines` makes the
+  check's summary; the command only writes them.
+
+### The published schema
+
+`docs/schema/facts.schema.json`, OQ-1's default, draft 2020-12 as the report schema is. A root object requiring
+`specifications`; each item requiring the seven members above, with `id`, `specStatus` and `status` typed
+`["string", "null"]` and the three lists arrays of strings. `path` takes the report schema's `file` pattern: non-empty,
+not starting with `/`, no drive letter, no `\`. `additionalProperties` is `false` at every level, as in the report
+schema, so a violation, a count or a verdict member fails validation (B-014), and each later item that adds a member
+widens the schema in the same pull request.
+
+A test holds the schema true by validating the command's output against the file with JsonSchema.Net, as
+`SpechtReportDocument.Integration.Tests` validates the report. `test/tests/tests.csproj` and
+`test/acceptance/acceptance.csproj` already copy `docs/schema/*.json` into their output, so no project file changes.
+
+### The command
+
+`src/tool/Features/Facts/FactsCommand.cs`, `specht facts [--root <DIR>] --json`, with its nested `Settings`. It injects
+`IAnsiConsole`, `SpechtModelReader` and an optional `TextWriter` for errors, as `RulesCommand` does. It resolves the
+root with `Path.GetFullPath`, calls `FactsDocument.From(reader.Read(root, null))`, writes `ToJson()` to stdout and
+returns `ExitCodes.Success`. It reads no Markdown, YAML or record file (C-4). It has no `--report` and calls nothing
+that writes, so a run creates, modifies and deletes nothing (B-023, C-2); the read makes no network call.
+
+Without `--json` the command writes the usage line to stderr, nothing to stdout, and exits `ExitCodes.MissingInput`
+(`2`) before reading the tree, as `FrontmatterCommand` does for its own usage. The text form is item `0370`'s (B-024);
+until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` removes the refusal.
+
+`src/tool/Features/Facts/FactsRegistration.cs` adds the command to the configurator, as `ManifestRegistration` does
+(ADR-0007), and [`Program.cs`](../../../Program.cs) adds `.AddFacts()` to its chain. No service registration is needed:
+`AddSpechtEngine` already registers `SpechtModelReader`, and `FactsDocument` is a record built by `From`.
+
+`docs/cli.md` gains a `specht facts` section, held to the help by the `0002-F1` test, and `docs/exit-codes.md` row `2`
+names the facts usage. The command adds no rule id (C-5).
+
+### Rejected
+
+- **A `FactsReader` class wrapping the read and the projection.** One call to a type that already exists and one pure
+  function; a second type would only forward.
+- **A `Facts` method on `SpechtRunner`.** `SpechtRunner` is the check's runner, and ADR-0010 moves it into a folder; the
+  facts read evaluates nothing.
+- **Frontmatter key names as members (`spec_status`, `depends_on`).** The key is the consumer's from schema `0.3.0`, so
+  the member would change with the manifest or the pin (B-017, C-5).
+- **Omitting a member whose value is absent.** A reader could not tell absent from empty, and the shape would vary with
+  the tree.
+- **Writing the JSON document without `--json` until item `0370`.** The flag would change nothing, and the default
+  output would change when the text form lands.
+- **A per-specification text line now.** No claim states it, and OQ-5's line shape is for claims, constraints, § 5 rows
+  and open questions.
 
 ## 8. Testing Strategy
 
