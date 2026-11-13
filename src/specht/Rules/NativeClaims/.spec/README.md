@@ -316,7 +316,7 @@ composes it from `SpechtClaimInput` and the Feature.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-13 -->
+<!-- last written by: test-writer, 2026-11-13 (item 0389 review round 1: B-028 reference written into the step; B-031 null row) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -374,8 +374,11 @@ the tests compiled before the parser read them: `SpechtClaimSource`,
   fault to the same list for any value but the text `markdown` or `gherkin`.
   Test:
   `AClaimSourceOutsideTheTwo_WhenParsedUnderZeroFourZero_ShouldBeRejectedNamingClaimSource`,
-  over `UndefinedClaimSources`: `"yaml"`, `"Gherkin"` and the number `1`, with no
-  `claim.files`, so no B-029 fault stands in. Each asserts the exact exception
+  over `UndefinedClaimSources`: `"yaml"`, `"Gherkin"` and the number `1`, and a
+  declared JSON `null`, which `ClaimInput` reads through `TryGetPropertyValue`
+  rather than `Selected`, so it is refused, not filled with the default; each
+  with no `claim.files`, so no B-029 fault stands in. The outline names no
+  `null`, so `null` has no acceptance row. Each asserts the exact exception
   type and that its message names `claim.source`. Red: no exception is thrown.
 
 **Acceptance.** `native-claims.feature` is linked into
@@ -391,8 +394,13 @@ B-027 makes such a set invalid under one; a scenario that needs the grammar
 declares it. The manifest is edited in memory and written when the check runs,
 which launches the built tool on the root: an exit code and its streams are
 seen nowhere else. "The output of the same tree before this Feature" (B-028)
-is the tool's output with `claim` left out, so every claim setting is the pin's
-default; "the output without `claim.source`" is a run recorded before the
+is written into the step rather than produced by the tool under test: the
+synthetic tree's clean output under `0.3.1`, exit `0`, an empty stderr and the
+four summary lines `specifications: epics 0, features 1`, `items: 0`,
+`rules evaluated: 23` and `errors: 0, warnings: 0`, which `specht.tool`
+`0.5.35-preview`, a package that predates this Feature and carries `0.3.1`,
+prints for the same tree. Changing the reference turns the scenario red. "The
+output without `claim.source`" is a run recorded before the
 member is set. "No violation is printed" is stdout holding no `SPEC` diagnostic
 line.
 

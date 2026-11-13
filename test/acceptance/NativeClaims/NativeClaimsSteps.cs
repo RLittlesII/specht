@@ -13,8 +13,9 @@ namespace Specht.Acceptance.NativeClaims;
 /// pending. A root is a synthetic tree holding one co-located Markdown specification, so a claim read from a claims table is
 /// observable, and its manifest declares no epic grammar, as the Background's claim file set carries no epic (B-027). The
 /// manifest is edited in memory and written when the check runs; "the check runs" launches the built tool on the root, the
-/// only place an exit code and its streams are seen. "The output of the same tree before this Feature" is the tool's output
-/// with the <c>claim</c> object left out, which reads every claim setting at the pin's default (B-028).
+/// only place an exit code and its streams are seen. "The output of the same tree before this Feature" is written here, not
+/// produced by the tool under test: this tree's clean output under schema <c>0.3.1</c>, exit <c>0</c>, an empty stderr and
+/// the four summary lines that <c>specht.tool</c> <c>0.5.35-preview</c>, which predates this Feature, prints for it (B-028).
 /// </summary>
 [Binding]
 [Scope(Feature = "Native Gherkin claims")]
@@ -144,12 +145,8 @@ public sealed class NativeClaimsSteps
     }
 
     [Then("the output equals the output of the same tree before this Feature")]
-    public void ThenTheOutputEqualsTheOutputOfTheSameTreeBeforeThisFeature()
-    {
-        var run = Run;
-        Manifest.Remove("claim");
-        Launch().Should().Be(run);
-    }
+    public void ThenTheOutputEqualsTheOutputOfTheSameTreeBeforeThisFeature() =>
+        Run.Should().Be((OutputBeforeThisFeature, string.Empty, 0));
 
     [Then("the output equals the output without {string}")]
     public void ThenTheOutputEqualsTheOutputWithout(string path) =>
@@ -200,6 +197,14 @@ public sealed class NativeClaimsSteps
         var members = path.Split('.');
         (members.Length == 1 ? Manifest : Node(string.Join('.', members[..^1])) as JsonObject)?.Remove(members[^1]);
     }
+
+    private static readonly string OutputBeforeThisFeature = string.Join(
+        Environment.NewLine,
+        "specifications: epics 0, features 1",
+        "items: 0",
+        "rules evaluated: 23",
+        "errors: 0, warnings: 0",
+        string.Empty);
 
     private SpechtTree? _tree;
 
