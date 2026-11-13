@@ -18,7 +18,8 @@ namespace Specht.Tests.Identifiers;
 /// whole after the head (B-073). A draw the record's <c>id</c> rejects (B-068), or that starts with the other type's longer
 /// head under the claim tag case setting (B-076, B-077), is refused at the first candidate with nothing drawn again. A record
 /// holding only its opt-in mints for every type and strategy (B-074). A <c>prefix</c> in any record's <c>mint</c> refuses
-/// every request before anything is drawn (B-075). A refusal names the setting under the record, <c>ids.&lt;type&gt;.mint</c>
+/// every request before anything is drawn (B-075), and a type with no record, or whose record's <c>mint</c> names no strategy,
+/// is not opted in (B-002). A refusal names the setting under the record, <c>ids.&lt;type&gt;.mint</c>
 /// and <c>ids.&lt;type&gt;.id</c>. Each tree is a <see cref="MockFileSystem"/> holding <c>features/one</c>, the draws come
 /// from a <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>.
 /// </summary>
@@ -298,6 +299,30 @@ public sealed class MinterIdsUnitTests
 
         // Then
         minting.Should().Throw<IdRefusedException>().WithMessage($"*'{key}'*");
+    }
+
+    [Theory]
+    [ClassData(typeof(RecordsNotOptingTheTypeIn))]
+    public void ATypeNotOptedInOrWhoseRecordNamesNoStrategy_WhenMinted_ShouldBeRefusedAsNotOptedInWithNoIdDrawn(string text, string type)
+    {
+        // Given
+        var manifest = EngineServices.Parser().ParseDocument(text);
+        var random = new FixedRandomSource(0);
+        var minter = new Minter(
+            random,
+            new HeldIds(
+                new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()),
+                new SpechtTreeStore(new MockFileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var mint = () => minter.Mint(manifest, type, ".", null);
+
+        // Then
+        mint.Should().ThrowExactly<IdNotOptedInException>();
+        random.Bounds.Should().BeEmpty();
     }
 
     [Fact]
