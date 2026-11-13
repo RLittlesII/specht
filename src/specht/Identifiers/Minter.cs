@@ -239,12 +239,15 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
         }
 
         var key = $"ids.{type}.mint";
-        var entry = MintOf(ids, type) ?? throw new IdNotOptedInException($"The type '{type}' is not opted in under '{key}'.");
+        if (!records.TryGetValue(type, out var record) || MintOf(ids, type) is not { } entry)
+        {
+            throw new IdNotOptedInException($"The type '{type}' is not opted in under '{key}'.");
+        }
+
         var name = StrategyOf(entry) ?? throw new IdNotOptedInException($"'{key}' names no strategy, so '{type}' is not opted in.");
         var location = FeatureOf(type, root, structure.Discovery, feature);
         var strategy = StrategyNamed(name, entry, type, key);
         var heads = structure.ClaimGrammar(location is null ? null : held.ClaimPrefixOf(root, location, structure.FeatureKeys.ClaimPrefix));
-        var record = records[type];
         var formatted = new FormattingDecorator(strategy, JsonValue.Create(record.Head(heads.Prefix)), entry["encoding"], name, type, key);
         var validated = new ValidationDecorator(
             formatted, record.Grammar(heads.Prefix), $"ids.{type}.id", type, Reserved(type, heads), structure.TagComparison);
