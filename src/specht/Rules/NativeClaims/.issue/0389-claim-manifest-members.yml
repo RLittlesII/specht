@@ -2,7 +2,7 @@ id: "0389"
 type: task
 title: Add the claim members to the manifest under schema 0.3.1, and refuse an invalid claim file set
 
-status: ready
+status: in-progress
 
 risk: 3
 
@@ -21,7 +21,7 @@ claims:
   - B-029
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-12"
 closed: null
 
 summary: |
