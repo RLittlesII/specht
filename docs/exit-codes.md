@@ -6,13 +6,13 @@ type: reference
 
 # Exit codes
 
-| Exit | Meaning                                                                                                                                                                                                                                                 |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0`  | Clean                                                                                                                                                                                                                                                   |
-| `1`  | Violations (any violation, under `--strict`)                                                                                                                                                                                                            |
-| `2`  | Missing root or manifest, invalid frontmatter-command usage, `facts` without `--json`, `--feature` on an `adr` or `lesson` mint or none on a per-Feature one, or a version required without an interactive terminal                                     |
-| `3`  | Invalid manifest or init source options, an upstream schema fetch or hash check failed, a `mint` entry that opts in `epic`, `feature` or `task`, or one that names a strategy and gives no id, Snowflake's clock reading earlier included               |
-| `4`  | Something named on the command line, such as a schema version, rule id, frontmatter kind, document file or a type `mint` holds no entry for or whose entry names no strategy, or a `mint --feature` folder holding no Feature's `.spec/`, was not found |
+| Exit | Meaning                                                                                                                                                                                                                                                                           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0`  | Clean                                                                                                                                                                                                                                                                             |
+| `1`  | Violations (any violation, under `--strict`)                                                                                                                                                                                                                                      |
+| `2`  | Missing root or manifest, invalid frontmatter-command usage, `facts` without `--json`, `--feature` on an `adr` or `lesson` mint or none on a per-Feature one, or a version required without an interactive terminal                                                               |
+| `3`  | Invalid manifest or init source options, an upstream schema fetch or hash check failed, a `mint` entry that opts in `epic`, `feature` or `task`, a `prefix` in an `ids` record's `mint`, or one that names a strategy and gives no id, Snowflake's clock reading earlier included |
+| `4`  | Something named on the command line, such as a schema version, rule id, frontmatter kind, document file or a type with no `mint` entry or `ids.<type>.mint`, or whose entry names no strategy, or a `mint --feature` folder holding no Feature's `.spec/`, was not found          |
 
 For `specht evidence`, `1` means a missing required link or nonpassing required
 case, `2` means required evidence is missing, stale or incompatible, `3` means
