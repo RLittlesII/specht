@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
@@ -160,7 +161,7 @@ public sealed partial class ReportSteps
     public void ThenTheClaimExpectationCarriesItsGrammar() =>
         Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC030"))
             .Should().ContainSingle(Json).Which["expected"]!["grammar"]!.GetValue<string>()
-            .Should().Be(Manifest["identifiers"]!["claim"]!.GetValue<string>(), Json);
+            .Should().Be(EngineServices.Manifest(new FileSystem(), Tree.Root).ClaimGrammar(null).Pattern, Json);
 
     [Given("the root holds a specification declaring B-001 twice")]
     public void GivenTheSpecificationDeclaresAClaimTwice()
