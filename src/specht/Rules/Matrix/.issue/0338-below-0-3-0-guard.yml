@@ -1,6 +1,6 @@
 id: "0338"
 type: test
-title: Prove the scenario, test and status rules do not run below schema 0.3.0
+title: Prove the scenario, test and status rules do not run below the schema version each enters
 
 status: ready
 
@@ -9,7 +9,7 @@ risk: 2
 parent: "0224"
 children: []
 
-depends_on: ["0321", "0334", "0335", "0336", "0337"] # the guard holds the four rules against 0.1.0, 0.2.0 and 0.2.1, so all four exist first
+depends_on: ["0321", "0334", "0335", "0336", "0337", "0436"] # the guard holds SPEC4007 and SPEC4009 against 0.1.0 to 0.2.1 and SPEC4008 and SPEC4010 against 0.1.0 to 0.3.1, so all four rules and 0436's 0.4.0 exist first (decision 0005)
 spikes: []
 
 spec: src/specht/Rules/Matrix/.spec/README.md
@@ -18,27 +18,30 @@ claims:
   - B-021
 
 created: "2026-11-01"
-updated: "2026-11-01"
+updated: "2026-11-12"
 closed: null
 
 summary: |
-  Proves that under a pin of 0.1.0, 0.2.0 or 0.2.1 none of SPEC022,
-  SPEC023, SPEC032 and SPEC033 runs, and that the report is
-  byte-identical to the one the tool gives the tree without them, and
-  that a raised waiver rule still runs under 0.2.0 (decision 0003). It
-  binds B-021's outline rows for 0.2.0 and 0.2.1 and its boundary
-  scenario; the 0.1.0 row is bound today.
+  Proves that under a pin of 0.1.0, 0.2.0 or 0.2.1 none of SPEC4007,
+  SPEC4008, SPEC4009 and SPEC4010 runs, that under 0.3.0 or 0.3.1
+  neither SPEC4008 nor SPEC4010 runs, that each report is byte-identical
+  to the one the tool gives the tree without the rules that do not run,
+  and that a raised waiver rule still runs under 0.2.0 (decisions 0003
+  and 0005). It binds B-021's outline rows for 0.2.0 and 0.2.1, its
+  outline over 0.3.0 and 0.3.1, and its boundary scenario; the 0.1.0 row
+  is bound today.
 
-  Waits on the four rule items: the guard proves something only once
-  each rule exists and could run. Each rule item adds its id to 0.3.0
-  alone, so this item adds tests and no rule.
+  Waits on the four rule items and on 0436, which cuts 0.4.0: the guard
+  proves something only once each rule exists and could run. SPEC4007
+  and SPEC4009 are in 0.3.0 and 0.3.1, and SPEC4008 and SPEC4010 enter
+  0.4.0 alone, so this item adds tests and no rule.
 
   Risk 2: the vocabulary per version is built and fixed for the published
   versions (0001-F7 C-1, B-015); the risk is a rule item that leaks its id
   into a 0.2.x vocabulary, which this item would find.
 
 acceptance_criteria:
-  - "B-021 — below 0.3.0 the four rules do not run, report byte-identical"
+  - "B-021 — below 0.3.0 the four rules do not run, and at 0.3.0 and 0.3.1 SPEC4008 and SPEC4010 do not; each report byte-identical"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -60,6 +63,16 @@ decisions:
     that row. When this item binds the 0.2.0 and 0.2.1 rows, spec-author
     rewords the line to the claim's wording and test-writer rebinds the
     step, in this pull request.
+  - |
+    2026-11-12, spec-author: re-targeted after the repository owner's
+    answer to `0001-F12` OQ-4 (decision 0005): "0.4.0", the next minor,
+    with 0336 waiting on 0436, which cuts 0.4.0. spec-author's reading,
+    not the owner's: B-021 now holds each rule silent below the version
+    it enters, so the guard adds 0.3.0 and 0.3.1 for SPEC4008 and
+    SPEC4010, as a separate outline whose last two steps are unbound,
+    keeping the bound 0.1.0 row's outline as it is; this item waits on
+    0436 so that 0.4.0 exists. The id, the file name and the claim are
+    unchanged.
 
 out_of_scope:
   - "SPEC034 and SPEC035 under 0.1.0: B-020 and `0001-F7` B-014 (decision 0003, Affects)."

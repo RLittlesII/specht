@@ -6,10 +6,10 @@ Feature: Native Gherkin claims
   read as rules of the next schema version.
 
   Background:
-    Given a root with a manifest pinned to schema "0.3.1"
+    Given a root with a manifest pinned to schema "0.4.0"
     And the manifest sets "claim.source" to "gherkin"
     And "claim.files" holds one claim file set with glob ".spec/features/arithmetic/*.feature" and feature "arithmetic"
-    And the manifest leaves "claim.tag" and "identifiers.claim" at their defaults
+    And the manifest leaves "claim.tag" and "ids.claim" at their defaults
 
   @B-001
   Scenario: Claims come from the claim files a set names
@@ -295,14 +295,14 @@ Feature: Native Gherkin claims
 
   @B-028
   Scenario: An earlier pin is untouched
-    Given the manifest is pinned to schema "0.3.0"
+    Given the manifest is pinned to schema "0.3.1"
     And "claim" has no member beyond "tag" and "tagIgnoreCase"
     When the check runs
     Then the output equals the output of the same tree before this Feature
 
   @B-028
   Scenario: An earlier pin refuses the new members as today
-    Given the manifest is pinned to schema "0.3.0"
+    Given the manifest is pinned to schema "0.3.1"
     And the manifest sets "claim.source" to "gherkin"
     When the check runs
     Then the exit code is 3

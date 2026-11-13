@@ -22,6 +22,12 @@
 0252
 # 0132-F4's mint tool.
 0433
+# 0001-F19's ids record, schema 0.4.0 (ADR-0036): 0436 cuts the version, 0437
+# mints from the record, 0438 has upgrade move the settings into it; added by
+# the owner's selection, 2026-11-13.
+0436
+0437
+0438
 # Remaining matrix validation, moved from 0.4.0 beside facts and coverage.
 0335
 0336
