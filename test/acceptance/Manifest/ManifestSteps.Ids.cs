@@ -208,7 +208,12 @@ public sealed partial class ManifestSteps
 
     [Then("the rejection names claim IDs and that pattern")]
     public void ThenTheRejectionNamesClaimIdsAndThatPattern() =>
-        _rejection!.Message.Should().Contain("ids.claim").And.Contain(_idPattern ?? throw new InvalidOperationException("No id pattern was written."));
+        _rejection!.Message.Should().Contain("ids.claim").And.Contain(_idPattern switch
+        {
+            null => throw new InvalidOperationException("No id pattern was written."),
+            "" => "empty",
+            _ => _idPattern,
+        });
 
     [Then("^the rejection names the ids record for (.+)$")]
     public void ThenTheRejectionNamesTheIdsRecordFor(string type) =>
