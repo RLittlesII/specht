@@ -88,7 +88,7 @@ effect. Optional `defaults` (true) is `--defaults`.
 ### `mint`
 
 Serves [`specht mint <type> [--feature <dir>]`](cli.md#specht-mint): one new id
-for a type the manifest opts in. `type` is required, such as `adr`; optional
+for a type the manifest opts in, by `ids.<type>.mint` from schema `0.4.0`. `type` is required, such as `adr`; optional
 `feature`, the Feature's folder, is `--feature`.
 
 ## Restore the tool

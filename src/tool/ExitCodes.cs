@@ -21,15 +21,15 @@ public static class ExitCodes
 
     /// <summary>
     /// The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects, a <c>mint</c> entry
-    /// that opts in <c>epic</c>, <c>feature</c> or <c>task</c> and one that names a strategy and gives no id for the type
-    /// requested included.
+    /// that opts in <c>epic</c>, <c>feature</c> or <c>task</c>, a <c>prefix</c> in an <c>ids</c> record's <c>mint</c>, and one
+    /// that names a strategy and gives no id for the type requested included.
     /// </summary>
     public const int InvalidManifest = 3;
 
     /// <summary>
-    /// A target named on the command line is not found in the shipped catalog, the manifest's <c>mint</c> key holds no
-    /// entry for the type requested or its entry names no strategy, or the folder <c>mint</c>'s <c>--feature</c> names holds
-    /// no Feature's <c>.spec/</c>.
+    /// A target named on the command line is not found in the shipped catalog, the manifest's <c>mint</c> key, or from schema
+    /// 0.4.0 the type's <c>ids</c> record, holds no entry for the type requested or its entry names no strategy, or the
+    /// folder <c>mint</c>'s <c>--feature</c> names holds no Feature's <c>.spec/</c>.
     /// </summary>
     public const int NotFound = 4;
 }

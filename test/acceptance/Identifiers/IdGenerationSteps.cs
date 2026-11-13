@@ -75,7 +75,7 @@ namespace Specht.Acceptance.Identifiers;
 /// </remarks>
 [Binding]
 [Scope(Feature = "Id generation")]
-public sealed class IdGenerationSteps
+public sealed partial class IdGenerationSteps
 {
     [Given("a repository root with a valid Specht manifest")]
     public void GivenARepositoryRootWithAValidSpechtManifest()
@@ -96,7 +96,23 @@ public sealed class IdGenerationSteps
     }
 
     [Given("a manifest pinned to schema {word}")]
-    public void GivenAManifestPinnedToSchema(string version) => Tree.Pin(version);
+    public void GivenAManifestPinnedToSchema(string version)
+    {
+        Tree.Pin(version);
+        if (Version.Parse(version) < IdsVersion)
+        {
+            return;
+        }
+
+        var manifest = ReadManifest();
+        manifest.Remove("mint");
+        foreach (var type in IdTypes.RepositoryWide.Concat(IdTypes.PerFeature))
+        {
+            (manifest["identifiers"] as JsonObject)?.Remove(type);
+        }
+
+        WriteManifest(manifest);
+    }
 
     [Given("a manifest that opts claim ids in to Nano ID")]
     [Given("it opts claim ids in to Nano ID")]
@@ -149,6 +165,7 @@ public sealed class IdGenerationSteps
     }
 
     [Given("^a manifest that opts (ADR numbers|lesson numbers|decision numbers|constraint ids|open question ids|scenario ids) in to Nano ID$")]
+    [Given("^it opts (ADR numbers) in to Nano ID$")]
     public void GivenAManifestThatOptsATypeInToNanoId(string type) =>
         OptIn(
             TypeOf(type),
@@ -459,6 +476,7 @@ public sealed class IdGenerationSteps
         Fixed.Readings = [Fixed.Readings[0], Fixed.Readings[0].AddMilliseconds(-1)];
 
     [Given("^a Feature whose specification already holds the (claim id|constraint id|open question id) that would be minted first$")]
+    [Given("^that Feature's specification already holds the (claim id|constraint id|open question id) that would be minted first$")]
     public async Task GivenAFeatureWhoseSpecificationAlreadyHoldsTheIdThatWouldBeMintedFirst(string id)
     {
         var first = await FirstCandidateForTheFeature(TypeOf(id));
@@ -474,7 +492,7 @@ public sealed class IdGenerationSteps
                 + $"| {first} | It is held. | Nothing |\n"),
             _ => ("11. Open Questions", $"| ID | Question | Default |\n| -- | -------- | ------- |\n| {first} | Is it held? | Yes |\n"),
         };
-        Tree.WriteCoLocatedFeature(Feature, "0001", "F1", sections: SpechtTree.SectionsWith(title, $"## {title}\n\n{table}"));
+        Tree.WriteCoLocatedFeature(Feature, "0001", "F1", _frontmatter, SpechtTree.SectionsWith(title, $"## {title}\n\n{table}"));
     }
 
     [Given("^a Feature with a decision already numbered with the decision number that would be minted first$")]
@@ -485,6 +503,7 @@ public sealed class IdGenerationSteps
     }
 
     [Given("^a Feature with a scenario already tagged with the scenario id that would be minted first$")]
+    [Given("^a scenario of that Feature is already tagged with the scenario id that would be minted first$")]
     public async Task GivenAFeatureWithAScenarioAlreadyTaggedWithTheScenarioIdThatWouldBeMintedFirst()
     {
         var first = await FirstCandidateForTheFeature("scenario");
@@ -626,7 +645,7 @@ public sealed class IdGenerationSteps
     public void ThenTheMintedIdIsTheDrawnCharactersWithAPrefixAheadOfThem(string ahead)
     {
         var prefix = ahead == "nothing" ? string.Empty : ahead.Trim('"');
-        var nanoid = ReadManifest()["mint"]![LastRequest.Type]!["nanoid"]!;
+        var nanoid = Entry(LastRequest.Type)["nanoid"]!;
         var line = LastRequest.Run.Stdout.TrimEnd('\n').TrimEnd('\r');
 
         line.Should().StartWith(prefix, LastRequest.Run.Stderr);
@@ -807,6 +826,12 @@ public sealed class IdGenerationSteps
         WriteManifest(manifest);
     }
 
+    private JsonNode Entry(string type)
+    {
+        var manifest = ReadManifest();
+        return manifest["ids"]?[type]?["mint"] ?? manifest["mint"]![type]!;
+    }
+
     private void HoldEveryAdrCandidate()
     {
         var nanoid = ReadManifest()["mint"]!["adr"]!["nanoid"]!;
@@ -832,7 +857,7 @@ public sealed class IdGenerationSteps
             return (type, AcceptanceTool.Launch(Tree.Root, "mint", type, "--root", "."));
         }
 
-        Tree.WriteCoLocatedFeature(Feature, "0001", "F1");
+        Tree.WriteCoLocatedFeature(Feature, "0001", "F1", _frontmatter);
 
         return (type, AcceptanceTool.Launch(Tree.Root, "mint", type, "--feature", Feature, "--root", "."));
     }
@@ -850,7 +875,7 @@ public sealed class IdGenerationSteps
 
     private async Task<string> FirstCandidateForTheFeature(string type)
     {
-        Tree.WriteCoLocatedFeature(Feature, "0001", "F1");
+        Tree.WriteCoLocatedFeature(Feature, "0001", "F1", _frontmatter);
         Fixed.Draws = [.. Enumerable.Range(0, 7)];
         var (_, (stdout, stderr, exitCode)) = await InProcess(type, Fixed, Feature);
         exitCode.Should().Be(ExitCodes.Success, stderr);
@@ -883,22 +908,24 @@ public sealed class IdGenerationSteps
         return (type, (console.Output, errors.ToString(), exitCode));
     }
 
-    private long Number()
+    private long Number() => Number(AfterPrefix(LastRequest));
+
+    private long Number(string digits)
     {
-        var digits = AfterPrefix(LastRequest);
-        var encoding = ReadManifest()["mint"]![LastRequest.Type]!["encoding"]?.GetValue<string>() ?? "base32";
+        var encoding = Entry(LastRequest.Type)["encoding"]?.GetValue<string>() ?? "base32";
         return encoding == "none"
             ? long.Parse(digits, NumberStyles.None, CultureInfo.InvariantCulture)
             : digits.Aggregate(0L, static (number, character) => (number << 5) | (long) Base32.IndexOf(character, StringComparison.Ordinal));
     }
 
-    private (long Time, long Datacenter, long Worker, long Sequence) Decoded()
+    private (long Time, long Datacenter, long Worker, long Sequence) Decoded() => Decoded(Number());
+
+    private (long Time, long Datacenter, long Worker, long Sequence) Decoded(long number)
     {
-        var snowflake = ReadManifest()["mint"]![LastRequest.Type]!["snowflake"];
+        var snowflake = Entry(LastRequest.Type)["snowflake"];
         var datacenterBits = snowflake?["datacenterBits"]?.GetValue<int>() ?? 5;
         var workerBits = snowflake?["workerBits"]?.GetValue<int>() ?? 5;
         var sequenceBits = snowflake?["sequenceBits"]?.GetValue<int>() ?? 12;
-        var number = Number();
 
         return (
             number >> (datacenterBits + workerBits + sequenceBits),
@@ -909,7 +936,7 @@ public sealed class IdGenerationSteps
 
     private void ShouldHoldTheEntrysFields()
     {
-        var snowflake = ReadManifest()["mint"]![LastRequest.Type]!["snowflake"]!;
+        var snowflake = Entry(LastRequest.Type)["snowflake"]!;
         var (_, datacenter, worker, sequence) = Decoded();
         datacenter.Should().Be(snowflake["datacenter"]!.GetValue<int>(), LastRequest.Run.Stderr);
         worker.Should().Be(snowflake["worker"]!.GetValue<int>(), LastRequest.Run.Stderr);
