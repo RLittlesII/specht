@@ -16,6 +16,7 @@ spikes: []
 spec: src/specht/Identifiers/.spec/README.md
 
 claims:
+  - B-002
   - B-009
   - B-011
   - B-012
@@ -58,6 +59,7 @@ summary: |
 
 acceptance_criteria:
   - "B-063, B-065, B-066 — the head from the record's form or plain text, and the drawn id after it"
+  - "B-002 from 0.4.0 — a type with no record, or whose record's `mint` names no strategy, gives no id and exits 4"
   - "B-009, B-011, B-012, B-043, B-055 as amended — held below 0.4.0"
   - "B-067, B-068 — validation against the record's id, and the plain text for every type in a Feature whose prefix `0001-F5` B-078 or B-100 reports"
   - "B-070, B-071 — the guard over first cells and scenario tags"
