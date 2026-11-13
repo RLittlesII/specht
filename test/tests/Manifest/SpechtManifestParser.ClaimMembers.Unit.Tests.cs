@@ -2,7 +2,6 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
 using Specht.Tests.Shared;
-using Specht.Versioning;
 
 namespace Specht.Tests.Manifest;
 
@@ -11,9 +10,8 @@ namespace Specht.Tests.Manifest;
 /// <c>0.4.0</c> the parser reads the claim source and the claim file sets, a source left out or <c>markdown</c> reads as
 /// Markdown with no set, a set's identity follows the epic grammar, an invalid set is rejected naming
 /// <c>claim.files</c>, and a source outside the two is rejected naming <c>claim.source</c>; below <c>0.4.0</c> the
-/// members go unread. Each catalog holds the shipped versions and a
-/// <c>0.4.0</c> whose shipped <c>claim</c> carries the defaults <c>0001-F16</c> § 7 names, so no test waits on the
-/// shipped <c>0.4.0</c>.
+/// members go unread. Each test parses with the shipped catalog, whose <c>0.4.0</c> manifest carries the
+/// <c>claim</c> defaults <c>0001-F16</c> § 7 names.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtManifestParserClaimMembersUnitTests
@@ -27,7 +25,7 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
         manifest["schemaVersion"] = "0.4.0";
 
         // When
-        var structure = WithZeroFourZero().Parse(manifest.ToJsonString());
+        var structure = EngineServices.Parser().Parse(manifest.ToJsonString());
 
         // Then
         structure.ClaimInput.Should().NotBeNull();
@@ -45,7 +43,7 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
         manifest["schemaVersion"] = "0.4.0";
 
         // When
-        var structure = WithZeroFourZero().Parse(manifest.ToJsonString());
+        var structure = EngineServices.Parser().Parse(manifest.ToJsonString());
 
         // Then
         structure.ClaimInput.Should().NotBeNull();
@@ -63,7 +61,7 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
         manifest["schemaVersion"] = "0.4.0";
 
         // When
-        var parse = () => WithZeroFourZero().Parse(manifest.ToJsonString());
+        var parse = () => EngineServices.Parser().Parse(manifest.ToJsonString());
 
         // Then
         parse.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("claim.files");
@@ -81,7 +79,7 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
         };
 
         // When
-        var parse = () => WithZeroFourZero().Parse(manifest.ToJsonString());
+        var parse = () => EngineServices.Parser().Parse(manifest.ToJsonString());
 
         // Then
         parse.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("claim.source");
@@ -92,7 +90,7 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
     public void AClaimMemberUnderAPinBelowZeroFourZero_WhenParsed_ShouldReadTheManifestAsWithoutIt(string pin, string members)
     {
         // Given
-        var parser = WithZeroFourZero();
+        var parser = EngineServices.Parser();
         var without = new JsonObject { ["schemaVersion"] = pin };
         var with = new JsonObject { ["schemaVersion"] = pin, ["claim"] = JsonNode.Parse(members) };
 
@@ -101,28 +99,5 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
 
         // Then
         read.Should().BeEquivalentTo(parser.Parse(without.ToJsonString()), static options => options.ComparingRecordsByMembers());
-    }
-
-    private static SpechtManifestParser WithZeroFourZero()
-    {
-        var shipped = EngineServices.Versions();
-        var claimMembers = new SemanticVersion(0, 4, 0);
-        var defaults = JsonNode.Parse(shipped.Find(new SemanticVersion(0, 3, 1))!.Manifest)!.AsObject();
-        defaults["schemaVersion"] = "0.4.0";
-        defaults["claim"] = new JsonObject
-        {
-            ["tag"] = "@{claim}",
-            ["tagIgnoreCase"] = false,
-            ["source"] = "markdown",
-            ["plannedTags"] = new JsonArray("@ignore"),
-            ["withdrawnTags"] = new JsonArray(),
-            ["supersededTags"] = new JsonArray(),
-            ["lifecycleKey"] = "spec_status",
-        };
-
-        return new SpechtManifestParser(new SchemaVersions([
-            .. shipped.Versions.Where(version => version.Number != claimMembers),
-            new SchemaVersionFixture().WithNumber(claimMembers).WithManifest(defaults.ToJsonString()),
-        ]));
     }
 }
