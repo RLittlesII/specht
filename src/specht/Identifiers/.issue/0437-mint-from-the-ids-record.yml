@@ -2,7 +2,7 @@ id: "0437"
 type: task
 title: Mint from the ids record
 
-status: ready
+status: in-progress
 
 value: 4
 risk: 3
@@ -36,7 +36,7 @@ claims:
   - B-077
 
 created: "2026-11-12"
-updated: "2026-11-12"
+updated: "2026-11-13"
 closed: null
 
 summary: |
