@@ -149,7 +149,7 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-09 (item 0429: B-039 to B-041 cited for the shared claim file, the unreadable record and the identity tag) -->
+<!-- last written by: implementer, 2026-11-13 (item 0436: B-045 to B-047, the mapped ids claim record); implementer, 2026-11-09 (item 0429: B-039 to B-041 cited for the shared claim file, the unreadable record and the identity tag) -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -477,6 +477,19 @@ link and outcome findings in the precedence table above. Serialize once for
 `--json` and `--report` so both are byte-identical. The human renderer consumes
 the same report object. The existing checker report DTO and serializer are not
 modified.
+
+### The ids claim record (item 0436)
+
+[`EvidencePolicy`](../../../tool/Features/Evidence/EvidencePolicy.cs) reads the
+`codeAnalysis` mappings' projection as the analyzer does (`0201-F1` § 7 "The ids
+claim record"). When the projection carries a record at `/ids/claim` it rejects
+one beside a mapped `identifiers.claim` and one `0201-F1` B-025 rejects, by
+`EvidenceConfigurationException`, which the reconciler reports as `invalidInput`
+at `.specht/manifest.json`, exit 3 (B-047). Otherwise it writes the record's
+grammar, [`SpechtIdRecord`](../../../specht/Manifest/SpechtIdRecord.cs)`.Grammar(null)`,
+into the projected identifiers under `claim`, so `Matches` and the native
+Gherkin claim tags read it (B-045). Without the record `identifiers.claim` is
+read as before (B-046).
 
 ## 8. Testing Strategy
 

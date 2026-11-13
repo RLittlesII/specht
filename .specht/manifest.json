@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.3.1",
+  "schemaVersion": "0.4.0",
   "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC2001 reads, kept as data so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
   "layouts": [
     {
@@ -66,9 +66,6 @@
     ]
   },
   "identifiers": {
-    "claim": "^B-[0-9]{3}[a-z]?$",
-    "constraint": "^C-[0-9]+$",
-    "openQuestion": "^OQ-[0-9]+$",
     "task": "^(?<epic>[0-9]{4})-(?<sequence>[0-9]{2})$",
     "feature": "^F[0-9]+[a-z]?$",
     "epic": "^[0-9]{4}$"
@@ -127,6 +124,7 @@
     "mappings": {
       "/schemaVersion": "/schemaVersion",
       "/identifiers": "/identifiers",
+      "/ids/claim": "/ids/claim",
       "/markers": "/markers",
       "/claimsSection": "/roles/claims",
       "/policy": "/codeAnalysis"
@@ -242,5 +240,36 @@
     "Tasks": [
       "spec-author"
     ]
+  },
+  "ids": {
+    "claim": {
+      "form": "{prefix}{id}",
+      "plain": "B-{id}",
+      "id": "[0-9]{3}[a-z]?|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "constraint": {
+      "plain": "C-{id}",
+      "id": "[0-9]+|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "openQuestion": {
+      "plain": "OQ-{id}",
+      "id": "[0-9]+|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "scenario": {
+      "plain": "S-{id}",
+      "id": "[0-9]+|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "decision": {
+      "plain": "{id}",
+      "id": "[0-9]{4}|[0-9a-hjkmnp-tv-z]{6}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "adr": {
+      "plain": "{id}",
+      "id": "[0-9]{4}|[0-9a-hjkmnp-tv-z]{8}|[0-9a-hjkmnp-tv-z]{13}"
+    },
+    "lesson": {
+      "plain": "{id}",
+      "id": "[0-9]{4}|[0-9a-hjkmnp-tv-z]{8}|[0-9a-hjkmnp-tv-z]{13}"
+    }
   }
 }

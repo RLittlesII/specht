@@ -125,7 +125,7 @@ Prevent ambiguous or silently retargeted code bindings by resolving claim and AD
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-02 (item `0166`: the instance parsers); implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-11-13 (item `0436`: the ids claim record); implementer, 2026-11-02 (item `0166`: the instance parsers); implementer, 2026-10-18 -->
 
 ### Component and input boundary
 
@@ -294,6 +294,29 @@ The implementer supplied compiling declarations and throwing operation stubs
 after design review. The test-writer recorded behavioral-red mechanism and
 acceptance runs against that scaffold before the implementer supplied the
 production behavior. Execution results and coverage remain owned by § 8 and § 9.
+
+### The ids claim record (item `0436`)
+
+The policy projection supplies the manifest's `ids` claim record at
+`/ids/claim`: a consumer maps it there, as this repository's
+`codeAnalysis.mappings` does with `"/ids/claim": "/ids/claim"` beside
+`/identifiers` (decision 0006). [`AnalysisPolicyReader.Read`](../../Policy/AnalysisPolicyReader.cs)
+reads it before the identifier check. When `ids.claim` is present it rejects a
+projection whose `identifiers` also supplies `claim`, and a record whose `plain`
+or `id` is absent, not text or empty, whose `plain` does not end with `{id}` or
+holds another brace ahead of it, or whose `id` does not compile alone (B-025;
+`0001-F5` B-084, B-085). Otherwise it writes `^`, the `plain` ahead of `{id}`
+through `Regex.Escape`, then `(?:id)$` into the identifier dictionary under
+`claim` (B-023), the pattern `SpechtIdRecord.Grammar(null)` gives the engine
+(`0001-F5` A-8). Without the record the dictionary is the projected
+`identifiers` as before (B-024).
+
+`GherkinClaimPolicyReader`, `BindingPolicy`, `BindingResolver` and
+`AnalysisRecordReader` read `claim` from that dictionary and are unchanged; each
+matches the grammar whole, so the anchors inside it are harmless. The analyzer
+cannot reference the engine (§ 7 "Text reuse and compiler closure"), so the
+record validation is its own; the record's `form` and `mint` are
+not read, and nothing is filled from a shipped record (§ 5 row 8).
 
 ## 8. Testing Strategy
 
