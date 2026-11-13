@@ -14,6 +14,16 @@ public sealed class AnalysisPolicyReader
     public AnalysisPolicy Read(JsonObject projection)
     {
         var identifiers = Named(projection["identifiers"]);
+        if ((projection["ids"] as JsonObject)?["claim"] is { } record)
+        {
+            if (identifiers.ContainsKey("claim"))
+            {
+                throw Reject("Identifiers claim and the ids claim record must not both be supplied.");
+            }
+
+            identifiers["claim"] = ClaimGrammar(record);
+        }
+
         if (!identifiers.ContainsKey("feature") || !identifiers.ContainsKey("claim") || identifiers.Values.Any(string.IsNullOrWhiteSpace))
         {
             throw Reject("Identifiers must supply nonempty feature and claim grammars.");
@@ -164,6 +174,32 @@ public sealed class AnalysisPolicyReader
 
     private static AnalysisPolicyException Reject(string message) => new(message);
 
+    private static string ClaimGrammar(JsonNode record)
+    {
+        var plain = RecordText(record, "plain");
+        var id = RecordText(record, "id");
+        if (!plain.EndsWith(IdPlaceholder, StringComparison.Ordinal)
+            || plain.Substring(0, plain.Length - IdPlaceholder.Length).IndexOfAny(Braces) >= 0)
+        {
+            throw Reject("Ids claim plain must end with its only {id} and hold no other brace.");
+        }
+
+        try
+        {
+            _ = new Regex(id, RegexOptions.CultureInvariant);
+        }
+        catch (ArgumentException)
+        {
+            throw Reject("Ids claim id must be a regular expression.");
+        }
+
+        return "^" + Regex.Escape(plain.Substring(0, plain.Length - IdPlaceholder.Length)) + "(?:" + id + ")$";
+    }
+
+    private static string RecordText(JsonNode record, string key) =>
+        record is JsonObject members && members[key] is JsonValue value && value.TryGetValue<string>(out var text) && text.Length > 0
+            ? text : throw Reject("Ids claim " + key + " must be present and nonempty text.");
+
     private static Dictionary<string, string> Named(JsonNode? node) =>
         (node as JsonObject ?? throw Reject("Identifiers must be an object.")).ToDictionary(
             static entry => entry.Key,
@@ -241,6 +277,10 @@ public sealed class AnalysisPolicyReader
             throw Reject(container + " project must be a declared project.");
         }
     }
+
+    private const string IdPlaceholder = "{id}";
+
+    private static readonly char[] Braces = { '{', '}' };
 
     private static readonly string[] Kinds =
     {
