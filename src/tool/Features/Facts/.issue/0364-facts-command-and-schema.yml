@@ -2,7 +2,7 @@ id: "0364"
 type: task
 title: The facts command and its published schema
 
-status: in-progress
+status: done
 
 value: 3
 risk: 3
@@ -29,7 +29,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-12"
-closed: null
+closed: "2026-11-12"
 
 summary: |
   As an agent or a maintainer I want `specht facts --json` to give every Feature specification's path, identity, statuses and dependencies as one document with a published schema, so that I read the tree without searching Markdown.

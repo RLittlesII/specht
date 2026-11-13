@@ -7,6 +7,7 @@ using Specht.Manifest;
 using Specht.Tool;
 using Specht.Tool.Features.Check;
 using Specht.Tool.Features.Evidence;
+using Specht.Tool.Features.Facts;
 using Specht.Tool.Features.Frontmatter;
 using Specht.Tool.Features.Init;
 using Specht.Tool.Features.Manifest;
@@ -30,7 +31,7 @@ app.Configure(static config =>
 {
     config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion)
         .SetHelpProvider(new SpechtHelpProvider(config.Settings));
-    config.AddInit().AddUpgrade().AddSchema().AddFrontmatter().AddRules().AddManifest().AddMint();
+    config.AddInit().AddUpgrade().AddSchema().AddFrontmatter().AddRules().AddManifest().AddMint().AddFacts();
     config.AddCommand<EvidenceCommand>("evidence");
 });
 
