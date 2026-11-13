@@ -11,6 +11,7 @@ type: reference
 `evidence` reconciles supplied build and runner exports. `rules` lists the pinned rules and their effective levels.
 `manifest` prints the effective configuration or the newest shipped default.
 `mint` prints a new id for a record type the manifest opts in.
+`facts` prints what the specification tree holds.
 Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
@@ -179,6 +180,37 @@ An invalid manifest is refused even when the requested edit could repair it.
 
 ```sh
 specht rules set SPEC2001 warning --root .
+```
+
+## `specht facts`
+
+```text
+specht facts [--root <DIR>] --json
+```
+
+Prints what the specification tree holds, read as the check reads it: every
+Feature specification the check discovers, in discovery order, with its path,
+qualified id, `spec_status`, `status`, and its `depends_on`, `blocks` and
+`children` lists as the frontmatter writes them. Epic files are not given.
+No rule runs, so the document carries no violation, count or verdict.
+
+| Option         | Value   | Default               | Does                                                     |
+| -------------- | ------- | --------------------- | -------------------------------------------------------- |
+| `--root <DIR>` | `<DIR>` | The working directory | Selects the repository whose specification tree is read. |
+| `--json`       | none    | Off                   | Prints the facts as one JSON document. Required.         |
+| `-h, --help`   | none    | Off                   | Prints command help.                                     |
+
+**Stdout.** One document, as [`schema/facts.schema.json`](schema/facts.schema.json)
+describes it. Every member is present, `null` or `[]` when the frontmatter has
+no value, and the shape is the same under every pin. The same tree gives the
+same bytes. The command writes no file and makes no network request.
+
+**Exit codes.** `0` on success, whatever the check would report; `2` without
+`--json`, with the usage on stderr, or for a missing root or manifest; `3` for
+an invalid manifest or pin. Failures go to stderr with empty stdout.
+
+```sh
+specht facts --root . --json
 ```
 
 ## `specht evidence`

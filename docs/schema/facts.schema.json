@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "specht facts",
+  "description": "The document specht facts writes for --json (0132-F2): what the specification tree holds, with no violation, count or verdict. Within a tool major version it changes only by addition (C-3).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specifications"],
+  "properties": {
+    "specifications": {
+      "description": "Every Feature specification the check discovers, in discovery order; epic files are not given.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "id",
+          "specStatus",
+          "status",
+          "dependsOn",
+          "blocks",
+          "children"
+        ],
+        "properties": {
+          "path": {
+            "description": "Relative to the root the tool was given, with / separators; never absolute.",
+            "type": "string",
+            "minLength": 1,
+            "not": {
+              "anyOf": [
+                { "pattern": "^/" },
+                { "pattern": "^[A-Za-z]:" },
+                { "pattern": "\\\\" }
+              ]
+            }
+          },
+          "id": {
+            "description": "The qualified Feature id the check reads, such as 0132-F2, or null when the specification has no identity.",
+            "type": ["string", "null"]
+          },
+          "specStatus": {
+            "description": "The specification's maturity, read through the manifest's frontmatter key, or null.",
+            "type": ["string", "null"]
+          },
+          "status": {
+            "description": "The delivery status, read through the manifest's frontmatter key, or null.",
+            "type": ["string", "null"]
+          },
+          "dependsOn": {
+            "description": "The depends-on list as the frontmatter writes it, unresolved; empty when absent.",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "blocks": {
+            "description": "The blocks list as the frontmatter writes it, unresolved; empty when absent.",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "children": {
+            "description": "The children list as the frontmatter writes it; empty when absent.",
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

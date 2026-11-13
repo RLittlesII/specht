@@ -20,7 +20,7 @@ depends_on: ["0001/F2", "0001/F5", "0001/F6"]
 blocks: ["F4"]
 spikes: []
 created: "2026-10-30"
-updated: "2026-11-06"
+updated: "2026-11-12"
 github_issue: null
 synced_at: null
 ---
@@ -118,54 +118,238 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-30 -->
+<!-- last written by: implementer, 2026-11-12 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                                                          | Classification | Owner                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)           | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)         |
+| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004) | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From` |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                           | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                      |
+| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                     | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`             |
+| Byte-identical serialization (B-022)                                                                             | Technical      | `FactsDocument.ToJson`                                                                  |
+| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)           | Both           | `FactsCommand`                                                                          |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-30 -->
+<!-- last written by: implementer, 2026-11-12 -->
 
-Pending: owned by `implementer`, written after agreement.
+The design for item `0364`, as built. Each type is declared in the file it links; the compiler is the authority on its
+members and signatures.
+
+### Reading the tree
+
+The command calls the check's own read,
+[`SpechtModelReader.Read(root, null)`](../../../../specht/Model/SpechtModelReader.cs), the same call
+[`SpechtRunner.Run`](../../../../specht/SpechtRunner.cs) makes, with the manifest's own schema source. That one call
+checks the root, reads, parses and pins the manifest, compiles the selected frontmatter schemas, discovers through
+[`SpechtDiscovery`](../../../../specht/Discovery/SpechtDiscovery.cs), loads through `SpechtTreeStore` and parses through
+[`SpechtModelBuilder`](../../../../specht/Model/SpechtModelBuilder.cs), so every fact comes from the parse the check
+evaluates and no second parser exists (C-1). No rule runs: the model is projected, never evaluated, so nothing in the
+document can be a violation, a count or a verdict (B-014, C-5). [`MintCommand`](../../Mint/MintCommand.cs) already
+injects `SpechtModelReader` directly; this follows it.
+
+The read throws the check's typed exceptions, and the command folds them exactly as
+[`CheckCommand`](../../Check/CheckCommand.cs) and [`RulesCommand`](../../Rules/RulesCommand.cs) do (B-021):
+`SpechtRootNotFoundException` and `SpechtManifestNotFoundException` exit `ExitCodes.MissingInput` (`2`);
+`SpechtManifestUnreadableException` and `SpechtManifestException`, an unshipped pin and a rejected disk schema
+included, exit `ExitCodes.InvalidManifest` (`3`). Each writes one `specht: ` line to stderr and nothing to stdout.
+
+### The document
+
+Two records in the engine folder `src/specht/Facts/`, namespace `Specht.Facts`. The folder sits beside `Report/` in
+ADR-0010's list and reads only `Model/` below it.
+
+- [`FactsDocument`](../../../../specht/Facts/FactsDocument.cs): the document. Its `From` projects a model, as
+  [`SpechtReportDocument.From`](../../../../specht/Report/SpechtReportDocument.cs) makes the report: a function of the
+  model alone, with no clock, machine or environment in it. Its `ToJson` serializes it.
+- [`FeatureFacts`](../../../../specht/Facts/FeatureFacts.cs): one discovered Feature specification.
+
+`From` walks `model.Features`, which `SpechtModelBuilder` fills in the listing's order, so the document lists every
+Feature specification in discovery order (B-001). `model.Epics` is never read, so an epic file gives no facts (B-026,
+OQ-6); a Feature specification in the legacy `epics/**/spec.md` layout is a Feature and is given. Each member is taken
+from a [`FeatureSpec`](../../../../specht/Model/FeatureSpec.cs) as the check reads it:
+
+| Member       | Value                                                                                                                                       | Claim |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `path`       | `FeatureSpec.RelativePath`: root-relative, `/`-separated, from `SpechtLocation`                                                             | B-003 |
+| `id`         | `FeatureSpec.Identity` when the Feature is in `SpechtModel.FeaturesWithIdentity`, else `null`; the check's identity form, such as `0132-F2` | B-003 |
+| `specStatus` | `FeatureSpec.SpecStatus`, read through the manifest's frontmatter key, or `null`                                                            | B-003 |
+| `status`     | `FeatureSpec.Status`, or `null`                                                                                                             | B-003 |
+| `dependsOn`  | `FeatureSpec.Strings` under the Feature's `Keys.DependsOn`: the list as written, unresolved, `[]` when absent                               | B-004 |
+| `blocks`     | `FeatureSpec.Strings` under `Keys.Blocks`                                                                                                   | B-004 |
+| `children`   | `FeatureSpec.Strings` under `Keys.Children`                                                                                                 | B-004 |
+
+The dependency lists come from the frontmatter, not from `SpechtDependencyGraph`, which resolves edges to identities:
+B-004 gives the lists as the frontmatter has them, and an edge the check cannot resolve is still given.
+
+Every member is always present, with `null` or `[]` when the frontmatter has no value, so a reader never has to tell an
+absent member from an empty one and no member's presence depends on a pin (B-017, C-5). Member names are the role, not
+the consumer's frontmatter key: from schema `0.3.0` the manifest's `featureKeys` can rename `spec_status`, and the
+member stays `specStatus` (`0001-F5` B-004). Names are camelCase, as in the published report document
+(`docs/schema/report.schema.json`, `0001-F3`).
+
+A Feature's document for this repository's own specification:
+
+```json
+{
+  "specifications": [
+    {
+      "path": "src/tool/Features/Facts/.spec/README.md",
+      "id": "0132-F2",
+      "specStatus": "approved",
+      "status": "ready",
+      "dependsOn": ["0001/F2", "0001/F5", "0001/F6"],
+      "blocks": ["F4"],
+      "children": []
+    }
+  ]
+}
+```
+
+`ToJson` uses `System.Text.Json` with options held in one `static readonly` field, as `SpechtReportDocument` does:
+indented, `\n` line endings whatever the platform, camelCase names, and, unlike the report, nulls written. Members come
+out in declaration order and lists in model order, so the same tree and arguments give the same bytes (B-022).
+
+### Where later items attach
+
+Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
+
+- `0365`: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
+  `sections` and `roles` name.
+- `0366` and `0367`: `outOfScope`, `openQuestions`, `deltas` and `signOff` on `FeatureFacts`, each section found through
+  `SpechtDocument.Section` under the manifest's heading (C-7).
+- `0368`: `records` on `FeatureFacts`. Records are not in the listing today; that item extends the listing through
+  `ISpecDiscovery`, not a read inside `Features/Facts/`.
+- `0369`: the path selector narrows `FactsDocument.Specifications` in the engine; the command maps an empty selection to
+  `ExitCodes.NotFound`.
+- `0370`: the text lines, made by the engine from `FactsDocument` as `SpechtReportDocument.SummaryLines` makes the
+  check's summary; the command only writes them.
+
+### The published schema
+
+[`docs/schema/facts.schema.json`](../../../../../docs/schema/facts.schema.json), OQ-1's default, draft 2020-12 as the
+report schema is. A root object requiring `specifications`; each item requiring the seven members above, with `id`,
+`specStatus` and `status` typed `["string", "null"]` and the three lists arrays of strings. `path` takes the report schema's `file` pattern: non-empty,
+not starting with `/`, no drive letter, no `\`. `additionalProperties` is `false` at every level, as in the report
+schema, so a violation, a count or a verdict member fails validation (B-014), and each later item that adds a member
+widens the schema in the same pull request.
+
+A test holds the schema true by validating the command's output against the file with JsonSchema.Net, as
+`SpechtReportDocument.Integration.Tests` validates the report. `test/tests/tests.csproj` and
+`test/acceptance/acceptance.csproj` already copy `docs/schema/*.json` into their output, so no project file changes.
+
+### The command
+
+[`FactsCommand`](../FactsCommand.cs), `specht facts [--root <DIR>] --json`, with its nested `Settings`. It injects the
+console, `SpechtModelReader` and an optional error writer, as `RulesCommand` does. It resolves the root with
+`Path.GetFullPath`, projects the read's model through `FactsDocument.From`, writes `ToJson` to stdout and returns
+`ExitCodes.Success`. It reads no Markdown, YAML or record file (C-4). It has no `--report` and calls nothing
+that writes, so a run creates, modifies and deletes nothing (B-023, C-2); the read makes no network call.
+
+Without `--json` the command writes the usage line to stderr, nothing to stdout, and exits `ExitCodes.MissingInput`
+(`2`) before reading the tree, as `FrontmatterCommand` does for its own usage. The text form is item `0370`'s (B-024);
+until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` removes the refusal.
+
+[`FactsRegistration`](../FactsRegistration.cs) adds the command to the configurator, as `ManifestRegistration` does
+(ADR-0007), and [`Program.cs`](../../../Program.cs) adds `.AddFacts()` to its chain. No service registration is needed:
+`AddSpechtEngine` already registers `SpechtModelReader`, and `FactsDocument` is a record built by `From`.
+
+[`docs/cli.md`](../../../../../docs/cli.md) has the `specht facts` section, held to the help by the `0002-F1` test, and
+[`docs/exit-codes.md`](../../../../../docs/exit-codes.md) row `2` names the facts usage. The command adds no rule id (C-5).
+
+### Rejected
+
+- **A `FactsReader` class wrapping the read and the projection.** One call to a type that already exists and one pure
+  function; a second type would only forward.
+- **A `Facts` method on `SpechtRunner`.** `SpechtRunner` is the check's runner, and ADR-0010 moves it into a folder; the
+  facts read evaluates nothing.
+- **Frontmatter key names as members (`spec_status`, `depends_on`).** The key is the consumer's from schema `0.3.0`, so
+  the member would change with the manifest or the pin (B-017, C-5).
+- **Omitting a member whose value is absent.** A reader could not tell absent from empty, and the shape would vary with
+  the tree.
+- **Writing the JSON document without `--json` until item `0370`.** The flag would change nothing, and the default
+  output would change when the text form lands.
+- **A per-specification text line now.** No claim states it, and OQ-5's line shape is for claims, constraints, § 5 rows
+  and open questions.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-30 -->
+<!-- last written by: test-writer, 2026-11-12 -->
 
-Pending: owned by `test-writer`, written after agreement.
+Item `0364`'s claims are proved on three tiers. `FactsDocumentUnitTests` projects models built in memory with the
+shared `SpechtModelFixture`, `FeatureSpecFixture` and `EpicFileFixture` and reads the members from `ToJson()`, so no test
+names a C# property § 7 does not. `FactsCommandUnitTests` constructs `FactsCommand` over a `MockFileSystem`, as
+`RulesCommandUnitTests` does. `FactsCommandIntegrationTests` launches the built tool over `SpechtTree`s on disk, and
+`FactsSteps` binds the `@B-001` to `@B-004`, `@B-014`, `@B-017`, `@B-021` to `@B-023` and `@B-026` scenarios the same way,
+each naming no form run with `--json` (item `0364` summary). The schema is read from `docs/schema/facts.schema.json` as
+both test projects copy it, so its absence fails the test that reads it. Theory rows come from `FactsPinPairs`,
+`FactsBrokenRoots` and `FactsVerdictMembers`. Every tree is synthetic and pinned in the test; nothing reaches the
+network or reads a clock. The other scenarios of `facts.feature` keep an unbound step and are skipped
+(`missingOrPendingStepsOutcome: Ignore`) until their items bind them.
+
+| Claim | Mechanism                                                                                                                            | Unit test                                                                                                                    |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | `FactsDocument.From` walks `SpechtModel.Features` in its order; the order is the discovery's, which its own tests pin                | `FeaturesInTheModelsOrder_WhenTheDocumentIsMade_ShouldListEverySpecificationInThatOrder`                                     |
+| B-002 | `ToJson` writes one document; the published schema describes it                                                                      | None at the unit tier: the mechanism is the published file, read from disk, as the report schema's test is (`0001-F3` B-008) |
+| B-003 | `path` from `RelativePath`, `id` from `Identity` for a Feature in `FeaturesWithIdentity`, the statuses through the manifest's keys   | `AFeatureWithAnIdentity_WhenTheDocumentIsMade_ShouldCarryItsPathQualifiedIdAndBothStatuses`                                  |
+| B-004 | `FeatureSpec.Strings` for each list, not `SpechtDependencyGraph`, so an edge the check cannot resolve is kept, in its written order  | `DependencyListsTheCheckCannotResolve_WhenTheDocumentIsMade_ShouldCarryEachAsTheFrontmatterWritesIt`                         |
+| B-014 | `From` reads the model and runs no rule; the schema's `additionalProperties: false` refuses a violation, count or verdict member     | None at the unit tier: the schema theory reads the published file, so it is Integration                                      |
+| B-017 | Every member is written whatever its value, so a value a pin changes, such as an epic-less Feature's identity from `0.3.0`, keeps it | `TheSameFeaturesUnderTwoPins_WhenEachDocumentIsMade_ShouldCarryTheSameMembers`                                               |
+| B-021 | The command folds the read's typed exceptions into `2` and `3`                                                                       | `ABrokenRoot_WhenExecuted_ShouldExitWithTheChecksCode`                                                                       |
+| B-022 | `From` is a function of the model alone and `ToJson` serializes in declaration and model order                                       | `TheSameFeaturesReadIntoTwoModels_WhenEachDocumentIsSerialized_ShouldGiveTheSameText`                                        |
+| B-023 | The command calls only the read and the console; nothing it calls opens a file for writing                                           | `ATreeWithAFeature_WhenExecuted_ShouldCreateModifyOrDeleteNoFile`, with a sentinel outside the root                          |
+| B-026 | `From` never reads `SpechtModel.Epics`                                                                                               | `AnEpicFileBesideAFeature_WhenTheDocumentIsMade_ShouldGiveOnlyTheFeature`                                                    |
+
+The integration tier adds what a unit cannot see: the registration and `--json` binding, stdout as one document valid
+against the schema with a `null` member in it (B-002), a tree in both layouts against the check's own read (B-001), the
+check's violation absent from the document (B-014), two pins across `0.1.0`, `0.2.0` and `0.3.0` (B-017), the check's
+exit code for each broken root beside the command's (B-021), two runs and two roots giving the same bytes (B-022), and
+the folder holding the root unchanged (B-023).
+
+**Red, item `0364`, 2026-11-12, `net11.0`.** Before the production types exist the unit files do not compile (`CS0234`:
+no `Specht.Facts`, no `Specht.Tool.Features.Facts`); with those two files emptied for the run and restored after it, the
+19 `FactsCommandIntegrationTests` cases were discovered and all failed on the launched tool's exit `255`, an unknown
+command, every precondition on the check's own read passing first. `TheFactsCommandFeature` was discovered with 36
+scenarios: 13 failed on the same exit `255` and 23 were skipped on unbound steps.
+
+**For `implementer`.** The unit tests need the compile surface § 7 names: `Specht.Facts.FactsDocument` with a static
+`From(SpechtModel)` and `ToJson()`, and `Specht.Tool.Features.Facts.FactsCommand(IAnsiConsole, SpechtModelReader,
+TextWriter?)` with `ExecuteAsync(CommandContext, Settings, CancellationToken)`, as `RulesCommand` has, and a nested
+`Settings` with init-settable `Root` and `Json`. B-021 names only the exit codes, so no test holds the stderr line § 7
+describes to the check's; a claim would be needed for that. No benchmark is needed: the check's path is unchanged.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-30 (B-015 title after review round 1) -->
+<!-- last written by: test-writer, 2026-11-12 -->
 
-| Claim ID | Scenario                                                               | Test    | Status  |
-| -------- | ---------------------------------------------------------------------- | ------- | ------- |
-| B-001    | The facts cover every specification the check discovers                | Missing | Missing |
-| B-002    | The JSON facts validate against the published schema                   | Missing | Missing |
-| B-003    | A specification is given with its path, identity and statuses          | Missing | Missing |
-| B-004    | A specification is given with its dependencies                         | Missing | Missing |
-| B-005    | A claim is given with its text, status and line                        | Missing | Missing |
-| B-006    | A constraint is given with what it rules out                           | Missing | Missing |
-| B-007    | An out-of-scope row is given with its reason                           | Missing | Missing |
-| B-008    | An open question is given with whether it is resolved                  | Missing | Missing |
-| B-009    | A lessons and deltas entry is given with its text and line             | Missing | Missing |
-| B-010    | A sign-off row is given with its reviewer and note                     | Missing | Missing |
-| B-011    | The records beside a specification are given by number and title       | Missing | Missing |
-| B-012    | A withdrawn claim is still given                                       | Missing | Missing |
-| B-013    | The facts succeed on a tree the check fails                            | Missing | Missing |
-| B-014    | The facts carry no verdict                                             | Missing | Missing |
-| B-015    | A missing section or an unreadable table leaves only its own facts out | Missing | Missing |
-| B-016    | A section the manifest renames is read under its new name              | Missing | Missing |
-| B-017    | The facts have one shape under every pin                               | Missing | Missing |
-| B-018    | A path selects one specification                                       | Missing | Missing |
-| B-019    | A directory selects every specification under it                       | Missing | Missing |
-| B-020    | A path that selects nothing fails                                      | Missing | Missing |
-| B-021    | The facts fail on a broken root as the check does                      | Missing | Missing |
-| B-022    | The same tree gives the same facts                                     | Missing | Missing |
-| B-023    | The facts write nothing                                                | Missing | Missing |
-| B-024    | The text form gives one line per fact                                  | Missing | Missing |
-| B-025    | The facts carry no claim coverage                                      | Missing | Missing |
-| B-026    | An epic file is not given                                              | Missing | Missing |
+| Claim ID | Scenario                                                               | Test                                                                                                                                                                                                                                                                                                                                 | Status  |
+| -------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| B-001    | The facts cover every specification the check discovers                | `FactsSteps.ThenBothInDiscoveryOrder`; `FactsDocumentUnitTests.FeaturesInTheModelsOrder_WhenTheDocumentIsMade_ShouldListEverySpecificationInThatOrder`; `FactsCommandIntegrationTests.FeaturesInBothLayouts_WhenFactsAreGivenAsJson_ShouldListEverySpecificationInTheChecksDiscoveryOrder`                                           | Covered |
+| B-002    | The JSON facts validate against the published schema                   | `FactsSteps.ThenOneDocument`; `FactsSteps.ThenValidatesAgainstSchema`; `FactsCommandIntegrationTests.FeaturesWithAndWithoutAnIdentity_WhenFactsAreGivenAsJson_ShouldWriteOneDocumentValidAgainstThePublishedFactsSchema`                                                                                                             | Covered |
+| B-003    | A specification is given with its path, identity and statuses          | `FactsSteps.ThenIdentityAndStatuses`; `FactsDocumentUnitTests.AFeatureWithAnIdentity_WhenTheDocumentIsMade_ShouldCarryItsPathQualifiedIdAndBothStatuses`; `FactsCommandIntegrationTests.AFeature_WhenFactsAreGivenAsJson_ShouldCarryItsRootRelativePathQualifiedIdAndBothStatuses`                                                   | Covered |
+| B-004    | A specification is given with its dependencies                         | `FactsSteps.ThenFirstDependsOnSecond`; `FactsSteps.ThenSecondBlocksFirst`; `FactsDocumentUnitTests.DependencyListsTheCheckCannotResolve_WhenTheDocumentIsMade_ShouldCarryEachAsTheFrontmatterWritesIt`; `FactsCommandIntegrationTests.FeaturesThatListEachOther_WhenFactsAreGivenAsJson_ShouldCarryEachListAsTheFrontmatterWritesIt` | Covered |
+| B-005    | A claim is given with its text, status and line                        | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-006    | A constraint is given with what it rules out                           | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-007    | An out-of-scope row is given with its reason                           | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-008    | An open question is given with whether it is resolved                  | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-009    | A lessons and deltas entry is given with its text and line             | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-010    | A sign-off row is given with its reviewer and note                     | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-011    | The records beside a specification are given by number and title       | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-012    | A withdrawn claim is still given                                       | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-013    | The facts succeed on a tree the check fails                            | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-014    | The facts carry no verdict                                             | `FactsSteps.ThenNoVerdict`; `FactsCommandIntegrationTests.ATreeTheCheckReportsAViolationFor_WhenFactsAreGivenAsJson_ShouldCarryNoViolationCountOrVerdict`; `FactsCommandIntegrationTests.AFactsDocumentGivenAVerdictMember_WhenValidatedAgainstThePublishedFactsSchema_ShouldBeRejected`                                             | Covered |
+| B-015    | A missing section or an unreadable table leaves only its own facts out | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-016    | A section the manifest renames is read under its new name              | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-017    | The facts have one shape under every pin                               | `FactsSteps.ThenSameMembers`; `FactsDocumentUnitTests.TheSameFeaturesUnderTwoPins_WhenEachDocumentIsMade_ShouldCarryTheSameMembers`; `FactsCommandIntegrationTests.TheSameSpecificationsUnderTwoShippedPins_WhenFactsAreGivenAsJson_ShouldCarryTheSameMembers`                                                                       | Covered |
+| B-018    | A path selects one specification                                       | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-019    | A directory selects every specification under it                       | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-020    | A path that selects nothing fails                                      | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-021    | The facts fail on a broken root as the check does                      | `FactsSteps.ThenExitCode`; `FactsCommandUnitTests.ABrokenRoot_WhenExecuted_ShouldExitWithTheChecksCode`; `FactsCommandIntegrationTests.ABrokenRoot_WhenFactsAreGiven_ShouldExitWithTheCodeTheCheckGives`                                                                                                                             | Covered |
+| B-022    | The same tree gives the same facts                                     | `FactsSteps.ThenByteIdentical`; `FactsDocumentUnitTests.TheSameFeaturesReadIntoTwoModels_WhenEachDocumentIsSerialized_ShouldGiveTheSameText`; `FactsCommandIntegrationTests.TheSameTreeUnderTwoRoots_WhenFactsAreGivenAsJsonTwice_ShouldGiveByteIdenticalOutput`                                                                     | Covered |
+| B-023    | The facts write nothing                                                | `FactsSteps.ThenNothingWritten`; `FactsCommandUnitTests.ATreeWithAFeature_WhenExecuted_ShouldCreateModifyOrDeleteNoFile`; `FactsCommandIntegrationTests.ATreeBesideOtherFiles_WhenFactsAreGivenAsJson_ShouldCreateModifyOrDeleteNoFileUnderTheRootOrBesideIt`                                                                        | Covered |
+| B-024    | The text form gives one line per fact                                  | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-025    | The facts carry no claim coverage                                      | Missing                                                                                                                                                                                                                                                                                                                              | Missing |
+| B-026    | An epic file is not given                                              | `FactsSteps.ThenFeaturesNotEpic`; `FactsDocumentUnitTests.AnEpicFileBesideAFeature_WhenTheDocumentIsMade_ShouldGiveOnlyTheFeature`; `FactsCommandIntegrationTests.ATreeWithAnEpicFileTheCheckDiscovers_WhenFactsAreGivenAsJson_ShouldGiveTheFeaturesAndNotTheEpic`                                                                   | Covered |
 
 ## 10. Lessons / Spec Deltas
 

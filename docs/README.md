@@ -15,6 +15,7 @@ type: reference
 | See which files and rules Specht checks                    | [What it checks](what-it-checks.md)                                                                                    |
 | Look up a rule by schema version                           | [0.1.0](rules/v0.1.0/), [0.2.0](rules/v0.2.0/), [0.2.1](rules/v0.2.1/), [0.3.0](rules/v0.3.0/), [0.3.1](rules/v0.3.1/) |
 | Consume JSON check results                                 | [Report JSON Schema](schema/report.schema.json)                                                                        |
+| Consume what the specification tree holds as JSON          | [Facts JSON Schema](schema/facts.schema.json)                                                                          |
 | Check a monorepo or a repository without .NET projects     | [Multiple projects](multiple-projects.md), [Without .NET code](non-dotnet.md)                                          |
 | Use Gherkin claims and collect test evidence               | [Native Gherkin claims](native-gherkin-claims.md)                                                                      |
 | Connect an MCP client                                      | [MCP](mcp.md)                                                                                                          |
