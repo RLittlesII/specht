@@ -2,7 +2,7 @@ id: "0364"
 type: task
 title: The facts command and its published schema
 
-status: ready
+status: in-progress
 
 value: 3
 risk: 3
@@ -28,7 +28,7 @@ claims:
   - B-026
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-12"
 closed: null
 
 summary: |
