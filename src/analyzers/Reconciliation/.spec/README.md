@@ -5,7 +5,7 @@ type: feature
 id: "F5"
 epic: "0201"
 spec_status: approved
-status: in-progress
+status: done
 priority: med
 value: 0
 risk: 0

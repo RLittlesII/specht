@@ -2,7 +2,7 @@ id: "0436"
 type: task
 title: Cut schema 0.4.0 with the ids key
 
-status: in-progress
+status: done
 
 value: 4
 risk: 4
@@ -47,10 +47,11 @@ claims:
   - 0201-F5 B-045 # cross-Feature: specht evidence reads the claim grammar 0201-F1 B-023 gives
   - 0201-F5 B-046 # cross-Feature: specht evidence reads identifiers.claim as before
   - 0201-F5 B-047 # cross-Feature: specht evidence fails with exit 3 on a record 0201-F1 B-025 rejects
+  - 0001-F7 B-016 # cross-Feature: upgrade adds no ids key, the clause the 0.4.0 shipped ids makes reachable
 
 created: "2026-11-12"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   As a repository whose Features declare their own claim prefix, I want
@@ -91,6 +92,7 @@ acceptance_criteria:
   - "This repository's live `.specht/` equals 0.4.0 on its tool-owned files and keys, and its pin moves to 0.4.0 in the same pull request (`0001-F4` B-004)"
   - "`docs/configuration.md` documents the ids key, its shipped records and the rejected keys"
   - "0201-F1 B-023 to B-025 and 0201-F5 B-045 to B-047 - the analyzer and specht evidence read the claim grammar from the projected ids claim record, read identifiers.claim as before where no ids claim record is projected, and reject both at once or an incomplete record; this repository's codeAnalysis mappings project the claim record and the CodeAnalysis target passes at 0.4.0 (`0201-F1` decision 0006)"
+  - "`0001-F7` B-016 as amended - `specht upgrade` under a 0.4.0 pin adds no `ids` key to a manifest that lacks one, though the shipped 0.4.0 manifest defines it; B-160 and moving the old settings into `ids` stay item 0438's"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -124,6 +126,11 @@ decisions:
     selecting the record by what the policy projects rather than by the
     pin, and rejecting an incomplete record rather than filling it from
     the shipped one (`0201-F1` decision 0006).
+  - |
+    2026-11-13, spec-author, on spec-reviewer's round 1 finding 1: the
+    `ids` clause of `0001-F7` B-016 is delivered here, since the shipped
+    0.4.0 manifest defines `ids` and this item ships it; B-160 stays
+    item 0438's.
 
 out_of_scope:
   - "Minting from the ids record - `0001-F19` item 0437."
