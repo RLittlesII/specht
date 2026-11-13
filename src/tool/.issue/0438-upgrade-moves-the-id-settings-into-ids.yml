@@ -73,6 +73,16 @@ decisions:
     item 0436: B-016 leaves this item. Its `ids` clause, that `upgrade`
     adds no `ids` key, is item 0436's and delivered there; nothing of
     B-016 is left here.
+  - |
+    2026-11-13, spec-author, on the implementer's design pass: a `mint`
+    entry that is not an object moves into its record's `mint` as it
+    is; B-156 amended on C-19 ("every other moved member kept
+    verbatim"), with an `@boundary` scenario. Under `0.3.1` the check
+    reads no `mint` member, so such an entry is reachable and opts
+    nothing in (`0001-F19` B-002). B-159's shared-head refusal names the
+    members the consumer wrote, `identifiers.claim` and
+    `identifiers.scenario`, as its scenario's row states, not the
+    `ids.claim` and `ids.scenario` records the move would write.
 
 out_of_scope:
   - "The ids key and the rejection of the old settings - `0001-F5` item 0436."

@@ -1554,6 +1554,13 @@ Feature: Schema versioning
     Then the manifest's claim record opts claim ids in to Nano ID with a size of 9
     And the claim record's opt-in names no prefix
 
+  @B-156 @boundary
+  Scenario: Upgrade moves a mint entry that is not a set of settings as it is
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest's mint entry for claim ids is the text "nanoid" rather than a set of settings
+    When upgrade runs against it
+    Then the manifest's claim record carries the text "nanoid" as its mint entry, as the consumer wrote it
+
   @B-157
   Scenario: Upgrade leaves no old id setting
     Given a root whose manifest pins schema version 0.4.0
