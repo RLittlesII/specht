@@ -16,23 +16,26 @@ public sealed class CollisionGuardDecorator : IIdStrategy
     /// <summary>Initializes a new instance of the <see cref="CollisionGuardDecorator"/> class, filling an absent number of attempts.</summary>
     /// <param name="strategy">The strategy each candidate is drawn from.</param>
     /// <param name="attempts">The type's <c>attempts</c> member, or nothing when the entry names none.</param>
-    /// <param name="type">The id type, which names the key in a refusal.</param>
+    /// <param name="type">The id type, which a refusal names.</param>
+    /// <param name="key">The setting the entry is read from, which a refusal names: <c>mint.&lt;type&gt;</c> when nothing is named.</param>
     /// <param name="held">The names the tree holds for the type.</param>
     /// <exception cref="IdRefusedException">The entry names an <c>attempts</c> that is not a positive integer.</exception>
     /// <implements epic="0001" feature="F19" claim="B-035" />
     /// <implements epic="0001" feature="F19" claim="B-037" />
     /// <implements epic="0001" feature="F19" claim="B-052" />
-    public CollisionGuardDecorator(IIdStrategy strategy, JsonNode? attempts, string type, IReadOnlyList<string> held)
+    public CollisionGuardDecorator(IIdStrategy strategy, JsonNode? attempts, string type, IReadOnlyList<string> held, string? key = null)
     {
+        key ??= $"mint.{type}";
         _attempts = attempts switch
         {
             null => DefaultAttempts,
             JsonValue value when value.TryGetValue<int>(out var number) && number > 0 => number,
-            _ => throw new IdRefusedException($"'mint.{type}.attempts' is not a positive integer."),
+            _ => throw new IdRefusedException($"'{key}.attempts' is not a positive integer."),
         };
 
         _strategy = strategy;
         _type = type;
+        _key = key;
         _held = held;
     }
 
@@ -59,11 +62,12 @@ public sealed class CollisionGuardDecorator : IIdStrategy
             }
         }
 
-        throw new IdRefusedException($"The tree holds each of the {_attempts} '{_type}' candidates drawn, the number 'mint.{_type}.attempts' bounds.");
+        throw new IdRefusedException($"The tree holds each of the {_attempts} '{_type}' candidates drawn, the number '{_key}.attempts' bounds.");
     }
 
     private readonly IIdStrategy _strategy;
     private readonly int _attempts;
     private readonly string _type;
+    private readonly string _key;
     private readonly IReadOnlyList<string> _held;
 }

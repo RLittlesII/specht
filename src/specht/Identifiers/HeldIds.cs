@@ -60,6 +60,20 @@ public sealed class HeldIds(ISpecDiscovery discovery, SpechtTreeStore tree, Spec
         _ => [],
     };
 
+    /// <summary>
+    /// The claim prefix a Feature declares: the text its <c>.spec/README.md</c> frontmatter holds under <paramref name="key"/>,
+    /// read as the check reads it (<c>0001-F19</c> A-9).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="feature">The Feature's specification.</param>
+    /// <param name="key">The frontmatter key the manifest names for the claim prefix, or nothing.</param>
+    /// <returns>The text under the key, or <see langword="null"/> for no key, no value or a value that is not text.</returns>
+    /// <implements epic="0001" feature="F19" claim="B-063" />
+    /// <implements epic="0001" feature="F19" claim="B-066" />
+    /// <implements epic="0001" feature="F19" claim="B-067" />
+    public string? ClaimPrefixOf(string root, SpechtLocation feature, string? key) =>
+        key is null ? null : documents.Parse(Texts(root, [feature.RelativePath]).Single(), feature.RelativePath).Frontmatter.Text(key);
+
     /// <implements epic="0001" feature="F19" claim="B-038" />
     /// <implements epic="0001" feature="F19" claim="B-039" />
     /// <implements epic="0001" feature="F19" claim="B-040" />

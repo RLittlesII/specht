@@ -12,8 +12,9 @@ public sealed class NanoIdStrategy : IIdStrategy
 {
     /// <summary>Initializes a new instance of the <see cref="NanoIdStrategy"/> class from the sub-object, filling an absent alphabet and size.</summary>
     /// <param name="settings">The type's <c>nanoid</c> sub-object, or nothing when the entry names none.</param>
-    /// <param name="type">The id type, which names the default size and the key in a refusal.</param>
+    /// <param name="type">The id type, which names the default size.</param>
     /// <param name="random">The random source each character is drawn from.</param>
+    /// <param name="key">The setting the entry is read from, which a refusal names: <c>mint.&lt;type&gt;</c> when nothing is named.</param>
     /// <exception cref="IdRefusedException">
     /// The sub-object is not an object, names an alphabet or a size no id can be drawn from, or names no size for a type with
     /// no default.
@@ -24,25 +25,26 @@ public sealed class NanoIdStrategy : IIdStrategy
     /// <implements epic="0001" feature="F19" claim="B-049" />
     /// <implements epic="0001" feature="F19" claim="B-050" />
     /// <implements epic="0001" feature="F19" claim="B-051" />
-    public NanoIdStrategy(JsonNode? settings, string type, IRandomSource random)
+    public NanoIdStrategy(JsonNode? settings, string type, IRandomSource random, string? key = null)
     {
+        key ??= $"mint.{type}";
         if (settings is not null and not JsonObject)
         {
-            throw new IdRefusedException($"'mint.{type}.nanoid' is not an object.");
+            throw new IdRefusedException($"'{key}.nanoid' is not an object.");
         }
 
         _alphabet = settings?["alphabet"] switch
         {
             null => Base32,
             JsonValue value when value.TryGetValue<string>(out var text) && text.Length > 0 => text,
-            _ => throw new IdRefusedException($"'mint.{type}.nanoid.alphabet' is not a non-empty string."),
+            _ => throw new IdRefusedException($"'{key}.nanoid.alphabet' is not a non-empty string."),
         };
 
         _size = settings?["size"] switch
         {
-            null => DefaultSize(type) ?? throw new IdRefusedException($"'mint.{type}.nanoid' names no size, and '{type}' has no default."),
+            null => DefaultSize(type) ?? throw new IdRefusedException($"'{key}.nanoid' names no size, and '{type}' has no default."),
             JsonValue value when value.TryGetValue<int>(out var number) && number > 0 => number,
-            _ => throw new IdRefusedException($"'mint.{type}.nanoid.size' is not a positive integer."),
+            _ => throw new IdRefusedException($"'{key}.nanoid.size' is not a positive integer."),
         };
 
         _random = random;

@@ -24,7 +24,8 @@ public sealed class FormattingDecorator : IIdStrategy
     /// <param name="prefix">The type's <c>prefix</c> member, or nothing when the entry names none.</param>
     /// <param name="encoding">The type's <c>encoding</c> member, or nothing when the entry names none.</param>
     /// <param name="strategyName">The name of the strategy the entry names, which decides whether <c>base32</c> is offered and is the default.</param>
-    /// <param name="type">The id type, which names the in-tree prefix and the key in a refusal.</param>
+    /// <param name="type">The id type, which names the in-tree prefix.</param>
+    /// <param name="key">The setting the entry is read from, which a refusal names: <c>mint.&lt;type&gt;</c> when nothing is named.</param>
     /// <exception cref="IdRefusedException">
     /// The entry names a <c>prefix</c> that is not text, <c>base32</c> for a strategy other than <c>snowflake</c>, or an
     /// <c>encoding</c> formatting does not offer.
@@ -36,11 +37,12 @@ public sealed class FormattingDecorator : IIdStrategy
     /// <implements epic="0001" feature="F19" claim="B-054" />
     /// <implements epic="0001" feature="F19" claim="B-055" />
     /// <implements epic="0001" feature="F19" claim="B-056" />
-    public FormattingDecorator(IIdStrategy strategy, JsonNode? prefix, JsonNode? encoding, string strategyName, string type)
+    public FormattingDecorator(IIdStrategy strategy, JsonNode? prefix, JsonNode? encoding, string strategyName, string type, string? key = null)
     {
+        key ??= $"mint.{type}";
         _prefix = prefix is null
             ? InTreePrefixes.GetValueOrDefault(type, string.Empty)
-            : TextOf(prefix) ?? throw new IdRefusedException($"'mint.{type}.prefix' is not text.");
+            : TextOf(prefix) ?? throw new IdRefusedException($"'{key}.prefix' is not text.");
 
         var snowflake = strategyName == Snowflake;
         var unset = snowflake ? Base32 : None;
@@ -48,12 +50,12 @@ public sealed class FormattingDecorator : IIdStrategy
         if (named == Base32 && !snowflake)
         {
             throw new IdRefusedException(
-                $"'mint.{type}.encoding' is 'base32', which formatting offers Snowflake alone, and '{type}' names the strategy '{strategyName}'.");
+                $"'{key}.encoding' is 'base32', which formatting offers Snowflake alone, and '{type}' names the strategy '{strategyName}'.");
         }
 
         if (named is not (None or Base32))
         {
-            throw new IdRefusedException($"'mint.{type}.encoding' is neither 'none' nor 'base32'.");
+            throw new IdRefusedException($"'{key}.encoding' is neither 'none' nor 'base32'.");
         }
 
         _base32 = named == Base32;
