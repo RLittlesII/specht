@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Tool.Features.Evidence.Contract;
 
@@ -12,10 +13,19 @@ namespace Specht.Tool.Features.Evidence;
 internal sealed class EvidencePolicy
 {
     /// <implements epic="0201" feature="F5" claim="B-011" />
+    /// <implements epic="0201" feature="F5" claim="B-045" />
+    /// <implements epic="0201" feature="F5" claim="B-046" />
     private EvidencePolicy(JsonObject projected)
     {
         var policy = projected["policy"] as JsonObject ?? throw new EvidenceConfigurationException("Policy is missing.");
         var identifiers = projected["identifiers"] as JsonObject ?? throw new EvidenceConfigurationException("Identifiers are missing.");
+        if ((projected["ids"] as JsonObject)?["claim"] is { } record)
+        {
+            identifiers["claim"] = identifiers.ContainsKey("claim")
+                ? throw new EvidenceConfigurationException("identifiers.claim and the ids claim record are both mapped.")
+                : ClaimGrammar(record);
+        }
+
         _identifiers = identifiers;
         HasEpic = identifiers.ContainsKey("epic");
         var records = policy["records"];
@@ -142,6 +152,35 @@ internal sealed class EvidencePolicy
     public sealed record FeatureEntry(string? Epic, string Feature);
     /// <implements epic="0201" feature="F5" claim="B-028" />
     public sealed record ClaimFileSet(string Glob, string Feature, string? Epic, string? Record);
+
+    /// <implements epic="0201" feature="F5" claim="B-045" />
+    /// <implements epic="0201" feature="F5" claim="B-047" />
+    private static string ClaimGrammar(JsonNode record)
+    {
+        var plain = RecordText(record, "plain");
+        var id = RecordText(record, "id");
+        if (!plain.EndsWith(SpechtIdRecord.IdPlaceholder, StringComparison.Ordinal)
+            || plain[..^SpechtIdRecord.IdPlaceholder.Length].IndexOfAny(['{', '}']) >= 0)
+        {
+            throw new EvidenceConfigurationException("The ids claim record's plain must end with its only {id} and hold no other brace.");
+        }
+
+        try
+        {
+            _ = new Regex(id, RegexOptions.CultureInvariant);
+        }
+        catch (ArgumentException)
+        {
+            throw new EvidenceConfigurationException("The ids claim record's id must be a regular expression.");
+        }
+
+        return new SpechtIdRecord(plain, null, id).Grammar(null);
+    }
+
+    /// <implements epic="0201" feature="F5" claim="B-047" />
+    private static string RecordText(JsonNode record, string key) =>
+        record is JsonObject members && members[key] is JsonValue value && value.TryGetValue<string>(out var text) && text.Length > 0
+            ? text : throw new EvidenceConfigurationException($"The ids claim record's {key} must be nonempty text.");
 
     /// <implements epic="0201" feature="F5" claim="B-028" />
     private static GherkinClaimTags NativeTags(JsonNode source, JsonNode? claim, JsonNode records, JsonNode? scopes, JsonObject identifiers)
