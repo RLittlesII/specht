@@ -19,6 +19,7 @@ claims:
   - B-027
   - B-028
   - B-029
+  - B-031
 
 created: "2026-11-06"
 updated: "2026-11-13"
@@ -43,10 +44,11 @@ summary: |
   follows (B-027) is `0001-F5`'s, built.
 
 acceptance_criteria:
-  - "B-002 — no `claim.source`, or `markdown`: no verdict changes, no `codeAnalysis` key read"
-  - "B-027 — identity is epic and feature under an epic grammar, feature alone without; an `epic` without the grammar exits 3"
+  - "B-002 — no `claim.source`, or `markdown`, and no `claim.files`: no verdict changes, no `codeAnalysis` key read"
+  - "B-027 — identity is epic and feature under an epic grammar, feature alone without; an entry without an `epic` under the grammar, or with one without it, exits 3"
   - "B-028 — pinned below 0.4.0, 0.3.1 included: a `claim` member goes unread as today, and the output is the same with it as without it (decision 0002)"
-  - "B-029 — `claim.files` absent, empty, or an entry without `glob` or `feature` under `gherkin`, or present beside another source: exit 3 naming the key"
+  - "B-029 — `claim.files` absent, empty, or an entry without `glob` or `feature` under `gherkin`, or present beside another source, an omitted one included: exit 3 naming the key"
+  - "B-031 — pinned to 0.4.0 or later, a `claim.source` other than the text `markdown` or `gherkin`: exit 3 naming `claim.source` (decision 0003)"
   - "Every key read from the manifest, none under `codeAnalysis` (C-4, C-7)"
   - "The members join 0.4.0 with a relock while no published package carries it (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "Under 0.4.0, a tree without `claim.source: gherkin` gets the verdicts it got before this item (B-002); `0001-F7` B-154 does not apply, since 0.3.1 and 0.4.0 are not patch neighbours (`0001-F7` OQ-78)"
@@ -77,6 +79,21 @@ decisions:
     `claim.tagIgnoreCase` at every pin, and refusing the member would
     change a published pin's verdict (`0001-F7` C-1, C-4). The criterion
     is amended. Status stays in-progress.
+  - |
+    2026-11-13, the repository owner, selecting "Exit 3": a
+    `claim.source` other than `markdown` or `gherkin` is an invalid
+    manifest (decision 0003). spec-author's reading, not the owner's:
+    B-031 states it under a pin of 0.4.0 or later, naming
+    `claim.source`, case-exact and for a value that is not text, as
+    `schemaSource` and `pinPolicy` refuse theirs (`0001-F7` B-056);
+    the item takes B-031. Status stays in-progress.
+  - |
+    2026-11-13, spec-author's reading on test-writer's questions, not
+    an owner answer: B-027's "both required" makes an entry without
+    an `epic` under the epic grammar exit 3, and B-029's "any other
+    `claim.source`" includes an omitted one, which reads as `markdown`
+    (OQ-9); B-002 is narrowed to a manifest with no `claim.files`.
+    The B-002, B-027 and B-029 criteria are amended.
 
 out_of_scope:
   - "Reading claims from the selected files - 0390."
