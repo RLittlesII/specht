@@ -14,6 +14,7 @@ public sealed class SpechtModel
     /// <implements epic="0001" feature="F5" claim="B-027" />
     /// <implements epic="0001" feature="F5" claim="B-069" />
     /// <implements epic="0001" feature="F5" claim="B-079" />
+    /// <implements epic="0001" feature="F5" claim="B-086" />
     public SpechtModel(
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
@@ -29,7 +30,7 @@ public sealed class SpechtModel
         Regex? grammar = null;
         try
         {
-            grammar = new Regex(schemas.Structure.Identifiers["claim"], RegexOptions.Compiled);
+            grammar = new Regex(schemas.Structure.ClaimGrammar(null).Pattern, RegexOptions.Compiled);
         }
         catch (ArgumentException exception)
         {
