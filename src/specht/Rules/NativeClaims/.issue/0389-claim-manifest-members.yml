@@ -2,7 +2,7 @@ id: "0389"
 type: task
 title: Add the claim members to the manifest under schema 0.4.0, and refuse an invalid claim file set
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -19,10 +19,11 @@ claims:
   - B-027
   - B-028
   - B-029
+  - B-031
 
 created: "2026-11-06"
-updated: "2026-11-12"
-closed: null
+updated: "2026-11-13"
+closed: "2026-11-13"
 
 summary: |
   The `claim` members the reader selects on: `claim.source`,
@@ -36,17 +37,18 @@ summary: |
   Risk 3: a member is optional, so a manifest without `claim.source`
   gives the verdicts it gives under `0.4.0` today (B-002), while an
   invalid set exits `3` before any rule runs (B-029), and a pin below
-  `0.4.0` refuses the members as keys it does not define (B-028).
+  `0.4.0` leaves the members unread, as today (B-028).
 
   Waits on 0436, which cuts `0.4.0`, the version it adds the members
   to (decision 0001), and on 0388, done. The epic grammar the identity
   follows (B-027) is `0001-F5`'s, built.
 
 acceptance_criteria:
-  - "B-002 — no `claim.source`, or `markdown`: no verdict changes, no `codeAnalysis` key read"
-  - "B-027 — identity is epic and feature under an epic grammar, feature alone without; an `epic` without the grammar exits 3"
-  - "B-028 — pinned below 0.4.0, 0.3.1 included: a `claim` member exits 3 as today; a passing tree passes"
-  - "B-029 — `claim.files` absent, empty, or an entry without `glob` or `feature` under `gherkin`, or present beside another source: exit 3 naming the key"
+  - "B-002 — no `claim.source`, or `markdown`, and no `claim.files`: no verdict changes, no `codeAnalysis` key read"
+  - "B-027 — identity is epic and feature under an epic grammar, feature alone without; an entry without an `epic` under the grammar, or with one without it, exits 3"
+  - "B-028 — pinned below 0.4.0, 0.3.1 included: a `claim` member goes unread as today, and the output is the same with it as without it (decision 0002)"
+  - "B-029 — `claim.files` absent, empty, or an entry without `glob` or `feature` under `gherkin`, or present beside another source, an omitted one included: exit 3 naming the key"
+  - "B-031 — pinned to 0.4.0 or later, a `claim.source` other than the text `markdown` or `gherkin`: exit 3 naming `claim.source` (decision 0003)"
   - "Every key read from the manifest, none under `codeAnalysis` (C-4, C-7)"
   - "The members join 0.4.0 with a relock while no published package carries it (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "Under 0.4.0, a tree without `claim.source: gherkin` gets the verdicts it got before this item (B-002); `0001-F7` B-154 does not apply, since 0.3.1 and 0.4.0 are not patch neighbours (`0001-F7` OQ-78)"
@@ -68,6 +70,30 @@ decisions:
     `0.minor` step, which `0001-F7` C-11 lets add the members, and
     `0001-F7` B-154's `0.3.0` and `0.3.1` comparison leaves the
     acceptance criteria. Status stays in-progress.
+  - |
+    2026-11-13, the repository owner, selecting "Ignore below 0.4.0":
+    under a pin below 0.4.0 the new `claim` members go unread, as today,
+    and change no verdict (decision 0002). spec-author's reading, not the
+    owner's: the B-028 criterion said such a pin refuses a member with
+    exit 3 as today, but the parser reads only `claim.tag` and
+    `claim.tagIgnoreCase` at every pin, and refusing the member would
+    change a published pin's verdict (`0001-F7` C-1, C-4). The criterion
+    is amended. Status stays in-progress.
+  - |
+    2026-11-13, the repository owner, selecting "Exit 3": a
+    `claim.source` other than `markdown` or `gherkin` is an invalid
+    manifest (decision 0003). spec-author's reading, not the owner's:
+    B-031 states it under a pin of 0.4.0 or later, naming
+    `claim.source`, case-exact and for a value that is not text, as
+    `schemaSource` and `pinPolicy` refuse theirs (`0001-F7` B-056);
+    the item takes B-031. Status stays in-progress.
+  - |
+    2026-11-13, spec-author's reading on test-writer's questions, not
+    an owner answer: B-027's "both required" makes an entry without
+    an `epic` under the epic grammar exit 3, and B-029's "any other
+    `claim.source`" includes an omitted one, which reads as `markdown`
+    (OQ-9); B-002 is narrowed to a manifest with no `claim.files`.
+    The B-002, B-027 and B-029 criteria are amended.
 
 out_of_scope:
   - "Reading claims from the selected files - 0390."
