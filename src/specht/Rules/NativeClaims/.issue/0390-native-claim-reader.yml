@@ -27,7 +27,7 @@ claims:
   - B-030
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-12"
 closed: null
 
 summary: |
@@ -47,7 +47,7 @@ summary: |
   Waits on 0389, for the members it reads.
 
 acceptance_criteria:
-  - "B-001 — under 0.3.1 and `gherkin`, a set's claims come from its .feature files; no claims table read"
+  - "B-001 — under 0.4.0 and `gherkin`, a set's claims come from its .feature files; no claims table read"
   - "B-004 — a claim tag declares one claim, its id as authored, at the keyword line"
   - "B-005 — a tag failing the form or grammar declares nothing and draws nothing"
   - "B-006 — a Scenario Outline declares one claim, located at the outline"
@@ -58,7 +58,7 @@ acceptance_criteria:
   - "B-025 — the scenarios carrying a claim, as `0001-F12` A-1 and `0001-F13` B-001 count them"
   - "B-030 — byte-identical output for the same tree"
   - "One tag reading (C-1); text only, relative paths (C-2); every tag list from the manifest (C-4); one catalogue (C-5)"
-  - "`0001-F7` B-154 — same report under 0.3.0 and 0.3.1 for a tree without `claim.source: gherkin`"
+  - "Under 0.4.0, a tree without `claim.source: gherkin` gets the verdicts it got before this item (B-002); `0001-F7` B-154 does not apply, since 0.3.1 and 0.4.0 are not patch neighbours (`0001-F7` OQ-78)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -70,6 +70,11 @@ decisions:
     so its § 9 gate needs B-001, and B-001 needs the reader - as
     proposed, 0390 and 0391 waited on each other. Value omitted,
     inheriting 0387's.
+  - |
+    2026-11-12, spec-author: schema 0.3.1 has gone out in NuGet
+    packages, and on the repository owner's selection "Fold into 0.4.0"
+    the Feature's members and rules enter schema 0.4.0 (decision 0001).
+    B-001 and the report criterion are restated for 0.4.0.
 
 out_of_scope:
   - "A set's record, identity check and report entry - 0391."
