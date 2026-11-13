@@ -1,0 +1,109 @@
+using System.Text.Json.Nodes;
+using AwesomeAssertions;
+using Specht.Manifest;
+using Specht.Tests.Shared;
+using Specht.Versioning;
+
+namespace Specht.Tests.Manifest;
+
+/// <summary>
+/// The <c>claim</c> members beneath <c>0001-F16</c> B-002, B-027, B-028 and B-029 (item <c>0389</c>): from schema
+/// <c>0.4.0</c> the parser reads the claim source and the claim file sets, a source left out or <c>markdown</c> reads as
+/// Markdown with no set, a set's identity follows the epic grammar, and an invalid set is rejected naming
+/// <c>claim.files</c>; below <c>0.4.0</c> the members go unread. Each catalog holds the shipped versions and a
+/// <c>0.4.0</c> whose shipped <c>claim</c> carries the defaults <c>0001-F16</c> § 7 names, so no test waits on the
+/// shipped <c>0.4.0</c>.
+/// </summary>
+[Trait("Tier", "Unit")]
+public sealed class SpechtManifestParserClaimMembersUnitTests
+{
+    [Theory]
+    [ClassData(typeof(MarkdownClaimSources))]
+    public void AManifestWithoutAGherkinClaimSource_WhenParsedUnderZeroFourZero_ShouldReadMarkdownClaimsAndNoClaimFileSet(string members)
+    {
+        // Given
+        var manifest = JsonNode.Parse(members)!.AsObject();
+        manifest["schemaVersion"] = "0.4.0";
+
+        // When
+        var structure = WithZeroFourZero().Parse(manifest.ToJsonString());
+
+        // Then
+        structure.ClaimInput.Should().NotBeNull();
+        structure.ClaimInput!.Source.Should().Be(SpechtClaimSource.Markdown);
+        structure.ClaimInput.Files.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimFileSetIdentities))]
+    public void AClaimFileSet_WhenParsedUnderEitherEpicGrammar_ShouldTakeTheIdentityThatGrammarGives(
+        string members, string? epic, string feature)
+    {
+        // Given
+        var manifest = JsonNode.Parse(members)!.AsObject();
+        manifest["schemaVersion"] = "0.4.0";
+
+        // When
+        var structure = WithZeroFourZero().Parse(manifest.ToJsonString());
+
+        // Then
+        structure.ClaimInput.Should().NotBeNull();
+        structure.ClaimInput!.Source.Should().Be(SpechtClaimSource.Gherkin);
+        structure.ClaimInput.Files.Should().ContainSingle()
+            .Which.Should().Match<SpechtClaimFileSet>(set => set.Epic == epic && set.Feature == feature);
+    }
+
+    [Theory]
+    [ClassData(typeof(InvalidClaimFileSets))]
+    public void AnInvalidClaimFileSet_WhenParsedUnderZeroFourZero_ShouldBeRejectedNamingClaimFiles(string members)
+    {
+        // Given
+        var manifest = JsonNode.Parse(members)!.AsObject();
+        manifest["schemaVersion"] = "0.4.0";
+
+        // When
+        var parse = () => WithZeroFourZero().Parse(manifest.ToJsonString());
+
+        // Then
+        parse.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("claim.files");
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimMembersBelowZeroFourZero))]
+    public void AClaimMemberUnderAPinBelowZeroFourZero_WhenParsed_ShouldReadTheManifestAsWithoutIt(string pin, string members)
+    {
+        // Given
+        var parser = WithZeroFourZero();
+        var without = new JsonObject { ["schemaVersion"] = pin };
+        var with = new JsonObject { ["schemaVersion"] = pin, ["claim"] = JsonNode.Parse(members) };
+
+        // When
+        var read = parser.Parse(with.ToJsonString());
+
+        // Then
+        read.Should().BeEquivalentTo(parser.Parse(without.ToJsonString()), static options => options.ComparingRecordsByMembers());
+    }
+
+    private static SpechtManifestParser WithZeroFourZero()
+    {
+        var shipped = EngineServices.Versions();
+        var claimMembers = new SemanticVersion(0, 4, 0);
+        var defaults = JsonNode.Parse(shipped.Find(new SemanticVersion(0, 3, 1))!.Manifest)!.AsObject();
+        defaults["schemaVersion"] = "0.4.0";
+        defaults["claim"] = new JsonObject
+        {
+            ["tag"] = "@{claim}",
+            ["tagIgnoreCase"] = false,
+            ["source"] = "markdown",
+            ["plannedTags"] = new JsonArray("@ignore"),
+            ["withdrawnTags"] = new JsonArray(),
+            ["supersededTags"] = new JsonArray(),
+            ["lifecycleKey"] = "spec_status",
+        };
+
+        return new SpechtManifestParser(new SchemaVersions([
+            .. shipped.Versions.Where(version => version.Number != claimMembers),
+            new SchemaVersionFixture().WithNumber(claimMembers).WithManifest(defaults.ToJsonString()),
+        ]));
+    }
+}

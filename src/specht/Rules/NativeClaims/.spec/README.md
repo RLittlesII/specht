@@ -308,46 +308,132 @@ composes it from `SpechtClaimInput` and the Feature.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-26 -->
+<!-- last written by: test-writer, 2026-11-13 -->
 
-Pending: owned by `test-writer`, written after agreement.
+Items `0390` to `0396` each add their subsection after this one.
+
+### The claim members at schema 0.4.0 (item `0389`)
+
+**Unit.** `SpechtManifestParserClaimMembersUnitTests`, in
+`test/tests/Manifest/SpechtManifestParser.ClaimMembers.Unit.Tests.cs`, parses in
+memory, with no file system, over a catalog of the shipped versions and a `0.4.0`
+built with `SchemaVersionFixture`: the shipped `0.3.1` manifest under the number
+`0.4.0`, its `claim` carrying § 7's defaults (`source` `markdown`, `plannedTags`
+`["@ignore"]`, empty withdrawn and superseded tags, `lifecycleKey`
+`spec_status`). A shipped `0.4.0` is replaced by it, so no test waits on item
+`0436`. Each row's manifest members come from a `[ClassData]` type beside the
+class. To compile, the tests need the types § 7 names, so test-writer added their
+declarations and no reading: `SpechtClaimSource`, `SpechtClaimFileSet` and
+`SpechtClaimInput` under `src/specht/Manifest/`, and
+`SpechtStructure.ClaimInput`, which nothing sets yet.
+
+- **B-002** - mechanism: the source `SpechtManifestParser.Parse` reads under
+  `ClaimMembersVersion`, `Markdown` when the member is left out, with nothing read
+  under `codeAnalysis` (C-7). Test:
+  `AManifestWithoutAGherkinClaimSource_WhenParsedUnderZeroFourZero_ShouldReadMarkdownClaimsAndNoClaimFileSet`,
+  over `MarkdownClaimSources`: no `claim`, an empty `claim`, `claim.tag` alone,
+  `source` `markdown`, and a `codeAnalysis.records` that selects Gherkin claim
+  file sets. Red: `ClaimInput` is null.
+- **B-027** - mechanism: the identity `ClaimInput` reads from each entry over the
+  `DeclaresEpicGrammar` reading. Tests:
+  `AClaimFileSet_WhenParsedUnderEitherEpicGrammar_ShouldTakeTheIdentityThatGrammarGives`,
+  over `ClaimFileSetIdentities`: epic `0001` and Feature `arithmetic` under a
+  declared `identifiers.epic`, and Feature `arithmetic` with no epic under none;
+  red, `ClaimInput` is null. And the row of
+  `AnInvalidClaimFileSet_WhenParsedUnderZeroFourZero_ShouldBeRejectedNamingClaimFiles`
+  with an `epic` and no epic grammar; red, no exception is thrown.
+- **B-028** - mechanism: the `ClaimMembersVersion` gate. Guard:
+  `AClaimMemberUnderAPinBelowZeroFourZero_WhenParsed_ShouldReadTheManifestAsWithoutIt`,
+  over `ClaimMembersBelowZeroFourZero`: each shipped pin that reads `claim`
+  (`0.2.0`, `0.2.1`, `0.3.0`, `0.3.1`) with a valid Gherkin selection, with
+  `source` `gherkin` and no `claim.files` (a B-029 fault at `0.4.0`), and with
+  every other member; the structure equals, member by member, the one parsed
+  without the members. Green when written: it is the parser as built (decision
+  0002), as `0001-F5` B-072's are. `0.1.0` is not a row: it refuses `claim`
+  whole, as today, which
+  `ClaimTagManifestUnitTests.ANewTagKeyUnderAnOlderPin_WhenParsed_ShouldRemainUnknown`
+  pins; and the tag reading the first B-028 scenario keeps is
+  `ClaimTagManifestUnitTests.OmittedTagSettings_WhenParsed_ShouldUseTheExactPinsDefaults`'s.
+- **B-029** - mechanism: the faults `ClaimInput` adds to the list `Check` throws
+  as one `SpechtManifestException`, inside `Parse`, so before any schema is read
+  or rule runs. Test:
+  `AnInvalidClaimFileSet_WhenParsedUnderZeroFourZero_ShouldBeRejectedNamingClaimFiles`,
+  over `InvalidClaimFileSets`: under `gherkin`, `claim.files` absent, empty, an
+  entry with no `glob`, an entry with no `feature`; and a set beside `source`
+  `markdown`. Each asserts the exact exception type and that its message names
+  `claim.files`. Red: no exception is thrown. Exit `3` with stderr alone is the
+  existing fold of `SpechtManifestException` (`0001-F5` B-018), not tested again
+  here.
+
+**Acceptance: deferred.** `native-claims.feature` is not linked into
+`test/acceptance/acceptance.csproj` by this item yet. Its Background pins schema
+`0.4.0`, which this branch does not ship: a bound B-002, B-027 or B-029 scenario
+would exit `3` because the pin is not shipped, red for the wrong reason, and
+`test/acceptance` cannot build a synthetic version without linking
+`SchemaVersionFixture`, a ninth link
+([`specht-conventions` § Testing](../../../../../.agents/skills/specht-conventions/references/testing.md)).
+Once `0.4.0` ships on this branch (item `0436`), test-writer links the file with
+a literal `ReqnrollFeatureFile` and binds the B-002, B-027, B-028 and B-029
+scenarios in a step class scoped to this Feature, and checks that the discovered
+test count changed. The other scenarios bind no step, and
+`missingOrPendingStepsOutcome` `Ignore` leaves them out. Until then each of the
+four rows is `Partial`.
+
+**Not asserted**, as no claim of this item states it:
+
+- A `claim.source` other than `markdown` or `gherkin`; § 7 leaves the row out of
+  the build until spec-author states it.
+- An entry with no `epic` under a declared epic grammar. B-027 says both are
+  required and states no outcome; § 7 rejects it. Returned to `spec-author`.
+- `claim.files` with no `claim.source`. B-029 names "any other `claim.source`",
+  B-002 says a manifest with no `claim.source` changes no verdict, and § 7 makes
+  it a fault. Returned to `spec-author`.
+- The type faults § 7 lists: `claim.files` not a list, an entry not an object, a
+  `glob`, `feature` or `record` that is not text.
+- The defaults `plannedTags`, `withdrawnTags`, `supersededTags` and
+  `lifecycleKey` fill (OQ-9), which item `0390` reads; the fault wording beyond
+  naming `claim.files`; and one run naming every faulty entry.
+
+**Testability.** The design leaves each mechanism in `SpechtManifestParser.Parse`,
+reachable in memory through an injected catalog. The only thing hard to test is
+the acceptance tier, which waits on a shipped `0.4.0`.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-26 -->
+<!-- last written by: test-writer, 2026-11-13 -->
 
-| Claim ID | Scenario                                                    | Test    | Status  |
-| -------- | ----------------------------------------------------------- | ------- | ------- |
-| B-001    | Claims come from the claim files a set names                | Missing | Missing |
-| B-002    | Without the selection nothing changes                       | Missing | Missing |
-| B-003    | A record supplies lifecycle and edges; none means current   | Missing | Missing |
-| B-004    | A claim tag declares a claim at its element                 | Missing | Missing |
-| B-005    | An ordinary tag declares nothing                            | Missing | Missing |
-| B-006    | An outline declares one claim                               | Missing | Missing |
-| B-007    | A Rule declares once for its scenarios                      | Missing | Missing |
-| B-008    | One identifier on two elements is reported at both          | Missing | Missing |
-| B-009    | A claim tag on an Examples block is reported                | Missing | Missing |
-| B-010    | A scenario with no claim is reported                        | Missing | Missing |
-| B-011    | Reordering and retitling keep every claim                   | Missing | Missing |
-| B-012    | Lifecycle tags give the claim its status                    | Missing | Missing |
-| B-013    | A planned scenario keeps its claim                          | Missing | Missing |
-| B-014    | A claim file in another language is reported                | Missing | Missing |
-| B-015    | A claim file with no Feature line is reported               | Missing | Missing |
-| B-016    | A set matching no file is reported                          | Missing | Missing |
-| B-017    | One identity declared twice is reported at both             | Missing | Missing |
-| B-018    | A file two sets match is reported                           | Missing | Missing |
-| B-019    | A Feature-level tag that disagrees with its set is reported | Missing | Missing |
-| B-020    | A record needs every section but the claims table           | Missing | Missing |
-| B-021    | The companion rules leave a native Feature alone            | Missing | Missing |
-| B-022    | A claim file is not a stray companion                       | Missing | Missing |
-| B-023    | A record's matrix is held to the native claims              | Missing | Missing |
-| B-024    | Without a matrix the trace says none                        | Missing | Missing |
-| B-025    | The scenarios carrying a claim                              | Missing | Missing |
-| B-026    | A native Feature is counted and listed                      | Missing | Missing |
-| B-027    | A set's identity follows the epic grammar                   | Missing | Missing |
-| B-028    | An earlier pin is untouched                                 | Missing | Missing |
-| B-029    | An invalid claim file set exits before any rule             | Missing | Missing |
-| B-030    | The same tree gives the same output                         | Missing | Missing |
+| Claim ID | Scenario                                                                                                                 | Test                                                                                                                                                                                                                                                                                                                                         | Status  |
+| -------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | Claims come from the claim files a set names                                                                             | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-002    | Without the selection nothing changes                                                                                    | `SpechtManifestParserClaimMembersUnitTests.AManifestWithoutAGherkinClaimSource_WhenParsedUnderZeroFourZero_ShouldReadMarkdownClaimsAndNoClaimFileSet`; the scenario is unbound until schema `0.4.0` ships (§ 8)                                                                                                                              | Partial |
+| B-003    | A record supplies lifecycle and edges; none means current                                                                | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-004    | A claim tag declares a claim at its element                                                                              | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-005    | An ordinary tag declares nothing                                                                                         | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-006    | An outline declares one claim                                                                                            | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-007    | A Rule declares once for its scenarios                                                                                   | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-008    | One identifier on two elements is reported at both                                                                       | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-009    | A claim tag on an Examples block is reported                                                                             | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-010    | A scenario with no claim is reported                                                                                     | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-011    | Reordering and retitling keep every claim                                                                                | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-012    | Lifecycle tags give the claim its status                                                                                 | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-013    | A planned scenario keeps its claim                                                                                       | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-014    | A claim file in another language is reported                                                                             | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-015    | A claim file with no Feature line is reported                                                                            | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-016    | A set matching no file is reported                                                                                       | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-017    | One identity declared twice is reported at both                                                                          | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-018    | A file two sets match is reported                                                                                        | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-019    | A Feature-level tag that disagrees with its set is reported                                                              | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-020    | A record needs every section but the claims table                                                                        | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-021    | The companion rules leave a native Feature alone                                                                         | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-022    | A claim file is not a stray companion                                                                                    | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-023    | A record's matrix is held to the native claims                                                                           | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-024    | Without a matrix the trace says none                                                                                     | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-025    | The scenarios carrying a claim                                                                                           | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-026    | A native Feature is counted and listed                                                                                   | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
+| B-027    | A set's identity carries an epic under the epic grammar; A set with an epic under no epic grammar is an invalid manifest | `SpechtManifestParserClaimMembersUnitTests.AClaimFileSet_WhenParsedUnderEitherEpicGrammar_ShouldTakeTheIdentityThatGrammarGives`; `SpechtManifestParserClaimMembersUnitTests.AnInvalidClaimFileSet_WhenParsedUnderZeroFourZero_ShouldBeRejectedNamingClaimFiles`, its `epic` row; the scenarios are unbound until schema `0.4.0` ships (§ 8) | Partial |
+| B-028    | An earlier pin is untouched; An earlier pin ignores claim.source                                                         | `SpechtManifestParserClaimMembersUnitTests.AClaimMemberUnderAPinBelowZeroFourZero_WhenParsed_ShouldReadTheManifestAsWithoutIt`, green when written: it is the parser as built (decision 0002; § 8); the scenarios are unbound (§ 8)                                                                                                          | Partial |
+| B-029    | An invalid claim file set exits before any rule                                                                          | `SpechtManifestParserClaimMembersUnitTests.AnInvalidClaimFileSet_WhenParsedUnderZeroFourZero_ShouldBeRejectedNamingClaimFiles`; the outline is unbound until schema `0.4.0` ships (§ 8)                                                                                                                                                      | Partial |
+| B-030    | The same tree gives the same output                                                                                      | Missing                                                                                                                                                                                                                                                                                                                                      | Missing |
 
 ## 10. Lessons / Spec Deltas
 

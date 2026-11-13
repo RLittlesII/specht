@@ -37,6 +37,9 @@ public sealed record SpechtStructure(
     /// <summary>Whether claim tags, including literal form text, ignore letter case (B-037).</summary>
     public bool ClaimTagIgnoreCase { get; init; }
 
+    /// <summary>The claim members a manifest reads from schema 0.4.0; null below it, where they go unread.</summary>
+    public SpechtClaimInput? ClaimInput { get; init; }
+
     /// <summary>The explicit frontmatter schema source, null when the manifest leaves selection automatic.</summary>
     public SchemaSourceSelection? SchemaSource { get; init; }
 
