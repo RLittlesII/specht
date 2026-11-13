@@ -8,17 +8,21 @@ type: reference
 
 One Feature, `F1` Checkout, with two claims, checked by `specht.tool`, linked
 to C# by `Specht.CodeAnalysis`, and queried through `specht.mcp`. Every output
-below is from a real run of the `0.6.1-preview` packages on the .NET 11 SDK.
+below is from a real run of the `0.6.1-preview` packages on the .NET 11 SDK,
+whose newest schema, and so the pin `init` writes, is `0.3.1`. A later package
+can pin a later schema; [Configuration](configuration.md) says what each one
+changes.
 
 ## 1. Install and init
 
 ```sh
 dotnet new tool-manifest --output .config
-dotnet tool install --local specht.tool --prerelease
+dotnet tool install --local specht.tool --version 0.6.1-preview
 dotnet specht init --all
 ```
 
-`init --all` writes `.specht/manifest.json`, the frontmatter schemas and the
+`--version 0.6.1-preview` reproduces this run; `--prerelease` installs the
+newest package instead. `init --all` writes `.specht/manifest.json`, the frontmatter schemas and the
 templates.
 
 ## 2. Write a specification
@@ -100,7 +104,11 @@ the project must generate documentation:
 Without `GenerateDocumentationFile`, the compiler reads `///` as an ordinary
 comment and the analyzer reports `SPCT0013` on each one.
 
-Add `codeAnalysis` to `.specht/manifest.json`. This one requires an
+Add `codeAnalysis` to `.specht/manifest.json`. This mapping is for the `0.3.1`
+pin, where `/identifiers` carries the claim grammar. From schema `0.4.0` the
+claim grammar is the `ids` claim record: the manifest writes its `plain` and
+`id` and the mappings add `"/ids/claim": "/ids/claim"` (see
+[Id records](configuration.md#id-records)). This one requires an
 `implements` link on every method in `src/checkout` and a `verifies` link on
 every test method in `test/checkout.tests`:
 
@@ -234,7 +242,7 @@ finding and exits `2`.
 ## 7. Ask through MCP
 
 ```sh
-dotnet tool install --local specht.mcp --prerelease
+dotnet tool install --local specht.mcp --version 0.6.1-preview
 ```
 
 Client entry:
