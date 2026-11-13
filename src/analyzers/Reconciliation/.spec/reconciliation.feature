@@ -434,6 +434,39 @@ Feature: Traceability reconciliation
     When the supplied evidence is reconciled by specht evidence
     Then the command fails with invalid input naming the manifest
 
+  @B-045
+  Scenario Outline: Claim grammar from the ids claim record
+    Given a consumer whose manifest maps its ids claim record and no older claim grammar
+    And a selected Feature whose current claim ID is <claim>
+    When the supplied evidence is reconciled by specht evidence
+    Then the claim is <outcome>
+
+    Examples:
+      | claim                                                                 | outcome                                           |
+      | the record's plain text ahead of its id, then a whole match of its id | reconciled                                        |
+      | a whole match of its id under different leading text                  | reported as violating its grammar, not reconciled |
+
+  @B-046
+  Scenario: Older claim grammar without an ids claim record
+    Given a consumer whose manifest maps the older claim grammar and no ids claim record
+    When the supplied evidence is reconciled by specht evidence
+    Then claim IDs are read and validated by the older claim grammar
+    And the report is the one specht evidence gave before the ids claim record was read
+
+  @B-047 @boundary
+  Scenario Outline: Ids claim record the analyzer rejects
+    Given a consumer whose manifest maps an ids claim record that <defect>
+    When the supplied evidence is reconciled by specht evidence
+    Then the command fails with invalid input naming the manifest
+
+    Examples:
+      | defect                                            |
+      | sits beside the older claim grammar               |
+      | has no plain text                                 |
+      | has no id                                         |
+      | has plain text that does not end with its only id |
+      | has an id that is not a usable pattern            |
+
   @B-036
   Scenario: Declared production project without evidence
     Given a declared test project whose current evidence passed every required case
