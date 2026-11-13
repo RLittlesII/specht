@@ -2,7 +2,7 @@ id: "0390"
 type: task
 title: Read native claims from the tags of a claim file set's .feature files
 
-status: ready
+status: in-progress
 
 risk: 4
 
@@ -27,7 +27,7 @@ claims:
   - B-030
 
 created: "2026-11-06"
-updated: "2026-11-12"
+updated: "2026-11-13"
 closed: null
 
 summary: |
