@@ -848,9 +848,9 @@ top-level manifest keys, so `.specht/manifest.json` gained
 
 ### The ids key at schema 0.4.0
 
-<!-- last written by: implementer, 2026-11-13 (item `0436`, designed; not built) -->
+<!-- last written by: implementer, 2026-11-13 (item `0436`, built); implementer, 2026-11-13 (item `0436`, designed; not built) -->
 
-Designed for item `0436`; not built. Schema `0.4.0` is cut from `0.3.1` by
+Built in item `0436`. Schema `0.4.0` is cut from `0.3.1` by
 `./build.sh CutSchemaVersion --cut-version 0.4.0` (`0001-F7` B-094 to B-100),
 edited by hand in the files below, and locked by `./build.sh LockSchemaVersion`,
 as item `0388` cut `0.3.1`. No file and no lock entry of `0.1.0` to `0.3.1`
@@ -909,7 +909,7 @@ reads it from the manifest document.
 top-level `mint` and each `identifiers` member among the seven (B-092), naming
 `ids.<type>` for each such member: `identifiers.claim is not read from schema
 0.4.0; its grammar goes in ids.claim`, and `mint is not read from schema 0.4.0;
-mint.adr goes in ids.adr` (B-093). `task`, `feature` and `epic` stay in
+mint.adr goes in ids.adr.mint` (B-093), the member the setting moves to. `task`, `feature` and `epic` stay in
 `identifiers` and are filled and checked as before.
 
 **The domain objects.** A record `SpechtIdRecord(string Plain, string? Form,
@@ -955,7 +955,8 @@ below `0.4.0`. From it:
   `expected.grammar` is the Feature's pattern. An unprefixed Feature's message
   names the pattern, as now.
 - A Feature with a `SharedHead` gets one finding at
-  `Frontmatter.LineOf(FeatureKeys.ClaimPrefix)`, identifier the head, for B-100:
+  `Frontmatter.LineOf(FeatureKeys.ClaimPrefix)`, identifier the head and
+  `expected.grammar` the unprefixed pattern, for B-100:
   `claim_prefix gives claims and scenarios the one head 'S-', so the Feature is read as declaring no prefix`.
   Its claims are then checked by the `plain` grammar, so `B-001` passes.
 - Where `ScenarioHead` is longer than `Head` and begins with it, a claim the
@@ -979,8 +980,9 @@ and `S-`, the same length, so nothing is skipped. The legacy scanner and
 **The effective manifest.** `ParseDocument` projects `ids` as it projects
 `claim`: an absent `ids` takes the pinned default's whole through `Selected`,
 and a declared record gains each of `plain`, `form` and `id` the shipped record
-holds and it leaves out; a declared `mint` stays as declared (`0001-F9` B-003,
-B-004).
+holds and it leaves out; a declared `mint` stays as declared; a type the
+declared `ids` leaves out takes the shipped record whole, so the effective
+manifest prints all seven (`0001-F9` B-003, B-004).
 
 **Below `0.4.0`.** Each new branch is behind the `IdsVersion` gate or
 `Ids is null`, and there `ClaimGrammar(null).Pattern` is `identifiers.claim`, so
@@ -989,19 +991,24 @@ B-079 as amended; B-049).
 
 **This repository's pin.** `0001-F4` B-004 holds the live manifest to the newest
 shipped one on every key it carries, `ids` included, so the pin moves in the
-same pull request: `specht schema pin 0.4.0`; `identifiers.claim`,
-`constraint` and `openQuestion` removed by hand, since B-092 rejects them and
-`upgrade` cannot move them before item `0438`; then `specht upgrade`, which adds
-`ids` and rewrites the schema files and templates. `docs/configuration.md`
-documents `ids`, its shipped records and the rejected keys.
+same pull request. `identifiers.claim`, `constraint` and `openQuestion` are
+removed by hand, since B-092 rejects them and `upgrade` cannot move them before
+item `0438`; `specht schema pin 0.4.0` moves the pin; `specht upgrade` rewrites
+the three frontmatter schemas, leaves the templates, whose `0.4.0` bytes are
+`0.3.1`'s, and adds `ids` whole as a key the pinned version defines and the
+manifest lacks (`0001-F7` decision 0006), after the manifest's last key. That
+step adds `ids` only to a manifest that names none; reading an `identifiers`
+member into `ids` is item `0438`'s. The tree has no top-level `mint`.
+`docs/configuration.md` documents `ids`, its shipped records and the rejected
+keys.
 
-**Not settled here.** This repository's `codeAnalysis.mappings` projects the
-raw `/identifiers` to the analyzer, whose `AnalysisPolicyReader.Read` rejects a
-projection without `identifiers.claim` at error severity, and `specht evidence`
-reads the same projection through `EvidencePolicy`. B-092 removes that member
-at `0.4.0`, and § 5 row 25 leaves the analyzer reading `ids` to `0201-F1`, so
-the pin move fails the `CodeAnalysis` target. The resolution is escalated to the
-repository owner; this design records none.
+**The analyzer and evidence projection.** The repository owner selected "A,
+built in 0436", and `0201-F1` decision 0006 records it with spec-author's
+design under it: the analyzer and `specht evidence` read the claim grammar from the `ids` claim record when the
+projection supplies one, else from `identifiers.claim`. This repository's
+`codeAnalysis.mappings` keeps `/identifiers` and adds `"/ids/claim":
+"/ids/claim"`, so the projection carries the record at `/ids/claim`; the
+readers are `0201-F1` § 7's and `0201-F5` § 7's.
 
 **Rejected.**
 
