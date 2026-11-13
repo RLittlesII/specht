@@ -15,7 +15,9 @@ namespace Specht.Tests.Identifiers;
 /// <c>.spec/</c> as no specification. A folder, relative to the root, names the Feature whose <c>.spec/</c> it holds, and a
 /// folder that holds none, a legacy <c>epics/</c> Feature folder among them, names no Feature (B-059, B-060; A-7). A
 /// per-Feature type's ids are held in that Feature's places: the file names in its <c>.spec/decisions/</c>, the first cells
-/// of its <c>.spec/README.md</c> tables and the tags of its companion, less the <c>@</c> (B-040 to B-042; item <c>0418</c>).
+/// of its <c>.spec/README.md</c> tables and the tags of its companion, less the <c>@</c> (B-040 to B-042; item <c>0418</c>). A
+/// Feature's claim prefix is the text its <c>.spec/README.md</c> frontmatter holds under the key the manifest names, and nothing
+/// for no key (A-9; B-063, item <c>0437</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class HeldIdsUnitTests
@@ -130,5 +132,31 @@ public sealed class HeldIdsUnitTests
 
         // Then
         held.Should().Contain(expected);
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimPrefixKeys))]
+    public void AFeatureDeclaringAClaimPrefix_WhenItsClaimPrefixIsRead_ShouldGiveTheTextUnderTheKeyNamed(string? key, string? expected)
+    {
+        // Given
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.specht/manifest.json"] = new("""{ "schemaVersion": "0.4.0" }"""),
+            ["repo/features/one/.spec/README.md"] = new("---\nclaim_prefix: \"ACTIVITY\"\n---\n# Specification: F1\n"),
+        });
+        var root = files.Path.GetFullPath("repo");
+        var inputs = EngineServices.Manifest(files, root).Discovery;
+        var discovery = new SpechtDiscovery(files, new UnexpectedChildProcess());
+        var feature = discovery.FindSpecifications(root, inputs).Single();
+
+        // When
+        var prefix = new HeldIds(
+            discovery,
+            new SpechtTreeStore(files),
+            new SpechtDocumentParser(new FrontmatterReader()),
+            new FeatureTagParser()).ClaimPrefixOf(root, feature, key);
+
+        // Then
+        prefix.Should().Be(expected);
     }
 }
