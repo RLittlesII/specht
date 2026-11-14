@@ -121,7 +121,7 @@ Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are �
 
 ## 8. Testing Strategy
 
-<!-- last written by: implementer, 2026-11-13 (item 0167 criterion 1: the measured call is the check entry point's) -->
+<!-- last written by: test-writer, 2026-11-01 (item 0164: the per-layout count is `SpechtEvaluator.Evaluate`'s), 2026-11-02 (item 0153: B-003's layout is `SpechtTreeGenerator.Generate`'s; item 0334: a measured call reads the generated test file), 2026-11-13 (item 0167: the measured call is the check entry point's) -->
 
 - **No test proves these claims, and none is owed.** Three owner rulings decide it. On 2026-10-08: the build carries no tests. On 2026-10-11, the proof decision that cut item `0145` (`0109-F1` § 10): a build or benchmark-run claim is `Missing` in § 9, with its mechanism and a hand-run record here. On 2026-10-11, pull request #114 (`0109-F1` § 10, verbatim): "Bechmarks don't get tests. They should benchmark production code!" So no test of `CheckBenchmarks` is written or proposed, `check-scaling.feature` is not linked into `test/acceptance`, and it has no step class. All four rows of § 9 are `Missing`.
 - **Mechanisms, per claim.** Read on 2026-10-11 in [`CheckBenchmarks.cs`](../CheckBenchmarks.cs), as item `0150` built it, and B-003's again on 2026-11-02, after item `0153`. Each is a declaration or a guard in that one class; none has a test.

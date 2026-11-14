@@ -289,7 +289,7 @@ Item `0147` (B-015, B-016; C-7 to C-9; [decision 0004](decisions/0004-a-generate
 
 ## 8. Testing Strategy
 
-<!-- last written by: implementer, 2026-11-13 (item 0167 criterion 1: B-015's integration test runs `SpechtCheck`) -->
+<!-- last written by: test-writer, 2026-11-02 (item 0166: the store's surface names `Load` and `Text()`, and its load tests; item 0153: the built generator and store read, and the moved tests run green; item 0334: the generator's count test counts the generated test file), 2026-11-13 (item 0167: B-015's integration test runs `SpechtCheck`) -->
 
 ### D1 generator verification
 
