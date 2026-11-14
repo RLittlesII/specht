@@ -107,7 +107,7 @@ The engine walks every directory under the root and discards `bin`, `obj` and `n
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-10 (item 0009: rows 16 to 18 built; rows 13 and 18 name the bracketed head, row 17 the child items, decision 0011) -->
+<!-- last written by: implementer, 2026-11-10 (item 0009: rows 16 to 18 built; rows 13 and 18 name the bracketed head, row 17 the child items, decision 0011); implementer, 2026-11-14 (item 0441: rows 19 to 21 designed, B-013) -->
 
 Item `0005` declares the inputs and item `0006` the path identity; the walk (`0007`) and the git listing (`0008`) extend this table.
 
@@ -131,6 +131,9 @@ Item `0005` declares the inputs and item `0006` the path identity; the walk (`00
 | 16  | No file is discovered through a symbolic link to a directory under the root, in either mode (B-011)                                      | Both           | Built (item `0009`): `Walked` pushes no child whose `LinkTarget` is set, the exclusions asked first; git lists a link as one path and nothing below it, and `Listed`'s `File.Exists` guard drops that path; § 7, "Design for item `0009`"                                                                                                         |
 | 17  | One order of discovered files, by root-relative path, ordinally, in both modes (B-008, decision 0011)                                    | Business       | Built (item `0009`): `Matching`, which both `Listed` and `Walked` feed; `FindSpecifications`, which orders every layout's specifications by `RelativePath`, ordinally and stably; and `FindChildItems`, which orders its one flat list by root-relative path, ordinally; § 7, "Design for item `0009`"                                            |
 | 18  | Both modes one contract on a tree C-3 admits (B-007, C-3)                                                                                | Both           | Built (item `0009`): `Files` is `Listed ?? Walked`, into one `Matching` and one `Beside`; `Arguments` writes each glob pathspec's first character as a bracket expression (`Bracketed`), so git applies the exclude pathspecs to every finder; § 7, "Design for item `0009`", "The epic listing"                                                  |
+| 19  | Where a companion beside no specification can sit: each layout glob's directory part joined to each companion glob (B-013)               | Business       | Designed (item `0441`), not built: `SpechtDiscovery.FindOrphanCompanions`, reading `Layouts` and `CompanionFiles` alone (C-5); § 7, "Design for item `0441`"                                                                                                                                                                                      |
+| 20  | Listing those companions inside the exclusions, one contract in both modes (B-013, C-1, C-2, C-3)                                        | Both           | Designed (item `0441`), not built: `FindOrphanCompanions` through `Files` and `Matching`, as `FindEpics`; no new argument form for git                                                                                                                                                                                                            |
+| 21  | Reporting one as `SPEC2003`, keyed `SPEC024`, at warning, at line `0`, from schema `0.4.0` (B-013; decisions 0012, 0013)                 | Business       | Designed (item `0441`), not built: `OrphanCompanionRule` in `Rules/`, over `SpechtModel.OrphanCompanions`; selected by `SpechtEvaluator` from the pinned vocabulary, as every rule is                                                                                                                                                             |
 
 ## 7. Technical Design
 
@@ -146,7 +149,7 @@ discovery keys and the existing path-identity checks. Discovery receives the
 same `SpechtDiscoveryInputs` after manifest validation; no glob helper, layout
 identity rule, exclusion semantics or finding order changes in D1.
 
-<!-- last written by: implementer, 2026-11-13 (item 0167: the report document's mapper and serializer; the check resolved in the registration test); implementer, 2026-11-13 (`0132-F2` item 0368: `FindRecords` in the table of finders; `Beside` takes a root-relative directory); implementer, 2026-11-14 (`0001-F19` item 0440 review round 1: `FindClaimFiles` in the table of finders) -->
+<!-- last written by: implementer, 2026-11-13 (item 0167: the report document's mapper and serializer; the check resolved in the registration test); implementer, 2026-11-13 (`0132-F2` item 0368: `FindRecords` in the table of finders; `Beside` takes a root-relative directory); implementer, 2026-11-14 (`0001-F19` item 0440 review round 1: `FindClaimFiles` in the table of finders); implementer, 2026-11-14 (item 0441: "Design for item `0441`", B-013) -->
 
 Design for item `0005` (B-001, B-002, B-003, B-009, B-012), item `0006` (B-004) and item `0007` (B-006), as built. brief § 5 "Discovery cost" is the drafted direction for `0007` and `0008`; `0007` is built as "Design for item `0007`" below says, and `0008` is built as "Design for item `0008`" below says.
 
@@ -529,6 +532,56 @@ What the 0008 design held and missed: its probes of the exclude pathspec ("Desig
 6. **`[]c]` for every head**, one superset spelling with no case for `!`, `^` or `]`. It lists a `]`-headed path beside every glob, where the exact `[c]` lists none, and `[]]]` would need a second `]`, so `]` would still need a case of its own.
 
 **Files changed for item `0009`**, checked against `git diff --stat origin/main...HEAD`. Production, in `src/specht`: `Discovery/SpechtDiscovery.cs` only - `Walked`'s child filter, `FindSpecifications`' and `FindChildItems`' order, `Arguments` and the new `Bracketed`, and the `<implements>` tags for B-007, B-008 and B-011. User-facing: [`docs/configuration.md`](../../../../docs/configuration.md)'s `exclusions` row says neither way follows a symbolic link to a directory. In this specification: § 6 rows 13 and 16 to 18, this section, [decision 0011](decisions/0011-b-008-orders-the-child-items-too.md) and [lesson 0001](lessons/0001-every-command-line-shape-runs-against-the-real-git.md) (`spec-author`'s and `test-writer`'s), the "What stays for later items" bullet, and the glob row of the argument table and the exclude-pathspec bullet under "Design for item `0008`". `test-writer`'s: § 8, § 9, `.agents/skills/test-from-scenarios/SKILL.md` (lesson 0001's rule), `test/acceptance/Discovery/DiscoverySteps.cs`, and under `test/tests/Discovery/` `GitCommandLines.cs`, `SpechtDiscovery.Walk.Unit.Tests.cs`, `SpechtDiscovery.Git.Unit.Tests.cs`, `SpechtDiscovery.Git.Integration.Tests.cs`, the new `SpechtDiscovery.Links.Integration.Tests.cs` and `LinkedDirectoryModes.cs`, and `LocalGit.cs` and `RecordingChildProcess.cs`, moved out of the git integration tests. Nothing under `.build/` or `.github/`. The item file is `../.issue/0009-discovery-mode-parity.yml`.
+
+### Design for item `0441` (B-013)
+
+**Designed, not built.** One finder, one listing member, one model member and one rule, plus the vocabulary step `6f32e77d` took for `SPEC4008`. No claim, constraint or scenario changes.
+
+**The finder.** `ISpecDiscovery` and `SpechtDiscovery` gain `FindOrphanCompanions(root, specifications, inputs)`, returning root-relative paths:
+
+1. **The candidate globs.** For each layout in manifest order and each `CompanionFiles` entry, `Joined(DirectoryOf(layout.Glob), entry)`, each once. `**/.spec/README.md` with `*.feature` gives `**/.spec/*.feature`; `epics/**/spec.md` gives `epics/**/*.feature`. `DirectoryOf` and `Joined` are reused unchanged: a glob is `/`-separated, as a path is.
+2. **The listing.** `Matching(Files(root, candidates, inputs.Exclusions), candidates)`, as `FindEpics` lists. So the mode is chosen by the same four cases, git gets each candidate through `Bracketed` and each exclusion as an exclude pathspec and an `--exclude` pattern, the walk enters no directory `Skips` skips (C-1), and `Pattern` is the verdict in both modes (C-3, C-6).
+3. **Beside no specification.** A path is kept when its `DirectoryOf` equals the `Directory` of no specification in `specifications`, compared ordinally; the result is in ordinal order (B-008).
+
+`specifications` is the list `SpechtModelReader.Read` already holds, after it drops the claim-set record paths. The glob composition sits in discovery because the reader may not read `Layouts` or `CompanionFiles` (C-5), so calling `FindTestFiles` from the reader, as `FindClaimFiles` reuses it, is not the route. `Beside` is not either: it lists one known directory, and a candidate's directory is not known before the listing.
+
+**C-2, the implementer's reading.** Each candidate pathspec is two manifest entries joined as B-013 defines a directory part, and no other text enters it, so it is drawn from the manifest; `spec-reviewer` held C-2 the same way for `Bracketed`'s respelling (item `0009`).
+
+**B-013's cases, the implementer's readings.** None changes a verdict a `@B-013` scenario states.
+
+| Case                                                                         | Reading                                                                                                                                                                                                                 |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A companion beside a specification of another layout                         | Not reported: B-013 says "of any layout", so the comparison is by directory across every layout                                                                                                                         |
+| A file two layouts' directory parts both match, as `epics/a/.spec/x.feature` | Listed once, `Matching` being one filter (OQ-13 (a)'s reading), and reported once                                                                                                                                       |
+| A layout glob of one segment, as `spec.md`                                   | Its directory part is empty, so the candidate is the companion glob alone, which matches only files directly at the root                                                                                                |
+| A directory part ending `**`, as `epics/**`                                  | It matches `epics/` and every directory below it, so a `.feature` beside an `epic.md`, or in any folder under `epics/` holding no `spec.md`, is reported                                                                |
+| The root's own `.spec/`                                                      | Excluded by the default `/.spec` (C-4): never listed, never reported                                                                                                                                                    |
+| A git-ignored companion in a directory git does not ignore                   | Walk mode reports it and git mode does not list it: OQ-20 (i)'s case, no new divergence. `FindCompanions` lists through `Beside` and so finds it in both modes                                                          |
+| A `.feature` a claim file set's glob matches                                 | Reported when it meets B-013, and so is one beside a claim-set record a layout glob matched, which the reader drops from the specifications. `0001-F16` B-022, item `0396`, excepts the first; out of this item's scope |
+
+**The listing and the model.** `SpechtListing` gains `OrphanCompanions { get; init; } = []`, declared as `ClaimFiles` is, and `SpechtModel` gains the same member, set by `SpechtModelBuilder.Build` from the listing. They are paths only: the reader loads none of them, since the rule reads no text, and a model a test builds in memory carries none.
+
+**When it lists.** On every check, under every pin: one more `Files`, so one more `git ls-files` in git mode or one more pruned walk in walk mode, beside `FindSpecifications`, `FindEpics`, `FindTestFiles` and one `FindClaimFiles` per claim file set. Gating it on the pinned vocabulary would put a rule id into `SpechtModelReader`, which names no rule today, for a cost no claim states; not built. Folding the candidates into `FindSpecifications`' one `Files` would remove the call and change that finder's signature; not built either. A concern for `benchmarker`: the whole-check benchmark with the extra listing. ADR-0027's no-regression guard governs ADR-0010's structural stages, which this item is not, so nothing gates the item on it.
+
+**The rule.** `OrphanCompanionRule`, in `src/specht/Rules/OrphanCompanionRule.cs`, namespace `Specht.Rules`, beside `CompanionFileRule` and `PathIdentityRule`, this Feature's other rule. `Id` is `SPEC024`, the working name (decision 0013); `DefaultLevel` is `Warning`, overridden as `WaiverRule` overrides it to `Off`. For each path in `model.OrphanCompanions`, one `SpechtFinding(path, 0, null, "no specification sits beside this companion file")`. The identifier is `null`: the file belongs to no Feature, so its line carries no brackets. No `Expected`: that is `0001-F3` B-038, with no item. No constructor argument.
+
+**Under a pin below `0.4.0`.** The rule does not run: `SpechtEvaluator` keeps a rule only when the pinned `RuleIds` holds `RuleId(rule.Id)`, and `0.1.0` to `0.3.1` hold no `SPEC024` and stay unchanged (`0001-F7` C-1). The listing still runs ("When it lists"), and changes no verdict under them.
+
+**Registration and vocabulary**, as `6f32e77d` did for `SPEC4008`:
+
+- `AddSpechtEngine()`: `AddSingleton<ISpechtRule, OrphanCompanionRule>()` after `MissingScenarioRule` (`SPEC023`) and before `ClaimIdRule` (`SPEC030`), in working-name order.
+- `SchemaVersions.Shipped`, the `0.4.0` arm: `["SPEC024"] = "SPEC2003"`.
+- `src/tool/manifest/v0.4.0/manifest.json`, `rules`: `"SPEC2003": "warning"` after `SPEC2002`.
+- `docs/rules/v0.4.0/SPEC2003.md`, the rule page (`0001-F3` B-031), in `SPEC4008.md`'s shape, family Structure.
+- The relock, by `0001-F7` decision 0014: the `0.4.0` entry removed from `src/tool/schema/versions.lock.json` by hand, then `./build.sh LockSchemaVersion`. Allowed while no published package embeds `0.4.0`: `v0.6.4-preview`, the newest tag on 2026-11-14, locks `0.1.0` to `0.3.1` alone. A tag carrying `0.4.0` before the merge stops the item (decision 0012, reading 2).
+- `docs/what-it-checks.md` gains a `SPEC2003` row; `docs/configuration.md`'s `layouts` and `companionFiles` rows name it.
+- `.specht/manifest.json` declares no rule level, so it does not change.
+
+**This repository's tree: two warnings, not none.** Under its manifest, pinned `0.4.0`, `epics/**/spec.md`'s directory part is `epics/**`, and two tracked files match `epics/**/*.feature` beside no `spec.md`: `epics/0201-spec-code-analysis/spikes/0236/reqnroll/alpha.feature` and `epics/0201-spec-code-analysis/spikes/0236/reqnroll-beta/beta.feature`. The item's summary read the `features` layout alone. A warning does not fail `./build.sh Specht`, which passes no `--strict`. Confirm once built by reading that target's output for `SPEC2003`; before, by listing `git ls-files -co --exclude-standard` against the two candidate globs, less the root's `.spec/` and every directory holding a `README.md` under `.spec/` or a `spec.md` under `epics/`.
+
+**What `test-writer` needs.** Unit: `FindOrphanCompanions` over a `MockFileSystem` in walk mode, and its git command line through `GitCommandLines`' pattern; the rule over an in-memory model whose `OrphanCompanions` is set; `ShippedVocabularies` with `SPEC2003` in `0.4.0`; the composition test's id list with `SPEC024`. Acceptance: the three `@B-013` scenarios. The first must place its `.spec/` below the root, such as `src/a/.spec/`, since the default `/.spec` excludes the root's own (C-4).
+
+**Files to change.** Production, in `src/specht`: `Discovery/ISpecDiscovery.cs` and `Discovery/SpechtDiscovery.cs` (the finder), `Discovery/SpechtListing.cs`, `Model/SpechtModel.cs`, `Model/SpechtModelBuilder.cs`, `Model/SpechtModelReader.cs` (one call, into the listing), `Rules/OrphanCompanionRule.cs` (new), `Composition/SpechtEngineServiceCollectionExtensions.cs` and `Versioning/SchemaVersions.cs`. In `src/tool`: `manifest/v0.4.0/manifest.json` and `schema/versions.lock.json`. User-facing: `docs/rules/v0.4.0/SPEC2003.md` (new), `docs/what-it-checks.md` and `docs/configuration.md`. In this specification, § 6 rows 19 to 21 and this section.
 
 ## 8. Testing Strategy
 
