@@ -15,14 +15,16 @@ namespace Specht.Tool.Features.Check;
 /// <summary>
 /// <c>specht</c>, the default command (<c>0001-F2</c>): checks the tree under a root, prints one MSBuild-shaped line per
 /// violation on stdout and then the run summary - or, under <c>--json</c>, the report document in their place (<c>0001-F3</c>
-/// B-001) - and folds the report into an exit code. It parses, calls the runner and folds - nothing else (C-4).
+/// B-001) - and folds the report into an exit code. It parses, calls the engine's check and folds - nothing else (C-4).
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="explanations">The engine's pinned rule page reader.</param>
-/// <param name="run">The engine's runner, <see cref="SpechtRunner.Run(string, SchemaSourceSelection?)"/> outside a test.</param>
+/// <param name="run">The engine's check, <see cref="Specht.Check.SpechtCheck.Run(string, SchemaSourceSelection?)"/> outside a test.</param>
+/// <param name="mapper">Makes the report document from the report.</param>
+/// <param name="serializer">Serializes the report document.</param>
 /// <implements epic="0001" feature="F2" claim="B-001" />
 public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSourceSelection?, SpechtReport> run,
-    RuleExplanationReader explanations) : AsyncCommand<CheckCommand.Settings>
+    RuleExplanationReader explanations, SpechtReportDocumentMapper mapper, SpechtReportSerializer serializer) : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
     /// <implements epic="0001" feature="F2" claim="B-001" />
@@ -69,11 +71,11 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
             return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
         }
 
-        var document = SpechtReportDocument.From(report);
+        var document = mapper.Map(report);
 
         if (settings.Json)
         {
-            console.Profile.Out.Writer.WriteLine(document.ToJson());
+            console.Profile.Out.Writer.WriteLine(serializer.Serialize(document));
         }
         else
         {

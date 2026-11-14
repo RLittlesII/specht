@@ -2,7 +2,7 @@ id: "0167"
 type: refactor
 title: Run the check through one engine entry point, and delete the runner
 
-status: blocked
+status: done
 
 value: 4
 risk: 4
@@ -18,8 +18,8 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-11-08"
-closed: null
+updated: "2026-11-14"
+closed: "2026-11-13"
 
 summary: |
   Rescoped 2026-10-31 after ADR-0026
@@ -33,8 +33,8 @@ summary: |
   assigns this item the engine's direct check entry point in their place.
 
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31; the pull request
-  carries the no-regression guard. Still `blocked`: see the decision of
-  2026-10-31 on ADR-0027.
+  carries the no-regression guard. Released: see the decision of
+  2026-11-13, the owner's acceptance of the rescoping.
 
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
@@ -51,6 +51,9 @@ summary: |
     tool, the benchmarks and any later host call the same one (owner
     decision 3). A host takes it by constructor and calls it; no interface
     stands in front of it.
+  - `Specht.Check`: `SpechtFrontmatterCheck`, sealed and registered the
+    same way, holds the runner's single-document check of `0001-F8`, which
+    `FrontmatterCommand` calls (decision of 2026-11-13).
   - `Specht.Report`: `SpecReportDocumentMapper` in place of the static
     `SpechtReportDocument.From` (`src/specht/Report/SpechtReportDocument.cs:33`),
     `SpecReportSerializer`, and `SpecReportStore`, the fourth and last type
@@ -58,13 +61,14 @@ summary: |
   - `SpechtRunner` (`src/specht/SpechtRunner.cs:15`) is deleted, with `Run`
     and `WriteReport` (`:69`, `:76`, `:81`).
   - The guard: a test that asserts, from the engine assembly's metadata,
-    the downward order of the namespaces and where I/O is allowed.
+    where I/O is allowed (`0001-F1` C-12). The downward order of the
+    namespaces is item 0439 (decision of 2026-11-13).
   - The whole-check benchmark's measured call is re-pointed at `SpecCheck`.
 
   The host changes as little as it can here. `src/tool/Program.cs`
   registers a delegate over `SpechtRunner.Run`; with the runner gone that
-  one registration is re-pointed at `SpecCheck`, and `CheckCommand` is
-  untouched. Removing the delegate, with `CheckCommand` taking `SpecCheck`
+  one registration is re-pointed at `SpecCheck`, and `CheckCommand`
+  changes only as criterion 6 says. Removing the delegate, with `CheckCommand` taking `SpecCheck`
   directly, and the factory are item 0144, stage 8.
 
   It restructures code of `0001-F1`, `0001-F3` and `0001-F2`, and the
@@ -92,13 +96,13 @@ summary: |
   point 3).
 
 acceptance_criteria:
-  - "1. Specification first, by the owning role, in the same pull request and before the code (ADR-0010 'Specification deltas owed', stage 7). `spec-author`: `0001-F2` C-4, 'calls the runner'; `0109-F3` A-2 and § 6 row 2 as pull request #118 leaves them, which name `SpechtRunner.Run`. `implementer`: `0001-F2` § 7 on the injected runner; `0001-F3` § 7 on `SpechtReportDocument.From` and `SpechtRunner.WriteReport`; `0109-F3` § 7 and § 8; `0109-F1` § 7 and § 8 where they name the runner. `test-writer`: `0109-F3` § 9 and every other § 9 row criterion 9 names."
+  - "1. Specification first, by the owning role, in the same pull request and before the code (ADR-0010 'Specification deltas owed', stage 7). `spec-author`: `0001-F2` C-4, 'calls the runner'; `0109-F3` A-2 and § 6 row 2 as pull request #118 leaves them, which name `SpechtRunner.Run`. `implementer`: `0001-F2` § 7 on the injected runner; `0001-F3` § 7 on `SpechtReportDocument.From` and `SpechtRunner.WriteReport`; `0109-F3` § 7 and `0109-F1` § 7 where they name the runner. `test-writer`: `0109-F3` § 8 outside `### Performance` and `0109-F1` § 8 where they name the runner; `0109-F3` § 9 and every other § 9 row criterion 9 names. `benchmarker`: `0109-F3` § 8 `### Performance` where it names the runner (`specht-conventions` § 'Section ownership')."
   - "2. The guard's place in the chain, by `spec-author`, before the test is written: `0001-F1` says whether the namespace order and the confinement of I/O are a claim, with its scenario, or the test of a constraint, and the guard cites what is written. No claim is invented in this item."
-  - "3. `Specht.Check` holds `SpecCheck`, a sealed class that `AddSpechtEngine()` registers by its concrete type. It takes `SpecModelReader` and `SpecEvaluator`; its one public method takes the root and the schema-source selection, reads the model and evaluates it, and does nothing else. It returns `SpechtReport` and catches none of the four input-failure exceptions."
+  - "3. `Specht.Check` holds `SpechtCheck`, a sealed class that `AddSpechtEngine()` registers by its concrete type. It takes `SpechtModelReader` and `SpechtEvaluator`; its one public method, `Run`, takes the root and the schema-source selection, reads the model and evaluates it, and does nothing else. It returns `SpechtReport` and catches none of the four input-failure exceptions. Beside it, `SpechtFrontmatterCheck`, sealed and registered by its concrete type, holds the runner's `ParseFrontmatterKind` and `CheckFrontmatter` as `ParseKind` and `Run`, with what each returns and throws unchanged (`0001-F8`; decision of 2026-11-13)."
   - "4. No mediator, dispatcher, request or handler contract is added, and no interface stands in front of `SpecCheck` (ADR-0026; ADR-0005 (d)). `Specht.Check` holds no static class."
   - "5. `SpecReportDocumentMapper`, `SpecReportSerializer` and `SpecReportStore` replace `SpechtReportDocument.From` and `SpechtRunner.WriteReport`. The mapper and the serializer hold no `IFileSystem`; the store parses and decides nothing. The report document's bytes for a given report are unchanged."
-  - "6. `SpechtRunner` is deleted and nothing in `src/` or `.performance/` names it. `src/tool/Program.cs` composes the check without it, `CheckCommand` is unchanged, and the tool's output, its exit codes and the file `--report` writes are unchanged."
-  - "7. The guard is a test built on `test/tests/Shared/EngineAssembly.cs` with no new package. It fails when a namespace references one above it in ADR-0010 § 'The layout', when a type other than `SpechtManifestStore`, `SpechtDiscovery`, `SpechtTreeStore` and `SpecReportStore` references `IFileSystem`, or when a type other than `SpechtResources` reads an embedded resource. It passes on this item's tree with no exemption beyond `Specht.Composition`, which stands outside the order."
+  - "6. `SpechtRunner` is deleted and nothing in `src/` or `.performance/` names it. `src/tool/Program.cs` composes the check without it. `CheckCommand` changes only to take `SpechtReportDocumentMapper` and `SpechtReportSerializer` by constructor, in place of `SpechtReportDocument.From` and `ToJson`, and in its documentation comment's reference to `SpechtRunner`; the check delegate it takes stays, over `SpechtCheck` (item 0144). `ToJson` leaves the report document and `SummaryLines` stays on it. `FrontmatterCommand` takes `SpechtFrontmatterCheck` in place of the runner, and `SpechtReportDocumentMapper` by constructor in place of `SpechtReportDocument.From`. The tool's output, its exit codes and the file `--report` writes are unchanged (decision of 2026-11-13)."
+  - "7. The guard is a test built on `test/tests/Shared/EngineAssembly.cs` with no new package, and is the test of `0001-F1` C-12. It fails when a type other than `SpechtManifestStore`, `SpechtDiscovery`, `SpechtTreeStore` and `SpechtReportStore` references `IFileSystem`, or when a type other than `SpechtResources` reads an embedded resource. It passes on this item's tree with no exemption beyond `Specht.Composition`, which registers `IFileSystem`. It asserts no namespace order: that is item 0439 (decision of 2026-11-13)."
   - "8. The whole-check benchmark measures `SpecCheck` called with the root; building the provider and resolving `SpecCheck` are outside the measured call (`0109-F2` C-9). No production type changes shape for the benchmark (`0109-F2` C-11). `.performance/benchmarks` still compiles."
   - "9. Not a refactor until re-pointed. These tests are named by § 9 rows and are rewritten or deleted here: `SpechtRunnerRunUnitTests` (`0001-F5` B-018), `SpechtRunnerBaselineIntegrationTests` (`0001-F1` B-001, B-002, B-004, B-010), `SpechtRunnerIntegrationTests` (`0001-F1` B-002, B-008, B-011), `SpechtRunnerRulesIntegrationTests` (`0001-F1` B-004), `SpechtRunnerViolationsIntegrationTests` (`0001-F1` B-004, B-010; `0001-F7` B-023), `SpechtRunnerDeterminismIntegrationTests` (`0001-F1` B-006, B-007), `SpechtRunnerDeterminismUnitTests` (`0001-F1` B-006), `SpechtRunnerDiscoveryIntegrationTests` (`0001-F6` B-001, B-003, B-004, B-009), `SpechtRunnerVersionsIntegrationTests` (`0001-F7` B-001, B-002, B-014, B-055), `SpechtReportDocumentUnitTests` (`0001-F6` B-009; `0001-F3` B-005, B-006, B-007; `0001-F7` B-002; `0001-F2` B-002), `SpechtReportDocumentIntegrationTests` (`0001-F3` B-005, B-006, B-008, B-021) and `SpechtEngineServiceCollectionExtensionsUnitTests` (`0001-F1` B-001, B-004). `test-writer` re-points each row in the same pull request; no row names a test that no longer exists and no claim loses its proof."
   - "10. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte; the test that compares it changes only in how it reaches the check, and not in what it compares. The unit, integration and acceptance tiers pass."
@@ -168,6 +172,207 @@ decisions:
     the judgements of 2026-10-31, `SpecCheck` taking the schema-source
     selection and the `--report` row, stay open for the owner. Status stays
     `blocked`.
+  - |
+    2026-11-13, repository owner, recorded by spec-author: asked by the
+    coordinator whether to accept this item's rescoping of 2026-10-31 as
+    written, a question that named the two open judgements of 2026-10-31,
+    `SpecCheck` taking the root and the schema-source selection, and the
+    `--report` row left to item 0036, the owner selected the option
+    labelled "Accept as written". The question's wording is the
+    coordinator's, not the owner's. The rescoping is accepted and both
+    judgements stand as written; the deferral of 2026-11-08 ends. The item
+    is released: status `ready`, since 0164, 0166 and 0216 are done. Item
+    0036 follows this item.
+
+  - |
+    2026-11-13, repository owner, recorded by spec-author: asked three
+    questions on gaps the coordinator raised while building this item, the
+    owner selected one option of each. The questions and the option labels
+    are the coordinator's wording, not the owner's; the owner's act is the
+    selection.
+    1. The guard. Criterion 7 said it passes with no exemption beyond
+       `Specht.Composition`, and it does not: `Specht.Manifest` references
+       `Specht.Model`, `Specht.Rules`, `Specht.Tree` and
+       `Specht.Identifiers`, `Specht.Identifiers` references
+       `Specht.Manifest`, and `Specht.Identifiers`, `Specht.Facts`,
+       `Specht.Resources` and `Specht.Rules.Matrix` have no place in
+       ADR-0010 § "The layout". The I/O half holds. Selected: "A: I/O now,
+       order later (Recommended)". Criterion 7 is amended to the I/O half,
+       and item 0439 is cut for the namespace order.
+    2. The runner's `CheckFrontmatter` and `ParseFrontmatterKind`, added for
+       `0001-F8` after this item was cut, which `FrontmatterCommand` calls.
+       Selected: "A: SpechtFrontmatterCheck (Recommended)": a sealed
+       `SpechtFrontmatterCheck` in `Specht.Check`, which `FrontmatterCommand`
+       takes. Criteria 3 and 6 and the summary are amended.
+    3. Criterion 6 said `CheckCommand` is unchanged, but it calls
+       `SpechtReportDocument.From` and `ToJson`, which criterion 5 replaces,
+       and its documentation comment names `SpechtRunner`. Selected: "A:
+       Inject mapper (Recommended)": `CheckCommand` takes the mapper and the
+       serializer by constructor and its documentation reference changes;
+       its output is unchanged. Criterion 6 is amended.
+    Every criterion keeps its number. Criterion 2 is answered in `0001-F1`,
+    by spec-author: the confinement of I/O is written as constraint C-12,
+    from ADR-0010 § "I/O is confined", not as a claim, and the guard is its
+    test; the namespace order is that Feature's § 5 row 15, routed to item
+    0439. No claim is added.
+  - |
+    2026-11-13, benchmarker: the guard of ADR-0027 for ADR-0010 stage 7.
+    Base `5bad61da` (main, the branch's merge base), head `beb17bcc` (the
+    branch head; `787758a8` and `f0170971` change executed code). One
+    checkout on one host, switched between the two commits, each run
+    `./build.sh Benchmark --benchmark-filter
+    '*CheckBenchmarks.Check(Specifications: N)'`, BenchmarkDotNet 0.15.8
+    default job. Host: Apple M1 Max, 1 CPU, 10 logical and 10 physical
+    cores, macOS Tahoe 26.4 (25E246), .NET SDK 11.0.100, runtime .NET
+    10.0.15 (10.0.1526.53008) Arm64 RyuJIT armv8.0-a, `Toolchain=.NET 10.0`.
+    Entry point measured: on the base `SpechtRunner.Run(root)`, whose
+    one-argument overload passes a `null` schema-source selection; on the
+    head `SpechtCheck.Run(root, null)`. The harness is otherwise the same
+    at both commits.
+    The host was shared with other sessions' builds and tests throughout,
+    so the runs were repeated: three runs at 100 specifications and two at
+    1,000, all recorded here. Run 1, 19:02 to 19:15, order base-100,
+    base-1000, head-100, head-1000; 1-minute load average 38.8, 40.2,
+    280.5 and 119.7 at the starts and 43.5 at the end. Run 2, 19:34 to
+    19:48, alternating base-100, head-100, base-1000, head-1000, each
+    started when the 1-minute load fell below 15; 14.2, 14.1, 14.8 and
+    14.5 at the starts, rising to 48.7, 48.0 and 155.1 during the
+    runs. Run 3, 20:09 to 20:18, base-100 then head-100, the wait for a
+    1-minute load below 10 capped at 20 minutes; 32.6 and 9.3 at the
+    starts, 48.0 and 25.1 at the ends.
+    100 specifications, Mean ± Error, Allocated per operation:
+    run 1 base 102.59 ± 10.24 ms, 40,116,352 B; head 110.89 ± 13.97 ms,
+    40,103,536 B. Run 2 base 76.32 ± 1.35 ms, 40,116,336 B; head
+    115.31 ± 18.09 ms, 40,122,736 B. Run 3 base 77.96 ± 1.71 ms,
+    40,116,336 B; head 96.75 ± 9.66 ms, 40,103,536 B.
+    1,000 specifications: run 1 base 2,568.0 ± 377.9 ms, 394,890,488 B;
+    head 1,408.6 ± 174.5 ms, 394,830,392 B. Run 2 base 1,596.3 ± 256.4
+    ms, 394,890,456 B; head 1,608.2 ± 300.6 ms, 394,891,128 B.
+    Judged by 0109-F5 B-011 and B-012 as `ComparisonEvaluation` applies
+    them under `ComparisonPolicy.Initial` (version 1: time 10%,
+    allocation 10%):
+    - Mean at 100 specifications: flagged, held for the owner's ruling.
+      Run 2 +51.1%, head interval 97.22 to 133.41 ms strictly above the
+      base's 74.98 to 77.67 ms; run 3 +24.1%, 87.09 to 106.41 ms strictly
+      above 76.25 to 79.66 ms. Run 1, +8.1% with overlapping intervals,
+      does not flag.
+    - Mean at 1,000 specifications: no flag. Run 1 -45.1%; run 2 +0.7%,
+      the intervals overlapping.
+    - Allocation at 100 specifications: no flag. Run 1 -0.03%, run 2
+      +0.02%, run 3 -0.03%.
+    - Allocation at 1,000 specifications: no flag. Run 1 -0.02%, run 2
+      +0.0002%.
+    Measured beside the flag, for the ruling and not as a judgement of
+    it: at 100 specifications the head's StdDev was 39.39, 49.53 and 27.25
+    ms against the base's 28.56, 1.38 and 4.67 ms; the minimums were
+    73.70, 75.34 and 75.15 ms against 73.33, 74.04 and 72.91 ms; the
+    medians 95.73, 92.78 and 82.37 ms against 94.37, 76.28 and 76.26 ms.
+    Every run is under a load of 9 or more on 10 cores, the means at
+    1,000 are three to six times the 431 ms of `0109-F3` § 8, and the
+    net11.0 runtime was not measured. The merge waits for the owner's
+    ruling (ADR-0027 § "Enforcement").
+  - |
+    2026-11-13, benchmarker: the guard's mean at 100 specifications
+    rerun. Asked by the coordinator how to treat that flag, the owner
+    selected the option labelled "A: Rerun unloaded"; the question and
+    the label are the coordinator's wording, the selection is the
+    owner's. The coordinator asked the other sessions to stop their
+    builds and tests. The loaded runs of the decision above stand as
+    recorded.
+    Threshold, benchmarker's judgement and not the owner's: the first
+    gate, a 1-minute load below 3, was not met for 60 minutes after the
+    other sessions stopped. The load held at about 10 to 11 with the
+    CPUs about 65% idle and no build or test running; desktop
+    applications and a virtual machine account for that floor. On the
+    coordinator's instruction a run started only when no dotnet,
+    MSBuild, compiler-server, testhost or test process of another
+    checkout of this repository was running, and the 1-minute load was
+    at or below the 5-minute load and below 12: the host at its
+    no-build floor and not climbing. Each run also waited 120 seconds
+    after its own checkout's build. A compiler server whose working
+    directory is the SDK's, not attributable to a checkout, held two of
+    the gates until it exited.
+    Same harness and host as the decision above: `./build.sh Benchmark
+    --benchmark-filter '*CheckBenchmarks.Check(Specifications: 100)'`,
+    BenchmarkDotNet 0.15.8 default job, Apple M1 Max, 10 cores, macOS
+    Tahoe 26.4 (25E246), .NET SDK 11.0.100, runtime .NET 10.0.15 Arm64
+    RyuJIT. Base `5bad61da`, measuring `SpechtRunner.Run(root)`; head
+    `4cdff085`, measuring `SpechtCheck.Run(root, null)`, which differs
+    from `beb17bcc` only by the guard record above, an item and a
+    specification, so the executed code is `beb17bcc`'s. Two pairs, run
+    alternately base, head, base, head, 22:09 to 23:01.
+    Pair A: base 22:09:10 to 22:10:02, 1-minute load 8.67 to 9.36, Mean
+    76.53 ± 1.49 ms (75.04 to 78.02), Allocated 40,200,336 B; head
+    22:19:33 to 22:20:23, load 8.25 to 8.78, 77.23 ± 1.22 ms (76.01 to
+    78.45), 40,096,904 B. Time +0.9%, allocation -0.26%.
+    Pair B: base 22:33:14 to 22:34:13, load 10.85 to 13.96, 75.72 ±
+    0.87 ms (74.85 to 76.60), 40,103,536 B; head rerun, measured
+    23:00:56 to 23:01:23, started through the same gate (1-minute load
+    below 12 and at or below the 5-minute), 1-minute load 12.39 just
+    after it ended, 79.71 ± 1.54 ms (78.18 to 81.25), 40,116,336 B.
+    Time +5.3%, allocation +0.03%. No other checkout wrote build output
+    from 22:55 to the end of the rerun.
+    Discarded, not in the verdict: the pair's first head run, 22:50:21
+    to 22:51:21, load 11.94 rising to 25.96, 74.96 ± 1.47 ms, 40,103,536
+    B. It overlapped another session's pre-commit build, in the checkout
+    of item 0368, from its stash at 22:48:19 to its commit `f4b0f934` at
+    22:52:52; the coordinator asked for any overlapping run to be rerun.
+    Judged by 0109-F5 B-011 and B-012 under `ComparisonPolicy.Initial`
+    (version 1: time 10%, allocation 10%):
+    - Pair A: mean no flag, allocation no flag. The mean rose 0.9% and
+      the head's interval overlaps the base's.
+    - Pair B: mean no flag, allocation no flag. The mean rose 5.3%, not
+      more than 10%; the head's interval, 78.18 to 81.25 ms, lies
+      strictly above the base's, 74.85 to 76.60 ms, which alone does not
+      flag. The head ran 27 minutes after the base, and the host's floor
+      moved between them.
+    Kept as data, not in the verdict: an earlier, unpaired base run,
+    21:04:18 to 21:05:11, load 2.83 to 7.48, Mean 73.94 ± 1.44 ms,
+    40,103,536 B, whose head run was skipped when the load did not fall
+    below 3 within 60 minutes.
+    Whether these pairs answer the flag above is the owner's ruling
+    (ADR-0027 § "Enforcement").
+  - |
+    2026-11-13, benchmarker: the guard's pairs and the rebase. The branch
+    was rebased onto `main` `a68ef2f7` after the two entries above, which
+    stand as recorded. Their base `5bad61da` was the branch's merge base
+    when they ran and is not now; their head `beb17bcc`, and `4cdff085`
+    for the rerun, are pre-rebase commits. Between `5bad61da` and
+    `a68ef2f7`, `main` changes engine and tool code on the check's path
+    (items 0336, 0390, 0366, 0368 and 0438): among them
+    `SpechtModelReader`, `SpechtModelBuilder`, `SpechtDiscovery` and a
+    new rule, `MissingScenarioRule`.
+    Benchmarker's judgement, not the owner's: the pairs measure this
+    item's diff on its pre-rebase base. They stand as evidence for that
+    diff on the rebased branch, and not for the rebased branch's
+    absolute cost. The C# this item changes, in `src/` and
+    `.performance/`, is the same change before and after the rebase:
+    `git diff 5bad61da beb17bcc` and `git diff a68ef2f7 HEAD` over those
+    files touch the same 12 files with the same added and removed lines.
+    That change replaces the entry point above the model reader and the
+    evaluator, and `main`'s changes sit below it, in the stages both entry
+    points call. A base and a head on `a68ef2f7` would both pay them.
+    What the pairs do not show is any interaction between this item's
+    entry point and `main`'s new reader and rule work, and their means
+    are not the rebased tree's. A rerun of the guard at 100
+    specifications against `a68ef2f7`, on a quiet host, is the step if
+    anyone wants it confirmed. Whether to run it is the coordinator's
+    call.
+    The flag of the first entry above: the owner selected the option
+    labelled "A: Rerun unloaded". The coordinator relayed the selection
+    with the instruction "If the flag still holds on the quiet machine,
+    bring the ruling back to me rather than proceeding." The wording is
+    the coordinator's and the selection the owner's. On the quiet
+    machine neither pair flags the mean or the allocation (entry
+    above), so the change proceeds on that instruction.
+  - |
+    2026-11-14, repository owner, recorded by spec-author: asked by the
+    coordinator whether to run the step the benchmarker's entry of
+    2026-11-13 on the rebase names, a rerun of the guard at 100
+    specifications against `a68ef2f7` on a quiet host, the owner declined,
+    replying "No, diff is identical". The question's wording is the
+    coordinator's, not the owner's. The rerun is not run, and the open
+    point in that entry is closed by this answer.
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."
@@ -177,3 +382,4 @@ out_of_scope:
   - "Any mediator or dispatcher, third-party or handwritten - ADR-0026."
   - "Native AOT - item 0170."
   - "Any change to a verdict, to the report or to an exit code - `0001-F1` C-9."
+  - "The namespace order of ADR-0010 § 'The guard' - item 0439; `0001-F1` § 5 row 15."

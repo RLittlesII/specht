@@ -149,7 +149,7 @@ public sealed class FaultIsolatedRuleUnitTests
             .Which.Severity.Should().Be(SpechtSeverity.Error);
         report.ErrorCount.Should().Be(3);
         calls.Should().Be(1);
-        using var json = JsonDocument.Parse(SpechtReportDocument.From(report).ToJson());
+        using var json = JsonDocument.Parse(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(report)));
         var serialized = json.RootElement.GetProperty("violations").EnumerateArray()
             .Single(static violation => violation.GetProperty("ruleId").GetString() == "SPEC030");
         serialized.EnumerateObject().Select(static property => property.Name).Should()

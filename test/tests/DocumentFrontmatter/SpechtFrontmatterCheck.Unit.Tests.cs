@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Specht.Check;
 using Specht.Composition;
 using Specht.Evaluation;
 using Specht.Manifest;
@@ -19,17 +20,17 @@ namespace Specht.Tests.DocumentFrontmatter;
 
 /// <summary>One document is checked through the tree's reader, selected schemas and frontmatter rule, entirely in memory.</summary>
 [Trait("Tier", "Unit")]
-public sealed class SpechtRunnerFrontmatterUnitTests
+public sealed class SpechtFrontmatterCheckUnitTests
 {
     [Theory]
     [ClassData(typeof(FrontmatterKinds))]
     public void AManifestKind_WhenParsed_ShouldBeAvailableWithoutReadingARoot(string name, FrontmatterKind kind, string ruleId)
     {
         // Given
-        var runner = Runner(new MockFileSystem());
+        var check = Check(new MockFileSystem());
 
         // When
-        var parsed = runner.ParseFrontmatterKind(name);
+        var parsed = check.ParseKind(name);
 
         // Then
         parsed.Should().Be(kind, ruleId);
@@ -39,10 +40,10 @@ public sealed class SpechtRunnerFrontmatterUnitTests
     public void AnUnknownKind_WhenParsed_ShouldNameTheTypedKindAndAllKindsBeforeReadingARoot()
     {
         // Given
-        var runner = Runner(new MockFileSystem());
+        var check = Check(new MockFileSystem());
 
         // When
-        var parsing = () => runner.ParseFrontmatterKind("Story");
+        var parsing = () => check.ParseKind("Story");
 
         // Then
         parsing.Should().Throw<ArgumentException>().WithMessage("*Story*feature*task*epic*");
@@ -55,10 +56,10 @@ public sealed class SpechtRunnerFrontmatterUnitTests
     {
         // Given
         var files = Files();
-        var runner = Runner(files);
+        var check = Check(files);
 
         // When
-        var report = runner.CheckFrontmatter("repo", kind, "drafts/issue.md", "---\n\ntitle: invalid\n---\n");
+        var report = check.Run("repo", kind, "drafts/issue.md", "---\n\ntitle: invalid\n---\n");
 
         // Then
         report.Violations.Should().HaveCount(2);
@@ -71,10 +72,10 @@ public sealed class SpechtRunnerFrontmatterUnitTests
     public void ADocumentWithoutFrontmatter_WhenChecked_ShouldReportSpec001AtLineOne(string name, FrontmatterKind kind, string ruleId)
     {
         // Given
-        var runner = Runner(Files());
+        var check = Check(Files());
 
         // When
-        var report = runner.CheckFrontmatter("repo", kind, "<stdin>", "# A document\n");
+        var report = check.Run("repo", kind, "<stdin>", "# A document\n");
 
         // Then
         report.Violations.Should().ContainSingle().Which.Should().Match<SpechtViolation>(static v =>
@@ -86,16 +87,16 @@ public sealed class SpechtRunnerFrontmatterUnitTests
     public void AManifestRuleLevel_WhenDocumentChecked_ShouldGradeOrDropTheViolationAndCountIt(string manifest, int errors, int warnings)
     {
         // Given
-        var runner = Runner(Files(manifest));
+        var check = Check(Files(manifest));
 
         // When
-        var report = runner.CheckFrontmatter("repo", FrontmatterKind.Task, "<stdin>", "---\ntitle: invalid\n---\n");
+        var report = check.Run("repo", FrontmatterKind.Task, "<stdin>", "---\ntitle: invalid\n---\n");
 
         // Then
         report.ErrorCount.Should().Be(errors);
         report.WarningCount.Should().Be(warnings);
         report.Violations.Should().HaveCount(errors + warnings);
-        SpechtReportDocument.From(report).SummaryLines()[^1].Should().Be($"errors: {errors}, warnings: {warnings}");
+        new SpechtReportDocumentMapper().Map(report).SummaryLines()[^1].Should().Be($"errors: {errors}, warnings: {warnings}");
     }
 
     [Fact]
@@ -104,11 +105,11 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         // Given
         var files = Files();
         files.AddFile("repo/src/sample/.spec/README.md", new MockFileData("invalid frontmatter and no sections"));
-        var runner = Runner(files, extraRule: new ForbiddenRule());
+        var check = Check(files, extraRule: new ForbiddenRule());
         var before = files.AllFiles.ToDictionary(path => path, path => files.File.ReadAllText(path));
 
         // When
-        var report = runner.CheckFrontmatter("repo", FrontmatterKind.Feature, "draft.md", "---\ntitle: feature\n---\n");
+        var report = check.Run("repo", FrontmatterKind.Feature, "draft.md", "---\ntitle: feature\n---\n");
 
         // Then
         report.Violations.Should().BeEmpty();
@@ -150,11 +151,12 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         {
             FeatureSchema = """{ "type": "object", "properties": { "title": { "const": "pinned" } } }""",
         };
-        var runner = Runner(files, new SchemaVersions([one, two]));
+        var services = Services(files, new SchemaVersions([one, two]));
+        var check = services.GetRequiredService<SpechtFrontmatterCheck>();
 
         // When
-        var document = runner.CheckFrontmatter("repo", FrontmatterKind.Feature, path, text);
-        var tree = runner.Run("repo");
+        var document = check.Run("repo", FrontmatterKind.Feature, path, text);
+        var tree = services.GetRequiredService<SpechtCheck>().Run("repo", null);
 
         // Then
         document.SchemaVersion.Should().Be(new SemanticVersion(0, 2, 0));
@@ -170,14 +172,15 @@ public sealed class SpechtRunnerFrontmatterUnitTests
     public void TheSameDocumentKindAndRoot_WhenCheckedTwice_ShouldReturnTheSameReport()
     {
         // Given
-        var runner = Runner(Files());
+        var check = Check(Files());
 
         // When
-        var first = runner.CheckFrontmatter("repo", FrontmatterKind.Task, "draft.md", "---\ntitle: invalid\n---\n");
-        var second = runner.CheckFrontmatter("repo", FrontmatterKind.Task, "draft.md", "---\ntitle: invalid\n---\n");
+        var first = check.Run("repo", FrontmatterKind.Task, "draft.md", "---\ntitle: invalid\n---\n");
+        var second = check.Run("repo", FrontmatterKind.Task, "draft.md", "---\ntitle: invalid\n---\n");
 
         // Then
-        SpechtReportDocument.From(first).ToJson().Should().Be(SpechtReportDocument.From(second).ToJson());
+        new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(first))
+            .Should().Be(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(second)));
     }
 
     [Theory]
@@ -196,10 +199,10 @@ public sealed class SpechtRunnerFrontmatterUnitTests
             files.AddFile("repo/" + SpechtTree.ManifestPath, new MockFileData(manifest));
         }
 
-        var runner = Runner(files);
+        var check = Check(files);
 
         // When
-        var checking = () => runner.CheckFrontmatter("repo", FrontmatterKind.Task, "draft.md", "---\ntitle: task\n---\n");
+        var checking = () => check.Run("repo", FrontmatterKind.Task, "draft.md", "---\ntitle: task\n---\n");
 
         // Then
         checking.Should().Throw<Exception>().Which.GetType().Should().Be(failure);
@@ -222,7 +225,10 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         };
     }
 
-    private static SpechtRunner Runner(MockFileSystem files, SchemaVersions? versions = null, ISpechtRule? extraRule = null)
+    private static SpechtFrontmatterCheck Check(MockFileSystem files, SchemaVersions? versions = null, ISpechtRule? extraRule = null) =>
+        Services(files, versions, extraRule).GetRequiredService<SpechtFrontmatterCheck>();
+
+    private static ServiceProvider Services(MockFileSystem files, SchemaVersions? versions = null, ISpechtRule? extraRule = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IFileSystem>(files);
@@ -233,7 +239,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
             services.AddSingleton(extraRule);
         }
 
-        return services.BuildServiceProvider().GetRequiredService<SpechtRunner>();
+        return services.BuildServiceProvider();
     }
 
     private sealed class ForbiddenRule : ISpechtRule

@@ -83,7 +83,7 @@ app.Configure(config =>
 available.
 
 **In this repository** no handler is set: the command catches the engine's typed input failures
-around the runner call and returns the `ExitCodes` constant, because `CommandAppTester` composes its
+around the check call and returns the `ExitCodes` constant, because `CommandAppTester` composes its
 own app and never reaches a handler set in `Program.cs` — `0001-F2` C-2 and § 7 of the
 [Check specification](../../../../src/tool/Features/Check/.spec/README.md).
 

@@ -5,6 +5,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using Specht.Acceptance.Engine;
+using Specht.Check;
 using Specht.Composition;
 using Specht.Evaluation;
 using Specht.Manifest;
@@ -125,7 +126,7 @@ public sealed partial class CheckSteps
 
         var services = new ServiceCollection().AddSpechtEngine();
         services.AddSingleton<ISpechtRule>(new FaultIsolatedRule(new FailingRule()));
-        services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtRunner>().Run);
+        services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtCheck>().Run);
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole());
         app.SetDefaultCommand<CheckCommand>();
         var result = app.Run("--root", Tree.Root);
@@ -330,7 +331,7 @@ public sealed partial class CheckSteps
 
     private string[] Violations => Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
 
-    private IReadOnlyList<string> Summary => SpechtReportDocument.From(Tree.Run()).SummaryLines();
+    private IReadOnlyList<string> Summary => new SpechtReportDocumentMapper().Map(Tree.Run()).SummaryLines();
 
     private string[] Expected => [.. Violations, .. Summary];
 

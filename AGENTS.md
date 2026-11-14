@@ -93,12 +93,13 @@ invariants are `0132-F3`'s):
   through YamlDotNet's representation model, so dates stay strings →
   `SpechtSchemas` loads the frontmatter schemas and the manifest with JsonSchema.Net
   → `SpechtDocument`/`SpechtStructure` model the Markdown with Markdig, pipe tables
-  only → the `ISpechtRule`s run → `SpechtRunner` collects → `SpechtReport`
-  carries violations and counts. It is foldered by Feature, with a shared
+  only → the `ISpechtRule`s run → `SpechtEvaluator` collects → `SpechtReport`
+  carries violations and counts. `SpechtCheck` is the one check entry point: it
+  reads the model and evaluates it. It is foldered by Feature, with a shared
   `Model/`; the layout is
   [`dotnet-tool` § Vertical Slice](.agents/skills/dotnet-tool/references/vertical-slice.md).
 - **`src/tool`** — the Spectre.Console.Cli host. One folder per command;
-  a command parses, calls the runner, and folds the report into an exit code.
+  a command parses, calls the engine's check, and folds the report into an exit code.
   Nothing else lives in a command.
 
 That is the engine as built. ADR-0010 describes a target architecture;

@@ -15,7 +15,7 @@ namespace Specht.Tests.Engine;
 /// guard is not vacuous; and every violation's file is relative to a deeply nested root, with <c>/</c> separators (B-007).
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerDeterminismIntegrationTests
+public sealed class SpechtCheckDeterminismIntegrationTests
 {
     /// <summary>Gets each type or member the engine must not reference.</summary>
     public static TheoryData<string> Forbidden => [.. EngineAssembly.Forbidden];

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Reflection.Metadata;
@@ -46,7 +47,7 @@ public static class EngineAssembly
         new("System.Globalization.CultureInfo.CurrentCulture", "Specht.Rules.FrontmatterSchemaCheck.EvaluateInvariant");
 
     /// <summary>Gets the path of the library <c>src/specht</c> built for this configuration and target framework.</summary>
-    public static string Built => BuiltUnder("specht", typeof(SpechtRunner).Assembly);
+    public static string Built => BuiltUnder("specht", typeof(Specht.Check.SpechtCheck).Assembly);
 
     /// <summary>
     /// Gets the path of the assembly <c>src/tool</c> built for this configuration and target framework: the tool's own
@@ -83,6 +84,27 @@ public static class EngineAssembly
     /// <returns>Every reference the exemption does not allow.</returns>
     public static IReadOnlyList<Reference> Unexempted(IEnumerable<Reference> references) =>
         [.. references.Where(static reference => reference != Exemption)];
+
+    /// <summary>
+    /// The types of the assembly at <paramref name="path"/> that reference the file system abstraction (<c>0001-F1</c>
+    /// C-12): a type of <c>System.IO.Abstractions</c>, <c>IFileSystem</c> and the members it hands out, named by a base
+    /// type, an interface, a field, a method's signature, a constructor's included, a method's locals, or an operand of a
+    /// method's body. A compiler-generated nested type counts as the type that declares it.
+    /// </summary>
+    /// <param name="path">A compiled assembly.</param>
+    /// <returns>Each referencing type, as <c>Namespace.Type</c> with <c>+</c> before a nested type, once, in ordinal order.</returns>
+    public static IReadOnlyList<string> FileSystemTypesIn(string path) =>
+        TypesReferencing(path, static type => type.StartsWith(FileSystemNamespace, StringComparison.Ordinal), static _ => false);
+
+    /// <summary>
+    /// The types of the assembly at <paramref name="path"/> whose methods read an assembly's embedded resources
+    /// (<c>0001-F1</c> C-12): a call to <c>Assembly.GetManifestResourceStream</c>, <c>GetManifestResourceNames</c> or
+    /// <c>GetManifestResourceInfo</c>. A compiler-generated nested type counts as the type that declares it.
+    /// </summary>
+    /// <param name="path">A compiled assembly.</param>
+    /// <returns>Each reading type, as <c>Namespace.Type</c> with <c>+</c> before a nested type, once, in ordinal order.</returns>
+    public static IReadOnlyList<string> ResourceReadingTypesIn(string path) =>
+        TypesReferencing(path, static _ => false, static member => member.StartsWith(ResourceRead, StringComparison.Ordinal));
 
     /// <summary>A referenced type or member, and the method whose body references it, or empty where no body does.</summary>
     /// <param name="Member">The type or member, as <see cref="Forbidden"/> names it.</param>
@@ -147,7 +169,28 @@ public static class EngineAssembly
             .ThenBy(static reference => reference.Site, StringComparer.Ordinal)];
     }
 
-    private static IEnumerable<MemberReferenceHandle> Operands(MetadataReader metadata, MethodBodyBlock body)
+    private static List<string> TypesReferencing(string path, Func<string, bool> matchesType, Func<string, bool> matchesMember)
+    {
+        using var file = new PEReader(File.OpenRead(path));
+        var metadata = file.GetMetadataReader();
+        var mentions = new Mentions(metadata, matchesType, matchesMember);
+
+        return [.. metadata.TypeDefinitions
+            .Where(handle => mentions.In(file, metadata.GetTypeDefinition(handle)))
+            .Select(handle => TypeName(metadata, Declaring(metadata, handle)))
+            .Distinct()
+            .Order(StringComparer.Ordinal)];
+    }
+
+    private static TypeDefinitionHandle Declaring(MetadataReader metadata, TypeDefinitionHandle handle)
+    {
+        var type = metadata.GetTypeDefinition(handle);
+        var declaring = type.GetDeclaringType();
+
+        return !declaring.IsNil && metadata.GetString(type.Name).StartsWith('<') ? Declaring(metadata, declaring) : handle;
+    }
+
+    private static IEnumerable<EntityHandle> Tokens(MethodBodyBlock body)
     {
         var il = body.GetILReader();
 
@@ -159,18 +202,7 @@ public static class EngineAssembly
             switch (opCode.OperandType)
             {
                 case OperandType.InlineField or OperandType.InlineMethod or OperandType.InlineTok or OperandType.InlineType:
-                    var token = MetadataTokens.EntityHandle(il.ReadInt32());
-
-                    if (token.Kind == HandleKind.MethodSpecification)
-                    {
-                        token = metadata.GetMethodSpecification((MethodSpecificationHandle) token).Method;
-                    }
-
-                    if (token.Kind == HandleKind.MemberReference)
-                    {
-                        yield return (MemberReferenceHandle) token;
-                    }
-
+                    yield return MetadataTokens.EntityHandle(il.ReadInt32());
                     break;
                 case OperandType.InlineSwitch:
                     var targets = il.ReadInt32();
@@ -182,6 +214,14 @@ public static class EngineAssembly
             }
         }
     }
+
+    private static IEnumerable<MemberReferenceHandle> Operands(MetadataReader metadata, MethodBodyBlock body) =>
+        Tokens(body)
+            .Select(token => token.Kind == HandleKind.MethodSpecification
+                ? metadata.GetMethodSpecification((MethodSpecificationHandle) token).Method
+                : token)
+            .Where(static token => token.Kind == HandleKind.MemberReference)
+            .Select(static token => (MemberReferenceHandle) token);
 
     private static int OperandSize(OperandType operand) => operand switch
     {
@@ -226,7 +266,96 @@ public static class EngineAssembly
             : FindRepository(Path.GetDirectoryName(directory.TrimEnd(Path.DirectorySeparatorChar))
                              ?? throw new InvalidOperationException("No repository root above the test assembly."));
 
+    /// <summary>Whether a type definition, a signature or a token names a matching type or a matching member.</summary>
+    private sealed class Mentions(MetadataReader metadata, Func<string, bool> matchesType, Func<string, bool> matchesMember)
+        : ISignatureTypeProvider<bool, object?>
+    {
+        public bool In(PEReader file, TypeDefinition type) =>
+            In(type.BaseType)
+            || type.GetInterfaceImplementations().Any(handle => In(metadata.GetInterfaceImplementation(handle).Interface))
+            || type.GetFields().Any(handle => metadata.GetFieldDefinition(handle).DecodeSignature(this, null))
+            || type.GetMethods().Select(metadata.GetMethodDefinition).Any(method => In(method.DecodeSignature(this, null)) || In(file, method));
+
+        public bool GetArrayType(bool elementType, ArrayShape shape) => elementType;
+
+        public bool GetByReferenceType(bool elementType) => elementType;
+
+        public bool GetFunctionPointerType(MethodSignature<bool> signature) => In(signature);
+
+        public bool GetGenericInstantiation(bool genericType, ImmutableArray<bool> typeArguments) =>
+            genericType || typeArguments.Any(static argument => argument);
+
+        public bool GetGenericMethodParameter(object? genericContext, int index) => false;
+
+        public bool GetGenericTypeParameter(object? genericContext, int index) => false;
+
+        public bool GetModifiedType(bool modifier, bool unmodifiedType, bool isRequired) => unmodifiedType;
+
+        public bool GetPinnedType(bool elementType) => elementType;
+
+        public bool GetPointerType(bool elementType) => elementType;
+
+        public bool GetPrimitiveType(PrimitiveTypeCode typeCode) => false;
+
+        public bool GetSZArrayType(bool elementType) => elementType;
+
+        public bool GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind) => false;
+
+        public bool GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind) =>
+            matchesType(TypeName(reader, handle));
+
+        public bool GetTypeFromSpecification(MetadataReader reader, object? genericContext, TypeSpecificationHandle handle, byte rawTypeKind) =>
+            reader.GetTypeSpecification(handle).DecodeSignature(this, genericContext);
+
+        private static bool In(MethodSignature<bool> signature) =>
+            signature.ReturnType || signature.ParameterTypes.Any(static parameter => parameter);
+
+        private bool In(PEReader file, MethodDefinition method)
+        {
+            if (method.RelativeVirtualAddress == 0)
+            {
+                return false;
+            }
+
+            var body = file.GetMethodBody(method.RelativeVirtualAddress);
+
+            return (!body.LocalSignature.IsNil
+                    && metadata.GetStandaloneSignature(body.LocalSignature).DecodeLocalSignature(this, null).Any(static local => local))
+                   || Tokens(body).Any(token => In(token));
+        }
+
+        private bool In(EntityHandle handle) => handle.Kind switch
+        {
+            _ when handle.IsNil => false,
+            HandleKind.TypeReference => matchesType(TypeName(metadata, (TypeReferenceHandle) handle)),
+            HandleKind.TypeSpecification => metadata.GetTypeSpecification((TypeSpecificationHandle) handle).DecodeSignature(this, null),
+            HandleKind.FieldDefinition => metadata.GetFieldDefinition((FieldDefinitionHandle) handle).DecodeSignature(this, null),
+            HandleKind.MethodDefinition => In(metadata.GetMethodDefinition((MethodDefinitionHandle) handle).DecodeSignature(this, null)),
+            HandleKind.MethodSpecification => In(metadata.GetMethodSpecification((MethodSpecificationHandle) handle)),
+            HandleKind.MemberReference => In((MemberReferenceHandle) handle),
+            _ => false,
+        };
+
+        private bool In(MethodSpecification specification) =>
+            In(specification.Method) || specification.DecodeSignature(this, null).Any(static argument => argument);
+
+        private bool In(MemberReferenceHandle handle)
+        {
+            var member = metadata.GetMemberReference(handle);
+
+            return matchesMember(MemberName(metadata, handle))
+                   || In(member.Parent)
+                   || (member.GetKind() == MemberReferenceKind.Method
+                       ? In(member.DecodeMethodSignature(this, null))
+                       : member.DecodeFieldSignature(this, null));
+        }
+    }
+
     private const string NetworkNamespace = "System.Net.";
+
+    private const string FileSystemNamespace = "System.IO.Abstractions.";
+
+    private const string ResourceRead = "System.Reflection.Assembly.GetManifestResource";
 
     private static readonly HashSet<string> NetworkConfigurationTypes = new(StringComparer.Ordinal)
     {

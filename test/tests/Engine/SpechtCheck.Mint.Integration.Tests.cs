@@ -8,12 +8,12 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Engine;
 
 /// <summary>
-/// The runner over the baseline tree pinned to schema <c>0.3.1</c> (<c>0001-F19</c> B-014; C-6, C-8): a manifest that
+/// The check over the baseline tree pinned to schema <c>0.3.1</c> (<c>0001-F19</c> B-014; C-6, C-8): a manifest that
 /// opts in every type C-13 lists, each with a grammar in <c>identifiers</c> (A-6), gets the report document the same tree
 /// gets with the <c>mint</c> key removed.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerMintIntegrationTests
+public sealed class SpechtCheckMintIntegrationTests
 {
     [Fact]
     public void TheBaselineTreeWithAManifestOptingTypesIn_WhenChecked_ShouldGiveTheReportItGetsWithTheMintKeyRemoved()
@@ -38,10 +38,10 @@ public sealed class SpechtRunnerMintIntegrationTests
         File.WriteAllText(path, manifest.ToJsonString());
 
         // When
-        var check = () => SpechtReportDocument.From(tree.Run()).ToJson();
+        var check = () => new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(tree.Run()));
 
         // Then
         without.Violations.Should().NotBeEmpty();
-        check.Should().NotThrow().Which.Should().Be(SpechtReportDocument.From(without).ToJson());
+        check.Should().NotThrow().Which.Should().Be(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(without)));
     }
 }

@@ -119,7 +119,7 @@ public sealed class SpechtTree : IDisposable
         Write(Path.Combine(Path.GetDirectoryName(specPath)!, "feature.feature"), content);
 
     /// <summary>Runs every rule against the tree.</summary>
-    public SpechtReport Run() => EngineServices.Runner().Run(Root);
+    public SpechtReport Run() => EngineServices.Check().Run(Root, null);
 
     /// <summary>
     /// Pins the tree's manifest to <paramref name="version"/>, so a test whose claim names a schema version runs on it

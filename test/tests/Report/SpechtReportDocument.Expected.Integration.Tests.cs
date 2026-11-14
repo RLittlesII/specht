@@ -33,7 +33,7 @@ public sealed class SpechtReportDocumentExpectedIntegrationTests
         arrange(tree);
 
         // When
-        var document = SpechtReportDocument.From(EngineServices.Runner().Run(tree.Root, selection));
+        var document = new SpechtReportDocumentMapper().Map(EngineServices.Check().Run(tree.Root, selection));
 
         // Then
         var expected = document.Violations.Should()

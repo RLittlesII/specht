@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using Specht.Check;
 using Specht.Composition;
 using Specht.Evaluation;
 using Specht.Tool;
@@ -18,7 +19,7 @@ public class CheckBenchmarks
     public int Specifications { get; set; }
 
     /// <summary>
-    /// Generates this size's tree, resolves the runner <see cref="SpechtEngineServiceCollectionExtensions.AddSpechtEngine"/>
+    /// Generates this size's tree, resolves the check <see cref="SpechtEngineServiceCollectionExtensions.AddSpechtEngine"/>
     /// registers from the one provider <see cref="TypeRegistrar.Build"/> builds (ADR-0003), and refuses a tree the check
     /// does not count whole and clean.
     /// </summary>
@@ -30,10 +31,10 @@ public class CheckBenchmarks
         var generator = (SpechtTreeGenerator) _resolver.Resolve(typeof(SpechtTreeGenerator))!;
         var store = (SpechtTreeStore) _resolver.Resolve(typeof(SpechtTreeStore))!;
         store.Save(generator.Generate(Specifications), _root);
-        _runner = (SpechtRunner?) _resolver.Resolve(typeof(SpechtRunner))
-                  ?? throw new InvalidOperationException("AddSpechtEngine() registers no SpechtRunner.");
+        _check = (SpechtCheck?) _resolver.Resolve(typeof(SpechtCheck))
+                 ?? throw new InvalidOperationException("AddSpechtEngine() registers no SpechtCheck.");
 
-        var report = _runner.Run(_root);
+        var report = _check.Run(_root, null);
         if (report.SpecificationCount == Specifications && report.Violations.Count == 0)
         {
             return;
@@ -44,7 +45,7 @@ public class CheckBenchmarks
             $"The check counted {report.SpecificationCount} of {Specifications} specifications and reported {report.Violations.Count} violations.");
     }
 
-    /// <summary>Disposes the provider the runner came from and deletes this size's tree.</summary>
+    /// <summary>Disposes the provider the check came from and deletes this size's tree.</summary>
     [GlobalCleanup]
     public void DeleteTree()
     {
@@ -56,9 +57,9 @@ public class CheckBenchmarks
     /// <returns>The report.</returns>
     [Benchmark]
     [WorkloadIdentity("check", "1", "generated-specification-tree", "1", "in-process")]
-    public SpechtReport Check() => _runner.Run(_root);
+    public SpechtReport Check() => _check.Run(_root, null);
 
     private string _root = string.Empty;
     private ITypeResolver? _resolver;
-    private SpechtRunner _runner = null!;
+    private SpechtCheck _check = null!;
 }

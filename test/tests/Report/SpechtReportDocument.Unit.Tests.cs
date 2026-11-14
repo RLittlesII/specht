@@ -1,80 +1,20 @@
-using System.Globalization;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
 using Specht.Tests.Shared;
-using Specht.Versioning;
 
 namespace Specht.Tests.Report;
 
 /// <summary>
-/// The report document made from a report built in memory (<c>0001-F3</c> B-005, B-006, B-007; <c>0001-F2</c> B-002;
-/// <c>0001-F6</c> B-009, C-7; <c>0001-F7</c> B-032): what it counts, the name and the order it gives each layout, where it
-/// says the schemas came from, what a violation carries, that nothing in it comes from the clock or the machine, and the
-/// run summary it makes.
+/// The run summary the report document makes (<c>0001-F2</c> B-002; <c>0001-F6</c> B-009, C-7): what it counts, the name and
+/// the order it gives each layout, and that no line of it is in the diagnostic shape. The document is made by the mapper
+/// from a report built in memory.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed partial class SpechtReportDocumentUnitTests
 {
-    /// <summary>Gets violations of each shape a rule reports: with and without an identifier and a line.</summary>
-    public static TheoryData<string, SpechtViolation> Violations =>
-        new()
-        {
-            { "an error with an identifier and a line", new SpechtViolationFixture().WithIdentifier("B-002").WithLine(7) },
-            {
-                "a warning on the file as a whole, with no identifier",
-                new SpechtViolationFixture().WithSeverity(SpechtSeverity.Warning).WithFile("src/area/.spec/README.md").WithLine(0)
-            },
-        };
-
-    [Fact]
-    public void AReport_WhenMadeADocument_ShouldCarryEachLayoutsCountTheItemsTheRulesEvaluatedAndTheSeverityCounts()
-    {
-        // Given
-        SpechtReport report = new SpechtReportFixture()
-            .WithSpecificationCount(3)
-            .WithLayouts(new SpechtReportLayout("epics", 2), new SpechtReportLayout("features", 1))
-            .WithItemCount(4)
-            .WithRulesEvaluated(9)
-            .WithViolations(
-                new SpechtViolationFixture(),
-                new SpechtViolationFixture().WithLine(2),
-                new SpechtViolationFixture().WithSeverity(SpechtSeverity.Warning));
-
-        // When
-        var document = SpechtReportDocument.From(report);
-
-        // Then
-        document.Layouts.Should().BeEquivalentTo([new SpechtReportLayout("epics", 2), new SpechtReportLayout("features", 1)]);
-        document.ItemCount.Should().Be(4);
-        document.RulesEvaluated.Should().Be(9);
-        document.ErrorCount.Should().Be(2);
-        document.WarningCount.Should().Be(1);
-        document.Violations.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public void AReportNamingItsLayouts_WhenMadeADocument_ShouldCarryEachByItsNameInTheReportsOrderWithALayoutHoldingNoneAtZero()
-    {
-        // Given
-        SpechtReport report = new SpechtReportFixture().WithLayouts(
-            new SpechtReportLayout("documentation", 1),
-            new SpechtReportLayout("beside-code", 0),
-            new SpechtReportLayout("old-tree", 2));
-
-        // When
-        var document = SpechtReportDocument.From(report);
-
-        // Then
-        document.Layouts.Should().Equal(
-            new SpechtReportLayout("documentation", 1),
-            new SpechtReportLayout("beside-code", 0),
-            new SpechtReportLayout("old-tree", 2));
-    }
-
     [Fact]
     public void AReportNamingItsLayouts_WhenSummarized_ShouldNameEachByItsNameInTheReportsOrderWithALayoutHoldingNoneAtZero()
     {
@@ -85,88 +25,10 @@ public sealed partial class SpechtReportDocumentUnitTests
             new SpechtReportLayout("old-tree", 2));
 
         // When
-        var summary = SpechtReportDocument.From(report).SummaryLines();
+        var summary = new SpechtReportDocumentMapper().Map(report).SummaryLines();
 
         // Then
         summary[0].Should().Be("specifications: documentation 1, beside-code 0, old-tree 2");
-    }
-
-    [Fact]
-    public void AReportCheckedAgainstAPinnedVersion_WhenMadeADocument_ShouldNameThatVersionAndTheEmbeddedSource()
-    {
-        // Given
-        SpechtReport report = new SpechtReportFixture().WithSchemaVersion(new SemanticVersion(0, 2, 0));
-
-        // When
-        var document = SpechtReportDocument.From(report);
-
-        // Then
-        document.SchemaVersion.Should().Be("0.2.0");
-        document.SchemaSource.Should().Be(SpechtSchemaSource.Embedded);
-    }
-
-    [Fact]
-    public void AReportOfACheckOverAnUpstreamCopy_WhenMadeADocument_ShouldSayTheSchemasCameFromTheUpstreamCopy()
-    {
-        // Given
-        var report = (SpechtReport) new SpechtReportFixture() with { SchemaSource = SpechtSchemaSource.Upstream };
-
-        // When
-        var document = SpechtReportDocument.From(report);
-
-        // Then
-        document.SchemaSource.Should().Be(SpechtSchemaSource.Upstream);
-    }
-
-    [Theory]
-    [MemberData(nameof(Violations))]
-    public void AViolation_WhenMadeADocument_ShouldCarryItsRuleSeverityFileLineIdentifierMessageAndAnExpectedObject(
-        string because,
-        SpechtViolation violation)
-    {
-        // Given
-        SpechtReport report = new SpechtReportFixture().WithViolations(violation);
-
-        // When
-        var document = SpechtReportDocument.From(report);
-
-        // Then
-        var carried = document.Violations.Should().ContainSingle(because).Which;
-        carried.RuleId.Should().Be(violation.RuleId, because);
-        carried.Severity.Should().Be(violation.Severity, because);
-        carried.File.Should().Be(violation.File, because);
-        carried.Line.Should().Be(violation.Line, because);
-        carried.Identifier.Should().Be(violation.Identifier, because);
-        carried.Message.Should().Be(violation.Message, because);
-        carried.Expected.Should().NotBeNull(because);
-    }
-
-    [Fact]
-    public void AReport_WhenItsDocumentIsSerialized_ShouldCarryNoValueFromTheClockOrTheMachine()
-    {
-        // Given
-        SpechtReport report = new SpechtReportFixture()
-            .WithSpecificationCount(1)
-            .WithLayouts(new SpechtReportLayout("epics", 1), new SpechtReportLayout("features", 0))
-            .WithRulesEvaluated(1)
-            .WithViolations(new SpechtViolationFixture().WithIdentifier("B-002"));
-        string[] machine =
-        [
-            Environment.MachineName,
-            Environment.UserName,
-            Environment.CurrentDirectory,
-            Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar),
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        ];
-
-        // When
-        var values = Strings(JsonNode.Parse(SpechtReportDocument.From(report).ToJson())).ToList();
-
-        // Then
-        values.Where(static value => DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
-            .Should().BeEmpty("no value in the document is read from the clock");
-        values.Where(value => machine.Any(source => source.Length > 0 && value.Contains(source, StringComparison.OrdinalIgnoreCase)))
-            .Should().BeEmpty("no value in the document is read from the machine or the environment");
     }
 
     [Fact]
@@ -184,7 +46,7 @@ public sealed partial class SpechtReportDocumentUnitTests
                 new SpechtViolationFixture().WithSeverity(SpechtSeverity.Warning));
 
         // When
-        var summary = SpechtReportDocument.From(report).SummaryLines();
+        var summary = new SpechtReportDocumentMapper().Map(report).SummaryLines();
 
         // Then
         summary.Should().Equal(
@@ -205,7 +67,7 @@ public sealed partial class SpechtReportDocumentUnitTests
             .WithViolations(new SpechtViolationFixture(), new SpechtViolationFixture().WithSeverity(SpechtSeverity.Warning));
 
         // When
-        var summary = SpechtReportDocument.From(report).SummaryLines();
+        var summary = new SpechtReportDocumentMapper().Map(report).SummaryLines();
 
         // Then
         summary.Should().NotBeEmpty().And.AllSatisfy(static line => Diagnostic().IsMatch(line).Should().BeFalse(line));
@@ -213,13 +75,4 @@ public sealed partial class SpechtReportDocumentUnitTests
 
     [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3,4}): \S.*$")]
     private static partial Regex Diagnostic();
-
-    private static IEnumerable<string> Strings(JsonNode? node) =>
-        node switch
-        {
-            JsonObject members => members.SelectMany(static member => Strings(member.Value)),
-            JsonArray elements => elements.SelectMany(Strings),
-            JsonValue value when value.TryGetValue<string>(out var text) => [text],
-            _ => [],
-        };
 }
