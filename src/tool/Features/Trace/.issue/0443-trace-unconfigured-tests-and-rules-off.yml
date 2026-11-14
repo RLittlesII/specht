@@ -1,0 +1,59 @@
+id: "0443"
+type: task
+title: Trace tests as unconfigured without declared test files, and past a rule switched off
+
+status: ready
+
+value: 4
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: ["0442"] # the command and the document whose resolutions these claims read
+spikes: []
+
+spec: src/tool/Features/Trace/.spec/README.md
+
+claims:
+  - B-004
+  - B-005
+  - B-020
+
+created: "2026-11-14"
+updated: "2026-11-14"
+closed: null
+
+summary: |
+  The trace's resolution beside the manifest's settings: with no
+  `tests` key a test outside a waived, withdrawn or superseded row is
+  `unconfigured`, never `unresolved` (B-004), and a test in such a row
+  stays `skipped` (B-020); a rule set `off` does not hide the
+  resolution it judges (B-005).
+
+  Waits on 0442, the command and the document these claims are
+  observed through.
+
+  Risk 2: `0001-F12`'s resolver already gives `unconfigured` (C-1);
+  what is new is the order beside `skipped` and the rule levels left
+  unread.
+
+acceptance_criteria:
+  - "B-004 — no `tests` key: `unconfigured`, never `unresolved`, outside a waived, withdrawn or superseded row"
+  - "B-005 — a rule set `off` still has its resolution traced"
+  - "B-020 — no `tests` key: a skipped test stays `skipped`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-14, spec-author: cut on the repository owner's instruction of
+    2026-11-14, relayed in session by the coordinating session: "Cut
+    items for SPEC024 and trace". The slicing is spec-author's, not the
+    owner's: the three claims say what the manifest's `tests` key and
+    `rules` levels do to a resolution, and none of their scenarios can
+    fail before 0442's document exists.
+
+out_of_scope:
+  - "The lines, the document and `skipped` under any pin - B-001 to B-003, B-019; 0442."
+  - "A schema `0.1.0` pin - B-010 to B-012; 0444."
+  - "Everything in § 5 of the spec."

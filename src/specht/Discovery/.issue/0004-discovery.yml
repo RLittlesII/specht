@@ -8,7 +8,7 @@ value: 3
 risk: 3
 
 parent: "0001"
-children: ["0005", "0006", "0007", "0008", "0009"]
+children: ["0005", "0006", "0007", "0008", "0009", "0441"]
 
 depends_on: []
 spikes: []
@@ -27,9 +27,10 @@ claims:
   - B-009
   - B-010
   - B-011
+  - B-013
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-11-14"
 closed: null
 
 summary: |
@@ -53,6 +54,7 @@ acceptance_criteria:
   - "B-009 — layout named by its manifest name (0005)"
   - "B-010 — exclusions as git exclude pathspecs (0008)"
   - "B-011 — linked directory not followed, either mode (0009)"
+  - "B-013 — SPEC024, a companion beside no specification (0441)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -63,6 +65,12 @@ decisions:
     last. Rejected: one item per claim, which would split B-005 from B-010
     and B-007 from B-008 although each pair is one piece of code and one
     proof.
+  - |
+    2026-11-14, spec-author: 0441 added as a child for B-013, `SPEC024`,
+    cut on the repository owner's instruction of 2026-11-14, relayed in
+    session by the coordinating session: "Cut items for SPEC024 and
+    trace". B-012, B-014 and B-015 are not added: they are not this
+    cut's.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

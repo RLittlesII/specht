@@ -2,14 +2,14 @@ id: "0396"
 type: task
 title: Hold native claims to SPEC024, the matrix rules and the trace
 
-status: blocked
+status: ready
 
 risk: 3
 
 parent: "0387"
 children: []
 
-depends_on: ["0391", "0336", "0337"] # 0391 gives a set its record and its matrix; 0336 and 0337 are the 0001-F12 rules B-023 runs
+depends_on: ["0391", "0336", "0337", "0441", "0442"] # 0391 gives a set its record and its matrix; 0336 and 0337 are the 0001-F12 rules B-023 runs; 0441 builds SPEC024, which B-022 holds; 0442 builds the trace lines B-024 reads
 spikes: []
 
 spec: src/specht/Rules/NativeClaims/.spec/README.md
@@ -20,7 +20,7 @@ claims:
   - B-024
 
 created: "2026-11-06"
-updated: "2026-11-12"
+updated: "2026-11-14"
 closed: null
 
 summary: |
@@ -31,12 +31,12 @@ summary: |
   matrix nothing of `0001-F12` reports and `specht trace` lists each
   claim as `none` (B-024).
 
-  Blocked: no item builds `SPEC024` (`0001-F6` B-013), a working name,
-  or the trace command (`0001-F13`, approved, with no items cut), so no
-  test of B-022 or of B-024's trace half can fail yet. When those items
-  are cut, they join `depends_on`. It also waits on 0336 and 0337
-  (`0001-F12`), open, which plan to add their rules to schema `0.3.0`,
-  now published.
+  Waits on 0441 (`0001-F6` B-013), which builds `SPEC024`, a working
+  name, in schema `0.4.0` (`0001-F6` decision 0012), so B-022's test
+  can fail. Waits on 0442 (`0001-F13`),
+  which builds the trace lines, so B-024's trace half can fail; B-024
+  reads B-001's `none`, and 0443 to 0445 add nothing it reads. 0336,
+  0337 and 0391 are done.
 
   Risk 3: three other Features' rules and a command read the
   catalogue, and each must see a native claim as the claim a § 3 row
@@ -65,6 +65,14 @@ decisions:
     the Feature's members and rules enter schema 0.4.0 (decision 0001).
     The report criterion is restated for 0.4.0. The blockers are
     unchanged.
+  - |
+    2026-11-14, spec-author: on the repository owner's instruction of
+    2026-11-14, relayed in session by the coordinating session: "Cut
+    items for SPEC024 and trace". 0441 builds `SPEC024` and 0442 to
+    0445 the trace command; 0441 and 0442 join depends_on, the trace
+    items 0443 to 0445 not, since B-024 reads only B-001's line. Every
+    blocker now has an item, so the status is ready, and the queue holds
+    the item until 0441 and 0442 are done. 0336, 0337 and 0391 are done.
 
 out_of_scope:
   - "How a § 9 row's scenario and test names resolve - § 5 row 10."

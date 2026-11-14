@@ -1356,7 +1356,7 @@ Cut 2026-11-06 into [`../.issue/`](../.issue/), after the owner answered § 11 a
 - `0393`, `SPEC025`, a scenario with no claim (B-010).
 - `0394`, `SPEC026`, a claim tag on an Examples block (B-009).
 - `0395`, `SPEC027`, an unreadable claim file, set or record (B-014 to B-016, B-018, B-019, B-033 to B-035).
-- `0396`, native claims under the rules and the command still to be built: `SPEC024`, the matrix rules and the trace (B-022 to B-024). It is blocked: no item builds `SPEC024` (`0001-F6` B-013) or the trace command (`0001-F13`), and it waits on `0336` and `0337` (`0001-F12`).
+- `0396`, native claims under the rules and the command still to be built: `SPEC024`, the matrix rules and the trace (B-022 to B-024). It waits on `0441`, which builds `SPEC024` (`0001-F6` B-013), and `0442`, which builds the trace lines (`0001-F13` B-001). Amended 2026-11-14, on the repository owner's instruction "Cut items for SPEC024 and trace": was blocked, with no item building either, and waiting on `0336` and `0337` (`0001-F12`), now done.
 
 Each rule item adds its rule page, its four-digit id in `0.4.0`'s vocabulary and a relock, which `0001-F7` C-17 allows while no published package carries `0.4.0`. Every item waits, through `0389`, on `0436` (`0001-F5`), which cuts schema `0.4.0`, a `0.minor` step, and on `0388` (`0001-F7`), which cut `0.3.1`. Amended 2026-11-12 ([decision 0001](decisions/0001-native-claims-fold-into-schema-0-4-0.md)): was `0.3.1`'s vocabulary, and every item waiting on `0388` alone, which cuts schema `0.3.1` under `0001-F7` decision 0022.
 
