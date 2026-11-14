@@ -11,7 +11,8 @@ namespace Specht.Manifest;
 /// Moves a manifest's top-level <c>mint</c> and its <c>identifiers</c> members for the <c>0001-F19</c> C-13 types into
 /// <c>ids</c> records, once, under a pin of schema 0.4.0 or later (0001-F7 B-155 to B-161, C-19): a grammar equal to a shipped
 /// default below 0.4.0 is dropped, any other is split into its record's <c>plain</c> and <c>id</c>, a <c>mint</c> entry
-/// becomes its record's <c>mint</c> less its <c>prefix</c>, and every byte outside the moved members is kept.
+/// becomes its record's <c>mint</c> less its <c>prefix</c>, a <c>mint</c> entry for any other name is refused, and every byte
+/// outside the moved members is kept.
 /// </summary>
 /// <param name="manifest">The pin editor whose encoding detection this edit shares.</param>
 /// <param name="versions">The shipped versions whose manifests hold the defaults and the records.</param>
@@ -59,7 +60,7 @@ public sealed class ManifestIdMover(ManifestPinEditor manifest, SchemaVersions v
         var identifiers = root["identifiers"] as JsonObject ?? [];
         var mint = root["mint"] as JsonObject ?? [];
         var declared = root["ids"] as JsonObject ?? [];
-        var types = shipped.Select(static record => record.Key).Where(static type => !type.StartsWith('$')).ToList();
+        var types = IdTypes.RepositoryWide.Concat(IdTypes.PerFeature).ToList();
         if (!root.ContainsKey("mint") && !identifiers.Any(member => types.Contains(member.Key)))
         {
             return text;
@@ -69,9 +70,9 @@ public sealed class ManifestIdMover(ManifestPinEditor manifest, SchemaVersions v
         var records = new List<(string Type, string? Plain, string? Id, bool Mint)>();
         var heads = new Dictionary<string, (string Head, string? Member, bool Moved)>(StringComparer.Ordinal);
         var refused = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var type in types.Concat(mint.Select(static entry => entry.Key).Where(name => !name.StartsWith('$') && !types.Contains(name))))
+        foreach (var type in types)
         {
-            var grammar = identifiers.ContainsKey(type) && types.Contains(type);
+            var grammar = identifiers.ContainsKey(type);
             var entry = mint.ContainsKey(type);
             if (!grammar && !entry)
             {
@@ -119,6 +120,9 @@ public sealed class ManifestIdMover(ManifestPinEditor manifest, SchemaVersions v
             }
         }
 
+        faults.AddRange(mint.Select(static entry => entry.Key)
+            .Where(name => !name.StartsWith('$') && !types.Contains(name))
+            .Select(name => $"mint.{name} names none of the id types {string.Join(", ", types)}, so it has no record to move into; remove it by hand"));
         if (!refused.Contains("claim") && !refused.Contains("scenario") && heads.TryGetValue("claim", out var claim)
             && heads.TryGetValue("scenario", out var scenario) && (claim.Moved || scenario.Moved)
             && string.Equals(claim.Head, scenario.Head, Comparison(root, defaults)))

@@ -512,22 +512,22 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | `0.3.1` is cut from `0.3.0` and locked; the four published versions and their lock entries stay as they are (B-094 to B-100; C-1, C-17)         | Business       | `src/tool/schema/v0.3.1/`, `src/tool/manifest/v0.3.1/`, `src/tool/templates/v0.3.1/`, `docs/rules/v0.3.1/`; `src/tool/schema/versions.lock.json` |
 | This repository's pin and live `.specht/` follow the newest shipped version (`0001-F4` B-004)                                                   | Business       | `.specht/manifest.json`, `.specht/schema/frontmatter/`, written by `specht schema pin 0.3.1` and `specht upgrade`                                |
 
-<!-- last written by: implementer, 2026-11-13 (item `0438`: the move into `ids`, built); implementer, 2026-11-13 (item `0438`: designed) -->
+<!-- last written by: implementer, 2026-11-13 (item `0438`, spec-review round 1: the B-156 and B-159 rows name a `mint` entry outside the seven); implementer, 2026-11-13 (item `0438`: the move into `ids`, built); implementer, 2026-11-13 (item `0438`: designed) -->
 
-| Concern                                                                                                                                                                                                                                                                                                                 | Classification | Where                                                                                                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| From a shipped pin at `0.4.0` or later, `upgrade` moves the top-level `mint` and the `0001-F19` C-13 `identifiers` members into `ids` records once, and judges the moved manifest before anything is written (B-155 to B-157; C-19)                                                                                     | Business       | `ManifestIdMover.Move(string)`, which `UpgradeWriter.Upgrade` hands to `SpechtModelReader.ReadManifest(root, edit)`                                       |
-| Under a pin below `0.4.0`, an unshipped or unreadable pin, an `ids` that is not an object, or with no old setting, nothing moves and the text comes back as read; an unshipped pin then fails the parse as B-021 states (B-160, B-020 as amended, B-021; § 5 row 34)                                                    | Business       | `ManifestIdMover.Move`'s gate, on `SpechtManifestParser.IdsVersion`, made `internal`                                                                      |
-| A grammar equal, as a decoded JSON string, to the same member of a shipped default manifest below `0.4.0` is dropped, and the type reads the shipped `0.4.0` record (B-161)                                                                                                                                             | Business       | `ManifestIdMover`'s private `Defaults`, over `SchemaVersions.Versions` below `IdsVersion`                                                                 |
-| A customised grammar splits into `plain`, its literal head then `{id}`, and `id`, the rest before `$`, each character for character (B-155)                                                                                                                                                                             | Business       | `ManifestIdMover`'s private `Split`                                                                                                                       |
-| A `mint` entry moves into its type's record as `mint`: an object with every member but `prefix` in its own text, anything else as written (B-156 as amended; C-19)                                                                                                                                                      | Business       | `ManifestIdMover`'s private `Record` and `Settings`, copying each span                                                                                    |
-| A grammar not of B-155's shape, a `prefix` that is not the head after the move, an `ids` record beside an old setting for its type, and moved `claim` and `scenario` records that would share a head are each named by the member the consumer wrote, all together, and nothing is written; exit `3` (B-159; OQ-79 (a)) | Business       | `ManifestIdMover.Move` throws one `SpechtManifestException`; `UpgradeCommand`'s existing catch                                                            |
-| The shared head is compared as `0001-F5` B-094 compares it, under `claim.tagIgnoreCase`; a collision among records the consumer already wrote under `ids` stays the parse's fault                                                                                                                                       | Business       | `ManifestIdMover.Move`, over each side's head after the move, and its private `Comparison`; `SpechtManifestParser.Parse` for the rest                     |
-| Any other fault of the moved manifest writes nothing and exits `3` (B-020 as amended)                                                                                                                                                                                                                                   | Business       | `SpechtModelReader.ReadManifest(root, edit)`, with `ReadManifest(root)`'s checks and mapping                                                              |
-| No `mint` key and no C-13 `identifiers` member is left; every other byte stays, `identifiers` itself included (B-157, B-158, B-052; C-19)                                                                                                                                                                               | Business       | `ManifestIdMover.Move(byte[])`: decoded through `ManifestPinEditor.Format`, spliced as UTF-8, written back behind its preamble in the file's own encoding |
-| The written manifest is the moved one with the pin's missing keys added (B-016, B-158)                                                                                                                                                                                                                                  | Business       | `UpgradeWriter.Upgrade`'s manifest entry, `keys.AddMissing(ids.Move(present), shipped)`                                                                   |
-| `schema pin` judges a manifest pinned at `0.4.0` or later with the old id settings set aside, so it can be pinned back down (B-051 as amended)                                                                                                                                                                          | Business       | `ManifestPinEditor.Validate`, removing them from its parsed copy before `Parse`                                                                           |
-| A moved `plain` or `id` is escaped only where JSON requires it                                                                                                                                                                                                                                                          | Technical      | `JsonEncodedText.Encode` with `JavaScriptEncoder.UnsafeRelaxedJsonEscaping`                                                                               |
+| Concern                                                                                                                                                                                                                                                                                                                                                                                                                    | Classification | Where                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| From a shipped pin at `0.4.0` or later, `upgrade` moves the top-level `mint` and the `0001-F19` C-13 `identifiers` members into `ids` records once, and judges the moved manifest before anything is written (B-155 to B-157; C-19)                                                                                                                                                                                        | Business       | `ManifestIdMover.Move(string)`, which `UpgradeWriter.Upgrade` hands to `SpechtModelReader.ReadManifest(root, edit)`                                       |
+| Under a pin below `0.4.0`, an unshipped or unreadable pin, an `ids` that is not an object, or with no old setting, nothing moves and the text comes back as read; an unshipped pin then fails the parse as B-021 states (B-160, B-020 as amended, B-021; § 5 row 34)                                                                                                                                                       | Business       | `ManifestIdMover.Move`'s gate, on `SpechtManifestParser.IdsVersion`, made `internal`                                                                      |
+| A grammar equal, as a decoded JSON string, to the same member of a shipped default manifest below `0.4.0` is dropped, and the type reads the shipped `0.4.0` record (B-161)                                                                                                                                                                                                                                                | Business       | `ManifestIdMover`'s private `Defaults`, over `SchemaVersions.Versions` below `IdsVersion`                                                                 |
+| A customised grammar splits into `plain`, its literal head then `{id}`, and `id`, the rest before `$`, each character for character (B-155)                                                                                                                                                                                                                                                                                | Business       | `ManifestIdMover`'s private `Split`                                                                                                                       |
+| A `mint` entry for one of the seven types moves into its type's record as `mint`: an object with every member but `prefix` in its own text, anything else as written (B-156 as amended; C-19)                                                                                                                                                                                                                              | Business       | `ManifestIdMover`'s private `Record` and `Settings`, copying each span                                                                                    |
+| A grammar not of B-155's shape, a `prefix` that is not the head after the move, a `mint` entry whose name is neither one of the seven nor `$`-led, named `mint.<name>`, an `ids` record beside an old setting for its type, and moved `claim` and `scenario` records that would share a head are each named by the member the consumer wrote, all together, and nothing is written; exit `3` (B-159 as amended; OQ-79 (a)) | Business       | `ManifestIdMover.Move` throws one `SpechtManifestException`; `UpgradeCommand`'s existing catch                                                            |
+| The shared head is compared as `0001-F5` B-094 compares it, under `claim.tagIgnoreCase`; a collision among records the consumer already wrote under `ids` stays the parse's fault                                                                                                                                                                                                                                          | Business       | `ManifestIdMover.Move`, over each side's head after the move, and its private `Comparison`; `SpechtManifestParser.Parse` for the rest                     |
+| Any other fault of the moved manifest writes nothing and exits `3` (B-020 as amended)                                                                                                                                                                                                                                                                                                                                      | Business       | `SpechtModelReader.ReadManifest(root, edit)`, with `ReadManifest(root)`'s checks and mapping                                                              |
+| No `mint` key and no C-13 `identifiers` member is left; every other byte stays, `identifiers` itself included (B-157, B-158, B-052; C-19)                                                                                                                                                                                                                                                                                  | Business       | `ManifestIdMover.Move(byte[])`: decoded through `ManifestPinEditor.Format`, spliced as UTF-8, written back behind its preamble in the file's own encoding |
+| The written manifest is the moved one with the pin's missing keys added (B-016, B-158)                                                                                                                                                                                                                                                                                                                                     | Business       | `UpgradeWriter.Upgrade`'s manifest entry, `keys.AddMissing(ids.Move(present), shipped)`                                                                   |
+| `schema pin` judges a manifest pinned at `0.4.0` or later with the old id settings set aside, so it can be pinned back down (B-051 as amended)                                                                                                                                                                                                                                                                             | Business       | `ManifestPinEditor.Validate`, removing them from its parsed copy before `Parse`                                                                           |
+| A moved `plain` or `id` is escaped only where JSON requires it                                                                                                                                                                                                                                                                                                                                                             | Technical      | `JsonEncodedText.Encode` with `JavaScriptEncoder.UnsafeRelaxedJsonEscaping`                                                                               |
 
 ## 7. Technical Design
 
@@ -1683,7 +1683,7 @@ structural stage is touched.
 
 ### The move into ids at schema 0.4.0 (item `0438`)
 
-<!-- last written by: implementer, 2026-11-13 (item `0438`: built, on spec-author's settlement of B-156 and B-159); implementer, 2026-11-13 (item `0438`: designed) -->
+<!-- last written by: implementer, 2026-11-13 (item `0438`, spec-review round 1: a `mint` entry outside the seven refused, the seven read from `IdTypes`, the test seams corrected); implementer, 2026-11-13 (item `0438`: built, on spec-author's settlement of B-156 and B-159); implementer, 2026-11-13 (item `0438`: designed) -->
 
 **Built 2026-11-13 for item `0438`.** From schema `0.4.0` the
 check rejects the top-level `mint` and the seven `0001-F19` C-13 members of
@@ -1756,11 +1756,11 @@ gate rejects it as B-021 states, naming it and the shipped versions, and
 version in use: B-155 to B-161 name the pin, and below `1.0.0` no pin policy
 floats a pin below `0.4.0` up to it (B-150).
 
-**The old settings, type by type.** For each type in the order of the pinned
-version's shipped `ids` (`claim`, `constraint`, `openQuestion`, `scenario`,
-`decision`, `adr`, `lesson`), the mover reads `identifiers.<type>`,
-`mint.<type>` and `ids.<type>`, then each other `mint` member whose name does
-not begin with `$`, in its order:
+**The old settings, type by type.** For each type in `IdTypes.RepositoryWide`
+then `IdTypes.PerFeature` (`adr`, `lesson`, `decision`, `claim`, `constraint`,
+`openQuestion`, `scenario`), the one list `OldIdFaults` and
+`ManifestPinEditor.Validate` read, the mover reads `identifiers.<type>`,
+`mint.<type>` and `ids.<type>`:
 
 - _Dropped (B-161)._ A grammar that is text and equals, ordinally and as the
   JSON parser decodes it, so that `\u0042` is `B`, the same member of the
@@ -1824,6 +1824,12 @@ The faults, each naming the member the consumer wrote:
 
 - A grammar not of B-155's shape, a value that is not text included:
   `identifiers.claim 'B-[0-9]{3}' is not ^, a literal head, a pattern with no alternation outside a group, and $; write ids.claim by hand`.
+- A `mint` entry whose name is neither one of the seven nor `$`-led, after the
+  types' faults and in the order of `mint`, named as the consumer wrote it and
+  never as the `ids` record a move would have written (B-159 as amended;
+  `0001-F19` B-062 makes such an entry valid under `0.3.1`):
+  `mint.epic names none of the id types adr, lesson, decision, claim, constraint, openQuestion, scenario, so it has no record to move into; remove it by hand`.
+  Nothing of the entry is read, so no prefix check runs on it.
 - A `mint.<type>.prefix` that is not, ordinally, the head of the type's `plain`
   after the move, a value that is not text included. That `plain` is the moved
   one, or the shipped `0.4.0` record's where nothing moved or the grammar was
@@ -1879,10 +1885,7 @@ Every byte outside those spans is the file's own, the BOM, the encoding,
 
 **What falls out of the claims as written.** A `$` member of `mint`, and a
 `mint` that is not an object, leave with the `mint` key (B-157); neither names
-a type, so nothing of them moves. A `mint` entry for a name outside the seven,
-such as `mint.epic`, moves into `ids.epic.mint` as B-156 states, and the parse
-then rejects `ids.epic` as no id type (`0001-F5` B-083): exit `3`, nothing
-written, a message naming `ids.epic`. An `ids` that is not an object stops the
+a type, so nothing of them moves. An `ids` that is not an object stops the
 move at the gate, and the parse rejects it beside the old settings.
 
 **`schema pin` (B-051 as amended).** `ManifestPinEditor.Validate` parses a
@@ -1900,8 +1903,13 @@ pin to refuse it.
 `SchemaVersions` the composition builds, so its unit tests reach every split,
 drop, refusal and splice without a file. `UpgradeWriter` and `UpgradeCommand`
 are reached through the container over the in-memory file system, as their
-existing tests are; the command's tests hold stderr and the unchanged files
-for B-159, and `SchemaPinCommand`'s hold B-051's boundary.
+existing tests are. B-159's faults are the mover's unit rows; the writer's
+`UpgradeWriterIdMoveUnitTests` hold that a refused move writes nothing, and
+`UpgradeCommandIntegrationTests` over `UpgradeInvalidManifests` hold exit `3`,
+nothing written and no absolute path on stderr for the `mint.epic` row. The
+named members on stderr are the versioning scenarios'. B-051's boundary is
+`ManifestPinEditorUnitTests`' and its two scenarios'; no `SchemaPinCommand`
+test is added (§ 9).
 
 **Documentation in the same pull request.**
 
@@ -1940,6 +1948,12 @@ outlives nothing.
   move would refuse.
 - An `IIdSettingsMover`, or a record type per moved member: one implementation,
   one caller, and `SpechtIdRecord` already names the record's parts.
+- Taking the seven from the pinned version's shipped `ids` keys: a second
+  source for the list `OldIdFaults`, `Validate` and the minter read from
+  `IdTypes`, which a shipped manifest could drift from.
+- Moving a `mint` entry outside the seven into its `ids` record and leaving the
+  parse to reject it: the message would name `ids.<name>`, a member the
+  consumer never wrote (B-159 as amended).
 
 ## 8. Testing Strategy
 

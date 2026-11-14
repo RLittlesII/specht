@@ -521,12 +521,13 @@ rejects into `ids`, once. Each `identifiers` entry for `claim`, `constraint`,
 `ids.<type>`: `plain` is the literal head after `^` followed by `{id}`, and `id`
 the rest before `$`, so `"^REQ-[0-9]{4}$"` becomes `"REQ-{id}"` and
 `"[0-9]{4}"`. An entry equal to a shipped default below `0.4.0` is dropped and
-the type reads the shipped record. Each top-level `mint` entry becomes
-`ids.<type>.mint` without its `prefix`. `mint` and those entries are removed;
-everything else is kept as written. It moves nothing, writes nothing and exits
-`3`, naming each setting, for a grammar not of that shape, a `prefix` that is
-not the head after the move, an `ids` record already there for a moved type, or
-claim and scenario heads the move would make one.
+the type reads the shipped record. Each top-level `mint` entry for one of those
+seven types becomes `ids.<type>.mint` without its `prefix`. `mint` and those
+entries are removed; everything else is kept as written. It moves nothing,
+writes nothing and exits `3`, naming each setting, for a grammar not of that
+shape, a `prefix` that is not the head after the move, a `mint` entry for any
+other name not led by `$`, such as `mint.epic`, an `ids` record already there
+for a moved type, or claim and scenario heads the move would make one.
 
 When the manifest records `spechtSchema`, each present schema whose SHA-256
 differs from its recorded hash is fetched from that source and verified, then

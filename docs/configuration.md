@@ -203,9 +203,11 @@ the shipped record. A customised one goes into `ids.<type>`: `plain` is the
 literal head after `^` followed by `{id}`, and `id` is the rest of the pattern
 before `$`, so `"claim": "^REQ-[0-9]{4}$"` becomes
 `"ids": { "claim": { "plain": "REQ-{id}", "id": "[0-9]{4}" } }`. Each top-level
-`mint` entry goes into `ids.<type>.mint` without its `prefix`. `upgrade` writes
-nothing and names the setting when it cannot move one exactly, such as a
-grammar with no anchors; move that one by hand, the same way, and run it again.
+`mint` entry for one of the seven types goes into `ids.<type>.mint` without its
+`prefix`. `upgrade` writes nothing and names the setting when it cannot move one
+exactly, such as a grammar with no anchors; move that one by hand, the same way,
+and run it again. A `mint` entry for any other name, such as `mint.epic`, has
+no record to go into; remove it and run it again.
 `specht schema pin 0.3.1` takes a manifest that still holds the old settings
 back down. Without the old settings `upgrade` adds no `ids`: a manifest without
 it reads the shipped records.
