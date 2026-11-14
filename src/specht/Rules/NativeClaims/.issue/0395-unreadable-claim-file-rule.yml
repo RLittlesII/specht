@@ -2,7 +2,7 @@ id: "0395"
 type: task
 title: Report an unreadable claim file or set, SPEC027, in schema 0.4.0
 
-status: blocked
+status: ready
 
 risk: 3
 
@@ -25,7 +25,7 @@ claims:
   - B-035
 
 created: "2026-11-06"
-updated: "2026-11-13"
+updated: "2026-11-14"
 closed: null
 
 summary: |
@@ -84,6 +84,12 @@ decisions:
     and "At manifest, line 0 (Recommended)" (OQ-17). They read a set's
     record, so the item now waits on 0391 as well; the 2026-11-06 entry
     is recorded as it was.
+  - |
+    2026-11-14, spec-author: `ready`, released on the repository
+    owner's selection "(c) Moot under 0.4.0" for `0001-F7` OQ-75, now
+    resolved there. This supersedes the 2026-11-07 `blocked` entry,
+    recorded as it was: the rule enters `0.4.0`, and `0001-F7` B-154
+    compares patch neighbours only, which `0.3.1` and `0.4.0` are not.
 
 out_of_scope:
   - "Claim files in a Gherkin language other than English - § 5 row 8."

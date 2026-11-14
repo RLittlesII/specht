@@ -2,7 +2,7 @@ id: "0393"
 type: task
 title: Report a scenario in a claim file with no claim, SPEC025, in schema 0.4.0
 
-status: blocked
+status: ready
 
 risk: 2
 
@@ -18,7 +18,7 @@ claims:
   - B-010
 
 created: "2026-11-06"
-updated: "2026-11-12"
+updated: "2026-11-14"
 closed: null
 
 summary: |
@@ -56,6 +56,12 @@ decisions:
     the rule enters schema 0.4.0, not 0.3.1 (decision 0001). The title
     and criteria are restated for 0.4.0. The blocker above is recorded
     as it was and is not judged here.
+  - |
+    2026-11-14, spec-author: `ready`, released on the repository
+    owner's selection "(c) Moot under 0.4.0" for `0001-F7` OQ-75, now
+    resolved there. This supersedes the 2026-11-07 `blocked` entry,
+    recorded as it was: the rule enters `0.4.0`, and `0001-F7` B-154
+    compares patch neighbours only, which `0.3.1` and `0.4.0` are not.
 
 out_of_scope:
   - "Reporting a mistyped claim tag - § 5 row 7."
