@@ -261,15 +261,15 @@ specht trace [--root <DIR>] [--json]
 ```
 
 Prints where every claim stands, read as the check reads the tree and resolved
-as the check resolves it: every Feature specification the check discovers, in
-discovery order, with its path, qualified id and claims, and each claim, in
-claims-table order, with its id, line, status, its traceability row - the
-first naming it, its line and its four cells - the scenarios carrying its tag,
-its own or inherited, with their title, file and line, and each test the row
-names with its resolution: `resolved`, `unresolved`, `unconfigured` or
+as the check resolves it: every Feature specification the check discovers with a
+claims table, in discovery order, with its path, qualified id and claims, and
+each claim, in claims-table order, with its id, line, status, its traceability
+row - the first naming it, its line and its four cells - the scenarios carrying
+its tag, its own or inherited, with their title, file and line, and each test
+the row names with its resolution: `resolved`, `unresolved`, `unconfigured` or
 `skipped`, with its file and line only when it resolves. Every test of a row
-whose Status is the waived, withdrawn or superseded marker is `skipped`. No
-rule runs, so the trace judges nothing.
+whose Status is the waived, withdrawn or superseded marker is `skipped`. No rule
+runs, so the trace judges nothing.
 
 Without `--json`, each stdout line is one claim: five fields separated by
 single tabs - the path, the claim id, the row's Status, the number of
