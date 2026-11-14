@@ -23,6 +23,12 @@ public sealed class RenamedMarkerMessages : TheoryData<string, string, string, s
             "Retired",
             "Withdrawn");
         Add(
+            "SPEC023",
+            """{"schemaVersion":"0.4.0","markers":{"missing":"Untested"}}""",
+            Frontmatter("") + Claims("B-001") + Matrix("B-001", "`AlphaTest`"),
+            "'Untested'",
+            "'Missing'");
+        Add(
             "SPEC060",
             """{"schemaVersion":"0.3.0","markers":{"missing":"TBD"}}""",
             Frontmatter("status: done\n") + Matrix("B-001", "TBD"),

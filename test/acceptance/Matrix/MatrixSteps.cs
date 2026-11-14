@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-010, B-018 to B-020, B-022 to B-025).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-011, B-018 to B-020, B-022 to B-027).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -77,6 +77,37 @@ public sealed class MatrixSteps
     [Given("its matrix row's Status is {string}")]
     public void GivenMatrixStatus(string status) => _status = status;
 
+    [Given("an active claim B-004 whose tag no scenario carries")]
+    public void GivenActiveUntaggedClaim() => GivenUntaggedClaim("Active");
+
+    [Given("an active claim B-004 whose only tag is on a Rule that holds no scenario")]
+    public void GivenTagOnEmptyRule()
+    {
+        GivenActiveUntaggedClaim();
+        _scenarios = "@B-004\nRule: A rule\n";
+    }
+
+    [Given("an active claim B-004 whose only tag is on the companion's Feature, which holds no scenario")]
+    public void GivenTagOnEmptyFeature()
+    {
+        GivenActiveUntaggedClaim();
+        _featureTags = "@B-004\n";
+        _defaultScenario = string.Empty;
+    }
+
+    [Given("two matrix rows for claim B-004, each with Status {string}")]
+    public void GivenTwoRows(string status)
+    {
+        _status = status;
+        _rowCount = 2;
+    }
+
+    [Given("no matrix row for claim B-004")]
+    public void GivenNoRow() => _rowCount = 0;
+
+    [Given("its matrix row's Status is the missing marker")]
+    public void GivenMissingStatus() => _status = Manifest["markers"]!["missing"]!.GetValue<string>();
+
     [Given("a claim marked {string} that a scenario still carries")]
     public void GivenRetiredTaggedClaim(string status)
     {
@@ -92,6 +123,9 @@ public sealed class MatrixSteps
 
     [Given("the manifest pins schema version 0.3.0 instead")]
     public void GivenMatrixPin() => GivenPin("0.3.0");
+
+    [Given("the manifest pins schema version 0.4.0 instead")]
+    public void GivenMissingScenarioPin() => GivenPin("0.4.0");
 
     [Given("the manifest names the matrix headers {string}, {string}, {string} and {string}")]
     public void GivenMatrixHeaders(string claim, string scenario, string test, string status)
@@ -294,14 +328,18 @@ public sealed class MatrixSteps
             "## 3. Acceptance Criteria" => "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n"
                 + $"| {_claimId} | Behavior | Decision | {_claim} |\n",
             "## 9. Traceability Matrix" => $"## 9. Traceability Matrix\n\n| {_matrix} |\n| --- | --- | --- | --- |\n"
-                + $"| {_claimId} | {_scenario} | {_test} | {_status} |\n",
+                + string.Concat(Enumerable.Repeat($"| {_claimId} | {_scenario} | {_test} | {_status} |\n", _rowCount)),
             "## 12. Sign-off" => $"## 12. Sign-off\n\n| {_headers} |\n| --- | --- | --- | --- |\n| 1-5 | {_signOff} | {_reviewer} | Decision |\n",
             _ => section,
         }).ToArray();
         var path = Tree.WriteFeature("0001", "F1", sections: sections);
-        Tree.WriteFeatureFile(path, $"{_featureTags}Feature: Sample\n{_tags}Scenario: A scenario\n  Given a thing\n{_scenarios}");
+        Tree.WriteFeatureFile(path, $"{_featureTags}Feature: Sample\n{_tags}{_defaultScenario}{_scenarios}");
         Tree.WriteRaw(SpechtTree.ManifestPath, Manifest.ToJsonString());
-        _row = Array.FindIndex(File.ReadAllLines(path), line => line.StartsWith($"| {_claimId} | {_scenario} |", StringComparison.Ordinal)) + 1;
+        _rows = [.. File.ReadAllLines(path)
+            .Select(static (line, index) => (line, index))
+            .Where(entry => entry.line.StartsWith($"| {_claimId} | {_scenario} |", StringComparison.Ordinal))
+            .Select(static entry => entry.index + 1)];
+        _row = _rows.FirstOrDefault();
         _report = EngineServices.Runner().Run(Tree.Root);
     }
 
@@ -358,6 +396,16 @@ public sealed class MatrixSteps
     [Then("the scenario-title rule reports nothing")]
     public void ThenNoTitle() => Findings(RuleIds.Under(Manifest, "SPEC022")).Should().BeEmpty();
 
+    [Then("the missing-scenario rule reports that row")]
+    public void ThenMissingScenarioRow() => Findings(RuleIds.Under(Manifest, "SPEC023")).Should().ContainSingle().Which.Line.Should().Be(_row);
+
+    [Then("the missing-scenario rule reports each of those rows")]
+    public void ThenMissingScenarioRows() =>
+        Findings(RuleIds.Under(Manifest, "SPEC023")).Select(static finding => finding.Line).Should().BeEquivalentTo(_rows).And.HaveCount(2);
+
+    [Then("the missing-scenario rule reports nothing")]
+    public void ThenNoMissingScenario() => Findings(RuleIds.Under(Manifest, "SPEC023")).Should().BeEmpty();
+
     [Then("the waiver rule reports nothing")]
     public void ThenNoWaiver() => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().BeEmpty();
 
@@ -413,6 +461,9 @@ public sealed class MatrixSteps
     private string _renamed = string.Empty;
     private string _extension = ".cs";
     private int _row;
+    private int[] _rows = [];
+    private int _rowCount = 1;
+    private string _defaultScenario = "Scenario: A scenario\n  Given a thing\n";
     private string _status = "Missing";
     private string _test = "Missing";
     private string _tags = string.Empty;

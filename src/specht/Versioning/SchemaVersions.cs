@@ -93,7 +93,7 @@ public sealed class SchemaVersions
             { Major: 0, Minor: 1, Patch: 0 } => original.ToDictionary(static id => id, StringComparer.Ordinal),
             { Major: 0, Minor: 2, Patch: 0 or 1 } =>
                 original.Append("SPEC034").Append("SPEC035").ToDictionary(static id => id, StringComparer.Ordinal),
-            { Major: 0, Minor: 3, Patch: 0 or 1 } or { Major: 0, Minor: 4, Patch: 0 } => new(StringComparer.Ordinal)
+            { Major: 0, Minor: 3, Patch: 0 or 1 } => new(StringComparer.Ordinal)
             {
                 ["SPEC001"] = "SPEC1001",
                 ["SPEC002"] = "SPEC1002",
@@ -121,6 +121,7 @@ public sealed class SchemaVersions
                 ["SPEC060"] = "SPEC7001",
                 ["SPEC061"] = "SPEC7002",
             },
+            { Major: 0, Minor: 4, Patch: 0 } => new(Shipped(new SemanticVersion(0, 3, 1)), StringComparer.Ordinal) { ["SPEC023"] = "SPEC4008" },
             _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),
         };
     }

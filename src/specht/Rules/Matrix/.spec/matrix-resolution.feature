@@ -242,6 +242,14 @@ Feature: Matrix resolution
     When the check runs
     Then the missing-scenario rule reports nothing
 
+  @B-011
+  Scenario: Each row of a live claim no scenario carries is reported
+    Given the manifest pins schema version 0.4.0 instead
+    And an active claim B-004 whose tag no scenario carries
+    And two matrix rows for claim B-004, each with Status "Covered"
+    When the check runs
+    Then the missing-scenario rule reports each of those rows
+
   @B-012
   Scenario: A row reported for its missing scenario is not reported for its status
     Given the manifest pins schema version 0.4.0 instead
@@ -513,3 +521,24 @@ Feature: Matrix resolution
       | Waived     |
       | Withdrawn  |
       | Superseded |
+
+  @B-026
+  Scenario Outline: A claim tag on a Feature or a Rule with no scenario under it carries the claim
+    Given the manifest pins schema version 0.4.0 instead
+    And an active claim B-004 whose only tag is <where>
+    And its matrix row's Status is "Covered"
+    When the check runs
+    Then the missing-scenario rule reports nothing
+
+    Examples:
+      | where                                               |
+      | on a Rule that holds no scenario                    |
+      | on the companion's Feature, which holds no scenario |
+
+  @B-027 @boundary
+  Scenario: A live claim with no matrix row is not reported for its missing scenario
+    Given the manifest pins schema version 0.4.0 instead
+    And an active claim B-004 whose tag no scenario carries
+    And no matrix row for claim B-004
+    When the check runs
+    Then the missing-scenario rule reports nothing

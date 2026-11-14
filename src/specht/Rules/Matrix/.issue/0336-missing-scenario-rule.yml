@@ -2,7 +2,7 @@ id: "0336"
 type: task
 title: Report a live claim no scenario carries, SPEC4008, in schema 0.4.0
 
-status: ready
+status: done
 
 risk: 2
 
@@ -16,10 +16,12 @@ spec: src/specht/Rules/Matrix/.spec/README.md
 
 claims:
   - B-011
+  - B-026
+  - B-027
 
 created: "2026-11-01"
-updated: "2026-11-12"
-closed: null
+updated: "2026-11-13"
+closed: "2026-11-13"
 
 summary: |
   SPEC4008 reports, at its § 9 row, a live claim whose tag no companion
@@ -43,7 +45,9 @@ summary: |
   package embeds 0.4.0 (decision 0005).
 
 acceptance_criteria:
-  - "B-011 — live claim no scenario carries, unless missing or waived"
+  - "B-011 — live claim no scenario carries, at each row unless missing or waived"
+  - "B-026 — a claim tag on any tag line carries the claim (decision 0006)"
+  - "B-027 — a claim with no § 9 row is not reported (decision 0006)"
   - "`0001-F7` B-014 — SPEC4008 joins schema 0.4.0's vocabulary here, the version 0436 cuts, with its rule page (`0001-F3` B-031) and a relock of 0.4.0 (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.4.0: the item stops and the version goes to the owner (decision 0005)."
   - "One resolver, no second reading of a tag (C-3); no marker literal (C-5)."
@@ -74,6 +78,15 @@ decisions:
     0.4.0 while no published package embeds it, and 0321 and 0339 stay in
     depends_on as done history. The id, the file name and the claims are
     unchanged.
+  - |
+    2026-11-13, spec-author: after spec-reviewer round 11, the repository
+    owner selected "(a) Keep, add claim (Recommended)" on finding 1
+    (decision 0006): B-026, a claim tag on any tag line of a companion
+    carries the claim for SPEC4008, added and claimed here. As
+    spec-author's reading on finding 3, not the owner's: B-011 amended to
+    report each non-exempt row, and B-027, a claim with no § 9 row is not
+    reported, added and claimed here. Both state what § 7 records as built;
+    test-writer binds B-026 and B-027 and adds B-011's two-row case.
 
 out_of_scope:
   - "SPEC4010's silence beside SPEC4008: 0337 (B-012)."
