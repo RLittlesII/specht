@@ -2,7 +2,7 @@ id: "0367"
 type: task
 title: Lessons, sign-off rows and manifest-named sections in the facts
 
-status: ready
+status: in-progress
 
 value: 3
 risk: 3
@@ -21,7 +21,7 @@ claims:
   - B-016
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-14"
 closed: null
 
 summary: |
