@@ -44,6 +44,7 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
         var identified = model.FeaturesWithIdentity.ToHashSet();
         var listed = model.Schemas.Structure.Sections;
         return new(model.Features
+            .Where(static feature => feature.ClaimFileSet is null)
             .Select(feature => new FeatureFacts(
                 feature.RelativePath,
                 identified.Contains(feature) ? feature.Identity : null,

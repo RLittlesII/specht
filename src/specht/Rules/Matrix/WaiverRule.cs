@@ -21,7 +21,7 @@ public sealed class WaiverRule(MatrixResolver resolver) : ISpechtRule
     {
         var structure = model.Schemas.Structure;
         var markers = structure.Markers;
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             var signOff = feature.Document.Section(structure.Roles["signOff"]);
             var approvers = (signOff?.Rows ?? [])

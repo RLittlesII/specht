@@ -20,4 +20,21 @@ public sealed record SpechtListing(
     /// </summary>
     /// <implements epic="0001" feature="F16" claim="B-001" />
     public IReadOnlyList<IReadOnlyList<string>> ClaimFiles { get; init; } = [];
+
+    /// <summary>
+    /// The resolved root-relative path of each claim file set's loaded record, at the set's index in the manifest's
+    /// <c>claim.files</c>; null for a set with no <c>record</c> or one that could not be read.
+    /// </summary>
+    /// <implements epic="0001" feature="F16" claim="B-003" />
+    /// <implements epic="0001" feature="F16" claim="B-035" />
+    public IReadOnlyList<string?> ClaimRecords { get; init; } = [];
+
+    /// <summary>
+    /// Where each claim file set's native Feature sits, at the set's index in the manifest's <c>claim.files</c>: its loaded
+    /// record, else its first claim file, in the layout <c>claims</c> with the set's glob; null for a set that makes no
+    /// Feature.
+    /// </summary>
+    /// <implements epic="0001" feature="F16" claim="B-026" />
+    /// <implements epic="0001" feature="F16" claim="B-036" />
+    public IReadOnlyList<SpechtLocation?> ClaimLocations { get; init; } = [];
 }

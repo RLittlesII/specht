@@ -451,7 +451,7 @@ Feature: Matrix resolution
     And the specification's matrix has a covered row no scenario carries and a status that is no known marker
     When the check runs
     Then no scenario-title, missing-scenario, unresolved-test, status, waiver or retired-claim finding is reported
-    And the report is byte-for-byte the one the tool gave that tree before this Feature
+    And the report is byte-for-byte the one the tool gives that tree without the scenario-title, missing-scenario, unresolved-test and status rules
 
     Examples:
       | version |
@@ -474,7 +474,8 @@ Feature: Matrix resolution
 
   @B-021 @boundary
   Scenario: Under schema 0.2.0 a raised waiver rule runs and the scenario, test and status rules do not
-    Given the manifest sets the waiver rule to error
+    Given the manifest pins schema version "0.2.0"
+    And the manifest sets the waiver rule to error
     And the manifest declares the test files "test/**/*.cs"
     And a row whose Status is "Waived" and whose Test cell is "spec-reviewer"
     And another row whose Status is "Covered" and whose Test cell names a test no declared file holds

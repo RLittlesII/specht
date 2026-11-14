@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Facts;
@@ -40,7 +41,8 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
         {
             var root = Path.GetFullPath(settings.Root);
             var model = reader.Read(root, null);
-            var document = FactsDocument.From(model, reader.ReadRecords(root, model.Features));
+            var layoutFeatures = model.Features.Where(static feature => feature.ClaimFileSet is null).ToArray();
+            var document = FactsDocument.From(model, reader.ReadRecords(root, layoutFeatures));
             if (settings.Path is { } path)
             {
                 document = document.Select(path);
