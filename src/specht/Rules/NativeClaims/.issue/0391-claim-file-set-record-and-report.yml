@@ -19,6 +19,8 @@ claims:
   - B-017
   - B-026
   - B-032
+  - B-036
+  - B-037
 
 created: "2026-11-06"
 updated: "2026-11-13"
@@ -41,8 +43,10 @@ summary: |
 
 acceptance_criteria:
   - "B-003 — a record supplies frontmatter, lifecycle and edges, held by SPEC1001 to SPEC1003; none means current, no edge"
-  - "B-017 — one identity in two sets, or a set and a layout's specification: SPEC3002 at each"
-  - "B-026 — counted among `features`; listed by its record, or its first claim file"
+  - "B-017 — one identity in two sets, or a set and a layout's specification: SPEC3002 at each, a set at its Feature's path, line 0"
+  - "B-026 — counted in one `claims` entry after the manifest's layouts, beside any layout of that name; its violations carry its record, or its first claim file"
+  - "B-036 — a set with no record and no claim file is no Feature: not counted, its identity compared with none"
+  - "B-037 — a record's own `id` or `epic` does not change the set's identity"
   - "B-032 — a record's `claim_prefix` does not choose the grammar: the tags are read with the tree's claim grammar, so a tag only the prefix admits declares nothing"
   - "Relative paths only (C-2); no file written (C-6)"
   - "Under 0.4.0, a tree without `claim.source: gherkin` gets the verdicts it got before this item (B-002); `0001-F7` B-154 does not apply, since 0.3.1 and 0.4.0 are not patch neighbours (`0001-F7` OQ-78)"
@@ -62,6 +66,11 @@ decisions:
     packages, and on the repository owner's selection "Fold into 0.4.0"
     the Feature's members and rules enter schema 0.4.0 (decision 0001).
     The report criterion is restated for 0.4.0.
+  - |
+    2026-11-13, spec-author: on the repository owner's selections for
+    implementer's six questions (OQ-11 to OQ-16), B-017 and B-026 are
+    amended and B-036 and B-037 added here; B-033 to B-035, a record
+    the check cannot read, go to 0395.
 
 out_of_scope:
   - "Items, children and spikes for a native Feature - § 5 row 13."

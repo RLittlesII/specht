@@ -8,6 +8,7 @@ Feature: Native Gherkin claims
   Background:
     Given a root with a manifest pinned to schema "0.4.0"
     And the manifest's "exclusions" does not hold "/.spec"
+    And the manifest declares no epic grammar
     And the manifest sets "claim.source" to "gherkin"
     And "claim.files" holds one claim file set with glob ".spec/features/arithmetic/*.feature" and feature "arithmetic"
     And the manifest leaves "claim.tag" and "ids.claim" at their defaults
@@ -165,17 +166,21 @@ Feature: Native Gherkin claims
 
   @B-017
   Scenario: One identity declared by a set and a discovered specification
-    Given the manifest declares no epic grammar
+    Given the claim file set names no record
+    And the glob matches ".spec/features/arithmetic/add.feature"
     And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
     When the check runs
     Then the output has a line "src/arithmetic/.spec/README.md(" naming "SPEC3002"
-    And the output has a line naming "SPEC3002" for the claim file set
+    And the output has a line ".spec/features/arithmetic/add.feature(0):" naming "SPEC3002"
 
   @B-017
   Scenario: One identity declared by two sets
     Given the manifest declares a second claim file set with glob ".spec/features/sums/*.feature" and feature "arithmetic"
+    And neither set names a record
+    And the globs match ".spec/features/arithmetic/add.feature" and ".spec/features/sums/total.feature"
     When the check runs
-    Then the output has two lines naming "SPEC3002" with the identifier "arithmetic"
+    Then the output has a line ".spec/features/arithmetic/add.feature(0):" naming "SPEC3002" with the identifier "arithmetic"
+    And the output has a line ".spec/features/sums/total.feature(0):" naming "SPEC3002" with the identifier "arithmetic"
 
   @B-018
   Scenario: A file two sets match is reported
@@ -266,18 +271,34 @@ Feature: Native Gherkin claims
       | the Feature              | every Scenario and Scenario Outline in the file |
 
   @B-026
-  Scenario: A native Feature is counted and listed by its record
-    Given the claim file set names the record ".spec/features/arithmetic/README.md"
+  Scenario: A native Feature is counted under a claims entry
+    Given the glob matches ".spec/features/arithmetic/add.feature"
     When the check runs with "--json"
-    Then the summary counts Feature "arithmetic" among "features"
-    And the report lists Feature "arithmetic" at ".spec/features/arithmetic/README.md"
+    Then the summary counts 1 under "claims", after the manifest's layouts
+    And the report's layouts count 1 under "claims", after the manifest's layouts
 
   @B-026
-  Scenario: A native Feature with no record is listed by its first claim file
+  Scenario: A manifest layout named claims keeps its own entry
+    Given the manifest declares a layout named "claims" that discovers one specification
+    And the glob matches ".spec/features/arithmetic/add.feature"
+    When the check runs with "--json"
+    Then the summary has two "claims" counts, the manifest layout's first
+    And the report's layouts have two "claims" entries, the manifest layout's first
+
+  @B-026
+  Scenario: A native Feature is reported at its record
+    Given the claim file set names the record ".spec/features/arithmetic/README.md"
+    And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
+    When the check runs
+    Then the output has a line ".spec/features/arithmetic/README.md(" naming "SPEC3002"
+
+  @B-026
+  Scenario: A native Feature with no record is reported at its first claim file
     Given the claim file set names no record
     And the glob matches ".spec/features/arithmetic/subtract.feature" and ".spec/features/arithmetic/add.feature"
-    When the check runs with "--json"
-    Then the report lists Feature "arithmetic" at ".spec/features/arithmetic/add.feature"
+    And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
+    When the check runs
+    Then the output has a line ".spec/features/arithmetic/add.feature(" naming "SPEC3002"
 
   @B-027
   Scenario: A set's identity carries an epic under the epic grammar
@@ -365,12 +386,71 @@ Feature: Native Gherkin claims
     When the check runs
     Then Feature "arithmetic" has exactly the claim "B-001"
 
+  @B-033
+  Scenario Outline: A record the check cannot read is reported
+    Given the claim file set names the record "<record>"
+    And <condition>
+    When the check runs
+    Then the output has a line "<record>(0): error SPEC027:"
+
+    Examples:
+      | record                              | condition                            |
+      | .spec/features/arithmetic/README.md | no file is at that path              |
+      | .spec/features/arithmetic/README.md | the file at that path cannot be read |
+      | ../outside/README.md                | the path leads outside the root      |
+
+  @B-034
+  Scenario: An absolute record is reported at the manifest
+    Given the claim file set names a record at an absolute path
+    When the check runs
+    Then the output has a line ".specht/manifest.json(0): error SPEC027:"
+    And no output line holds an absolute path
+
+  @B-035
+  Scenario Outline: A record the check cannot read leaves a record-less Feature
+    Given the claim file set names a record that <condition>
+    And the glob matches ".spec/features/arithmetic/add.feature"
+    When the check runs
+    Then Feature "arithmetic" has the lifecycle "current"
+    And Feature "arithmetic" declares no dependency edge
+
+    Examples:
+      | condition                        |
+      | names no file                    |
+      | names a file that cannot be read |
+      | is an absolute path              |
+      | leads outside the root           |
+
+  @B-036
+  Scenario: A set with no record and no claim file is no Feature
+    Given the claim file set names no record
+    And no file matches ".spec/features/arithmetic/*.feature" outside the exclusions
+    And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
+    When the check runs with "--json"
+    Then the summary counts 0 under "claims"
+    And no "SPEC3002" is reported
+
+  @B-037
+  Scenario: A record's own identity does not override its set's
+    Given the claim file set names the record ".spec/features/arithmetic/README.md"
+    And the record's frontmatter sets "id" to "F9"
+    When the check runs
+    Then Feature "arithmetic" has the identity "arithmetic"
+    And no Feature has the identity "F9"
+
   @boundary
   Scenario: A claim is never inferred from a title or a step
     Given ".spec/features/arithmetic/add.feature" has an untagged scenario titled "B-009 adds two numbers"
     When the check runs
     Then Feature "arithmetic" has no claim "B-009"
     And the scenario is reported under "SPEC025"
+
+  @boundary
+  Scenario: A record's differing identity is not reported
+    Given the claim file set names the record ".spec/features/arithmetic/README.md"
+    And the record's frontmatter sets "id" to "F9"
+    When the check runs
+    Then no violation reports that the record's id differs from its set's feature
 
   @boundary
   Scenario: No file is written
