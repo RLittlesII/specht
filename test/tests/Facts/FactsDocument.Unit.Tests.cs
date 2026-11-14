@@ -14,8 +14,10 @@ namespace Specht.Tests.Facts;
 /// open-question row with its cells and line and no coverage, each open question's resolved state on OQ-2's default, an
 /// out-of-scope section missing or with no table leaving only its own rows out, the records it is handed beside each
 /// Feature with the number and status OQ-3's default reads, the same members under two pins, the same text for the same
-/// model, and a selection by a specification's path or by a directory, by whole path segments in the document's order,
-/// or of nothing.
+/// model, a selection by a specification's path or by a directory, by whole path segments in the document's order,
+/// or of nothing, and the text lines (B-024, OQ-5's default): one per claim, constraint, out-of-scope row and open
+/// question in the document's order, five tab-separated fields, a missing text an empty field, and a tab or line break
+/// inside a field written as a space.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FactsDocumentUnitTests
@@ -565,6 +567,141 @@ public sealed class FactsDocumentUnitTests
 
         // Then
         selected["specifications"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void FeaturesWithEveryKindOfFactAndRecords_WhenLinesAreMade_ShouldGiveOneFiveFieldLinePerFactInTheDocumentsOrder()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/zeta/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/zeta/.spec/README.md")
+                    .WithSections(
+                        new SpechtSection(
+                            "3. Acceptance Criteria", 10, ["ID", "Claim", "Source", "Status"], [["B-001", "It holds.", "the owner", "Active"]], [14]),
+                        new SpechtSection(
+                            "11. Open Questions", 36, ["ID", "Question", "Blocks", "Resolution"], [["OQ-2", "Which comes last?", "B-001", "Open"]], [40]))),
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/area/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/area/.spec/README.md")
+                    .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject
+                    {
+                        ["epic"] = "0001",
+                        ["id"] = "F1",
+                        ["spec_status"] = "approved",
+                        ["status"] = "ready",
+                        ["depends_on"] = new JsonArray("F2"),
+                    }))
+                    .WithSections(
+                        new SpechtSection(
+                            "3. Acceptance Criteria",
+                            57,
+                            ["ID", "Claim", "Source", "Status"],
+                            [
+                                ["B-001", "Given a tree, this Feature gives its facts.", "the owner", "Active"],
+                                ["B-002", "Given a flag, this Feature writes one document.", "the owner", "Withdrawn"],
+                            ],
+                            [61, 62]),
+                        new SpechtSection(
+                            "4. Constraints", 64, ["ID", "Constraint", "Rules Out"], [["C-1", "Offline and read-only.", "A network call."]], [68]),
+                        new SpechtSection("5. Out of Scope", 73, ["#", "Item", "Exclusion Reason"], [["1", "Any other input", "Owned elsewhere"]], [77]),
+                        new SpechtSection(
+                            "11. Open Questions",
+                            108,
+                            ["ID", "Question", "Blocks", "Resolution"],
+                            [["OQ-1", "Which input comes first?", "B-001", "Resolved 2026-10-30 by the owner: the tree"]],
+                            [112]))),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/empty/.spec/README.md")));
+        var records = new Dictionary<FeatureSpec, IReadOnlyList<RecordFile>>
+        {
+            [model.Features[1]] = [new RecordFileFixture().WithRelativePath("src/area/.spec/adr/0001-an-adr.md").WithKind("adr")],
+        };
+
+        // When
+        var lines = FactsDocument.From(model, records).Lines();
+
+        // Then
+        lines.Should().Equal(
+            "src/zeta/.spec/README.md\tclaim\tB-001\t14\tIt holds.",
+            "src/zeta/.spec/README.md\topenQuestion\tOQ-2\t40\tWhich comes last?",
+            "src/area/.spec/README.md\tclaim\tB-001\t61\tGiven a tree, this Feature gives its facts.",
+            "src/area/.spec/README.md\tclaim\tB-002\t62\tGiven a flag, this Feature writes one document.",
+            "src/area/.spec/README.md\tconstraint\tC-1\t68\tOffline and read-only.",
+            "src/area/.spec/README.md\toutOfScope\t1\t77\tAny other input",
+            "src/area/.spec/README.md\topenQuestion\tOQ-1\t112\tWhich input comes first?");
+    }
+
+    [Fact]
+    public void RowsUnderTablesLackingTheirTextHeader_WhenLinesAreMade_ShouldWriteEachMissingTextAsAnEmptyFifthField()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/area/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/area/.spec/README.md")
+                    .WithSections(
+                        new SpechtSection("3. Acceptance Criteria", 10, ["ID", "Source", "Status"], [["B-001", "the owner", "Active"]], [14]),
+                        new SpechtSection("4. Constraints", 20, ["ID", "Rules Out"], [["C-1", "A network call."]], [24]),
+                        new SpechtSection("5. Out of Scope", 30, ["#", "Exclusion Reason"], [["1", "Owned elsewhere"]], [34]),
+                        new SpechtSection("11. Open Questions", 110, ["ID", "Blocks", "Resolution"], [["OQ-1", "B-001", "Open"]], [114]))));
+        var document = FactsDocument.From(model, NoRecords);
+        JsonNode.Parse(document.ToJson())!["specifications"]![0]!["claims"]![0]!.AsObject().Should().ContainKey("text")
+            .WhoseValue.Should().BeNull();
+
+        // When
+        var lines = document.Lines();
+
+        // Then
+        lines.Should().Equal(
+            "src/area/.spec/README.md\tclaim\tB-001\t14\t",
+            "src/area/.spec/README.md\tconstraint\tC-1\t24\t",
+            "src/area/.spec/README.md\toutOfScope\t1\t34\t",
+            "src/area/.spec/README.md\topenQuestion\tOQ-1\t114\t");
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsLineBreakingCharacters))]
+    public void ATabOrLineBreakInsideAField_WhenLinesAreMade_ShouldWriteEachSuchCharacterAsOneSpaceAndKeepOneLinePerFact(string character, string written)
+    {
+        // Given
+        var path = $"src/a{character}b/.spec/README.md";
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath(path)
+                    .WithSections(
+                        new SpechtSection(
+                            "3. Acceptance Criteria",
+                            10,
+                            ["ID", "Claim", "Source", "Status"],
+                            [[$"B-0{character}01", $"Given a{character}tree.", "the owner", "Active"]],
+                            [14]),
+                        new SpechtSection(
+                            "4. Constraints", 20, ["ID", "Constraint", "Rules Out"], [[$"C-{character}1", $"Read{character}only.", "A write."]], [24]),
+                        new SpechtSection(
+                            "5. Out of Scope", 30, ["#", "Item", "Exclusion Reason"], [[$"1{character}2", $"Any{character}write", "Not asked"]], [34]),
+                        new SpechtSection(
+                            "11. Open Questions",
+                            110,
+                            ["ID", "Question", "Blocks", "Resolution"],
+                            [[$"OQ-{character}1", $"Which{character}one?", "B-001", "Open"]],
+                            [114]))));
+
+        // When
+        var lines = FactsDocument.From(model, NoRecords).Lines();
+
+        // Then
+        var shown = $"src/a{written}b/.spec/README.md";
+        lines.Should().Equal(
+            $"{shown}\tclaim\tB-0{written}01\t14\tGiven a{written}tree.",
+            $"{shown}\tconstraint\tC-{written}1\t24\tRead{written}only.",
+            $"{shown}\toutOfScope\t1{written}2\t34\tAny{written}write",
+            $"{shown}\topenQuestion\tOQ-{written}1\t114\tWhich{written}one?");
     }
 
     private static readonly Dictionary<FeatureSpec, IReadOnlyList<RecordFile>> NoRecords = [];
