@@ -5,14 +5,14 @@ using Specht.Tests.Shared;
 
 namespace Specht.Tests.Rules.Matrix;
 
-/// <summary>SPEC023 over an in-memory tree whose matrix headers and markers are renamed (0001-F12 B-011, A-3, C-3, C-5).</summary>
+/// <summary>SPEC023 over an in-memory tree whose matrix headers and markers are renamed (0001-F12 B-011, B-026, B-027, A-3, C-3, C-5).</summary>
 [Trait("Tier", "Unit")]
 public sealed class MissingScenarioRuleUnitTests
 {
     [Theory]
     [ClassData(typeof(MissingScenarioRows))]
-    public void ALiveClaimNoScenarioCarries_WhenEvaluated_ShouldBeReportedAtItsRowUnlessTheRowIsMissingOrWaived(
-        string claimStatus, string tag, string rowStatus, bool reported)
+    public void AClaimAndItsMatrixRows_WhenEvaluated_ShouldReportEachNonExemptRowOfALiveClaimNoCompanionTagCarries(
+        string claimStatus, string companion, string[] rowStatuses, int[] reported)
     {
         // Given
         IFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -33,15 +33,9 @@ public sealed class MissingScenarioRuleUnitTests
                 ## 9. Traceability Matrix
                 | Claim | Case | Tests | State |
                 | --- | --- | --- | --- |
-                | B-001 | A scenario | `AlphaTest` | {{rowStatus}} |
+                {{string.Concat(rowStatuses.Select(static status => $"| B-001 | A scenario | `AlphaTest` | {status} |\n"))}}
                 """),
-            [Path.Combine("repo", "src", "sample", ".spec", "sample.feature")] = new($$"""
-                Feature: Sample
-
-                  {{tag}}
-                  Scenario: A scenario
-                    Given a thing
-                """),
+            [Path.Combine("repo", "src", "sample", ".spec", "sample.feature")] = new(companion),
         });
         var model = EngineServices.Reader(fileSystem).Read(fileSystem.Path.GetFullPath("repo"), null);
         var rule = EngineServices.Rules().SingleOrDefault(static rule => rule.Id == "SPEC023");
@@ -51,7 +45,7 @@ public sealed class MissingScenarioRuleUnitTests
         var findings = rule!.Evaluate(model).ToArray();
 
         // Then
-        findings.Should().HaveCount(reported ? 1 : 0);
-        findings.Should().OnlyContain(static finding => finding.File == "src/sample/.spec/README.md" && finding.Line == 12);
+        findings.Should().OnlyContain(static finding => finding.File == "src/sample/.spec/README.md");
+        findings.Select(static finding => finding.Line).Should().BeEquivalentTo(reported);
     }
 }
