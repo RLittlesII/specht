@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Check;
 using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
@@ -16,12 +17,19 @@ namespace Specht.Tool.Features.Frontmatter;
 
 /// <summary>Checks one document through the engine and prints its frontmatter verdict.</summary>
 /// <param name="console">The diagnostic output.</param>
-/// <param name="runner">The existing check engine.</param>
+/// <param name="check">The engine's one-document frontmatter check.</param>
+/// <param name="mapper">Makes the report document whose summary is printed.</param>
 /// <param name="files">The document's file system.</param>
 /// <param name="input">Standard input, or the injected reader.</param>
 /// <param name="errors">Standard error, or the injected writer.</param>
 /// <implements epic="0001" feature="F8" claim="B-001" />
-public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner, IFileSystem files, TextReader? input = null, TextWriter? errors = null)
+public sealed class FrontmatterCommand(
+    IAnsiConsole console,
+    SpechtFrontmatterCheck check,
+    SpechtReportDocumentMapper mapper,
+    IFileSystem files,
+    TextReader? input = null,
+    TextWriter? errors = null)
     : AsyncCommand<FrontmatterCommand.Settings>
 {
     /// <inheritdoc />
@@ -36,7 +44,7 @@ public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner
         FrontmatterKind kind;
         try
         {
-            kind = runner.ParseFrontmatterKind(settings.Kind);
+            kind = check.ParseKind(settings.Kind);
         }
         catch (ArgumentException exception)
         {
@@ -54,7 +62,7 @@ public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner
         SpechtReport report;
         try
         {
-            report = runner.CheckFrontmatter(files.Path.GetFullPath(settings.Root), kind, settings.DocumentPath ?? "<stdin>", text);
+            report = check.Run(files.Path.GetFullPath(settings.Root), kind, settings.DocumentPath ?? "<stdin>", text);
         }
         catch (SpechtRootNotFoundException)
         {
@@ -74,7 +82,7 @@ public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner
             console.Profile.Out.Writer.WriteLine(violation);
         }
 
-        console.Profile.Out.Writer.WriteLine(SpechtReportDocument.From(report).SummaryLines()[^1]);
+        console.Profile.Out.Writer.WriteLine(mapper.Map(report).SummaryLines()[^1]);
         return report.ErrorCount > 0 ? ExitCodes.Violations : ExitCodes.Success;
     }
 

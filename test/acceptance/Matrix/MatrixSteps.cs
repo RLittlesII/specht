@@ -423,7 +423,7 @@ public sealed class MatrixSteps
             .Where(entry => entry.line.StartsWith($"| {_claimId} | {_scenario} |", StringComparison.Ordinal))
             .Select(static entry => entry.index + 1)];
         _row = _rows.FirstOrDefault();
-        _report = EngineServices.Runner().Run(Tree.Root);
+        _report = EngineServices.Check().Run(Tree.Root, null);
     }
 
     [Then("^the waiver rule reports (nothing|one finding) for that row$")]
@@ -590,7 +590,8 @@ public sealed class MatrixSteps
         using var services = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
         var kept = ((IEnumerable<ISpechtRule>) services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(rule => !keys.Contains(rule.Id));
         var baseline = new SpechtEvaluator(kept, new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
-        SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
+        new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(_report!))
+            .Should().Be(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(baseline)));
     }
 
     private void WriteTest(string name, string text) => Tree.WriteRaw($"test/{name}{_extension}", text);

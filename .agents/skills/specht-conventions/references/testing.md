@@ -41,7 +41,7 @@ is `test/tests` alone. `AcceptanceTest` runs `test/acceptance` with no filter.
 The line between the first two tiers is the file system: a unit test exercises
 one decision, derivation or mapping in memory; an integration test touches the
 disk or a process. In the engine, a unit test runs one rule or one reader over
-documents built in memory, and an integration test runs `SpechtRunner` over
+documents built in memory, and an integration test runs `SpechtCheck` over
 a `SpechtTree` written to a temporary directory and asserts the report. The 56
 baseline tests already draw it this way (brief § 3); follow them.
 
@@ -168,7 +168,7 @@ that way. If co-location is ever proposed, that incident is the cost to weigh.
 test/tests/              no .cs at the root
   Model/ Discovery/ Manifest/ Evaluation/ Report/ Versioning/ Rules/ Tree/
                          one per engine folder in src/specht
-  Engine/                SpechtRunner's own tests
+  Engine/                SpechtCheck's own tests, and the I/O guard
   Composition/           AddSpechtEngine()'s registrations
   Engine/Baseline/       the baseline tree and the committed golden report
   Check/ Init/           one per command under src/tool/Features/
@@ -295,7 +295,7 @@ wall clock.
 - A `Unit` trait on a test that runs a command through `CommandAppTester`.
 - A `ServiceCollection`, `TypeRegistrar` or `CommandAppTester` assembled in a
   test outside the factory (ADR-0007; from item `0144`).
-- A runner passed into the factory, or a canned report handed to the check
+- A check passed into the factory, or a canned report handed to the check
   command.
 - A hand-rolled factory method for test data an AutoFixture can build.
 - Copied facts that differ only in their data, where a `[Theory]` would do.
