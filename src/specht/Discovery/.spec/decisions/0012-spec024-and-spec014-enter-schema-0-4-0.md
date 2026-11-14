@@ -48,6 +48,7 @@ published version (`0001-F7` C-1).
 - B-013 and B-014, amended. B-015 is unchanged.
 - OQ-22, resolved.
 - Item `0441`, ready. B-014 and B-015 have no item.
+- `0001-F3`: the `@B-034` and `@B-038` scenarios pin `0.4.0`; B-034 and B-038 name no pin and are unchanged.
 
 ## Reversal
 

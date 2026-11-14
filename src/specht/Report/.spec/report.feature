@@ -465,7 +465,7 @@ Feature: The report contract
 
   @B-034
   Scenario: A required-specification violation says the glob and the layouts
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.4.0"
     And the manifest requires a specification in each directory "skills/*"
     And the root holds "skills/next/" with no specification inside it
     When the check runs with JSON output
@@ -491,7 +491,7 @@ Feature: The report contract
 
   @B-037
   Scenario: A missing-scenario violation says the tag and the missing marker
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.4.0"
     And the root holds a specification whose covered claim B-001 no scenario carries
     When the check runs with JSON output
     Then the violation's expectation carries the tag "@B-001"
@@ -499,7 +499,7 @@ Feature: The report contract
 
   @B-038
   Scenario: An orphan-companion violation says the specification expected
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.4.0"
     And the root holds a ".spec/" directory with a scenario file and no specification
     When the check runs with JSON output
     Then the violation's expectation carries the specification file names expected beside it
@@ -516,7 +516,7 @@ Feature: The report contract
 
   @B-040
   Scenario: A status violation says the supported status and what resolved
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.4.0"
     And the manifest declares the test files "test/**/*.cs"
     And the root holds a specification whose covered row's scenario resolves and whose one test does not
     When the check runs with JSON output

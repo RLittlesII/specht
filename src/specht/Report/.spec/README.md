@@ -20,7 +20,7 @@ depends_on: ["F2"]
 blocks: ["F7", "F8", "F10", "F12", "F17", "0132/F4"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-11-03"
+updated: "2026-11-14"
 github_issue: null
 synced_at: null
 ---
@@ -437,7 +437,9 @@ The scenario and unknown-id assertions failed before the option was implemented.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-14 (OQ-8 resolved: B-044 and B-045 added; B-046 added; B-046's rejected option recorded, OQ-10 raised, review of item `0036`); spec-author, 2026-11-03 (item 0345: B-012 amended, `0001-F5` OQ-27); spec-author, 2026-11-03 (item 0345: B-012 amended, `0001-F5` OQ-26); spec-author, 2026-11-02 (item 0016: B-012 amended, `0001-F5` OQ-25); spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
+<!-- last written by: spec-author, 2026-11-14 (scenario pins of B-034, B-037, B-038 and B-040 moved to 0.4.0); spec-author, 2026-11-14 (OQ-8 resolved: B-044 and B-045 added; B-046 added; B-046's rejected option recorded, OQ-10 raised, review of item `0036`); spec-author, 2026-11-03 (item 0345: B-012 amended, `0001-F5` OQ-27); spec-author, 2026-11-03 (item 0345: B-012 amended, `0001-F5` OQ-26); spec-author, 2026-11-02 (item 0016: B-012 amended, `0001-F5` OQ-25); spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
+
+- 2026-11-14, on the repository owner's selection "Yes, fix in #897" for `spec-reviewer`'s non-blocking finding on that pull request: the `@B-034` and `@B-038` scenarios pin schema `0.4.0`, was `0.2.0`, since `SPEC014` and `SPEC024` enter `0.4.0` ([`0001-F6` decision 0012](../../Discovery/.spec/decisions/0012-spec024-and-spec014-enter-schema-0-4-0.md)); the `@B-037` and `@B-040` scenarios pin `0.4.0`, was `0.2.0`, since `SPEC4008` and `SPEC4010` enter `0.4.0` ([`0001-F12` decision 0005](../../Rules/Matrix/.spec/decisions/0005-the-missing-scenario-and-status-rules-enter-schema-0-4-0.md)). No claim names a pin, so none changed; no step binds these scenarios.
 
 - 2026-11-14, item `0036`, on `spec-reviewer`'s findings for the item: § 5 row 14 records the option B-046 rejects, resolving a relative `--report` path from the root, with its cost, as spec-author's judgement and not the owner's. The precedent runs both ways: `docs/cli.md` resolves `specht frontmatter`'s document path from the working directory and `specht facts`' `<path>` from the root. OQ-10 raised: what `--report` does beside `--explain`. No claim, constraint or scenario changed.
 
