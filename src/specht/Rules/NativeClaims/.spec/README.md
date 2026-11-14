@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -186,7 +186,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -772,7 +772,7 @@ and item `0390`'s `ClaimSets` carry the work. No type is added.
 
 ### A scenario in a claim file with no claim, `SPEC4011` (item `0393`)
 
-Designed, not built. B-010: a Scenario or Scenario Outline in a claim file
+Built. B-010: a Scenario or Scenario Outline in a claim file
 that carries no claim tag of its own, from its Rule or from its Feature is
 reported at its keyword line, at warning by default. The id is `SPEC4011`
 (decision 0004). The shared reader already finds such a scenario; this item

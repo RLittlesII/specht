@@ -125,6 +125,7 @@ public sealed class SchemaVersions
             {
                 ["SPEC023"] = "SPEC4008",
                 ["SPEC024"] = "SPEC2003",
+                ["SPEC025"] = "SPEC4011",
                 ["SPEC033"] = "SPEC4010",
             },
             _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),

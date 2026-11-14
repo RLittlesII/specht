@@ -11,6 +11,7 @@ using Specht.Report;
 using Specht.Resources;
 using Specht.Rules;
 using Specht.Rules.Matrix;
+using Specht.Rules.NativeClaims;
 using Specht.Tree;
 using Specht.Versioning;
 
@@ -80,6 +81,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, ScenarioTitleRule>();
         services.AddSingleton<ISpechtRule, MissingScenarioRule>();
         services.AddSingleton<ISpechtRule, OrphanCompanionRule>();
+        services.AddSingleton<ISpechtRule, ScenarioWithoutClaimRule>();
         services.AddSingleton<ISpechtRule, ClaimIdRule>();
         services.AddSingleton<ISpechtRule, ClaimRowRule>();
         services.AddSingleton<ISpechtRule, UnresolvedTestRule>();
