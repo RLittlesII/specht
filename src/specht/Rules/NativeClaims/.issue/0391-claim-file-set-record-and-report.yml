@@ -2,7 +2,7 @@ id: "0391"
 type: task
 title: Give a claim file set its record, a single identity and a report entry
 
-status: ready
+status: in-progress
 
 risk: 3
 
@@ -20,7 +20,7 @@ claims:
   - B-026
 
 created: "2026-11-06"
-updated: "2026-11-12"
+updated: "2026-11-13"
 closed: null
 
 summary: |
