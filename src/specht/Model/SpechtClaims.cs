@@ -41,6 +41,10 @@ public sealed class SpechtClaims
         TagIds = new ReadOnlySet<string>(tagIds);
     }
 
+    /// <summary>The claim file set a native Feature's claims are read from; null for a claims table.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    public SpechtClaimFileSet? FileSet { get; }
+
     /// <summary>The claims section, absent when no section has the configured role.</summary>
     public SpechtSection? Section { get; }
 

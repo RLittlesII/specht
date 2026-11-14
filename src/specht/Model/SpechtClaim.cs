@@ -6,4 +6,13 @@ namespace Specht.Model;
 /// <param name="IsValid">Whether the claim grammar accepts the id.</param>
 /// <param name="FirstDeclarationLine">The first line of a duplicated valid id, null on its first declaration.</param>
 /// <implements epic="0001" feature="F1" claim="B-004" />
-public sealed record SpechtClaim(string Id, int Line, bool IsValid, int? FirstDeclarationLine);
+public sealed record SpechtClaim(string Id, int Line, bool IsValid, int? FirstDeclarationLine)
+{
+    /// <summary>The root-relative path of the claim file that declares a native claim; null for a claims table row.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-004" />
+    public string? Path { get; init; }
+
+    /// <summary>The Gherkin declaration a native claim is read from; null for a claims table row.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-004" />
+    public GherkinClaimDeclaration? Declaration { get; init; }
+}

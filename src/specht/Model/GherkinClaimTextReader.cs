@@ -161,7 +161,7 @@ public sealed class GherkinClaimTextReader
                 var cases = Array.AsReadOnly(covered.SelectMany(Cases).ToArray());
                 foreach (var id in element.Ids)
                 {
-                    claims.Add(new GherkinClaimDeclaration(id, State(element), element.Line, element.Kind, cases));
+                    claims.Add(new GherkinClaimDeclaration(id, State(element), element.Line, element.Kind, cases, Array.Empty<int>()));
                 }
             }
 

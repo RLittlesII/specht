@@ -69,6 +69,10 @@ public sealed class SpechtModel
     /// <summary>The claims derived once per Feature.</summary>
     public IReadOnlyDictionary<FeatureSpec, SpechtClaims> Claims { get; }
 
+    /// <summary>The claims of each claim file set, in the manifest's order; empty unless <c>claim.source</c> is <c>gherkin</c>.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    public IReadOnlyList<SpechtClaims> ClaimSets { get; } = [];
+
     /// <summary>The configured matrix section of each Feature.</summary>
     public IReadOnlyDictionary<FeatureSpec, SpechtSection?> MatrixSections { get; }
 
