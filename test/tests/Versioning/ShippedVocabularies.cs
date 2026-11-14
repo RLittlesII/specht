@@ -3,8 +3,8 @@ namespace Specht.Tests.Versioning;
 /// <summary>
 /// Each shipped version from 0.2.0 on, and the rule ids its vocabulary names (<c>0001-F7</c> B-014, B-151, B-152; C-1): 0.2.0
 /// and 0.2.1 keep the three-digit ids, 0.3.0 and 0.3.1 take the four-digit ids of ADR-0029's map in their place, and 0.4.0,
-/// which item <c>0436</c> cut from 0.3.1 with no rule id of its own (<c>0001-F5</c> A-8), adds <c>SPEC4008</c> (<c>0001-F12</c>
-/// B-011, decision 0005, reading 1). The rules that enter 0.4.0 later add their ids to its row.
+/// which item <c>0436</c> cut from 0.3.1 with no rule id of its own (<c>0001-F5</c> A-8), adds <c>SPEC4008</c> and <c>SPEC4010</c>
+/// (<c>0001-F12</c> B-011, B-012 to B-017, decision 0005, reading 1). The rules that enter 0.4.0 later add their ids to its row.
 /// </summary>
 public sealed class ShippedVocabularies : TheoryData<string, string[]>
 {
@@ -27,6 +27,6 @@ public sealed class ShippedVocabularies : TheoryData<string, string[]>
         ];
         Add("0.3.0", fourDigit);
         Add("0.3.1", fourDigit);
-        Add("0.4.0", [.. fourDigit, "SPEC4008"]);
+        Add("0.4.0", [.. fourDigit, "SPEC4008", "SPEC4010"]);
     }
 }

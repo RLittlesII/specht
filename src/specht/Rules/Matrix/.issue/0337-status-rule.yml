@@ -2,7 +2,7 @@ id: "0337"
 type: task
 title: Report a § 9 status the scenarios and tests do not bear out, SPEC4010, in schema 0.4.0
 
-status: ready
+status: done
 
 risk: 4
 
@@ -21,10 +21,13 @@ claims:
   - B-015
   - B-016
   - B-017
+  - B-028
+  - B-029
+  - B-030
 
 created: "2026-11-01"
-updated: "2026-11-12"
-closed: null
+updated: "2026-11-13"
+closed: "2026-11-13"
 
 summary: |
   SPEC4010 reports, at its § 9 row, a status the tree does not bear out: a
@@ -59,6 +62,9 @@ acceptance_criteria:
   - "B-015 — stale missing row"
   - "B-016 — no tests key: scenario and a named test only, never stale"
   - "B-017 — unknown status marker"
+  - "B-028 — a claim tag on any tag line carries the row's claim tag, as for SPEC4008 (decision 0007)"
+  - "B-029 — silent at a row SPEC4008's condition holds for, whatever SPEC4008's level (decision 0008)"
+  - "B-030 — under title matching, a Scenario cell naming no title does not resolve (decision 0008)"
   - "`0001-F7` B-014 — SPEC4010 joins schema 0.4.0's vocabulary here, the version 0436 cuts, with its rule page (`0001-F3` B-031) and a relock of 0.4.0 (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.4.0: the item stops and the version goes to the owner (decision 0005)."
   - "Decision 0002 call 3 — every row SPEC4010 reports on this repository's tree, pinned 0.4.0 by 0436, fixed in this pull request; `./build.sh Specht` gives 0 errors"
@@ -89,6 +95,23 @@ decisions:
     without it, so this item waits on 0436 as well as through 0336; the
     title, the summary and the vocabulary, relock and pin criteria name
     0.4.0. The id, the file name and the claims are unchanged.
+  - |
+    2026-11-13, spec-author: on test-writer's six open cases in section 8
+    (decision 0007), as spec-author's reading, not the owner's. Case 2:
+    B-028 added and claimed here, SPEC4010 reading carried as SPEC4008
+    does (B-026; C-3). Cases 3 and 4 are stated by B-013 and B-014 and by
+    B-012, and gain scenarios; case 5 gains a B-013 scenario. Cases 1 (B-012
+    with SPEC4008 off) and 6 (an empty Scenario cell under title matching)
+    change a verdict no claim states and are put to the owner; no claim is
+    written for them.
+  - |
+    2026-11-13, spec-author: the repository owner selected "(a) Silent at
+    any level (Recommended)" on case 1 and "(b) No, report it
+    (Recommended)" on case 6 (decision 0008). B-029, SPEC4010 silent
+    wherever SPEC4008's condition holds whatever SPEC4008's level, and
+    B-030, a Scenario cell naming no title does not resolve under title
+    matching, added and claimed here; A-1 amended; SPEC4007 unchanged
+    (section 5 row 12).
 
 out_of_scope:
   - "SPEC4009's report of the same row: 0334 (B-006)."

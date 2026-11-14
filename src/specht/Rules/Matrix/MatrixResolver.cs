@@ -18,11 +18,21 @@ public sealed class MatrixResolver
     public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpechtStructure structure, SpechtClaims claims)
     {
         var rows = Resolve(feature, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
-        var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var tags = feature.FeatureFiles.SelectMany(static file => file.Tags).ToLookup(static tag => tag.Id, comparer);
+        var tags = ClaimTags(feature, structure);
         return claims.Rows.Select((claim, index) => new MatrixClaimResolution(
             claim, claims.Section!.Rows[index].ElementAtOrDefault(3)?.Trim() ?? string.Empty,
             rows[claim.Id].ToArray(), tags[claim.Id].ToArray())).ToArray();
+    }
+
+    /// <summary>Groups every claim tag on a tag line of the companions by claim id, under the configured tag-case setting.</summary>
+    /// <param name="feature">The specification and its parsed companion snapshot.</param>
+    /// <param name="structure">The selected manifest's tag-case setting.</param>
+    /// <returns>The matching companion tags for any claim id, declared in the claims section or not.</returns>
+    /// <implements epic="0001" feature="F12" claim="B-028" />
+    public ILookup<string, FeatureTag> ClaimTags(FeatureSpec feature, SpechtStructure structure)
+    {
+        var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        return feature.FeatureFiles.SelectMany(static file => file.Tags).ToLookup(static tag => tag.Id, comparer);
     }
 
     /// <summary>Reads the matrix columns by position and resolves their test names and their Scenario cell titles.</summary>

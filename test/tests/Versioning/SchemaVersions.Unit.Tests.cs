@@ -17,8 +17,8 @@ namespace Specht.Tests.Versioning;
 /// tool ships for it, version 0.1.0's epic schema accepts a
 /// non-empty title and description and rejects an empty one, version 0.1.0's vocabulary is the twenty-one rule ids,
 /// versions 0.2.0 and 0.2.1 name each rule by its three-digit id and 0.3.0 by its four-digit id, 0.3.0 pairs each
-/// rule key with the four-digit id ADR-0029's map gives it, 0.4.0 pairs the missing-scenario rule's key with SPEC4008
-/// (<c>0001-F12</c> B-011, decision 0005), a version's patch neighbour names every rule the lower holds by
+/// rule key with the four-digit id ADR-0029's map gives it, 0.4.0 pairs the missing-scenario rule's key with SPEC4008 and the
+/// status rule's with SPEC4010 (<c>0001-F12</c> B-011 to B-017, decision 0005), a version's patch neighbour names every rule the lower holds by
 /// the lower's id (B-154), a pin
 /// selects exactly the version it names although a later patch and a later minor are held, and selecting a version the set
 /// does not hold is a rejected manifest naming the pin and the set.
@@ -200,17 +200,18 @@ public sealed class SchemaVersionsUnitTests
         id.Should().Be(expected);
     }
 
-    [Fact]
-    public void TheMissingScenarioRuleKey_WhenNamedUnderVersionZeroFourZero_ShouldTakeSpec4008()
+    [Theory]
+    [ClassData(typeof(ZeroFourZeroRuleNames))]
+    public void ARuleKeyEnteringVersionZeroFourZero_WhenNamedUnderIt_ShouldTakeTheFourDigitIdTheMapPairsItWith(string key, string expected)
     {
         // Given
         var version = EngineServices.Versions().Find(new SemanticVersion(0, 4, 0))!;
 
         // When
-        var id = version.RuleId("SPEC023");
+        var id = version.RuleId(key);
 
         // Then
-        id.Should().Be("SPEC4008");
+        id.Should().Be(expected);
     }
 
     [Theory]

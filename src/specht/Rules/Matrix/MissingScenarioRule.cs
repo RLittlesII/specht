@@ -23,22 +23,8 @@ public sealed class MissingScenarioRule(MatrixResolver resolver) : ISpechtRule
         {
             foreach (var claim in resolver.ResolveClaims(feature, structure, model.Claims[feature]))
             {
-                if (claim.Tags.Count > 0
-                    || string.Equals(claim.Status, markers["withdrawn"], StringComparison.Ordinal)
-                    || string.Equals(claim.Status, markers["superseded"], StringComparison.Ordinal))
+                foreach (var row in claim.Rows.Where(row => claim.MissesScenarioAt(row, markers)))
                 {
-                    continue;
-                }
-
-                foreach (var row in claim.Rows)
-                {
-                    var status = row.Status.Trim();
-                    if (string.Equals(status, markers["missing"], StringComparison.Ordinal)
-                        || string.Equals(status, markers["waived"], StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
                     yield return new SpechtFinding(
                         feature.RelativePath, row.Line, claim.Claim.Id,
                         $"no companion scenario carries the tag of {claim.Claim.Id}, and its {matrixReference} status is not '{markers["missing"]}'");
