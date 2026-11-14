@@ -8,7 +8,7 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Rules.Matrix;
 
 /// <summary>
-/// SPEC033 over an in-memory tree whose matrix headers and markers are renamed (0001-F12 B-012 to B-017, B-028, A-1 to A-3, C-3, C-5),
+/// SPEC033 over an in-memory tree whose matrix headers and markers are renamed (0001-F12 B-012 to B-017, B-028 to B-030, A-1 to A-3, C-3, C-5),
 /// alone and beside SPEC023 and SPEC032 under the 0.4.0 pin, which reports them under <c>SPEC4010</c>, <c>SPEC4008</c> and
 /// <c>SPEC4009</c> (ADR-0029; decision 0005).
 /// </summary>
@@ -88,15 +88,21 @@ public sealed class StatusRuleUnitTests
     [Theory]
     [ClassData(typeof(StatusBesideOtherRules))]
     public void AMatrixRow_WhenTheMissingScenarioUnresolvedTestAndStatusRulesEvaluate_ShouldReportTheStatusBesideSpec4009AndNeverBesideSpec4008(
-        string criterion, string companion, string test, string status, string[] expected)
+        string criterion, string companion, string? level, string test, string status, string[] expected)
     {
         // Given
+        var manifest = JsonNode.Parse("""
+            {"schemaVersion":"0.4.0","tables":{"matrix":["Claim","Case","Tests","State"]},"tests":{"files":["test/**/*.cs"]},
+             "markers":{"covered":"Proven","partial":"Halfway","missing":"Absent","waived":"Excused","withdrawn":"Retired","superseded":"Replaced"}}
+            """)!.AsObject();
+        if (level is not null)
+        {
+            manifest["rules"] = new JsonObject { ["SPEC4008"] = level };
+        }
+
         IFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpechtTree.ManifestPath)] = new("""
-                {"schemaVersion":"0.4.0","tables":{"matrix":["Claim","Case","Tests","State"]},"tests":{"files":["test/**/*.cs"]},
-                 "markers":{"covered":"Proven","partial":"Halfway","missing":"Absent","waived":"Excused","withdrawn":"Retired","superseded":"Replaced"}}
-                """),
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest.ToJsonString()),
             [Path.Combine("repo", "src", "sample", ".spec", "README.md")] = new($$"""
                 ---
                 epic: "0001"

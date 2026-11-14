@@ -4,7 +4,7 @@ namespace Specht.Tests.Rules.Matrix;
 /// A § 9 row of a live claim a companion scenario carries, under a manifest that names the covered, partial, missing, waived,
 /// withdrawn and superseded markers "Proven", "Halfway", "Absent", "Excused", "Retired" and "Replaced" (C-5): whether
 /// <c>tests.files</c> is declared, whether <c>matrix.scenarioTitles</c> is on, the Scenario cell, the Test cell, the Status,
-/// and the text the one finding's message holds, or null when the row is not reported (B-013 to B-017, A-1, A-2). The
+/// and the text the one finding's message holds, or null when the row is not reported (B-013 to B-017, B-030, A-1, A-2). The
 /// companion's <c>First case</c> carries the claim and its <c>Other case</c> does not; the declared file holds
 /// <c>AlphaTest</c> and <c>BetaTest</c>.
 /// </summary>
@@ -22,6 +22,9 @@ public sealed class StatusRows : TheoryData<bool, bool, string, string, string, 
         Add(true, true, "First case", "`AlphaTest`, `GammaTest`", "Proven", reported);
         Add(true, true, "First case", "Absent", "Proven", reported);
         Add(true, false, "A title none has", "`AlphaTest`, `BetaTest`", "Proven", null);
+        Add(true, true, "", "`AlphaTest`, `BetaTest`", "Proven", reported);
+        Add(true, true, " ; ; ", "`AlphaTest`, `BetaTest`", "Proven", reported);
+        Add(true, false, "", "`AlphaTest`, `BetaTest`", "Proven", null);
         Add(true, false, "First case", "`GammaTest`", "Proven", reported);
         Add(true, true, "First case", "`GammaTest`, `DeltaTest`", "Halfway", null);
         Add(true, true, "A title none has", "`AlphaTest`, `GammaTest`", "Halfway", null);

@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-020, B-022 to B-028).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-020, B-022 to B-030).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -33,6 +33,9 @@ public sealed class MatrixSteps
 
     [Given("the manifest sets the retired-claim rule to error")]
     public void GivenRetiredEnabled() => Rules[RuleIds.Under(Manifest, "SPEC035")] = "error";
+
+    [Given("the manifest sets the missing-scenario rule to {word}")]
+    public void GivenMissingScenarioLevel(string level) => Rules[RuleIds.Under(Manifest, "SPEC023")] = level;
 
     [Given("the manifest sets no level for either rule")]
     public void GivenRulesOmitted() => Manifest.Remove("rules");
@@ -79,6 +82,13 @@ public sealed class MatrixSteps
 
     [Given("an active claim B-004 whose tag no scenario carries")]
     public void GivenActiveUntaggedClaim() => GivenUntaggedClaim("Active");
+
+    [Given("an active claim B-004 whose tag a scenario carries")]
+    public void GivenActiveCarriedClaim()
+    {
+        _claim = "Active";
+        GivenTag();
+    }
 
     [Given("an active claim B-004 whose only tag is on a Rule that holds no scenario")]
     public void GivenTagOnEmptyRule()
@@ -370,6 +380,16 @@ public sealed class MatrixSteps
         _criterionId = "B-001";
         _tags = string.Empty;
     }
+
+    [Given("^its matrix row's Status is \"([^\"]*)\", its tests all resolve and its Scenario cell (is empty|holds only semicolons, spaced)$")]
+    public void GivenStatusResolvedTestsAndTitlelessCell(string status, string cell)
+    {
+        GivenRowWithResolvedTests(status);
+        _scenario = cell == "is empty" ? string.Empty : " ; ; ";
+    }
+
+    [Given("a matrix row whose Scenario cell is empty")]
+    public void GivenEmptyScenarioCell() => _scenario = string.Empty;
 
     [Given("the sign-off table uses the manifest's renamed column headers")]
     public void GivenRenamedHeaders()
