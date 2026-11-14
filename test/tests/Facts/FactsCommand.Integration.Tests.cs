@@ -12,7 +12,10 @@ namespace Specht.Tests.Facts;
 /// B-015, B-017 to B-023, B-025, B-026), launched as a shell launches it, with or without a root-relative path, its
 /// output validated against the published facts schema at <c>docs/schema/facts.schema.json</c> (OQ-1's default), copied
 /// into the output from that one file; and <c>specht facts</c> without <c>--json</c>, one tab-separated line per fact
-/// (B-024, OQ-5's default).
+/// (B-024, OQ-5's default). Each lessons-and-deltas entry and each sign-off row with its line in the file on disk, the
+/// second table under a <c>### Review history</c> not given (B-009, B-010); a manifest renaming the claims and sign-off
+/// sections and the sign-off headers (B-016); and the same entries and rows under two shipped pins whose <c>tables</c>
+/// name no sign-off headers (B-010, B-017).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class FactsCommandIntegrationTests
@@ -812,6 +815,195 @@ public sealed class FactsCommandIntegrationTests
             $"src/tool/.spec/README.md\tclaim\tB-001\t{LineOf(lines, "| B-001 |")}\tIt does the thing.",
             $"src/tool/.spec/README.md\tconstraint\tC-1\t{LineOf(lines, "| C-1 |")}\tMust be fast.",
             $"src/tool/.spec/README.md\toutOfScope\t1\t{LineOf(lines, "| 1 | Other things |")}\tOther things");
+    }
+
+    [Fact]
+    public void ALessonsAndDeltasSectionWithListItemsAndATable_WhenFactsAreGivenAsJson_ShouldCarryEachEntryWithItsTextOrCellsAndTheLineItIsOnInLineOrder()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "10. Lessons / Spec Deltas",
+            "## 10. Lessons / Spec Deltas\n\n"
+                + "- 2026-10-30, after review round 1. B-001 narrowed\n  to one input.\n"
+                + "- 2026-10-31, after review round 2.\n  - B-002 gains an example.\n\n"
+                + "| Trigger | Change | Affected IDs |\n| ------- | ------ | ------------ |\n| Review round 3 | `B-003` added | B-003 |\n\n"
+                + "### Later\n\n- 2026-11-01, see [lesson 0001](lessons/0001-a-lesson.md).\n"));
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!["deltas"].Should().BeOfType<JsonArray>().Which
+            .Select(static entry => new
+            {
+                Text = entry!["text"]?.GetValue<string>(),
+                Cells = entry["cells"]!.AsArray().Select(static cell => cell!.GetValue<string>()).ToArray(),
+                Line = entry["line"]!.GetValue<int>(),
+            })
+            .Should().BeEquivalentTo(
+                new[]
+                {
+                    new
+                    {
+                        Text = (string?) "2026-10-30, after review round 1. B-001 narrowed to one input.",
+                        Cells = Array.Empty<string>(),
+                        Line = LineOf(lines, "- 2026-10-30"),
+                    },
+                    new
+                    {
+                        Text = (string?) "2026-10-31, after review round 2. B-002 gains an example.",
+                        Cells = Array.Empty<string>(),
+                        Line = LineOf(lines, "- 2026-10-31"),
+                    },
+                    new { Text = (string?) null, Cells = new[] { "Review round 3", "B-003 added", "B-003" }, Line = LineOf(lines, "| Review round 3 |") },
+                    new { Text = (string?) "2026-11-01, see lesson 0001.", Cells = Array.Empty<string>(), Line = LineOf(lines, "- 2026-11-01") },
+                },
+                static options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public void ASignOffTableAndASecondTableUnderItsReviewHistory_WhenFactsAreGivenAsJson_ShouldCarryEachRowOfTheFirstWithItsSectionStatusReviewerNoteAndLine()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "12. Sign-off",
+            "## 12. Sign-off\n\n| Section | Status | Reviewer | Note |\n| ------- | ------ | -------- | ---- |\n"
+                + "| 1-5 | approved | spec-reviewer | Round 1 - approved. |\n| 6-9 | \U0001F7E1 | spec-reviewer |  |\n\n"
+                + "### Review history\n\n| Section | Status | Reviewer | Note |\n| ------- | ------ | -------- | ---- |\n"
+                + "| 10-12 | approved | spec-reviewer | Earlier round. |\n"));
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!["signOff"].Should().BeOfType<JsonArray>().Which
+            .Select(static row => (
+                row!["section"]!.GetValue<string>(),
+                row["status"]!.GetValue<string>(),
+                row["reviewer"]!.GetValue<string>(),
+                row["note"]!.GetValue<string>(),
+                row["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("1-5", "approved", "spec-reviewer", "Round 1 - approved.", LineOf(lines, "| 1-5 |")),
+                ("6-9", "\U0001F7E1", "spec-reviewer", string.Empty, LineOf(lines, "| 6-9 |")));
+    }
+
+    [Fact]
+    public void AManifestRenamingTheClaimsAndSignOffSectionsAndTheSignOffHeaders_WhenFactsAreGivenAsJson_ShouldReadEachUnderTheNameTheManifestGives()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath)))!.AsObject();
+        manifest["sections"] = new JsonArray(manifest["sections"]!.AsArray()
+            .Select(static entry => entry!.GetValue<string>() switch
+            {
+                "3. Acceptance Criteria" => "3. Requirements",
+                "12. Sign-off" => "12. Approval",
+                var title => title,
+            })
+            .Select(static title => (JsonNode?) title)
+            .ToArray());
+        manifest["roles"]!["claims"] = "3. Requirements";
+        manifest["roles"]!["signOff"] = "12. Approval";
+        manifest["tables"]!["signOff"] = new JsonArray("Part", "State", "By", "Comment");
+        tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.Sections
+            .Select(static section => section.StartsWith("## 3. Acceptance Criteria\n", StringComparison.Ordinal)
+                ? "## 3. Requirements\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n| B-001 | It does the thing. | brd | Active |\n"
+                : section)
+            .Select(static section => section.StartsWith("## 12. Sign-off\n", StringComparison.Ordinal)
+                ? "## 12. Approval\n\n| Part | State | By | Comment |\n| ---- | ----- | -- | ------- |\n| 1-5 | approved | spec-reviewer | Renamed. |\n"
+                : section)
+            .ToList());
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        var specification = JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        specification["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (
+                claim!["id"]!.GetValue<string>(),
+                claim["text"]!.GetValue<string>(),
+                claim["status"]!.GetValue<string>(),
+                claim["line"]!.GetValue<int>()))
+            .Should().Equal(("B-001", "It does the thing.", "Active", LineOf(lines, "| B-001 |")));
+        specification["signOff"].Should().BeOfType<JsonArray>().Which
+            .Select(static row => (
+                row!["section"]!.GetValue<string>(),
+                row["status"]!.GetValue<string>(),
+                row["reviewer"]!.GetValue<string>(),
+                row["note"]!.GetValue<string>(),
+                row["line"]!.GetValue<int>()))
+            .Should().Equal(("1-5", "approved", "spec-reviewer", "Renamed.", LineOf(lines, "| 1-5 |")));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsPinPairs))]
+    public void LessonsAndDeltasAndSignOffRowsUnderTwoShippedPinsWhoseTablesNameNoSignOffHeaders_WhenFactsAreGivenAsJson_ShouldGiveTheSameEntriesAndRows(
+        string firstPin, string secondPin)
+    {
+        // Given
+        using var first = new SpechtTree();
+        using var second = new SpechtTree();
+        first.Pin(firstPin);
+        second.Pin(secondPin);
+        foreach (var tree in new[] { first, second })
+        {
+            var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath)))!.AsObject();
+            manifest["tables"]!.AsObject().Remove("signOff");
+            tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
+            tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+                "10. Lessons / Spec Deltas",
+                "## 10. Lessons / Spec Deltas\n\n- A lesson.\n\n"
+                    + "| Trigger | Change | Affected IDs |\n| ------- | ------ | ------------ |\n| Review | Narrowed | B-001 |\n"));
+        }
+
+        // When
+        var runs = new[] { first, second }.Select(static tree => AcceptanceTool.Launch(tree.Root, "facts", "--json")).ToArray();
+
+        // Then
+        runs.Should().AllSatisfy(static run => run.ExitCode.Should().Be(0, run.Stderr));
+        var specifications = runs.Select(static run => JsonNode.Parse(run.Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!).ToArray();
+        specifications[0]["deltas"].Should().BeOfType<JsonArray>().Which.Should().HaveCount(2);
+        specifications[0]["signOff"].Should().BeOfType<JsonArray>().Which
+            .Select(static row => (
+                row!["section"]?.GetValue<string>(),
+                row["status"]?.GetValue<string>(),
+                row["reviewer"]?.GetValue<string>(),
+                row["note"]?.GetValue<string>()))
+            .Should().Equal(("1-5", "\U0001F7E1", "spec-reviewer", "Draft"));
+        specifications[1]["deltas"]!.ToJsonString().Should().Be(specifications[0]["deltas"]!.ToJsonString());
+        specifications[1]["signOff"]!.ToJsonString().Should().Be(specifications[0]["signOff"]!.ToJsonString());
     }
 
     private static EvaluationResults Evaluate(JsonElement document)

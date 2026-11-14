@@ -16,4 +16,12 @@ public sealed record SpechtSection(
 {
     /// <summary>Inline-code contents per body row and cell, parallel to <see cref="Rows"/>.</summary>
     public IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> RowCodeSpans { get; init; } = [];
+
+    /// <summary>The text of each item of the lists among the section's own blocks, in document order.</summary>
+    /// <implements epic="0132" feature="F2" claim="B-009" />
+    public IReadOnlyList<string> Items { get; init; } = [];
+
+    /// <summary>One-based first line of each list item, parallel to <see cref="Items"/>.</summary>
+    /// <implements epic="0132" feature="F2" claim="B-009" />
+    public IReadOnlyList<int> ItemLines { get; init; } = [];
 }

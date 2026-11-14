@@ -18,12 +18,15 @@ public sealed class SpechtDocumentParser(FrontmatterReader frontmatter)
     /// <param name="relativePath">The document's path relative to the repository root.</param>
     /// <returns>The document's frontmatter and top-level sections.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
+    /// <implements epic="0132" feature="F2" claim="B-009" />
     public SpechtDocument Parse(string text, string relativePath)
     {
         var sections = new MarkdownTextReader().Read(text, Pipeline).Select(static section =>
             new SpechtSection(section.Title, section.Line, section.Headers, section.Rows, section.RowLines)
             {
                 RowCodeSpans = section.RowCodeSpans,
+                Items = section.Items,
+                ItemLines = section.ItemLines,
             }).ToArray();
         return new SpechtDocument(relativePath, frontmatter.Parse(text), sections);
     }

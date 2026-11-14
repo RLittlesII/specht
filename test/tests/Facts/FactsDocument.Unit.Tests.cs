@@ -17,7 +17,10 @@ namespace Specht.Tests.Facts;
 /// model, a selection by a specification's path or by a directory, by whole path segments in the document's order,
 /// or of nothing, and the text lines (B-024, OQ-5's default): one per claim, constraint, out-of-scope row and open
 /// question in the document's order, five tab-separated fields, a missing text an empty field, and a tab or line break
-/// inside a field written as a space.
+/// inside a field written as a space. Each lessons-and-deltas entry, a list item's text or a table row's cells, with its line in
+/// line order (B-009), each sign-off row's section, status, reviewer, note and line under the headers the manifest's
+/// <c>tables</c> names or the engine's (B-010), a claims or sign-off section the manifest's <c>roles</c> renames read under
+/// its new title, and a section the manifest's <c>sections</c> does not list leaving only its own member empty (B-016).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FactsDocumentUnitTests
@@ -702,6 +705,172 @@ public sealed class FactsDocumentUnitTests
             $"{shown}\tconstraint\tC-{written}1\t24\tRead{written}only.",
             $"{shown}\toutOfScope\t1{written}2\t34\tAny{written}write",
             $"{shown}\topenQuestion\tOQ-{written}1\t114\tWhich{written}one?");
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsDeltaSections))]
+    public void ALessonsAndDeltasSectionsListItemsAndTableRows_WhenTheDocumentIsMade_ShouldCarryEachEntryWithItsTextOrCellsAndLineInLineOrder(
+        string[] items,
+        int[] itemLines,
+        string[] headers,
+        string[][] rows,
+        int[] rowLines,
+        string?[] texts,
+        string[][] cells,
+        int[] lines)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection("10. Lessons / Spec Deltas", 128, headers, rows, rowLines) { Items = items, ItemLines = itemLines })));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["deltas"].Should().BeOfType<JsonArray>().Which.Select(static entry => new
+        {
+            Text = entry!["text"]?.GetValue<string>(),
+            Cells = entry["cells"]!.AsArray().Select(static cell => cell!.GetValue<string>()).ToArray(),
+            Line = entry["line"]!.GetValue<int>(),
+        })
+            .Should().BeEquivalentTo(
+                texts.Select((text, index) => new { Text = text, Cells = cells[index], Line = lines[index] }),
+                static options => options.WithStrictOrdering());
+        specification["deltas"]!.AsArray().Select(static entry => entry!.AsObject().Select(static member => member.Key).ToArray())
+            .Should().AllSatisfy(static members => members.Should().Equal("text", "cells", "line"));
+    }
+
+    [Fact]
+    public void ASpecificationWithNoLessonsAndDeltasOrSignOffSection_WhenTheDocumentIsMade_ShouldCarryNoEntryAndNoSignOffRowAndItsClaims()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection(
+                        "3. Acceptance Criteria", 10, ["ID", "Claim", "Source", "Status"], [["B-001", "It holds.", "the owner", "Active"]], [14]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification["deltas"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
+        specification["signOff"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
+        specification["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["line"]!.GetValue<int>())).Should().Equal(("B-001", 14));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsUnlistedSections))]
+    public void ASectionTheManifestsSectionsDoesNotList_WhenTheDocumentIsMade_ShouldGiveItsMemberEmptyAndEveryOtherMemberItsRow(string title, string member)
+    {
+        // Given
+        var listed = ((SpechtModel) new SpechtModelFixture().WithManifest(new JsonObject { ["schemaVersion"] = "0.2.0" })).Schemas.Structure.Sections;
+        listed.Should().Contain(title);
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(new JsonObject
+            {
+                ["schemaVersion"] = "0.2.0",
+                ["sections"] = new JsonArray(listed.Where(entry => entry != title).Select(static entry => (JsonNode?) entry).ToArray()),
+            })
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(
+                        new SpechtSection(
+                            "4. Constraints", 20, ["ID", "Constraint", "Rules Out"], [["C-1", "Offline and read-only.", "A network call."]], [24]),
+                        new SpechtSection("5. Out of Scope", 30, ["#", "Item", "Exclusion Reason"], [["1", "Any other input", "Owned elsewhere"]], [34]),
+                        new SpechtSection("10. Lessons / Spec Deltas", 100, [], [], []) { Items = ["A lesson."], ItemLines = [102] },
+                        new SpechtSection(
+                            "11. Open Questions",
+                            110,
+                            ["ID", "Question", "Blocks", "Resolution"],
+                            [["OQ-1", "Which input comes first?", "B-001", "Open"]],
+                            [114]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        new[] { "constraints", "outOfScope", "deltas", "openQuestions" }
+            .Select(name => (name, specification[name].Should().BeOfType<JsonArray>().Which.Count))
+            .Should().Equal(new[] { "constraints", "outOfScope", "deltas", "openQuestions" }.Select(name => (name, name == member ? 0 : 1)));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsSignOffTables))]
+    public void ASignOffTableUnderTheManifestsOrTheEnginesHeaders_WhenTheDocumentIsMade_ShouldCarryEachRowsSectionStatusReviewerNoteAndLine(
+        string manifest,
+        string[] headers,
+        string[] row,
+        string? section,
+        string? status,
+        string? reviewer,
+        string? note)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(JsonNode.Parse(manifest)!.AsObject())
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(new SpechtSection("12. Sign-off", 148, headers, [row], [152]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        var given = specification["signOff"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle().Which!.AsObject();
+        given.Select(static member => member.Key).Should().Equal("section", "status", "reviewer", "note", "line");
+        (given["section"]?.GetValue<string>(),
+                given["status"]?.GetValue<string>(),
+                given["reviewer"]?.GetValue<string>(),
+                given["note"]?.GetValue<string>(),
+                given["line"]!.GetValue<int>())
+            .Should().Be((section, status, reviewer, note, 152));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsRenamedRoles))]
+    public void ASectionTheManifestsRolesRename_WhenTheDocumentIsMade_ShouldReadItsRowsUnderTheNewTitleAndNotTheDefault(
+        string role,
+        string defaultTitle,
+        string renamed,
+        string member,
+        string[] headers,
+        string[] row)
+    {
+        // Given
+        var listed = ((SpechtModel) new SpechtModelFixture().WithManifest(new JsonObject { ["schemaVersion"] = "0.2.0" })).Schemas.Structure.Sections;
+        listed.Should().Contain(defaultTitle);
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(new JsonObject
+            {
+                ["schemaVersion"] = "0.2.0",
+                ["sections"] = new JsonArray(listed.Select(entry => (JsonNode?) (entry == defaultTitle ? renamed : entry)).ToArray()),
+                ["roles"] = new JsonObject { [role] = renamed },
+            })
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(
+                        new SpechtSection(defaultTitle, 10, headers, [row, row], [14, 15]),
+                        new SpechtSection(renamed, 20, headers, [row, row], [24, 25]))));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification[member].Should().BeOfType<JsonArray>().Which.Select(static entry => entry!["line"]!.GetValue<int>()).Should().Equal(24, 25);
     }
 
     private static readonly Dictionary<FeatureSpec, IReadOnlyList<RecordFile>> NoRecords = [];

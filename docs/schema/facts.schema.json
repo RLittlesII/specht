@@ -24,7 +24,9 @@
           "constraints",
           "outOfScope",
           "openQuestions",
-          "records"
+          "records",
+          "deltas",
+          "signOff"
         ],
         "properties": {
           "path": {
@@ -222,6 +224,63 @@
                       { "pattern": "\\\\" }
                     ]
                   }
+                }
+              }
+            }
+          },
+          "deltas": {
+            "description": "Every list item and every row of the table of the lessons-and-deltas section, in line order; empty without such a section or with neither.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["text", "cells", "line"],
+              "properties": {
+                "text": {
+                  "description": "A list item's text as the parse gives it, its paragraphs and nested items joined by one space; null for a table row.",
+                  "type": ["string", "null"]
+                },
+                "cells": {
+                  "description": "A table row's cells in column order, as the parse gives them; empty for a list item.",
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "line": {
+                  "description": "The entry's one-based first line.",
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "signOff": {
+            "description": "Every row of the sign-off table, in row order; empty without a sign-off section or a table the parse reads.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["section", "status", "reviewer", "note", "line"],
+              "properties": {
+                "section": {
+                  "description": "The cell under the first sign-off header the manifest names, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "description": "The cell under the second sign-off header the manifest names, as written, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "reviewer": {
+                  "description": "The cell under the third sign-off header the manifest names, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "note": {
+                  "description": "The cell under the fourth sign-off header the manifest names, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "line": {
+                  "description": "The row's one-based line.",
+                  "type": "integer",
+                  "minimum": 1
                 }
               }
             }
