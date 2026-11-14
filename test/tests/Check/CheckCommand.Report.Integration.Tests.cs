@@ -19,11 +19,12 @@ namespace Specht.Tests.Check;
 
 /// <summary>
 /// The check command given <c>--report &lt;path&gt;</c>, through Spectre's command tester (<c>0001-F3</c> B-003, B-004,
-/// B-022 to B-025, C-7; <c>0001-F2</c> B-012; decision 0002; item <c>0036</c>). Over a report built in memory, the file
-/// system is a <see cref="MockFileSystem"/> whose current directory is the working directory, which is also the root, so
-/// a relative report path names one file however it is resolved. Over the real check and a <see cref="SpechtTree"/> on
-/// disk, the report path is under the tree's root. What a run that exits <c>2</c> or <c>3</c> does with the path is
-/// <c>0001-F3</c> OQ-8, open, and no test here asserts it.
+/// B-022 to B-025, B-044 to B-046, C-7; <c>0001-F2</c> B-012; decision 0002; item <c>0036</c>). Over a report built in
+/// memory, the file system is a <see cref="MockFileSystem"/> whose current directory is the test's working directory; a
+/// test without <c>--root</c> has that directory as the root too, and the B-046 test names another root, so a relative
+/// report path resolved from the root lands somewhere the test can see. A run that checks nothing is a run delegate that
+/// throws what the engine throws for that input (B-044, B-045). Over the real check and a <see cref="SpechtTree"/> on
+/// disk, the report path is under the tree's root.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class CheckCommandReportIntegrationTests
@@ -135,6 +136,60 @@ public sealed class CheckCommandReportIntegrationTests
 
         // Then
         result.ExitCode.Should().Be(without, result.Output);
+    }
+
+    [Theory]
+    [ClassData(typeof(ReportPathFaults))]
+    public void AReportPathHoldingAnEarlierRunsDocument_WhenACheckExitsWithoutChecking_ShouldHoldNoFile(Exception fault, int expectedExit)
+    {
+        // Given
+        SpechtReport earlier = new SpechtReportFixture().WithViolations(new SpechtViolationFixture());
+        var fileSystem = WorkingDirectoryFileSystem();
+        var written = fileSystem.Path.GetFullPath("specht-report.json");
+        fileSystem.File.WriteAllText(written, Document(earlier));
+
+        // When
+        var result = Check(fileSystem, _ => throw fault, "--report", "specht-report.json");
+
+        // Then
+        result.ExitCode.Should().Be(expectedExit, result.Output);
+        fileSystem.File.Exists(written).Should().BeFalse("a run that exits {0} checked nothing; stdout: {1}", expectedExit, result.Output);
+    }
+
+    [Theory]
+    [ClassData(typeof(ReportPathFaults))]
+    public void AReportPathUnderDirectoriesThatDoNotExist_WhenACheckExitsWithoutChecking_ShouldCreateNoneOfThem(Exception fault, int expectedExit)
+    {
+        // Given
+        var fileSystem = WorkingDirectoryFileSystem();
+        var directory = fileSystem.Path.GetFullPath("reports");
+        fileSystem.Directory.Exists(directory).Should().BeFalse();
+
+        // When
+        var result = Check(fileSystem, _ => throw fault, "--report", "reports/new/specht-report.json");
+
+        // Then
+        result.ExitCode.Should().Be(expectedExit, result.Output);
+        fileSystem.Directory.Exists(directory).Should().BeFalse("a run that exits {0} checked nothing; stdout: {1}", expectedExit, result.Output);
+    }
+
+    [Fact]
+    public void ARelativeReportPath_WhenCheckedWithARootOtherThanTheWorkingDirectory_ShouldWriteTheDocumentUnderTheWorkingDirectory()
+    {
+        // Given
+        SpechtReport report = new SpechtReportFixture().WithViolations(new SpechtViolationFixture());
+        var fileSystem = WorkingDirectoryFileSystem();
+        var root = fileSystem.Path.GetFullPath("root");
+        fileSystem.Directory.CreateDirectory(root);
+        var written = fileSystem.Path.GetFullPath("specht-report.json");
+
+        // When
+        var result = Check(fileSystem, _ => report, "--root", "root", "--report", "specht-report.json");
+
+        // Then
+        fileSystem.File.Exists(fileSystem.Path.Combine(root, "specht-report.json")).Should().BeFalse(result.Output);
+        fileSystem.File.Exists(written).Should().BeTrue(result.Output);
+        fileSystem.File.ReadAllText(written).Should().Be(Document(report));
     }
 
     [Theory]

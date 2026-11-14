@@ -20,8 +20,8 @@ namespace Specht.Acceptance.Report;
 /// compared with the tree's own manifest and Feature schema. An approved specification with a missing cell pins schema
 /// <c>0.2.1</c>, the newest version whose <c>SPEC060</c> follows approval (B-018; <c>0001-F7</c> B-120); the done axis
 /// from <c>0.3.0</c> is B-043's. A rule id a step names is read at the tree's pin (<c>0001-F7</c> B-151, B-152), so
-/// under the live manifest's <c>0.3.0</c> it is the four-digit id. 0036 binds B-003, B-004 and B-022 to B-025, the report
-/// path, in <c>ReportSteps.ReportPath.cs</c>. The rest of the file's scenarios stay pending for their items.
+/// under the live manifest's <c>0.3.0</c> it is the four-digit id. 0036 binds B-003, B-004, B-022 to B-025 and B-044 to
+/// B-046, the report path, in <c>ReportSteps.ReportPath.cs</c>. The rest of the file's scenarios stay pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "The report contract")]
@@ -276,6 +276,11 @@ public sealed partial class ReportSteps
         if (_nested is not null && Directory.Exists(_nested))
         {
             Directory.Delete(_nested, recursive: true);
+        }
+
+        if (_workingDirectory is not null && Directory.Exists(_workingDirectory))
+        {
+            Directory.Delete(_workingDirectory, recursive: true);
         }
     }
 
