@@ -1,0 +1,65 @@
+id: "0445"
+type: task
+title: Write the trace document to the --report path
+
+status: ready
+
+value: 4
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: ["0442"] # the document the report file holds
+spikes: []
+
+spec: src/tool/Features/Trace/.spec/README.md
+
+claims:
+  - B-008
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+
+created: "2026-11-14"
+updated: "2026-11-14"
+closed: null
+
+summary: |
+  `specht trace --report <path>` writes the document `--json` writes to
+  that path, creating its directories and replacing a file that
+  exists, keeps the trace lines on stdout and the exit code unchanged,
+  and the path and the directories above it are the only things the
+  trace writes. The contract is the check's (`0001-F3` B-003, B-004,
+  B-022 to B-025, C-5, C-7), built by item 0036, done.
+
+  Waits on 0442, the document the file holds.
+
+  Risk 2: the check's `--report` writer exists; the trace reuses it.
+
+acceptance_criteria:
+  - "B-008 — nothing created, modified or deleted but the report file and the directories above it"
+  - "B-013 — the trace document at the path"
+  - "B-014 — missing directories created"
+  - "B-015 — a file that exists replaced"
+  - "B-016 — without `--json`, stdout keeps the trace lines"
+  - "B-017 — with `--json`, stdout and the file are the same document"
+  - "B-018 — the exit code unchanged by `--report`"
+  - "C-2 — no temporary or backup file beside the report"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-14, spec-author: cut on the repository owner's instruction of
+    2026-11-14, relayed in session by the coordinating session: "Cut
+    items for SPEC024 and trace". The slicing is spec-author's, not the
+    owner's: B-013 to B-018 are decision 0002 call 2. B-008 is claimed
+    here, not with the command in 0442, because its scenario "A report
+    path is the only file the trace writes" runs `--report`.
+
+out_of_scope:
+  - "The document's shape and schema - B-002, B-003; 0442."
+  - "Everything in § 5 of the spec."

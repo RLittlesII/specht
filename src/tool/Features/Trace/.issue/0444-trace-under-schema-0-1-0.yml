@@ -1,0 +1,58 @@
+id: "0444"
+type: task
+title: Trace a tree pinned to schema 0.1.0 with the 0.2.0 defaults
+
+status: ready
+
+value: 4
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: ["0442", "0443"] # 0442 is the command; B-012 is "as B-004 gives", which 0443 builds
+spikes: []
+
+spec: src/tool/Features/Trace/.spec/README.md
+
+claims:
+  - B-010
+  - B-011
+  - B-012
+
+created: "2026-11-14"
+updated: "2026-11-14"
+closed: null
+
+summary: |
+  Under a manifest pinned to schema `0.1.0` the trace reads § 9 by the
+  position of `tables.matrix`'s columns (B-010), takes the waived,
+  withdrawn and superseded markers at their `0.2.0` defaults so such a
+  row's tests are `skipped` (B-011), and gives every other test
+  `unconfigured` (B-012). The command is not schema-versioned (A-2).
+
+  Waits on 0442, the command, and on 0443, since B-012 gives what B-004
+  gives for a manifest with no `tests` key.
+
+  Risk 2: `0001-F12` B-001 reads the columns by position only from
+  `0.2.0`; this item has the trace read a `0.1.0` tree the same way
+  without changing what the check does under that pin.
+
+acceptance_criteria:
+  - "B-010 — `0.1.0`: the § 9 columns by position in `tables.matrix`"
+  - "B-011 — `0.1.0`: a `Waived`, `Withdrawn` or `Superseded` row's tests are `skipped`"
+  - "B-012 — `0.1.0`: every other test `unconfigured`"
+  - "The check's verdicts under `0.1.0` unchanged (`0001-F7` C-1)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-14, spec-author: cut on the repository owner's instruction of
+    2026-11-14, relayed in session by the coordinating session: "Cut
+    items for SPEC024 and trace". The slicing is spec-author's, not the
+    owner's: the three claims are decision 0002 call 1, the `0.1.0`
+    reading.
+
+out_of_scope:
+  - "`skipped` under a pin from `0.2.0` - B-019; 0442."
+  - "Everything in § 5 of the spec."

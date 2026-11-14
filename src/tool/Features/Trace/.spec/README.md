@@ -5,7 +5,7 @@ type: feature
 id: "F13"
 epic: "0001"
 spec_status: approved
-status: blocked
+status: ready
 priority: med
 value: 4
 risk: 2
@@ -20,7 +20,7 @@ depends_on: ["F2", "F5", "F12"]
 blocks: ["0132/F4"]
 spikes: []
 created: "2026-10-14"
-updated: "2026-10-31"
+updated: "2026-11-14"
 github_issue: null
 synced_at: null
 ---
@@ -151,11 +151,12 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-15 (round 3) -->
+<!-- last written by: spec-author, 2026-11-14 (items 0442 to 0445 cut) -->
 
 - 2026-10-15, after `spec-reviewer` round 1, before this specification first merged. Added: B-009, the claim the `@boundary` scenario "The check's report carries no trace" now carries, from decision 0001 call 4. B-001 and B-003 say what a claim with no § 9 row shows, as spec-author's reading. OQ-2 widened to the status markers and `tests` under a `0.1.0` pin.
 - 2026-10-15, after the owner's requirements session (decision 0002). OQ-1 and OQ-2 resolved. Added: B-010 to B-012, a tree under a `0.1.0` pin read with the `0.2.0` defaults; B-013 to B-018, `--report <path>` on the check's contract (`0001-F3` B-003, B-004, B-022 to B-025). Revised: B-008 and C-2, the file `--report` names being the one write; the Source of B-001 and B-003, the no-row reading now the owner's. § 5 row 4 withdrawn; rows 6 and 7 record the rejected alternatives. Scored: value 4, risk 2.
 - 2026-10-15, after `spec-reviewer` round 3 and the owner's further answers (decision 0002 calls 4 to 6). B-011 now states what the marker reading decides: a waived, withdrawn or superseded row's tests are `skipped`. Added: B-019, `skipped` under every pin; B-020, `skipped` before `unconfigured`. Revised: A-1 to four values; B-001, a `skipped` test counting in neither number; B-003, the four values; B-004 and B-012, the row exception; C-2, the directories B-014 creates. § 5 row 8 records the rejected alternatives.
+- 2026-11-14, on the repository owner's instruction "Cut items for SPEC024 and trace": § 3 is cut into items `0442` to `0445` (Tasks). `status` moves from `blocked` to `ready`, since `0001-F12`'s items are done and `0442` waits on none. No claim, constraint or scenario changed.
 
 ## 11. Open Questions
 
@@ -184,7 +185,12 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+Cut 2026-11-14 into [`../.issue/`](../.issue/), on the repository owner's instruction "Cut items for SPEC024 and trace":
+
+- `0442`: the command, its lines and its published JSON document, the contract every later item adds to by addition, with `skipped` under any pin (B-001 to B-003, B-006, B-007, B-009, B-019).
+- `0443`: `unconfigured` with no `tests` key, and a rule switched off (B-004, B-005, B-020), waiting on `0442`.
+- `0444`: a schema `0.1.0` pin read with the `0.2.0` defaults (B-010 to B-012), waiting on `0442` and `0443`.
+- `0445`: the `--report` file and the one write it allows (B-008, B-013 to B-018), waiting on `0442`.
 
 ## Scoring
 

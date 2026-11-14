@@ -1,0 +1,80 @@
+id: "0442"
+type: task
+title: The trace command, its lines and its published JSON document
+
+status: ready
+
+value: 4
+risk: 3
+
+parent: "0001"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Trace/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-006
+  - B-007
+  - B-009
+  - B-019
+
+created: "2026-11-14"
+updated: "2026-11-14"
+closed: null
+
+summary: |
+  As the maintainer reviewing a Feature's coverage, I want
+  `specht trace` to print every claim of every specification with its
+  § 9 status, the scenarios carrying its tag and how many of its named
+  tests resolve, as lines or as one JSON document with a published
+  schema, so that I read where each claim stands without reading § 9,
+  the companions and the test tree side by side.
+
+  This item is the command and the document contract. It publishes the
+  schema at `docs/schema/trace.schema.json` (B-002); every later item
+  adds to the document only by addition (C-3). A test named in a
+  waived, withdrawn or superseded row is `skipped` (B-019), since
+  B-001's count and B-003's absent file and line are observed through
+  it. `docs/cli.md` is held to the help by a test (`0002-F1`), so the
+  command's page lands here.
+
+  Resolution is `0001-F12`'s resolver (C-1), built by item 0225, done;
+  the claims come from the one catalogue (`0001-F16` C-5). Nothing is
+  read inside `Features/Trace/` (C-4).
+
+  Risk 3: a new command and a published document shape; the reading is
+  the check's own.
+
+acceptance_criteria:
+  - "B-001 — one line per claim per specification; no § 9 row reads `none` and `0/0`; a skipped test counts in neither"
+  - "B-002 — one document on stdout, valid against `docs/schema/trace.schema.json`"
+  - "B-003 — each specification's path, id and claims; each claim's row, scenarios and tests; a test's file and line only when it resolves"
+  - "B-006 — exit 0 whatever the gaps; 2 and 3 as the check"
+  - "B-007 — byte-identical output; discovery order, then § 3 order"
+  - "B-009 — the check's `--json` report carries no trace"
+  - "B-019 — a waived, withdrawn or superseded row's tests are `skipped`, under any pin"
+  - "C-1 one resolver; C-2 no write, no network, no absolute path; C-4 nothing read in the command"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-14, spec-author: cut on the repository owner's instruction of
+    2026-11-14, relayed in session by the coordinating session: "Cut
+    items for SPEC024 and trace". The slicing is spec-author's, not the
+    owner's. B-019 is claimed here, not with B-004 and B-020, because the
+    B-001 and B-003 scenarios for a skipped test can fail only once a
+    test is `skipped`. B-008 goes to 0445, since one of its scenarios
+    runs `--report`. Rejected: publishing the schema in a last item,
+    which leaves each earlier item adding members no schema checks.
+
+out_of_scope:
+  - "A manifest with no `tests` key, and a rule switched off - B-004, B-005, B-020; 0443."
+  - "A schema `0.1.0` pin - B-010 to B-012; 0444."
+  - "The `--report` file, and the write claim that names it - B-008, B-013 to B-018; 0445."
+  - "Everything in § 5 of the spec."
