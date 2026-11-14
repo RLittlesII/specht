@@ -7,7 +7,11 @@ using Specht.Versioning;
 
 namespace Specht.Tests.Manifest;
 
-/// <summary>Token-level preservation beneath 0001-F7 B-045 and missing-key insertion beneath B-047.</summary>
+/// <summary>
+/// Token-level preservation beneath 0001-F7 B-045, missing-key insertion beneath B-047, and the validation beneath B-051 as
+/// amended: a manifest pinned to schema 0.4.0 that still holds the id settings 0001-F5 B-092 rejects is not rejected for them,
+/// and is still rejected for any other fault.
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class ManifestPinEditorUnitTests
 {
@@ -90,5 +94,33 @@ public sealed class ManifestPinEditorUnitTests
         // Then
         Encoding.UTF8.GetString(result).Should().Be("{\"schemaVersion\":\"0.2.0\",\"rules\":{\"SPEC4004\":\"warning\"}}");
         bytes.Should().Equal(Encoding.UTF8.GetBytes(original));
+    }
+
+    [Theory]
+    [ClassData(typeof(ZeroFourZeroOldIdSettings))]
+    public void AZeroFourZeroManifestStillHoldingTheOldIdSettings_WhenValidated_ShouldNotRejectIt(string text)
+    {
+        // Given
+        var editor = new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions());
+
+        // When
+        var validate = () => editor.Validate(Encoding.UTF8.GetBytes(text));
+
+        // Then
+        validate.Should().NotThrow();
+    }
+
+    [Fact]
+    public void AZeroFourZeroManifestHoldingTheOldIdSettingsAndAnotherFault_WhenValidated_ShouldRejectItForThatFault()
+    {
+        // Given
+        var editor = new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions());
+        const string text = """{"schemaVersion":"0.4.0","mint":{"claim":{"strategy":"nanoid"}},"rules":{"SPEC4004":"invalid"}}""";
+
+        // When
+        var validate = () => editor.Validate(Encoding.UTF8.GetBytes(text));
+
+        // Then
+        validate.Should().Throw<SpechtManifestException>().Which.Message.Should().Contain("SPEC4004");
     }
 }
