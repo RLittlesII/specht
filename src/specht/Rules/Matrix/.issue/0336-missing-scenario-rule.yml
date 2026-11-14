@@ -2,7 +2,7 @@ id: "0336"
 type: task
 title: Report a live claim no scenario carries, SPEC4008, in schema 0.4.0
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -21,7 +21,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   SPEC4008 reports, at its § 9 row, a live claim whose tag no companion
