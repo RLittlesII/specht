@@ -20,7 +20,7 @@ public sealed class ClaimTagRule : ISpechtRule
     {
         model.EnsureClaimGrammar();
         var claimsReference = model.Schemas.Structure.SectionReference("claims");
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             if (feature.FeatureFiles.Count != 1)
             {

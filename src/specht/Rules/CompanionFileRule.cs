@@ -15,7 +15,7 @@ public sealed class CompanionFileRule : ISpechtRule
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             if (feature.FeatureFiles.Count != 1)
             {

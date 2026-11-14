@@ -21,9 +21,10 @@ public sealed class FeatureFrontmatterRule(FrontmatterSchemaCheck check) : ISpec
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F5" claim="B-008" />
+    /// <implements epic="0001" feature="F16" claim="B-003" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null || feature.Record is not null))
         {
             foreach (var finding in Evaluate(feature.RelativePath, feature.Document.Frontmatter, model.Schemas))
             {

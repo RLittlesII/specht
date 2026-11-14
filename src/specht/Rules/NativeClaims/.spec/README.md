@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038); before: implementer, 2026-11-13 (item 0390 built: the native claim reader's rows) -->
+<!-- last written by: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -166,10 +166,10 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | A set becomes one native Feature: a `FeatureSpec` keyed into `Claims` with the set's `SpechtClaims` (B-001, B-003, C-5)                                             | Business       | Item `0391`: `SpechtModelBuilder.Build`; `FeatureSpec.ClaimFileSet`; `SpechtModel`'s `Claims`, by reference to the set                                                      |
 | The Feature's identity is the set's `epic` and `feature`, never the record's keys, and a difference is not reported (B-001, B-027, B-037; OQ-15)                    | Business       | Item `0391`: `FeatureSpec.Epic` and `FeatureSpec.Id` read `ClaimFileSet` first                                                                                              |
 | A record supplies frontmatter, lifecycle through `claim.lifecycleKey`, and edges; none means `current` and no edge (B-003; A-3)                                     | Business       | Item `0391`: the record parsed as the Feature's document; `FeatureSpec.Lifecycle`; the existing dependency graph                                                            |
-| A record is held by `SPEC1001` and `SPEC1002`, and its items by `SPEC1003`; a record-less Feature has nothing to hold (B-003)                                       | Business       | Item `0391`: the two Feature frontmatter rules skip a Feature whose `FeatureSpec.Record` is `null`; record locations join `FindChildItems`' input                           |
+| A record is held by `SPEC1001` and `SPEC1002`, and its items by `SPEC1003`; a record-less Feature has nothing to hold (B-003)                                       | Business       | Item `0391`: the two Feature frontmatter rules skip a native Feature whose `FeatureSpec.Record` is `null`; record locations join `FindChildItems`' input                    |
 | A record's `claim_prefix` does not choose the grammar (B-032)                                                                                                       | Business       | Item `0391`: the native `FeatureSpec` takes `ClaimGrammar(null)`, as item `0390`'s reader does                                                                              |
 | Discovery does not also read a record as a layout's Feature (B-017, B-026)                                                                                          | Technical      | Item `0391`: `SpechtModelReader.Read` drops a discovered specification whose path is a set's `record`                                                                       |
-| A set with no `record` and no claim file makes no Feature (B-036; OQ-14)                                                                                            | Business       | Item `0391`: a `null` entry in `SpechtListing.ClaimLocations`; the builder makes no `FeatureSpec` for it                                                                    |
+| A set with no `record` and no claim file makes no Feature (B-036; OQ-14)                                                                                            | Business       | Item `0391`: a `null` entry in `SpechtListing.ClaimLocations`; `SpechtModelBuilder` makes no `FeatureSpec` for it                                                           |
 | A record that is rooted, leaves the root, names no file or cannot be read leaves the set record-less, and nothing throws (B-035's reading; OQ-13, OQ-17)            | Both           | Item `0391`: `SpechtTreeStore.TryLoad`; reporting it is item `0395`'s (B-033, B-034)                                                                                        |
 | A set's `feature` and `epic` match the manifest's grammars, else exit `3` naming `claim.files` (B-038; OQ-18)                                                       | Business       | Item `0391`: `SpechtManifestParser.FileSets`, beside B-027 and B-029, over the filled `identifiers`                                                                         |
 | One identity in two sets, or a set and a layout's specification, is `SPEC3002` at each, a set at its Feature's path, line `0` (B-017; OQ-12)                        | Business       | Item `0391`: `DuplicateIdentityRule` over `FeaturesWithIdentity`, natives included, line `0` for a native Feature                                                           |
@@ -180,7 +180,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038); before: implementer, 2026-11-13 (item 0390 built) -->
+<!-- last written by: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -531,8 +531,8 @@ reading. No type is added.
 
 ### A claim file set's record, identity and report (item `0391`)
 
-Designed, not built. Item `0390` reads each set into
-`SpechtModel.ClaimSets`, and no rule reads it. This item makes each set one
+Built. Item `0390` reads each set into `SpechtModel.ClaimSets`. This item
+makes each set one
 native Feature, a [`FeatureSpec`](../../../Model/FeatureSpec.cs) in
 `SpechtModel.Features`, so the rules that should see it do (B-003, B-017,
 B-026, B-036, B-037). The rules whose claims later items own skip it until
@@ -548,9 +548,10 @@ case-sensitive, as `PathIdentityRule` tests a path's identity. A failure adds
 `claim.files[i] has feature '<value>', which the feature grammar '<grammar>'
 does not match`, or the same for `epic`, to the fault list that already exits
 `3` before any rule runs. To make the grammars available there, `Parse` reads
-the filled `identifiers` into a local before it builds the structure. Today
-that read sits inside the constructor call, so the local is the same value and
-is read once. `Parse` passes the local through `ClaimInput` to `FileSets`.
+the filled `sections` and then the filled `identifiers` into locals before it
+builds the structure, in the order the constructor call read them, so the
+projected manifest's keys keep their order. `Parse` passes `identifiers`
+through `ClaimInput` to `FileSets`.
 
 A grammar that does not compile is already `GrammarFaults`' fault, and
 `FileSets` skips its test, so no grammar throws. The fault is in the entry's
@@ -567,8 +568,9 @@ returns `null` in four cases:
 - reading it throws an `IOException` or an `UnauthorizedAccessException`.
 
 Otherwise it returns the file under its resolved root-relative path, with
-forward slashes. `SpechtModelReader.Read` calls it once per set with a
-`record`. A `null` is the set read as having no `record` (B-035), so
+forward slashes. A segment splits at `/` and at the platform's separator.
+`SpechtModelReader.Read` calls it once per set with a `record`, before
+discovery. A `null` is the set read as having no `record` (B-035), so
 `SpechtTreeStore.Load` never sees a record path and nothing throws.
 
 Reporting a `null`, `SPEC027` at the record's path or at the manifest, is item
@@ -579,22 +581,25 @@ still to come, not a third behaviour.
 **Where a native Feature sits.** For each set, `SpechtModelReader.Read`, after
 item `0390`'s set listing:
 
-| Step                  | What it does                                                                                                                                                                                                                                                                |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Location              | The loaded record's resolved path; else the first of `ClaimFiles[i]`, which discovery lists in ordinal order (B-026; OQ-7); else none, and the set makes no Feature (B-036; OQ-14). The layout is `new SpechtLayout("claims", set.Glob)`, with no path identity             |
-| No second reading     | A specification the layouts discovered at a loaded record's resolved path, compared ordinally, is dropped before companions and items are found, so the record is read once, as the native Feature's document, and never as a layout's Feature too                          |
-| Items beside a record | Each loaded record's location joins the specifications passed to `ISpecDiscovery.FindChildItems`, so `SPEC1003` and `SPEC5001` to `SPEC5004` hold the record's items and children as they hold any specification's (B-003; § 5 row 13). A record-less Feature lists no item |
+| Step                  | What it does                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Location              | The loaded record's resolved path; else the first of `ClaimFiles[i]`, which discovery lists in ordinal order (B-026; OQ-7); else none, and the set makes no Feature (B-036; OQ-14). The layout is `new SpechtLayout("claims", set.Glob)`, with no path identity                                                                                                                                          |
+| No second reading     | A specification the layouts discovered at a loaded record's resolved path, compared ordinally, is dropped before companions and items are found, so the record is read once, as the native Feature's document, and never as a layout's Feature too                                                                                                                                                       |
+| Items beside a record | Each loaded record's location joins the specifications passed to `ISpecDiscovery.FindChildItems`, so `SPEC1003` and `SPEC5001` to `SPEC5004` hold the record's items and children as they hold any specification's (B-003; § 5 row 13). A record whose directory a specification or an earlier record already holds is not passed again, so no item is listed twice. A record-less Feature lists no item |
 
-The locations go on `SpechtListing.ClaimLocations`, a new init member at the
-index of `ClaimFiles`, `null` for a set that makes no Feature. Each loaded
-record's text joins the text dictionary the builder reads. `SpechtLocation`
-gains a static factory that takes a relative path and a layout and holds the
-directory rule that `SpechtDiscovery.DirectoryOf` holds today. Discovery and
-the reader both call it, so the directory of a location has one
-implementation.
+Two init members of [`SpechtListing`](../../../Discovery/SpechtListing.cs),
+each at the index of `ClaimFiles`, carry the result: `ClaimLocations`, `null`
+for a set that makes no Feature, and `ClaimRecords`, the loaded record's
+resolved path or `null`. Each loaded record's text joins the text dictionary
+the builder reads. A location's directory comes from
+`SpechtDiscovery.DirectoryOf`, now `internal`, so the directory of a location
+has one implementation. A second `SpechtLocation` constructor was rejected:
+the test project's generated fixture builder fails on a record with two
+constructors.
 
 **The Feature.** `SpechtModelBuilder.Build` makes one `FeatureSpec` for each
-location that is not `null`, after the layouts' Features:
+location that is not `null`, after the layouts' Features, in its private
+`NativeFeatures`:
 
 | `FeatureSpec` member              | A layout's Feature      | A native Feature                                                                                                                   |
 | --------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -602,7 +607,7 @@ location that is not `null`, after the layouts' Features:
 | `FeatureFiles`                    | its companions          | none; B-021 makes the claim files its companions, item `0392`                                                                      |
 | `ClaimGrammar`                    | from its `claim_prefix` | `ClaimGrammar(null)`, whatever the record's `claim_prefix` says (B-032), the grammar item `0390`'s reader uses                     |
 | `ClaimFileSet`, a new init member | `null`                  | the set, the same instance as `ClaimInput.Files[i]`                                                                                |
-| `Record`, a new init member       | `null`                  | the loaded record's resolved path; `null` with no `record` or when `TryLoad` gives `null`                                          |
+| `Record`, a new init member       | `null`                  | `ClaimRecords[i]`: the loaded record's resolved path; `null` with no `record` or when `TryLoad` gives `null`                       |
 | `Epic`, `Id`                      | the frontmatter's       | the set's `Epic` and `Feature` (B-001, B-027), even when the record declares others (B-037; OQ-15); the difference is not reported |
 | `Lifecycle`, a new init member    | `null`                  | the record's frontmatter text at `ClaimInput.LifecycleKey`, `null` when absent; `current` when the set has no record               |
 
@@ -631,10 +636,11 @@ in `ClaimSets`, and nothing keys it.
 
 **Frontmatter (B-003).** `SPEC1001` and `SPEC1002` hold a record as any
 specification. `FrontmatterPresentRule` and `FeatureFrontmatterRule` skip a
-Feature whose document is no record: a set with no `record`, or one whose
-`TryLoad` gave `null`. Nothing is authored to hold, and the empty document
-would otherwise be reported as missing frontmatter. That skip is permanent;
-it is B-003, not a deferral. The skip reads `FeatureSpec.Record`.
+native Feature whose document is no record: a set with no `record`, or one
+whose `TryLoad` gave `null`. Nothing is authored to hold, and the empty
+document would otherwise be reported as missing frontmatter. That skip is
+permanent; it is B-003, not a deferral. The skip reads `ClaimFileSet` set and
+`Record` `null`, since a layout's Feature also has no `Record`.
 
 **One identity (B-017; OQ-12).** `DuplicateIdentityRule` already groups
 `FeaturesWithIdentity` by `Identity`. A set beside another set, or beside a
@@ -650,7 +656,9 @@ appends one `SpechtReportLayout` named `claims` after the manifest's layouts.
 It counts the Features with a `ClaimFileSet`, and it is appended only under
 `claim.source` `gherkin`, so the summary and `layouts` of any other tree are
 unchanged. A manifest layout that is itself named `claims` keeps its entry,
-and this one follows it. `SpecificationCount`, `model.Features.Count`,
+and this one follows it. A manifest layout's entry counts only Features with
+no `ClaimFileSet`, so a native Feature is never counted twice, whatever its
+set's glob. `SpecificationCount`, `model.Features.Count`,
 includes native Features. Every violation on a native Feature carries its
 location: the record, or the first claim file. No other report member changes
 (`0001-F3` B-005).
@@ -678,9 +686,9 @@ and a record-less Feature's `SpecStatus` is `null`. `specht facts` lists
 `model.Features` (`0132-F2`). No claim says what it carries for a native
 Feature, so `FactsDocument.From` skips one too, and its output is unchanged.
 
-Each skip is a predicate on `ClaimFileSet` in the rule's loop. There is no
+Each skip is a `Where` on `ClaimFileSet` over the rule's loop. There is no
 model member and no base class: the skips are lifted one rule at a time, and
-item `0396` removes the last one.
+item `0396` removes the last one. No test pins a skip (§ 8, "Not asserted").
 
 **Determinism and paths (B-030, C-2, C-6).** Native Features follow the
 layouts' Features in manifest order. A record's path is its resolved
@@ -695,15 +703,13 @@ The first claim file is discovery's relative path. No rule writes.
 - `SpechtModelReader.Read` over a `MockFileSystem` tree through
   `EngineServices` reads `Features`, `Claims` and the listing.
 - `SpechtModelBuilder.Build` takes a hand-built listing with
-  `ClaimLocations`.
+  `ClaimLocations` and `ClaimRecords`.
 - `SpechtEvaluator.Evaluate` gives the summary and `layouts`.
-- Each skip is a test that a native Feature gets no finding from the rule,
-  beside today's test that a layout Feature still does.
 
 **Reuse.** `FeatureSpec`, `SpechtDocumentParser`, `DuplicateIdentityRule`,
 `SpechtDependencyGraph`, `ISpecDiscovery.FindChildItems`, `SpechtTreeStore`,
-`SpechtReportLayout`, the parser's fault list and item `0390`'s `ClaimSets`
-carry the work. No type is added.
+`SpechtReportLayout`, `SpechtDiscovery.DirectoryOf`, the parser's fault list
+and item `0390`'s `ClaimSets` carry the work. No type is added.
 
 **Rejected.**
 

@@ -22,7 +22,7 @@ public sealed class ScenarioTitleRule(MatrixResolver resolver) : ISpechtRule
         }
 
         var matrixReference = structure.SectionReference("matrix");
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             foreach (var row in resolver.Resolve(feature, structure, []))
             {

@@ -32,6 +32,7 @@ public sealed class SpechtEvaluator(IEnumerable<ISpechtRule> rules, SpechtViolat
     /// <implements epic="0001" feature="F1" claim="B-001" />
     /// <implements epic="0001" feature="F7" claim="B-151" />
     /// <implements epic="0001" feature="F7" claim="B-152" />
+    /// <implements epic="0001" feature="F16" claim="B-026" />
     internal SpechtReport Evaluate(SpechtModel model, Func<ISpechtRule, IEnumerable<SpechtFinding>> findings)
     {
         var version = model.Schemas.Version;
@@ -53,8 +54,12 @@ public sealed class SpechtEvaluator(IEnumerable<ISpechtRule> rules, SpechtViolat
             version.Number,
             model.Features.Count,
             [
-                .. model.Schemas.Structure.Discovery.Layouts.Select(layout =>
-                    new SpechtReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
+                .. model.Schemas.Structure.Discovery.Layouts.Select(layout => new SpechtReportLayout(
+                    layout.Name,
+                    model.Features.Count(feature => feature.ClaimFileSet is null && feature.Location.Layout == layout))),
+                .. model.Schemas.Structure.ClaimInput is { Source: SpechtClaimSource.Gherkin }
+                    ? [new SpechtReportLayout("claims", model.Features.Count(static feature => feature.ClaimFileSet is not null))]
+                    : Array.Empty<SpechtReportLayout>(),
             ],
             model.Items.Count,
             selected.Count,

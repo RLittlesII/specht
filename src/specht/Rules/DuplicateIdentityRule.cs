@@ -21,6 +21,7 @@ public sealed class DuplicateIdentityRule : ISpechtRule
     /// <implements epic="0001" feature="F1" claim="B-001" />
     /// <implements epic="0001" feature="F3" claim="B-012" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
+    /// <implements epic="0001" feature="F16" claim="B-017" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var duplicates = model.FeaturesWithIdentity
@@ -35,7 +36,7 @@ public sealed class DuplicateIdentityRule : ISpechtRule
             {
                 yield return new SpechtFinding(
                     feature.RelativePath,
-                    feature.Document.Frontmatter.LineOf(feature.Keys.Id),
+                    feature.ClaimFileSet is null ? feature.Document.Frontmatter.LineOf(feature.Keys.Id) : 0,
                     group.Key,
                     $"'{group.Key}' is specified in {paths.Count} places ({string.Join(", ", paths)}) - "
                         + "a migration removes the old tree in the same change")

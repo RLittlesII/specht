@@ -68,11 +68,13 @@ public sealed class FeatureSpec
     /// <implements epic="0001" feature="F16" claim="B-003" />
     public string? Lifecycle { get; init; }
 
-    /// <summary>The epic frontmatter value, or <c>null</c>.</summary>
-    public string? Epic => Document.Frontmatter.Text(Keys.Epic);
+    /// <summary>The epic frontmatter value, or <c>null</c>; a native Feature's is its claim file set's, whatever its record declares.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-037" />
+    public string? Epic => ClaimFileSet is { } set ? set.Epic : Document.Frontmatter.Text(Keys.Epic);
 
-    /// <summary>The id frontmatter value, or <c>null</c>.</summary>
-    public string? Id => Document.Frontmatter.Text(Keys.Id);
+    /// <summary>The id frontmatter value, or <c>null</c>; a native Feature's is its claim file set's, whatever its record declares.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-037" />
+    public string? Id => ClaimFileSet is { } set ? set.Feature : Document.Frontmatter.Text(Keys.Id);
 
     /// <summary>The specification's maturity frontmatter value, or <c>null</c>.</summary>
     public string? SpecStatus => Document.Frontmatter.Text(Keys.SpecStatus);

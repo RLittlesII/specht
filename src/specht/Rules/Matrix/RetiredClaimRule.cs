@@ -22,7 +22,7 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
         var structure = model.Schemas.Structure;
         var markers = structure.Markers;
         var matrixReference = structure.SectionReference("matrix");
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             foreach (var claim in resolver.ResolveClaims(feature, structure, model.Claims[feature]))
             {
