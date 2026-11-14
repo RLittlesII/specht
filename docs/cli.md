@@ -17,7 +17,7 @@ Installed as a local tool, each runs as `dotnet specht`.
 ## `specht`
 
 ```text
-specht [--root <DIR>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <rule id>]
+specht [--root <DIR>] [--strict] [--json] [--report <PATH>] [--schema-source <embedded|disk>] [--explain <rule id>]
 specht --version
 ```
 
@@ -31,6 +31,7 @@ pins. [What it checks](what-it-checks.md) lists the rules, and
 | `--schema-source <embedded\|disk>` | `embedded` or `disk` | Manifest selection, then automatic | Selects frontmatter schemas for this run; overrides a valid manifest selection.                                 |
 | `--strict`                         | none                 | Off                                | Fails on a violation of any severity, not only an error.                                                        |
 | `--json`                           | none                 | Off                                | Writes the report document to stdout in place of the violation lines and summary.                               |
+| `--report <PATH>`                  | Output file          | None                               | Also writes the report document to that file, relative to the working directory.                                |
 | `--explain <rule id>`              | A rule id            | None                               | Prints the entire rule page for the pinned schema version, including YAML frontmatter, without running a check. |
 | `-h, --help`                       | none                 | Off                                | Prints the command's help and checks nothing.                                                                   |
 | `--version`                        | none                 | Off                                | As the only argument, prints the tool's version and checks nothing.                                             |
@@ -59,6 +60,13 @@ Every path is relative to the root. A run that exits `2` or `3` says why on
 stderr. As the only argument, `--version` prints one line instead: the tool's
 version and the commit it was built from, such as `0.1.66+28d0ba692e`. It needs
 no manifest and writes nothing.
+
+**Report file.** `--report <PATH>` writes the same report document `--json`
+prints to that file, creating its directories and replacing a file already
+there; stdout and the exit code are as without it. A relative path is read from
+the working directory, not from `--root`. A run that exits `2` or `3` writes no
+file and creates no directory, and removes a file an earlier run left at the
+path.
 
 **Exit codes.** A check returns `0`, `1`, `2` or `3`; `--explain` can also return
 `4` for an unknown rule. [Exit codes](exit-codes.md) says what each means.

@@ -15,19 +15,29 @@ namespace Specht.Tool.Features.Check;
 /// <summary>
 /// <c>specht</c>, the default command (<c>0001-F2</c>): checks the tree under a root, prints one MSBuild-shaped line per
 /// violation on stdout and then the run summary - or, under <c>--json</c>, the report document in their place (<c>0001-F3</c>
-/// B-001) - and folds the report into an exit code. It parses, calls the engine's check and folds - nothing else (C-4).
+/// B-001) - and, given <c>--report</c>, writes the same document to that path (<c>0001-F3</c> B-003, B-022), and folds the
+/// report into an exit code. It parses, calls the engine's check and folds - nothing else (C-4).
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="explanations">The engine's pinned rule page reader.</param>
 /// <param name="run">The engine's check, <see cref="Specht.Check.SpechtCheck.Run(string, SchemaSourceSelection?)"/> outside a test.</param>
 /// <param name="mapper">Makes the report document from the report.</param>
 /// <param name="serializer">Serializes the report document.</param>
+/// <param name="store">Writes the report document to the <c>--report</c> path, and removes it from a run that checks nothing.</param>
 /// <implements epic="0001" feature="F2" claim="B-001" />
+/// <implements epic="0001" feature="F3" claim="B-003" />
 public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSourceSelection?, SpechtReport> run,
-    RuleExplanationReader explanations, SpechtReportDocumentMapper mapper, SpechtReportSerializer serializer) : AsyncCommand<CheckCommand.Settings>
+    RuleExplanationReader explanations, SpechtReportDocumentMapper mapper, SpechtReportSerializer serializer, SpechtReportStore store)
+    : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
     /// <implements epic="0001" feature="F2" claim="B-001" />
+    /// <implements epic="0001" feature="F3" claim="B-003" />
+    /// <implements epic="0001" feature="F3" claim="B-004" />
+    /// <implements epic="0001" feature="F3" claim="B-025" />
+    /// <implements epic="0001" feature="F3" claim="B-044" />
+    /// <implements epic="0001" feature="F3" claim="B-045" />
+    /// <implements epic="0001" feature="F3" claim="B-046" />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         SpechtReport report;
@@ -56,22 +66,27 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
         }
         catch (SpechtRootNotFoundException)
         {
-            return Fail(ExitCodes.MissingInput, $"specht: '{settings.Root}' is not a directory.");
+            return Unchecked(settings, ExitCodes.MissingInput, $"specht: '{settings.Root}' is not a directory.");
         }
         catch (SpechtManifestNotFoundException exception)
         {
-            return Fail(ExitCodes.MissingInput, $"specht: {exception.Message}");
+            return Unchecked(settings, ExitCodes.MissingInput, $"specht: {exception.Message}");
         }
         catch (SpechtManifestUnreadableException exception)
         {
-            return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
+            return Unchecked(settings, ExitCodes.InvalidManifest, $"specht: {exception.Message}");
         }
         catch (SpechtManifestException exception)
         {
-            return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
+            return Unchecked(settings, ExitCodes.InvalidManifest, $"specht: {exception.Message}");
         }
 
         var document = mapper.Map(report);
+
+        if (settings.Report is { } path)
+        {
+            store.Save(serializer.Serialize(document), path);
+        }
 
         if (settings.Json)
         {
@@ -114,6 +129,11 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
         [Description("Write the report document to stdout in place of the violation lines and the summary.")]
         public bool Json { get; init; }
 
+        /// <summary>Gets the path the report document is written to, relative to the working directory; none when omitted.</summary>
+        [CommandOption("--report <PATH>")]
+        [Description("Also write the report document to this file, relative to the working directory.")]
+        public string? Report { get; init; }
+
         /// <summary>Gets the explicit frontmatter source for this invocation, overriding a valid manifest selection.</summary>
         [CommandOption("--schema-source <embedded|disk>")]
         [Description("Select embedded or local disk frontmatter schemas for this check.")]
@@ -137,5 +157,17 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
         Console.Error.WriteLine(message);
 
         return Task.FromResult(code);
+    }
+
+    /// <implements epic="0001" feature="F3" claim="B-044" />
+    /// <implements epic="0001" feature="F3" claim="B-045" />
+    private Task<int> Unchecked(Settings settings, int code, string message)
+    {
+        if (settings.Report is { } path)
+        {
+            store.Delete(path);
+        }
+
+        return Fail(code, message);
     }
 }
