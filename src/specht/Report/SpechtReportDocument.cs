@@ -1,7 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-
 using Specht.Evaluation;
 using Specht.Model;
 
@@ -31,30 +27,6 @@ public sealed record SpechtReportDocument(
     int WarningCount,
     IReadOnlyList<SpechtReportViolation> Violations)
 {
-    /// <summary>Makes the document for <paramref name="report"/>.</summary>
-    /// <param name="report">The run's report.</param>
-    /// <returns>The document.</returns>
-    /// <implements epic="0001" feature="F3" claim="B-001" />
-    public static SpechtReportDocument From(SpechtReport report) =>
-        new(
-            report.SchemaVersion.ToString(),
-            report.SchemaSource,
-            report.Layouts,
-            report.ItemCount,
-            report.RulesEvaluated,
-            report.ErrorCount,
-            report.WarningCount,
-            report.Violations
-                .Select(static violation => new SpechtReportViolation(
-                    violation.RuleId,
-                    violation.Severity,
-                    violation.File,
-                    violation.Line,
-                    violation.Identifier,
-                    violation.Message,
-                    violation.Expected?.DeepClone().AsObject() ?? new JsonObject()))
-                .ToList());
-
     /// <summary>Makes the run summary the check prints after the violation lines (<c>0001-F2</c> B-002).</summary>
     /// <returns>The summary lines.</returns>
     /// <implements epic="0001" feature="F3" claim="B-001" />
@@ -66,21 +38,7 @@ public sealed record SpechtReportDocument(
         FormattableString.Invariant($"errors: {ErrorCount}, warnings: {WarningCount}"),
     ];
 
-    /// <summary>Serializes the document as the JSON the published report schema describes.</summary>
-    /// <returns>The JSON text.</returns>
-    /// <implements epic="0001" feature="F3" claim="B-001" />
-    public string ToJson() => JsonSerializer.Serialize(this, Options);
-
     /// <implements epic="0001" feature="F3" claim="B-001" />
     private static string Count(SpechtReportLayout layout) =>
         FormattableString.Invariant($"{layout.Layout} {layout.SpecificationCount}");
-
-    private static readonly JsonSerializerOptions Options = new()
-    {
-        WriteIndented = true,
-        NewLine = "\n",
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-    };
 }

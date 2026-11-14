@@ -9,7 +9,7 @@ using Specht.Versioning;
 namespace Specht.Tests.Engine;
 
 /// <summary>
-/// The runner over a tree on disk and a version set built in memory from the embedded version 0.1.0 (<c>0001-F7</c>
+/// The check over a tree on disk and a version set built in memory from the embedded version 0.1.0 (<c>0001-F7</c>
 /// B-001, B-002, B-014, B-055, B-151, B-152, B-154; C-4): the manifest is the tree's, its pin selects exactly the version it names, and that
 /// version's frontmatter schemas and rule vocabulary are the ones the check uses, whatever the tree's own
 /// <c>.specht/schema/frontmatter/</c> holds. On the shipped versions, the baseline tree pinned to 0.2.0 or 0.2.1 is
@@ -20,7 +20,7 @@ namespace Specht.Tests.Engine;
 /// is reported by <c>SPEC1002</c> under 0.3.0 and selects the claim grammar <c>SPEC4003</c> checks under 0.3.1.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerVersionsIntegrationTests
+public sealed class SpechtCheckVersionsIntegrationTests
 {
     /// <summary>Gets a pin, and whether a check under it rejects the priority that version 1.0.0 alone rejects.</summary>
     public static TheoryData<string, bool> FrontmatterPins =>
@@ -63,7 +63,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
             [shipped, shipped with { Number = new SemanticVersion(1, 0, 0), FeatureSchema = schema.ToJsonString(), Manifest = tagDefaults }]);
 
         // When
-        var report = EngineServices.Runner(versions).Run(tree.Root);
+        var report = EngineServices.Check(versions).Run(tree.Root, null);
 
         // Then
         var frontmatter = report.Violations
@@ -88,7 +88,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
                 shipped with { Number = new SemanticVersion(1, 0, 0), Manifest = tagDefaults }]);
 
         // When
-        var report = EngineServices.Runner(versions).Run(tree.Root);
+        var report = EngineServices.Check(versions).Run(tree.Root, null);
 
         // Then
         report.SchemaVersion.Should().Be(expected, because);
@@ -106,7 +106,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         var pinned = shipped with { RuleIds = shipped.RuleIds.Except(removed, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal) };
 
         // When
-        var report = EngineServices.Runner(new SchemaVersions([pinned])).Run(tree.Root);
+        var report = EngineServices.Check(new SchemaVersions([pinned])).Run(tree.Root, null);
 
         // Then
         report.Violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);
@@ -146,7 +146,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
             .Select(version =>
             {
                 tree.Pin(version);
-                var document = JsonNode.Parse(SpechtReportDocument.From(tree.Run()).ToJson())!.AsObject();
+                var document = JsonNode.Parse(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(tree.Run())))!.AsObject();
                 document.Remove("schemaVersion");
                 return document.ToJsonString();
             })

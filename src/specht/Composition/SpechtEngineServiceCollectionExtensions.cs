@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Specht.Check;
 using Specht.Discovery;
 using Specht.Evaluation;
 using Specht.Identifiers;
@@ -55,7 +56,11 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<SpechtModelReader>();
         services.AddSingleton<SpechtViolationOrder>();
         services.AddSingleton<SpechtEvaluator>();
-        services.AddSingleton<SpechtRunner>();
+        services.AddSingleton<SpechtCheck>();
+        services.AddSingleton<SpechtFrontmatterCheck>();
+        services.AddSingleton<SpechtReportDocumentMapper>();
+        services.AddSingleton<SpechtReportSerializer>();
+        services.AddSingleton<SpechtReportStore>();
         services.AddSingleton<SpechtTreeStore>();
         services.AddSingleton<SpechtTreeGenerator>();
         services.AddSingleton<FrontmatterSchemaCheck>();

@@ -317,7 +317,7 @@ public sealed partial class VersioningSteps
         {
             try
             {
-                _report = EngineServices.Runner(new SchemaVersions(_shipped.Values)).Run(Tree.Root);
+                _report = EngineServices.Check(new SchemaVersions(_shipped.Values)).Run(Tree.Root, null);
             }
             catch (SpechtManifestException exception)
             {
@@ -447,7 +447,7 @@ public sealed partial class VersioningSteps
         {
             if (_report is not null)
             {
-                return JsonNode.Parse(SpechtReportDocument.From(_report).ToJson())!.AsObject();
+                return JsonNode.Parse(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(_report)))!.AsObject();
             }
 
             _stdout.Should().NotBeEmpty("the check wrote its document: {0}", _stderr);

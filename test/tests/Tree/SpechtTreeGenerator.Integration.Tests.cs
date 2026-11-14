@@ -21,7 +21,7 @@ public sealed class SpechtTreeGeneratorIntegrationTests : IDisposable
         EngineServices.Store(new FileSystem()).Save(EngineServices.Generator().Generate(specifications), root);
 
         // When
-        var report = EngineServices.Runner().Run(root);
+        var report = EngineServices.Check().Run(root, null);
 
         // Then
         report.Violations.Should().BeEmpty();

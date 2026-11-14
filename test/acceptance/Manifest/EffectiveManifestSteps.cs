@@ -98,7 +98,8 @@ public sealed partial class EffectiveManifestSteps
         var original = Tree.Run();
         original.Violations.Should().NotBeEmpty();
         var copy = _copy!.Run();
-        SpechtReportDocument.From(copy).ToJson().Should().Be(SpechtReportDocument.From(original).ToJson());
+        new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(copy))
+            .Should().Be(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(original)));
         copy.SpecificationCount.Should().Be(original.SpecificationCount);
         _document!["identifiers"]!.AsObject().Should().NotContainKey("epic");
     }

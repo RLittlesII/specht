@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Specht.Check;
 using Specht.Composition;
 using Specht.Evaluation;
 using Specht.Manifest;
@@ -19,7 +20,7 @@ namespace Specht.Tests.Composition;
 /// are the rule list, so every rule the engine assembly declares is resolved once, in the order the runner evaluated
 /// them in when they were a hand-written list, each under its own id and together under every id of the shipped
 /// vocabularies once (item 0164); the evaluator and the violation order resolve from the registrations, one instance
-/// each; resolving the runner
+/// each; resolving the check
 /// constructs every loader, reader and rule beneath it, so a registration one of them needs and the engine leaves out
 /// fails the resolve; and a file system registered first is the one the engine reads through, the frontmatter schema store
 /// it registers included (<c>0001-F7</c> B-024, item 0092). Each provider is built by
@@ -81,16 +82,16 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     }
 
     [Fact]
-    public void TheEngineAlone_WhenItsRunnerIsResolved_ShouldConstructEveryLoaderReaderAndRule()
+    public void TheEngineAlone_WhenItsCheckIsResolved_ShouldConstructEveryLoaderReaderAndRule()
     {
         // Given
         using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
-        var resolving = () => resolver.Resolve(typeof(SpechtRunner));
+        var resolving = () => resolver.Resolve(typeof(SpechtCheck));
 
         // Then
-        resolving.Should().NotThrow().Which.Should().BeOfType<SpechtRunner>();
+        resolving.Should().NotThrow().Which.Should().BeOfType<SpechtCheck>();
     }
 
     [Fact]
@@ -154,14 +155,14 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
         });
         using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection()
             .AddSingleton<IFileSystem>(fileSystem).AddSingleton(catalog).AddSpechtEngine()).Build();
-        var runner = (SpechtRunner) resolver.Resolve(typeof(SpechtRunner))!;
+        var check = (SpechtCheck) resolver.Resolve(typeof(SpechtCheck))!;
         var parser = (SpechtManifestParser) resolver.Resolve(typeof(SpechtManifestParser))!;
         var resources = resolver.Resolve(typeof(SpechtResources));
 
         // When
-        var one = runner.Run("one");
-        var two = runner.Run("two");
-        var again = runner.Run("one");
+        var one = check.Run("one", null);
+        var two = check.Run("two", null);
+        var again = check.Run("one", null);
 
         // Then
         one.SchemaVersion.Should().Be(first.Number);

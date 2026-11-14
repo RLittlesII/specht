@@ -118,7 +118,7 @@ public sealed partial class EngineSteps
     [Then("the retained failure adds no field or private detail to the report")]
     public void ThenTheRetainedFailureAddsNoFieldOrPrivateDetailToTheReport()
     {
-        var text = SpechtReportDocument.From(Report).ToJson();
+        var text = new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(Report));
         using var json = JsonDocument.Parse(text);
         var fault = json.RootElement.GetProperty("violations").EnumerateArray()
             .Single(static violation => violation.GetProperty("ruleId").GetString() == "SPEC030");

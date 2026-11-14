@@ -20,7 +20,7 @@ public sealed class SpechtReportDocumentIdentityClaimsUnitTests
         var report = new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model);
 
         // When
-        var document = SpechtReportDocument.From(report);
+        var document = new SpechtReportDocumentMapper().Map(report);
 
         // Then
         var violations = document.Violations.Where(violation => violation.RuleId == ruleId && violation.Identifier == identifier).ToList();
@@ -36,6 +36,9 @@ public sealed class SpechtReportDocumentIdentityClaimsUnitTests
             }
         }
 
-        document.ToJson().Should().Be(SpechtReportDocument.From(new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model)).ToJson(), because);
+        new SpechtReportSerializer().Serialize(document).Should().Be(
+            new SpechtReportSerializer().Serialize(
+                new SpechtReportDocumentMapper().Map(new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model))),
+            because);
     }
 }
