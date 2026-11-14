@@ -20,7 +20,7 @@ depends_on: ["0001/F2", "0001/F5", "0001/F6"]
 blocks: ["F4"]
 spikes: []
 created: "2026-10-30"
-updated: "2026-11-12"
+updated: "2026-11-13"
 github_issue: null
 synced_at: null
 ---
@@ -120,25 +120,29 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-| Concern                                                                                                                        | Classification | Owner                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------ | -------------- | --------------------------------------------------------------------------------------- |
-| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)                         | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)         |
-| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004)               | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From` |
-| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                                         | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                      |
-| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                                   | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`             |
-| Byte-identical serialization (B-022)                                                                                           | Technical      | `FactsDocument.ToJson`                                                                  |
-| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)                         | Both           | `FactsCommand`                                                                          |
-| A claim's id and line as the check reads them, every row kept, two sharing an id included (B-005, B-013; C-1)                  | Business       | `SpechtClaims` through `SpechtModel.Claims`, projected by `FactsDocument.From`          |
-| A claim's text, and its status as its row writes it (B-005, B-012; C-5)                                                        | Business       | `FactsDocument.From`, reading the claims table's cells by header                        |
-| Finding the constraints section under the heading `sections` lists, and its cells under the engine's headers (B-006; C-1, C-7) | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                   |
-| A claim's and a constraint's members, with no coverage member (B-025; C-3)                                                     | Both           | `ClaimFacts` and `ConstraintFacts`, held to `docs/schema/facts.schema.json`             |
+| Concern                                                                                                                                                       | Classification | Owner                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)                                                        | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)                                                                |
+| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004)                                              | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From`                                                        |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                                                                        | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                                                                             |
+| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                                                                  | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`                                                                    |
+| Byte-identical serialization (B-022)                                                                                                                          | Technical      | `FactsDocument.ToJson`                                                                                                                         |
+| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)                                                        | Both           | `FactsCommand`                                                                                                                                 |
+| A claim's id and line as the check reads them, every row kept, two sharing an id included (B-005, B-013; C-1)                                                 | Business       | `SpechtClaims` through `SpechtModel.Claims`, projected by `FactsDocument.From`                                                                 |
+| A claim's text, and its status as its row writes it (B-005, B-012; C-5)                                                                                       | Business       | `FactsDocument.From`, reading the claims table's cells by header                                                                               |
+| Finding the constraints section under the heading `sections` lists, and its cells under the engine's headers (B-006; C-1, C-7)                                | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
+| A claim's and a constraint's members, with no coverage member (B-025; C-3)                                                                                    | Both           | `ClaimFacts` and `ConstraintFacts`, held to `docs/schema/facts.schema.json`                                                                    |
+| Finding the out-of-scope and open-questions sections under the headings `sections` lists, and their cells under the engine's headers (B-007, B-008; C-1, C-7) | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
+| Whether an open question is resolved, on OQ-2's default, its Resolution given as written beside it (B-008; C-5)                                               | Business       | `FactsDocument.From`                                                                                                                           |
+| A missing section, or one with no table the parse reads, emptying only its own member (B-015; C-1)                                                            | Both           | `MarkdownTextReader` through `SpechtDocumentParser`, which gives such a section no table; `FactsDocument.From`, which reads each section alone |
+| An out-of-scope row's and an open question's members (B-007, B-008; C-3)                                                                                      | Both           | `OutOfScopeFacts` and `OpenQuestionFacts`, held to `docs/schema/facts.schema.json`                                                             |
 
 ## 7. Technical Design
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-The design for items `0364` and `0365`, as built. Each type is declared in the file it links; the compiler is the
-authority on its members and signatures.
+The design for items `0364`, `0365` and `0366`, as built. Each built type is declared in the file it links; the
+compiler is the authority on its members and signatures.
 
 ### Reading the tree
 
@@ -192,8 +196,8 @@ the consumer's frontmatter key: from schema `0.3.0` the manifest's `featureKeys`
 member stays `specStatus` (`0001-F5` B-004). Names are camelCase, as in the published report document
 (`docs/schema/report.schema.json`, `0001-F3`).
 
-A Feature's document for this repository's own specification, its `claims` and `constraints` left out (§ "Claims and
-constraints"):
+A Feature's document for this repository's own specification, its `claims`, `constraints`, `outOfScope` and
+`openQuestions` left out (§ "Claims and constraints", § "Out-of-scope rows and open questions"):
 
 ```json
 {
@@ -291,15 +295,125 @@ array of objects with `additionalProperties: false`: a claim requires `id` (stri
 No existing member, type or constraint of the schema changes (C-3). The `specht facts` paragraph in
 [`docs/cli.md`](../../../../../docs/cli.md) names the claims and constraints among what is printed.
 
+### Out-of-scope rows and open questions
+
+Item `0366`'s design, as built. `FeatureFacts` has two members after `constraints`, added there so every earlier member
+keeps its name, type and place (C-3):
+
+| Member          | Value                                                                                                                | Claim        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `outOfScope`    | One `OutOfScopeFacts` per body row of the out-of-scope section, in row order; `[]` with no such section or table     | B-007, B-015 |
+| `openQuestions` | One `OpenQuestionFacts` per body row of the open-questions section, in row order; `[]` with no such section or table | B-008, B-015 |
+
+Two records in `src/specht/Facts/`, each in a file of its own name, carrying values and no logic:
+
+- [`OutOfScopeFacts`](../../../../specht/Facts/OutOfScopeFacts.cs), written as `number`, `item`, `reason` and `line`.
+- [`OpenQuestionFacts`](../../../../specht/Facts/OpenQuestionFacts.cs), written as `id`, `question`, `blocks`,
+  `resolution`, `resolved` and `line`.
+
+**The sections.** No role names either section, so `From` finds each as it finds the constraints: under the `sections`
+entries `5. Out of Scope` and `11. Open Questions`, which every shipped manifest lists, `0.1.0` to `0.4.0`, held as
+private constants beside `ConstraintsTitle` and read through `feature.Document.Section` only when
+`model.Schemas.Structure.Sections` lists the title (C-1, C-7). With three sections found this way, the one
+`constraintsListed` test became one private method, `Listed`, giving the section titled by a constant when `sections`
+lists it, and `null` otherwise, serving all three; the constraints keep their reading. A heading the manifest renames is item
+`0367`'s (B-016).
+
+**The rows.** An out-of-scope row's `number` and an open question's `id` are the row's first cell, as a constraint's
+`id` is and as the check reads an open-question id for `mint` (`HeldIds`, through `SpechtDocumentParser.FirstCells`):
+the string the parse gives, `""` when the row has none, never parsed into a number; one private `FirstCell` gives it for
+the constraints, out-of-scope rows and open questions alike. `line` is `section.RowLines[row]`.
+The other cells come through `Cell` under the engine's headers (C-7), which every shipped template's tables carry,
+`0.1.0` to `0.4.0`: `Item` and `Exclusion Reason` give `item` and `reason`; `Question`, `Blocks` and `Resolution` give
+`question`, `blocks` and `resolution`. Each is the cell's text as the parse gives it, `null` under a header the table
+lacks; `blocks` is the cell's text, not split into ids. Every body row is given, one whose first cell is no
+open-question id included.
+
+**Whether a question is resolved.** OQ-2's default, `0228-F1` B-009's reading, in one private `Resolved` in
+`FactsDocument`: `resolved` is `false` when the `resolution` is `null` or `""`, or its first word is the open marker in
+exact case, and `true` for any other resolution. The first word is the resolution's text up to its first character that is neither a letter nor a digit
+(`char.IsLetterOrDigit`), compared ordinally. So `Open`, `Open. Proceeds on the default.`, `Open; …` and `Open 2026-11-…`
+read unresolved, and `Resolved 2026-10-30 …`, `RESOLVED, …`, `Superseded …`, `open` and `Opened …` read resolved. The
+text is the parse's, so a cell written `**Open**` reads as `Open`.
+
+The open marker read is `Open`, one private constant in `FactsDocument`. The manifest's markers live in
+[`SpechtStructure.Markers`](../../../../specht/Manifest/SpechtStructure.cs), which `SpechtManifestParser` fills from the
+pinned shipped manifest's `markers` and overlays with the consumer's. No shipped manifest declares an `open` marker:
+`0.1.0` declares `missing`, `draft`, `blocked` and `approved`, `0.2.0` adds `covered`, `partial`, `waived`, `withdrawn`
+and `superseded`, and `0.3.0` adds `done`, which `0.3.1` and `0.4.0` keep. So under every shipped pin OQ-2's default reads
+`Open`. `From` reads no entry of `Markers`: C-7 reads only `sections`, `roles` and `tables` from the manifest, and a
+consumer's `markers.open` is a name the parser keeps without checking and no rule reads. The `resolution` is given as
+written beside `resolved`, so a reader can apply a reading of its own (C-5).
+
+**A missing section or an unreadable table.** Each row member is read from its own section alone and no read throws, so
+a fault in one section empties that member and no other (B-015). A specification gives no facts for a section when:
+
+- the section is absent, and `SpechtDocument.Section` gives `null`;
+- the manifest's `sections` does not list its heading;
+- the section has no table the parse reads. `SpechtDocumentParser` reads tables with Markdig's pipe-table extension,
+  which recognises a table only as a header row followed by a delimiter row (`| --- |`); pipe-separated lines with no
+  delimiter row, or a malformed one, parse as a paragraph. `MarkdownTextReader` gives a section the first table between
+  its heading and the next `##` heading, so a section with none has empty `Headers`, `Rows` and `RowLines`, and its
+  member is `[]`. This is B-015's table the parse cannot read: the section the check sees with no table (C-1). A section
+  reading `None.` is another. Where a readable table follows an unreadable one inside the section, that table is the
+  section's, for the check and the facts alike.
+
+A table the parse reads whose headers are not the engine's is read: each row is given with its first cell and line, and
+`null` under each engine header the table lacks, as the claims and constraints are. `From` still runs no rule, and the
+command does not change (C-4).
+
+```json
+{
+  "outOfScope": [
+    {
+      "number": "1",
+      "item": "Any other input",
+      "reason": "Owned by a sibling Feature",
+      "line": 77
+    }
+  ],
+  "openQuestions": [
+    {
+      "id": "OQ-1",
+      "question": "Which input comes first?",
+      "blocks": "B-001",
+      "resolution": "Open. Proceeds on the default.",
+      "resolved": false,
+      "line": 112
+    },
+    {
+      "id": "OQ-2",
+      "question": "Which output comes last?",
+      "blocks": "B-002",
+      "resolution": "Resolved 2026-10-30 by the owner: the answer",
+      "resolved": true,
+      "line": 113
+    }
+  ]
+}
+```
+
+The schema gains, on each specification item, `outOfScope` and `openQuestions` in `properties` and in `required`, so an
+item requires eleven members. Each is an array of objects with `additionalProperties: false`: an out-of-scope row
+requires `number` (string), `item` and `reason` (`["string", "null"]`) and `line` (integer, minimum `1`); an open
+question requires `id` (string), `question`, `blocks` and `resolution` (`["string", "null"]`), `resolved` (boolean) and
+`line` (integer, minimum `1`). No existing member, type or constraint of the schema changes (C-3). The `specht facts`
+paragraph in [`docs/cli.md`](../../../../../docs/cli.md) names the out-of-scope rows and open questions among what is
+printed.
+
 ### Where later items attach
 
 Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
 
 - `0365`, built: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
   `sections` and `roles` name; § "Claims and constraints".
-- `0366` and `0367`: `outOfScope`, `openQuestions`, `deltas` and `signOff` on `FeatureFacts`, each section found through
-  `SpechtDocument.Section` under the manifest's heading (C-7), its cells read through `Cell`. Item `0367` also finds the
-  claims and constraints under a heading the manifest renames (B-016), changing how a section is found and no member.
+- `0366`, built: `outOfScope` and `openQuestions` on `FeatureFacts`, after `constraints`, from the sections the
+  manifest's `sections` lists, an open question's `resolved` on OQ-2's default; § "Out-of-scope rows and open
+  questions".
+- `0367`: `deltas` and `signOff` on `FeatureFacts`, after `openQuestions`, each section found through the private method
+  § "Out-of-scope rows and open questions" names under the manifest's heading (C-7), its cells read through `Cell`. Item
+  `0367` also finds the claims, constraints, out-of-scope and open-questions sections under a heading the manifest
+  renames (B-016), changing how a section is found and no member.
 - `0368`: `records` on `FeatureFacts`. Records are not in the listing today; that item extends the listing through
   `ISpecDiscovery`, not a read inside `Features/Facts/`.
 - `0369`: the path selector narrows `FactsDocument.Specifications` in the engine; the command maps an empty selection to
@@ -310,7 +424,8 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
 ### The published schema
 
 [`docs/schema/facts.schema.json`](../../../../../docs/schema/facts.schema.json), OQ-1's default, draft 2020-12 as the
-report schema is. A root object requiring `specifications`; each item requiring the nine members above, with `id`,
+report schema is. A root object requiring `specifications`; each item requiring the eleven members of § "The
+document", § "Claims and constraints" and § "Out-of-scope rows and open questions", with `id`,
 `specStatus` and `status` typed `["string", "null"]` and the three lists arrays of strings. `path` takes the report schema's `file` pattern: non-empty,
 not starting with `/`, no drive letter, no `\`. `additionalProperties` is `false` at every level, as in the report
 schema, so a violation, a count or a verdict member fails validation (B-014), and each later item that adds a member
@@ -372,6 +487,27 @@ until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` rem
   second read of the file: a second parser (C-1).
 - **One row record shared by claims and constraints.** Their third members differ; they stay two until items `0366` and
   `0367` show whether the rows share a shape.
+- **The open marker from the manifest, `Markers.GetValueOrDefault("open", "Open")`, as `ClaimRowRule` reads
+  `withdrawn`.** No shipped manifest declares `open`, so under a shipped manifest it reads `Open` either way; it differs
+  only for a consumer's `markers.open`, a name no schema version defines and C-7 does not let the facts read. A schema
+  version that declares `markers.open` (`0228-F1` OQ-4) needs C-7 amended before the facts read it.
+- **The first word split at white space alone.** `Open.` would not be `Open`, and `0228-F1` B-009 reads
+  `Open. Proposed default: …` as open.
+- **Resolved only when the Resolution begins `Resolved`.** Not OQ-2's reading: `RESOLVED, …` and `Superseded …` would
+  read open.
+- **`resolved` as `null`, or a state string, when the table has no Resolution cell.** A third state no claim states; B-009
+  reads an empty Resolution as open, and an absent cell is read as empty.
+- **`number` as an integer.** Parsing the cell is a reading of it, and a cell such as `1a` or an empty one would need a
+  fallback; the first cell as the parse gives it is how every other row's id is given.
+- **`number` and `id` from the cells under `#` and `ID`.** The first cell is how the check reads an open-question id
+  (`HeldIds`) and how a constraint's id is given, and every shipped template puts `#` and `ID` first.
+- **`blocks` as a list of ids.** Splitting the cell is the Blocks rule's reading (`0228-F1`), and prose in the cell would
+  need a grammar.
+- **A table whose headers differ from the engine's as unreadable.** The parse reads it (C-1); dropping its rows would put
+  a verdict on the table into the facts (C-5).
+- **One row record for every section, its cells keyed by header.** The schema would follow each table's headers and
+  vary with the tree (C-5), and B-007 and B-008 name the members. The four row shapes share only `line`, so each keeps a
+  record of its own.
 
 ## 8. Testing Strategy
 
@@ -396,23 +532,36 @@ constraints, each claim with a § 9 row and a scenario carrying its tag. Theory 
 `FactsRetiredClaimStatuses` and `FactsCoverageMembers`. A line is the one-based line of the row in the file the test
 wrote, found by the row's leading cells, not the engine's own reading of it.
 
-| Claim | Mechanism                                                                                                                                                                            | Unit test                                                                                                                                                                          |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B-001 | `FactsDocument.From` walks `SpechtModel.Features` in its order; the order is the discovery's, which its own tests pin                                                                | `FeaturesInTheModelsOrder_WhenTheDocumentIsMade_ShouldListEverySpecificationInThatOrder`                                                                                           |
-| B-002 | `ToJson` writes one document; the published schema describes it                                                                                                                      | None at the unit tier: the mechanism is the published file, read from disk, as the report schema's test is (`0001-F3` B-008)                                                       |
-| B-003 | `path` from `RelativePath`, `id` from `Identity` for a Feature in `FeaturesWithIdentity`, the statuses through the manifest's keys                                                   | `AFeatureWithAnIdentity_WhenTheDocumentIsMade_ShouldCarryItsPathQualifiedIdAndBothStatuses`                                                                                        |
-| B-004 | `FeatureSpec.Strings` for each list, not `SpechtDependencyGraph`, so an edge the check cannot resolve is kept, in its written order                                                  | `DependencyListsTheCheckCannotResolve_WhenTheDocumentIsMade_ShouldCarryEachAsTheFrontmatterWritesIt`                                                                               |
-| B-005 | One entry per `SpechtClaims.Rows` row in row order, `id` and `line` from the row, `text` and `status` the cells under the `Claim` and `Status` headers, wherever the table puts them | `ClaimRowsUnderTheirTablesHeaders_WhenTheDocumentIsMade_ShouldCarryEachClaimsIdTextStatusAndLine`, with and without a `Source` column (`FactsClaimTables`)                         |
-| B-006 | The section the manifest's `sections` lists as `4. Constraints`; each body row's first cell and line, and the cells under `Constraint` and `Rules Out`                               | `ConstraintRows_WhenTheDocumentIsMade_ShouldCarryEachConstraintsIdTextWhatItRulesOutAndLine`                                                                                       |
-| B-012 | The status is the `Status` cell as written; nothing maps it to a marker or drops a row for it                                                                                        | `AClaimWhoseStatusIsTheWithdrawnOrSupersededMarker_WhenTheDocumentIsMade_ShouldStillGiveItWithThatStatus` (`FactsRetiredClaimStatuses`)                                            |
-| B-013 | Every row of `SpechtClaims.Rows` is given, a second row sharing an id and a row whose id the grammar refuses included; `From` runs no rule                                           | `TwoClaimsSharingAnIdBesideOneTheGrammarRefuses_WhenTheDocumentIsMade_ShouldGiveEveryRowInItsOrder`; the exit `0` is the command's unchanged path, pinned at the integration tier  |
-| B-014 | `From` reads the model and runs no rule; the schema's `additionalProperties: false` refuses a violation, count or verdict member                                                     | None at the unit tier: the schema theory reads the published file, so it is Integration                                                                                            |
-| B-017 | Every member is written whatever its value, so a value a pin changes, such as an epic-less Feature's identity from `0.3.0`, keeps it                                                 | `TheSameFeaturesUnderTwoPins_WhenEachDocumentIsMade_ShouldCarryTheSameMembers`                                                                                                     |
-| B-021 | The command folds the read's typed exceptions into `2` and `3`                                                                                                                       | `ABrokenRoot_WhenExecuted_ShouldExitWithTheChecksCode`                                                                                                                             |
-| B-022 | `From` is a function of the model alone and `ToJson` serializes in declaration and model order                                                                                       | `TheSameFeaturesReadIntoTwoModels_WhenEachDocumentIsSerialized_ShouldGiveTheSameText`                                                                                              |
-| B-023 | The command calls only the read and the console; nothing it calls opens a file for writing                                                                                           | `ATreeWithAFeature_WhenExecuted_ShouldCreateModifyOrDeleteNoFile`, with a sentinel outside the root                                                                                |
-| B-025 | `From` reads no `MatrixSections`, companion `.feature` or test file; the schema's `additionalProperties: false` on a claim refuses a coverage member                                 | `AClaimWithATraceabilityRowATaggedScenarioAndATestFile_WhenTheDocumentIsMade_ShouldCarryNoneOfThem`; the schema half reads the published file, so it is Integration, as B-014's is |
-| B-026 | `From` never reads `SpechtModel.Epics`                                                                                                                                               | `AnEpicFileBesideAFeature_WhenTheDocumentIsMade_ShouldGiveOnlyTheFeature`                                                                                                          |
+Item `0366`'s claims, B-007, B-008 and B-015, are proved the same way on the same three tiers. The unit tests build an
+out-of-scope or open-questions section in memory as a `SpechtSection` and read `outOfScope` and `openQuestions` from
+`ToJson()` by the names § 7 gives, so no test names `OutOfScopeFacts` or `OpenQuestionFacts`. `FactsSteps` binds the
+`@B-007`, `@B-008` and `@B-015` scenarios; the Background's two specifications now carry two out-of-scope rows and one
+open question, and the B-008 step rewrites the first one's Resolution. Theory rows come from
+`FactsOpenQuestionResolutions` and `FactsOutOfScopeFaults`, each read by the unit and the integration tier. An
+unreadable table is a header row with no delimiter row, and each B-015 test first holds the engine's own read to the
+fault - no out-of-scope section, or one with no rows - so a fixture the parse reads as a table cannot pass as one it
+cannot.
+
+| Claim | Mechanism                                                                                                                                                                                                                                                                                                               | Unit test                                                                                                                                                                                                                                                                                          |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | `FactsDocument.From` walks `SpechtModel.Features` in its order; the order is the discovery's, which its own tests pin                                                                                                                                                                                                   | `FeaturesInTheModelsOrder_WhenTheDocumentIsMade_ShouldListEverySpecificationInThatOrder`                                                                                                                                                                                                           |
+| B-002 | `ToJson` writes one document; the published schema describes it                                                                                                                                                                                                                                                         | None at the unit tier: the mechanism is the published file, read from disk, as the report schema's test is (`0001-F3` B-008)                                                                                                                                                                       |
+| B-003 | `path` from `RelativePath`, `id` from `Identity` for a Feature in `FeaturesWithIdentity`, the statuses through the manifest's keys                                                                                                                                                                                      | `AFeatureWithAnIdentity_WhenTheDocumentIsMade_ShouldCarryItsPathQualifiedIdAndBothStatuses`                                                                                                                                                                                                        |
+| B-004 | `FeatureSpec.Strings` for each list, not `SpechtDependencyGraph`, so an edge the check cannot resolve is kept, in its written order                                                                                                                                                                                     | `DependencyListsTheCheckCannotResolve_WhenTheDocumentIsMade_ShouldCarryEachAsTheFrontmatterWritesIt`                                                                                                                                                                                               |
+| B-005 | One entry per `SpechtClaims.Rows` row in row order, `id` and `line` from the row, `text` and `status` the cells under the `Claim` and `Status` headers, wherever the table puts them                                                                                                                                    | `ClaimRowsUnderTheirTablesHeaders_WhenTheDocumentIsMade_ShouldCarryEachClaimsIdTextStatusAndLine`, with and without a `Source` column (`FactsClaimTables`)                                                                                                                                         |
+| B-006 | The section the manifest's `sections` lists as `4. Constraints`; each body row's first cell and line, and the cells under `Constraint` and `Rules Out`                                                                                                                                                                  | `ConstraintRows_WhenTheDocumentIsMade_ShouldCarryEachConstraintsIdTextWhatItRulesOutAndLine`                                                                                                                                                                                                       |
+| B-007 | The section the manifest's `sections` lists as `5. Out of Scope`; each body row's first cell as its number and its line, and the cells under `Item` and `Exclusion Reason`                                                                                                                                              | `OutOfScopeRows_WhenTheDocumentIsMade_ShouldCarryEachRowsNumberItemReasonAndLine`                                                                                                                                                                                                                  |
+| B-008 | The section listed as `11. Open Questions`; each body row's first cell and line, the cells under `Question`, `Blocks` and `Resolution`, and `resolved` read on OQ-2's default: `false` for an empty Resolution or one whose first word, up to its first character neither a letter nor a digit, is `Open` in exact case | `AnOpenQuestionsResolution_WhenTheDocumentIsMade_ShouldCarryItsIdQuestionBlocksResolutionLineAndWhetherItIsResolved` (`FactsOpenQuestionResolutions`): the Outline's three, an empty cell, `Open` before `;` and before a space unresolved; `RESOLVED`, `Superseded`, `open` and `Opened` resolved |
+| B-012 | The status is the `Status` cell as written; nothing maps it to a marker or drops a row for it                                                                                                                                                                                                                           | `AClaimWhoseStatusIsTheWithdrawnOrSupersededMarker_WhenTheDocumentIsMade_ShouldStillGiveItWithThatStatus` (`FactsRetiredClaimStatuses`)                                                                                                                                                            |
+| B-013 | Every row of `SpechtClaims.Rows` is given, a second row sharing an id and a row whose id the grammar refuses included; `From` runs no rule                                                                                                                                                                              | `TwoClaimsSharingAnIdBesideOneTheGrammarRefuses_WhenTheDocumentIsMade_ShouldGiveEveryRowInItsOrder`; the exit `0` is the command's unchanged path, pinned at the integration tier                                                                                                                  |
+| B-014 | `From` reads the model and runs no rule; the schema's `additionalProperties: false` refuses a violation, count or verdict member                                                                                                                                                                                        | None at the unit tier: the schema theory reads the published file, so it is Integration                                                                                                                                                                                                            |
+| B-015 | Each row member is read from its own section alone, and a section that is absent or has no table gives `[]`                                                                                                                                                                                                             | `AnOutOfScopeSectionMissingOrWithNoTable_WhenTheDocumentIsMade_ShouldGiveNoOutOfScopeRowsAndEveryOtherRow` (`FactsOutOfScopeFaults`); the parse giving a header row with no delimiter row no table is Markdig's, held at the integration tier where the Markdown is parsed                         |
+| B-017 | Every member is written whatever its value, so a value a pin changes, such as an epic-less Feature's identity from `0.3.0`, keeps it                                                                                                                                                                                    | `TheSameFeaturesUnderTwoPins_WhenEachDocumentIsMade_ShouldCarryTheSameMembers`                                                                                                                                                                                                                     |
+| B-021 | The command folds the read's typed exceptions into `2` and `3`                                                                                                                                                                                                                                                          | `ABrokenRoot_WhenExecuted_ShouldExitWithTheChecksCode`                                                                                                                                                                                                                                             |
+| B-022 | `From` is a function of the model alone and `ToJson` serializes in declaration and model order                                                                                                                                                                                                                          | `TheSameFeaturesReadIntoTwoModels_WhenEachDocumentIsSerialized_ShouldGiveTheSameText`                                                                                                                                                                                                              |
+| B-023 | The command calls only the read and the console; nothing it calls opens a file for writing                                                                                                                                                                                                                              | `ATreeWithAFeature_WhenExecuted_ShouldCreateModifyOrDeleteNoFile`, with a sentinel outside the root                                                                                                                                                                                                |
+| B-025 | `From` reads no `MatrixSections`, companion `.feature` or test file; the schema's `additionalProperties: false` on a claim refuses a coverage member                                                                                                                                                                    | `AClaimWithATraceabilityRowATaggedScenarioAndATestFile_WhenTheDocumentIsMade_ShouldCarryNoneOfThem`; the schema half reads the published file, so it is Integration, as B-014's is                                                                                                                 |
+| B-026 | `From` never reads `SpechtModel.Epics`                                                                                                                                                                                                                                                                                  | `AnEpicFileBesideAFeature_WhenTheDocumentIsMade_ShouldGiveOnlyTheFeature`                                                                                                                                                                                                                          |
 
 The integration tier adds what a unit cannot see: the registration and `--json` binding, stdout as one document valid
 against the schema with a `null` member in it (B-002), a tree in both layouts against the check's own read (B-001), the
@@ -421,7 +570,11 @@ exit code for each broken root beside the command's (B-021), two runs and two ro
 the folder holding the root unchanged (B-023). For item `0365` it adds each claim's and constraint's line in a file on disk
 (B-005, B-006), a withdrawn and a superseded row (B-012), the check's exit `1` and its violation on the second of two
 claims sharing an id beside the command's `0` and both rows (B-013), and a claim with a `Covered` § 9 row and a tagged
-scenario given with neither, and the schema refusing a traceability, scenario or test member on a claim (B-025).
+scenario given with neither, and the schema refusing a traceability, scenario or test member on a claim (B-025). For item
+`0366` it adds each out-of-scope row's and open question's line in a file on disk with the document valid against the
+schema (B-007, B-008), each resolution of `FactsOpenQuestionResolutions` beside a resolved question, an empty cell read
+as `""` (B-008), and a specification with no out-of-scope section, or one whose table has no delimiter row, still giving
+its claims, constraints and open questions (B-015).
 
 **Red, item `0364`, 2026-11-12, `net11.0`.** Before the production types exist the unit files do not compile (`CS0234`:
 no `Specht.Facts`, no `Specht.Tool.Features.Facts`); with those two files emptied for the run and restored after it, the
@@ -436,6 +589,21 @@ members from `ToJson()` and name no new C# type. The 7 new `FactsDocumentUnitTes
 violation on the second of two claims sharing an id, and `0` on the tree whose claim is `Covered`; the 19 earlier cases
 passed. `TheFactsCommandFeature` ran 36 scenarios: the 5 newly bound failed on the absent members, 13 passed and 18 were
 skipped on unbound steps.
+
+**Red, item `0366`, 2026-11-13, `net11.0`.** The tests compile against the surface items `0364` and `0365` built: they
+read the new members from `ToJson()` and name no new C# type. The 13 new `FactsDocumentUnitTests` cases failed on
+`outOfScope` or `openQuestions` absent from the document (`found <null>`). The 13 new `FactsCommandIntegrationTests`
+cases failed the same way, every assertion before it passing: the engine's own read giving no out-of-scope section, or
+one with no rows, and the document valid against the schema as published. The 47 earlier cases in `Specht.Tests.Facts`
+passed. `TheFactsCommandFeature` ran 36 scenarios: the 6 newly bound failed on the absent members, 18 passed and 12 were
+skipped on unbound steps.
+
+**For `implementer`, item `0366`.** The tests need no new compile surface; they need `outOfScope` and `openQuestions`
+written on every specification, with the members § 7 names, and the schema widened so a document carrying rows of both
+still validates (B-002's test and the new integration tests). No test holds the `null` § 7 gives under a header the
+table lacks, the `[]` under a manifest whose `sections` does not list either heading, a cell's Markdown markers such as
+`**Open**`, a row whose first cell is no open-question id, or the schema refusing another member on either row: no claim
+states them, and the renamed heading is item `0367`'s (B-016). Nothing in the design is hard to test.
 
 **For `implementer`, item `0365`.** The tests need no new compile surface; they need `claims` and `constraints` written
 on every specification, with the members § 7 names, and the schema widened so the document still validates (B-002's
@@ -461,15 +629,15 @@ describes to the check's; a claim would be needed for that. No benchmark is need
 | B-004    | A specification is given with its dependencies                         | `FactsSteps.ThenFirstDependsOnSecond`; `FactsSteps.ThenSecondBlocksFirst`; `FactsDocumentUnitTests.DependencyListsTheCheckCannotResolve_WhenTheDocumentIsMade_ShouldCarryEachAsTheFrontmatterWritesIt`; `FactsCommandIntegrationTests.FeaturesThatListEachOther_WhenFactsAreGivenAsJson_ShouldCarryEachListAsTheFrontmatterWritesIt`                                                                                | Covered |
 | B-005    | A claim is given with its text, status and line                        | `FactsSteps.ThenEachClaim`; `FactsDocumentUnitTests.ClaimRowsUnderTheirTablesHeaders_WhenTheDocumentIsMade_ShouldCarryEachClaimsIdTextStatusAndLine`; `FactsCommandIntegrationTests.AFeatureWithClaims_WhenFactsAreGivenAsJson_ShouldCarryEachClaimsIdTextStatusAndTheLineItIsOn`                                                                                                                                   | Covered |
 | B-006    | A constraint is given with what it rules out                           | `FactsSteps.ThenEachConstraint`; `FactsDocumentUnitTests.ConstraintRows_WhenTheDocumentIsMade_ShouldCarryEachConstraintsIdTextWhatItRulesOutAndLine`; `FactsCommandIntegrationTests.AFeatureWithConstraints_WhenFactsAreGivenAsJson_ShouldCarryEachConstraintsIdTextWhatItRulesOutAndTheLineItIsOn`                                                                                                                 | Covered |
-| B-007    | An out-of-scope row is given with its reason                           | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-008    | An open question is given with whether it is resolved                  | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
+| B-007    | An out-of-scope row is given with its reason                           | `FactsSteps.ThenEachOutOfScopeRow`; `FactsDocumentUnitTests.OutOfScopeRows_WhenTheDocumentIsMade_ShouldCarryEachRowsNumberItemReasonAndLine`; `FactsCommandIntegrationTests.AFeatureWithOutOfScopeRows_WhenFactsAreGivenAsJson_ShouldCarryEachRowsNumberItemReasonAndTheLineItIsOn`                                                                                                                                 | Covered |
+| B-008    | An open question is given with whether it is resolved                  | `FactsSteps.ThenOpenQuestion`; `FactsSteps.ThenGivenAs`; `FactsDocumentUnitTests.AnOpenQuestionsResolution_WhenTheDocumentIsMade_ShouldCarryItsIdQuestionBlocksResolutionLineAndWhetherItIsResolved`; `FactsCommandIntegrationTests.AnOpenQuestionsResolution_WhenFactsAreGivenAsJson_ShouldCarryItsIdQuestionBlocksResolutionLineAndWhetherItIsResolved`                                                           | Covered |
 | B-009    | A lessons and deltas entry is given with its text and line             | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
 | B-010    | A sign-off row is given with its reviewer and note                     | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
 | B-011    | The records beside a specification are given by number and title       | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
 | B-012    | A withdrawn claim is still given                                       | `FactsSteps.ThenWithdrawnClaimGiven`; `FactsDocumentUnitTests.AClaimWhoseStatusIsTheWithdrawnOrSupersededMarker_WhenTheDocumentIsMade_ShouldStillGiveItWithThatStatus`; `FactsCommandIntegrationTests.AClaimWhoseStatusIsTheWithdrawnOrSupersededMarker_WhenFactsAreGivenAsJson_ShouldStillGiveItWithThatStatus`                                                                                                    | Covered |
 | B-013    | The facts succeed on a tree the check fails                            | `FactsSteps.ThenSucceeds`; `FactsSteps.ThenBothClaimsGiven`; `FactsDocumentUnitTests.TwoClaimsSharingAnIdBesideOneTheGrammarRefuses_WhenTheDocumentIsMade_ShouldGiveEveryRowInItsOrder`; `FactsCommandIntegrationTests.TwoClaimsSharingAnIdTheCheckReports_WhenFactsAreGivenAsJson_ShouldExitZeroAndGiveBoth`                                                                                                       | Covered |
 | B-014    | The facts carry no verdict                                             | `FactsSteps.ThenNoVerdict`; `FactsCommandIntegrationTests.ATreeTheCheckReportsAViolationFor_WhenFactsAreGivenAsJson_ShouldCarryNoViolationCountOrVerdict`; `FactsCommandIntegrationTests.AFactsDocumentGivenAVerdictMember_WhenValidatedAgainstThePublishedFactsSchema_ShouldBeRejected`                                                                                                                            | Covered |
-| B-015    | A missing section or an unreadable table leaves only its own facts out | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
+| B-015    | A missing section or an unreadable table leaves only its own facts out | `FactsSteps.ThenNoOutOfScopeRows`; `FactsSteps.ThenStillCarriesOtherRows`; `FactsDocumentUnitTests.AnOutOfScopeSectionMissingOrWithNoTable_WhenTheDocumentIsMade_ShouldGiveNoOutOfScopeRowsAndEveryOtherRow`; `FactsCommandIntegrationTests.AnOutOfScopeSectionMissingOrWithATableTheParseCannotRead_WhenFactsAreGivenAsJson_ShouldGiveNoOutOfScopeRowsAndEveryOtherRow`                                            | Covered |
 | B-016    | A section the manifest renames is read under its new name              | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
 | B-017    | The facts have one shape under every pin                               | `FactsSteps.ThenSameMembers`; `FactsDocumentUnitTests.TheSameFeaturesUnderTwoPins_WhenEachDocumentIsMade_ShouldCarryTheSameMembers`; `FactsCommandIntegrationTests.TheSameSpecificationsUnderTwoShippedPins_WhenFactsAreGivenAsJson_ShouldCarryTheSameMembers`                                                                                                                                                      | Covered |
 | B-018    | A path selects one specification                                       | Missing                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
@@ -504,11 +672,12 @@ describes to the check's; a claim would be needed for that. No benchmark is need
 
 ## 12. Sign-off
 
-<!-- last written by: spec-reviewer, 2026-10-30 (round 3; rounds 1 and 2 moved to Review history) -->
+<!-- last written by: spec-reviewer, 2026-11-13 (item `0366`: 6-9 approved); spec-reviewer, 2026-10-30 (round 3; rounds 1 and 2 moved to Review history) -->
 
-| Section   | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| --------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1-5, 9-11 | 🟢     | spec-reviewer | Round 3 (2026-10-30) - approved, reviewing the uncommitted working tree on `cc248c54`. C-7, C-1 and B-016 now find every section by the heading the manifest's `sections` lists, as `SectionStructureRule` does, with the four sections' table headers at the engine's reading (decision 0002 as amended); the B-016 Outline exercises a renamed claims, constraints and sign-off heading. § 9 has one row per claim, every tag resolves, the `@boundary` scenarios match § 5 rows 1, 2 and 10, and dependency edges with `0001-F2`, `0001-F5` and `0001-F6` are symmetric. OQ-1 to OQ-6 stay open on recorded defaults, which do not block agreement (as `0001-F9` was approved with OQ-1 to OQ-5 open). §§ 6-8 are pending after agreement and are reviewed when written; § 9 `Missing` rows block items, not this agreement. |
+| Section           | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------- | ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5, 9-11         | 🟢     | spec-reviewer | Round 3 (2026-10-30) - approved, reviewing the uncommitted working tree on `cc248c54`. C-7, C-1 and B-016 now find every section by the heading the manifest's `sections` lists, as `SectionStructureRule` does, with the four sections' table headers at the engine's reading (decision 0002 as amended); the B-016 Outline exercises a renamed claims, constraints and sign-off heading. § 9 has one row per claim, every tag resolves, the `@boundary` scenarios match § 5 rows 1, 2 and 10, and dependency edges with `0001-F2`, `0001-F5` and `0001-F6` are symmetric. OQ-1 to OQ-6 stay open on recorded defaults, which do not block agreement (as `0001-F9` was approved with OQ-1 to OQ-5 open). §§ 6-8 are pending after agreement and are reviewed when written; § 9 `Missing` rows block items, not this agreement.                                                                                                                                                                                                  |
+| 6-9 (item `0366`) | 🟢     | spec-reviewer | Item `0366`, round 1: Approved, reviewing `c5c787f6`...`79e8f0cc`. B-007, B-008 and B-015 are built in `FactsDocument.From` and proved on the unit, integration and acceptance tiers § 8 names; the 26 new `Specht.Tests.Facts` cases and the 6 newly bound `TheFactsCommandFeature` scenarios pass, and § 8 records each red. `resolved` follows OQ-2's default, its ten theory rows pinning exact case and the word boundary; the open marker is not read from `markers` (C-7). The schema gains `outOfScope` and `openQuestions` by addition only (C-3); `FactsCommand` is unchanged (C-4); § 7 matches the code as built, and each § 9 row names real tests. Nothing on the item's `out_of_scope` list is delivered. Advisory, not blocking, for `test-writer` in item `0367`: no test pins `Listed`'s `[]` when the manifest's `sections` omits `5. Out of Scope` or `11. Open Questions` (C-7), as none did for `4. Constraints` in item `0365`; B-016's tests, which change how a section is found, are where it is held. |
 
 ### Review history
 
