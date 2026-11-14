@@ -2,7 +2,7 @@ id: "0338"
 type: test
 title: Prove the scenario, test and status rules do not run below the schema version each enters
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -19,7 +19,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-14"
-closed: null
+closed: "2026-11-14"
 
 summary: |
   Proves that under a pin of 0.1.0, 0.2.0 or 0.2.1 none of SPEC4007,
