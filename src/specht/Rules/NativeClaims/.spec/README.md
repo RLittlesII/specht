@@ -1285,8 +1285,9 @@ before binding (§ 10):
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-14 (item 0391: the scenarios' line-0 diagnostic lines corrected to the printed form without a position) -->
+<!-- last written by: spec-author, 2026-11-14 (`0001-F7` OQ-75 resolved, moot under `0.4.0`); before: spec-author, 2026-11-14 (item 0391: the scenarios' line-0 diagnostic lines corrected to the printed form without a position) -->
 
+- 2026-11-14, `0001-F7` OQ-75 (`src/tool/.spec/README.md` § 11) is resolved on the owner's selection "(c) Moot under 0.4.0", relayed through the coordinating session, whose wording the option is. This supersedes the 2026-11-13 entry below, which read OQ-75 as no longer bearing on this Feature and left it open in `0001-F7` for the owner; that entry is kept as written. Items `0393` to `0395` no longer wait on OQ-75. No claim, constraint or scenario of this Feature changed, and decision 0001 is unchanged.
 - 2026-11-14, spec-author's correction, not an owner answer: ten scenario steps expected a line-`0` finding printed with a position, `<path>(0):` or `<path>(`, but the diagnostic line carries `(<line>)` only for a line above `0` (`SpechtViolation.ToString`), so a line-`0` finding prints `<path>:`. The steps of B-015, B-016, B-017 (both scenarios), B-018, B-026 ("A native Feature is reported at its record" and "A native Feature with no record is reported at its first claim file"), B-033 and B-034 now expect `<path>:`. Every claim still says line `0` and is unchanged; the printed form is not changed, since it governs every line-`0` diagnostic in every tree.
 
 - 2026-11-13, spec-author's reading on test-writer's finding 1 (§ 8, item `0390`), not an owner answer: B-004's scenario outline put a tagged Feature at line 1, but a claim tag sits on a line before the keyword it declares on, so a tagged Feature's keyword is at line 2 at the earliest. The Examples row now says line 2. The Rule, Scenario and Scenario Outline rows, at lines 4, 7 and 12, leave a line for the tag below the Feature line and stand. B-004 is unchanged.
