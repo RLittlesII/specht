@@ -474,7 +474,8 @@ Feature: Matrix resolution
 
   @B-021 @boundary
   Scenario: Under schema 0.2.0 a raised waiver rule runs and the scenario, test and status rules do not
-    Given the manifest sets the waiver rule to error
+    Given the manifest pins schema version "0.2.0"
+    And the manifest sets the waiver rule to error
     And the manifest declares the test files "test/**/*.cs"
     And a row whose Status is "Waived" and whose Test cell is "spec-reviewer"
     And another row whose Status is "Covered" and whose Test cell names a test no declared file holds
