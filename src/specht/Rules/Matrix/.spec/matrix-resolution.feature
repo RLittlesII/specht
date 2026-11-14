@@ -451,7 +451,7 @@ Feature: Matrix resolution
     And the specification's matrix has a covered row no scenario carries and a status that is no known marker
     When the check runs
     Then no scenario-title, missing-scenario, unresolved-test, status, waiver or retired-claim finding is reported
-    And the report is byte-for-byte the one the tool gave that tree before this Feature
+    And the report is byte-for-byte the one the tool gives that tree without the scenario-title, missing-scenario, unresolved-test and status rules
 
     Examples:
       | version |
