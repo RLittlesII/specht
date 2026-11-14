@@ -2,7 +2,7 @@ id: "0167"
 type: refactor
 title: Run the check through one engine entry point, and delete the runner
 
-status: in-progress
+status: done
 
 value: 4
 risk: 4
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   Rescoped 2026-10-31 after ADR-0026
