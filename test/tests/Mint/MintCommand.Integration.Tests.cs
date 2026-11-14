@@ -16,7 +16,8 @@ namespace Specht.Tests.Mint;
 /// holds no Feature's <c>.spec/</c>, a legacy <c>epics/</c> Feature folder among them (B-059, B-060; item <c>0418</c>), writing
 /// nothing on standard output. A manifest opting in an <c>epic</c>, <c>feature</c> or <c>task</c> type exits <c>3</c> on any
 /// request (B-061), and a request for one of the three writes nothing on standard output, opted in or not (B-018; item
-/// <c>0421</c>).
+/// <c>0421</c>). Under schema <c>0.3.1</c>, a request naming a <c>mint</c> member that is none of the ten types writes nothing on
+/// standard output and exits <c>4</c> (B-079, B-080; item <c>0440</c>).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class MintCommandIntegrationTests
@@ -311,6 +312,48 @@ public sealed class MintCommandIntegrationTests
 
         // When
         var (_, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "mint", "claim", "--feature", folder, "--root", ".");
+
+        // Then
+        ExitCode.Should().Be(4, Stderr);
+    }
+
+    [Fact]
+    public void AMintMemberNamingNoIdType_WhenThatNameIsRequested_ShouldWriteNothingOnStandardOutput()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteRaw(
+            SpechtTree.ManifestPath,
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "mint": { "widget": { "strategy": "nanoid", "nanoid": { "size": 6 } } }
+            }
+            """);
+
+        // When
+        var (Stdout, Stderr, _) = AcceptanceTool.Launch(tree.Root, "mint", "widget", "--root", ".");
+
+        // Then
+        Stdout.Should().BeEmpty(Stderr);
+    }
+
+    [Fact]
+    public void AMintMemberNamingNoIdType_WhenThatNameIsRequested_ShouldExitAsForSomethingNamedOnTheCommandLineThatIsNotFound()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.WriteRaw(
+            SpechtTree.ManifestPath,
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "mint": { "widget": { "strategy": "nanoid", "nanoid": { "size": 6 } } }
+            }
+            """);
+
+        // When
+        var (_, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "mint", "widget", "--root", ".");
 
         // Then
         ExitCode.Should().Be(4, Stderr);
