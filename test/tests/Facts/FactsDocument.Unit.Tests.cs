@@ -9,11 +9,13 @@ namespace Specht.Tests.Facts;
 
 /// <summary>
 /// The facts document projected from a model built in memory (<c>0132-F2</c> B-001, B-003 to B-008, B-011 to B-013,
-/// B-015, B-017, B-022, B-025, B-026): every Feature specification in the model's order and no epic, each with the path,
-/// identity, statuses and dependency lists its frontmatter gives, every claim, constraint, out-of-scope and open-question
-/// row with its cells and line and no coverage, each open question's resolved state on OQ-2's default, an out-of-scope
-/// section missing or with no table leaving only its own rows out, the records it is handed beside each Feature with the
-/// number and status OQ-3's default reads, the same members under two pins, and the same text for the same model.
+/// B-015, B-017 to B-020, B-022, B-025, B-026): every Feature specification in the model's order and no epic, each with
+/// the path, identity, statuses and dependency lists its frontmatter gives, every claim, constraint, out-of-scope and
+/// open-question row with its cells and line and no coverage, each open question's resolved state on OQ-2's default, an
+/// out-of-scope section missing or with no table leaving only its own rows out, the records it is handed beside each
+/// Feature with the number and status OQ-3's default reads, the same members under two pins, the same text for the same
+/// model, and a selection by a specification's path or by a directory, by whole path segments in the document's order,
+/// or of nothing.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FactsDocumentUnitTests
@@ -506,6 +508,63 @@ public sealed class FactsDocumentUnitTests
         var record = specification["records"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle().Which!.AsObject();
         record.Should().ContainKey("status");
         (record["status"]?.GetValue<string>()).Should().Be(status);
+    }
+
+    [Fact]
+    public void ASpecificationsPath_WhenSelected_ShouldGiveThatSpecificationOnly()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/tool/Features/Facts/.spec/README.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/toolbox/.spec/README.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("epics/0001-epic/F1-feature/spec.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/tool/.spec/README.md")));
+        var document = FactsDocument.From(model, NoRecords);
+
+        // When
+        var selected = JsonNode.Parse(document.Select("src/tool/.spec/README.md").ToJson())!;
+
+        // Then
+        selected["specifications"]!.AsArray().Select(static specification => specification!["path"]!.GetValue<string>()).Should().Equal(
+            "src/tool/.spec/README.md");
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsSelectedDirectories))]
+    public void ADirectory_WhenSelected_ShouldGiveEverySpecificationUnderItByWholePathSegmentsInTheDocumentsOrder(string directory, string[] expected)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/tool/Features/Facts/.spec/README.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/toolbox/.spec/README.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("epics/0001-epic/F1-feature/spec.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/tool/.spec/README.md")));
+        var document = FactsDocument.From(model, NoRecords);
+
+        // When
+        var selected = JsonNode.Parse(document.Select(directory).ToJson())!;
+
+        // Then
+        selected["specifications"]!.AsArray().Select(static specification => specification!["path"]!.GetValue<string>()).Should().Equal(expected);
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsUnselectingPaths))]
+    public void APathNamingNoSpecification_WhenSelected_ShouldGiveNoSpecification(string path)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/tool/Features/Facts/.spec/README.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/toolbox/.spec/README.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/tool/.spec/README.md")));
+        var document = FactsDocument.From(model, NoRecords);
+        JsonNode.Parse(document.ToJson())!["specifications"]!.AsArray().Should().HaveCount(3);
+
+        // When
+        var selected = JsonNode.Parse(document.Select(path).ToJson())!;
+
+        // Then
+        selected["specifications"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
     }
 
     private static readonly Dictionary<FeatureSpec, IReadOnlyList<RecordFile>> NoRecords = [];

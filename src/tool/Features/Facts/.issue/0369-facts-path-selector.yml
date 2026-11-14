@@ -2,7 +2,7 @@ id: "0369"
 type: task
 title: Select the facts by path
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   As a coding agent I want `specht facts <path>` to give the facts of one specification, or of every specification under a directory, so that I ask about the Feature I am working in.

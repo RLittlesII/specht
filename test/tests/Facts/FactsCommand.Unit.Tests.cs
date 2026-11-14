@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO.Abstractions.TestingHelpers;
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Facts;
@@ -9,7 +10,9 @@ namespace Specht.Tests.Facts;
 
 /// <summary>
 /// The facts command constructed directly over an in-memory file system, without the parser pipeline (<c>0132-F2</c>
-/// B-021, B-023): the check's read failures fold into the check's exit codes, and a run leaves every file as it was.
+/// B-018 to B-021, B-023): a typed path gives only the specifications it selects, a path selecting none writes nothing
+/// on stdout and exits <c>4</c>, the check's read failures fold into the check's exit codes, and a run leaves every file
+/// as it was.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FactsCommandUnitTests
@@ -64,5 +67,62 @@ public sealed class FactsCommandUnitTests
         // Then
         exit.Should().Be(0, errors.ToString());
         files.AllFiles.ToDictionary(static path => path, path => files.File.ReadAllText(path)).Should().BeEquivalentTo(before);
+    }
+
+    [Fact]
+    public async Task APathSelectingSpecifications_WhenExecuted_ShouldWriteOnlyTheSpecificationsItSelects()
+    {
+        // Given
+        var files = new MockFileSystem();
+        var root = files.Path.GetFullPath("repo");
+        files.AddFile(files.Path.Combine(root, ".specht", "manifest.json"), new MockFileData("""{"schemaVersion":"0.2.0"}"""));
+        foreach (var (area, id) in new[] { ("tool", "F1"), ("toolbox", "F2") })
+        {
+            files.AddFile(files.Path.Combine([root, "src", .. area.Split('/'), ".spec", "README.md"]), new MockFileData(
+                $"---\nid: \"{id}\"\nepic: \"0001\"\ntype: feature\nspec_status: draft\nstatus: ready\ndepends_on: []\nblocks: []\nchildren: []\n---\n\n"
+                + $"# Specification: {id}\n\n" + string.Join('\n', SpechtTree.Sections)));
+        }
+
+        var console = new TestConsole();
+        using var errors = new StringWriter(CultureInfo.InvariantCulture);
+        var command = new FactsCommand(console, EngineServices.Reader(files), errors);
+
+        // When
+        var exit = await command.ExecuteAsync(
+            null!, new FactsCommand.Settings { Root = root, Json = true, Path = "src/tool" }, TestContext.Current.CancellationToken);
+
+        // Then
+        exit.Should().Be(0, errors.ToString());
+        JsonNode.Parse(console.Output)!["specifications"]!.AsArray().Select(static specification => specification!["path"]!.GetValue<string>())
+            .Should().Equal("src/tool/.spec/README.md");
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsUnselectingPaths))]
+    public async Task APathSelectingNoSpecification_WhenExecuted_ShouldWriteNothingOnStdoutAndExitNotFound(string path)
+    {
+        // Given
+        var files = new MockFileSystem();
+        var root = files.Path.GetFullPath("repo");
+        files.AddFile(files.Path.Combine(root, ".specht", "manifest.json"), new MockFileData("""{"schemaVersion":"0.2.0"}"""));
+        foreach (var (area, id) in new[] { ("tool", "F1"), ("tool/Features/Facts", "F2"), ("toolbox", "F3") })
+        {
+            files.AddFile(files.Path.Combine([root, "src", .. area.Split('/'), ".spec", "README.md"]), new MockFileData(
+                $"---\nid: \"{id}\"\nepic: \"0001\"\ntype: feature\nspec_status: draft\nstatus: ready\ndepends_on: []\nblocks: []\nchildren: []\n---\n\n"
+                + $"# Specification: {id}\n\n" + string.Join('\n', SpechtTree.Sections)));
+        }
+
+        var console = new TestConsole();
+        using var errors = new StringWriter(CultureInfo.InvariantCulture);
+        var command = new FactsCommand(console, EngineServices.Reader(files), errors);
+
+        // When
+        var exit = await command.ExecuteAsync(
+            null!, new FactsCommand.Settings { Root = root, Json = true, Path = path }, TestContext.Current.CancellationToken);
+
+        // Then
+        exit.Should().Be(4, errors.ToString());
+        console.Output.Should().BeEmpty();
+        errors.ToString().Should().NotBeNullOrWhiteSpace();
     }
 }
