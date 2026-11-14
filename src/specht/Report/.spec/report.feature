@@ -32,7 +32,6 @@ Feature: The report contract
     And a file already exists at the report path from an earlier run
     When the check runs with that report path
     Then the file at that path is this run's report document and nothing else
-    And the run's exit code is the one it gives without a report path
 
   @B-025
   Scenario: A report path keeps the diagnostic lines on the output
@@ -50,6 +49,12 @@ Feature: The report contract
   Scenario: The document form does not change the verdict
     Given the root holds a specification with one error-severity violation
     When the check runs with JSON output
+    Then the exit code is 1
+
+  @B-004
+  Scenario: A report path does not change the verdict
+    Given the root holds a specification with one error-severity violation
+    When the check runs with a report path
     Then the exit code is 1
 
   @B-005
