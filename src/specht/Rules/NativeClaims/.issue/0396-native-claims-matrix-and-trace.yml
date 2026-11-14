@@ -32,8 +32,8 @@ summary: |
   claim as `none` (B-024).
 
   Waits on 0441 (`0001-F6` B-013), which builds `SPEC024`, a working
-  name, so B-022's test can fail; 0441 is blocked on `0001-F6` OQ-22,
-  the schema version `SPEC024` enters. Waits on 0442 (`0001-F13`),
+  name, in schema `0.4.0` (`0001-F6` decision 0012), so B-022's test
+  can fail. Waits on 0442 (`0001-F13`),
   which builds the trace lines, so B-024's trace half can fail; B-024
   reads B-001's `none`, and 0443 to 0445 add nothing it reads. 0336,
   0337 and 0391 are done.
