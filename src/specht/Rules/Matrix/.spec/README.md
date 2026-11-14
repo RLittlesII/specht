@@ -123,12 +123,13 @@ A § 9 row says which scenario and which tests pin a claim and how far, and toda
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-13 (0337) -->
+<!-- last written by: implementer, 2026-11-14 (0442) -->
 
 | Concern                                                                       | Classification | Owner                                                                                                               |
 | ----------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Column roles, inline-code test names and declared-form matching               | Business       | `MatrixResolver`                                                                                                    |
 | Scenario cell titles split on `;`, and each title's scenario and claim tag    | Business       | `MatrixResolver`                                                                                                    |
+| A claim's carrying scenarios, and the Statuses whose row's tests are skipped  | Business       | `MatrixResolver.ResolveClaims`; `MatrixRowResolution.Skips`                                                         |
 | A companion's scenario titles and the claim tags Gherkin gives each           | Both           | Existing companion parse, `FeatureTagParser.Read`                                                                   |
 | Root-relative test-file selection and reads through `IFileSystem`             | Technical      | Existing `SpechtDiscovery` store                                                                                    |
 | Reading the declared test files once per check and handing them to every rule | Technical      | Existing `SpechtModelLoader`; `SpechtModel.TestFiles`                                                               |
@@ -138,7 +139,7 @@ A § 9 row says which scenario and which tests pin a claim and how far, and toda
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 (0337: SPEC4010) -->
+<!-- last written by: implementer, 2026-11-14 (0442: trace readers) -->
 
 [`SpechtDocument`](../../../Model/SpechtDocument.cs) keeps the existing flattened cells and additionally retains inline-code contents per row/cell in [`SpechtSection`](../../../Model/SpechtSection.cs). Both come from the same Markdig pipe-table parse. Existing rule inputs and baseline verdicts remain unchanged; prose, escaped backticks and code outside the matrix do not become test names.
 
@@ -158,7 +159,7 @@ The resolver is registered in the existing engine composition. Item 0227 now con
 
 `WaiverRule` consumes `MatrixResolver.Resolve` rows. It checks only the configured waived marker. The visible Test cell must hold an approver and an invariant, real calendar date in YYYY-MM-DD form, separated by a comma. The approver must equal a reviewer in the configured sign-off section whose second column is neither the draft nor blocked marker. Header names may change; status and reviewer remain the second and third positions of `tables.signOff`. Missing or short document rows supply empty cells rather than a parser rejection. No current date or network is read.
 
-`MatrixResolver.ResolveClaims` extends the same pure resolver: each declared claim retains its source line, fourth-column status, matching already-parsed companion tags and matching resolved matrix rows. Tag matching respects the manifest's claim-tag case setting. `RetiredClaimRule` reports one violation per withdrawn/superseded claim when any matching tag remains or an existing matrix row has a different status. Diagnostics use the specification's root-relative path, the matrix row line for a waiver and the declaration line for a retired claim. The expected payloads remain the separate Report work items' scope.
+`MatrixResolver.ResolveClaims` extends the same pure resolver: each declared claim retains its source line, fourth-column status, matching already-parsed companion tags, matching matrix rows resolved over the test files the caller passes, and, from item 0442, its carrying scenarios (below). Tag matching respects the manifest's claim-tag case setting. `RetiredClaimRule` reports one violation per withdrawn/superseded claim when any matching tag remains or an existing matrix row has a different status. Diagnostics use the specification's root-relative path, the matrix row line for a waiver and the declaration line for a retired claim. The expected payloads remain the separate Report work items' scope.
 
 Both ids, rule pages and default off entries enter working 0.2.0 together, followed by its approved relock. Every 0.1.0 resource remains unchanged. The live manifest declares tests and section owners as decision 0002 requires; it does not enable the default-off rules. Other Matrix rules and Trace remain deferred; title matching is item 0335's (below).
 
@@ -168,7 +169,7 @@ Both ids, rule pages and default off entries enter working 0.2.0 together, follo
 
 The declared test files reach a rule through the model. [`SpechtModelLoader`](../../../Model/SpechtModelLoader.cs) calls `SpechtDiscovery.ReadTestFiles` once per check, with the selected manifest's `tests.files` and `exclusions`, and [`SpechtModel.TestFiles`](../../../Model/SpechtModel.cs) carries the result; with no `tests` key nothing is enumerated or read. The read is eager, like every other model input. `SPEC033` (item 0337) and the trace (`0001-F13`) take the same list, so a test file is read once whatever reads it (C-3). Rejected: each rule reading its own files, a second read per rule; a lazy read, which moves an I/O failure out of the load into a rule's fault isolation. The frontmatter-only check builds its model with no test files.
 
-[`UnresolvedTestRule`](../UnresolvedTestRule.cs) is `SPEC4009`, keyed `SPEC032` (ADR-0029), default level error. With no `tests` key it reports nothing, a cell without inline code included (B-007). Otherwise it takes `MatrixResolver.Resolve` rows over `model.TestFiles` and skips a row whose Status is the manifest's waived, withdrawn or superseded marker, or whose Test cell is its missing marker; a missing-marker Status does not exempt (B-002). Every marker is read from the manifest (C-5). A row with no inline-code name is one finding, "{matrix} Test cell names no test in inline code" (B-006), where `{matrix}` is `SpechtStructure.SectionReference("matrix")`: `§ N` from the leading number of the manifest's matrix title, or `## <title>` when the title has none, so `§ 9` under the default manifest (`0001-F5` B-009). Otherwise each distinct unresolved name is one finding naming it (B-002 to B-005). Each finding is at the row's line with the claim cell as identifier; the `expected` payload is `0001-F3`'s.
+[`UnresolvedTestRule`](../UnresolvedTestRule.cs) is `SPEC4009`, keyed `SPEC032` (ADR-0029), default level error. With no `tests` key it reports nothing, a cell without inline code included (B-007). Otherwise it takes `MatrixResolver.Resolve` rows over `model.TestFiles` and skips a row whose Status is the manifest's waived, withdrawn or superseded marker, `MatrixRowResolution.Skips` from item 0442 (below), or whose Test cell is its missing marker; a missing-marker Status does not exempt (B-002). Every marker is read from the manifest (C-5). A row with no inline-code name is one finding, "{matrix} Test cell names no test in inline code" (B-006), where `{matrix}` is `SpechtStructure.SectionReference("matrix")`: `§ N` from the leading number of the manifest's matrix title, or `## <title>` when the title has none, so `§ 9` under the default manifest (`0001-F5` B-009). Otherwise each distinct unresolved name is one finding naming it (B-002 to B-005). Each finding is at the row's line with the claim cell as identifier; the `expected` payload is `0001-F3`'s.
 
 `SchemaVersions.Shipped` gives `0.3.0` the ids of `0.2.1` and `SPEC032`, which its map names `SPEC4009`; `0.1.0`, `0.2.0` and `0.2.1` are unchanged (`0001-F7` C-1). The `0.3.0` shipped manifest sets `"SPEC4009": "error"` beside the other ids, its page is `docs/rules/v0.3.0/SPEC4009.md`, and `0.3.0` is relocked by decision 0014's procedure: its lock entry removed by hand, then `LockSchemaVersion`.
 
@@ -237,6 +238,18 @@ Two changes to item `0336`'s code keep the two rules on one reading (C-3). `Matr
 `SchemaVersions.Shipped` gives `0.4.0` the key `SPEC033`, which its map names `SPEC4010`, beside `SPEC023`; `0.1.0` to `0.3.1` are unchanged (B-021; `0001-F7` C-1). The `0.4.0` shipped manifest sets `"SPEC4010": "error"`, its page is `docs/rules/v0.4.0/SPEC4010.md` in the Claims family (`0001-F3` A-5), and `0.4.0` is relocked by `0001-F7` decision 0014's procedure: its lock entry removed by hand, then `LockSchemaVersion`. No published package embeds `0.4.0`: no tag's lock names it, `v0.6.4-preview` the newest, so the relock is allowed (`0001-F7` C-17; decision 0005 reading 3). This repository pins `0.4.0`, so `SPEC4010` runs on this tree; it reported one row, `0001-F4` B-001's, a withdrawn claim's row marked covered, which this item's test commit `4301be13` marks withdrawn (decision 0002 call 3).
 
 This is a rule, not one of ADR-0010's structural stages, so ADR-0027's guard does not apply. The rule resolves every row with its test names once per check, as `SPEC4009` does over the same `model.TestFiles`; the whole-check benchmark's generated tree tags every claim and declares every test name, so the rule reports nothing there.
+
+### Trace readers (0442)
+
+<!-- last written by: implementer, 2026-11-14 (0442: 0001-F13) -->
+
+The trace (`0001-F13`, item 0442) reads this resolver rather than a reader of its own (C-3), and three changes let it:
+
+- [`MatrixResolver.ResolveClaims`](../MatrixResolver.cs) takes the test files as a fourth parameter and resolves each claim's rows over them. The trace passes `model.TestFiles`; `RetiredClaimRule`, `MissingScenarioRule` and `StatusRule` pass none, as the resolver read them before, and `StatusRule` keeps resolving its rows through `Resolve` over `model.TestFiles`.
+- [`MatrixClaimResolution`](../MatrixClaimResolution.cs) gains a last member, `Scenarios`: each companion scenario whose own or inherited tags carry the claim under `claim.tagIgnoreCase`, once, in companion and then file order, each `Resolved` with its root-relative file and keyword line. It reads `FeatureFile.Scenarios`; `Tags`, which the rules read for carried (B-026), is unchanged.
+- [`MatrixRowResolution.Skips`](../MatrixRowResolution.cs) is true when the row's trimmed Status equals the manifest's waived, withdrawn or superseded marker, ordinally; a marker the manifest lacks matches nothing. `UnresolvedTestRule` calls it in place of its inline marker list, and the trace calls it for a row whose tests are not judged (`0001-F13` B-019), so the two read one condition.
+
+No verdict changes: each rule's inputs and markers are those it read before, and their tests pass as they did.
 
 ## 8. Testing Strategy
 
