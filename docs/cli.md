@@ -515,6 +515,19 @@ never changes a pin, a file the pinned version does not ship, or anything
 outside `.specht/manifest.json`, `.specht/schema/frontmatter/` and
 `.specht/templates/`.
 
+Under a pin at `0.4.0` or later it first moves the id settings that version
+rejects into `ids`, once. Each `identifiers` entry for `claim`, `constraint`,
+`openQuestion`, `scenario`, `decision`, `adr` or `lesson` becomes
+`ids.<type>`: `plain` is the literal head after `^` followed by `{id}`, and `id`
+the rest before `$`, so `"^REQ-[0-9]{4}$"` becomes `"REQ-{id}"` and
+`"[0-9]{4}"`. An entry equal to a shipped default below `0.4.0` is dropped and
+the type reads the shipped record. Each top-level `mint` entry becomes
+`ids.<type>.mint` without its `prefix`. `mint` and those entries are removed;
+everything else is kept as written. It moves nothing, writes nothing and exits
+`3`, naming each setting, for a grammar not of that shape, a `prefix` that is
+not the head after the move, an `ids` record already there for a moved type, or
+claim and scenario heads the move would make one.
+
 When the manifest records `spechtSchema`, each present schema whose SHA-256
 differs from its recorded hash is fetched from that source and verified, then
 written under its `frontmatterSchemas` name. A matching schema is not fetched,
@@ -533,8 +546,8 @@ pinned version.
 **Stdout.** When nothing differs and no key is missing,
 `.specht/ is current at schemaVersion <version>`. After a rewrite,
 `.specht/ rewritten to schemaVersion <version>`, the version the check uses, then `rewritten <path>` for each
-rewritten file; `.specht/manifest.json` is listed only when a key was added, and
-then first. Then `skipped <path>: <reason>` for each file left alone, in path
+rewritten file; `.specht/manifest.json` is listed only when a key was added or
+the id settings moved, and then first. Then `skipped <path>: <reason>` for each file left alone, in path
 order: with `schemaSource` `disk` and no `spechtSchema`, each present frontmatter
 schema the pinned version ships; and each template named in `consumerTemplates`
 that the pinned version ships, present or not, as
@@ -542,7 +555,8 @@ that the pinned version ships, present or not, as
 skips is current. No diff.
 
 **Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for an
-invalid manifest, an unshipped pin, or a recorded source that cannot be
+invalid manifest, an unshipped pin, an id setting it cannot move, or a recorded
+source that cannot be
 reached, refuses, or serves content that fails its hash. Failures explain the
 problem on stderr; a source failure names the source's address.
 

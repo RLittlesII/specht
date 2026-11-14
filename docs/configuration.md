@@ -196,17 +196,19 @@ Under schema `0.4.0` these exit `3`, each message naming where the setting goes:
   other than the three above, `mint` or a `$`-led one, and a `plain`, `form` or
   `id` the rules above reject.
 
-To move a manifest to `0.4.0`, move those settings into `ids` by hand first;
-`specht upgrade` does not move them yet. An `identifiers` entry that is the
-shipped default of your old pin can be removed, and the type reads the shipped
-record. A customised one goes into `ids.<type>`: `plain` is the literal head
-after `^` followed by `{id}`, and `id` is the rest of the pattern before `$`, so
-`"claim": "^REQ-[0-9]{4}$"` becomes
-`"ids": { "claim": { "plain": "REQ-{id}", "id": "[0-9]{4}" } }`. Removing a
-customised entry instead swaps its grammar for the shipped record without a
-word. Each top-level `mint` entry's members other than `prefix` go into
-`ids.<type>.mint`. Then run `specht schema pin 0.4.0` and `specht upgrade`.
-`upgrade` adds no `ids`: a manifest without it reads the shipped records.
+To move a manifest to `0.4.0`, run `specht schema pin 0.4.0`, then
+`specht upgrade`, which moves those settings into `ids` once. An `identifiers`
+entry equal to a shipped default below `0.4.0` is dropped, and the type reads
+the shipped record. A customised one goes into `ids.<type>`: `plain` is the
+literal head after `^` followed by `{id}`, and `id` is the rest of the pattern
+before `$`, so `"claim": "^REQ-[0-9]{4}$"` becomes
+`"ids": { "claim": { "plain": "REQ-{id}", "id": "[0-9]{4}" } }`. Each top-level
+`mint` entry goes into `ids.<type>.mint` without its `prefix`. `upgrade` writes
+nothing and names the setting when it cannot move one exactly, such as a
+grammar with no anchors; move that one by hand, the same way, and run it again.
+`specht schema pin 0.3.1` takes a manifest that still holds the old settings
+back down. Without the old settings `upgrade` adds no `ids`: a manifest without
+it reads the shipped records.
 
 A manifest that maps the claim grammar to `Specht.CodeAnalysis` maps
 `"/ids/claim": "/ids/claim"` in place of `identifiers.claim`, keeping
