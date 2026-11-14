@@ -9,7 +9,7 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Engine;
 
 /// <summary>
-/// The runner over a tree on disk whose manifest declares discovery's inputs (<c>0001-F6</c> B-001, B-003, B-009, C-7;
+/// The check over a tree on disk whose manifest declares discovery's inputs (<c>0001-F6</c> B-001, B-003, B-009, C-7;
 /// <c>0001-F3</c> B-008): the layouts the report document and the summary name, by the manifest's names, in the manifest's
 /// order and with a layout holding no specification at zero, and an item file whose name follows the manifest's task
 /// grammar. A layout is read from the serialized document and the summary line, which is where a consumer reads it.
@@ -17,7 +17,7 @@ namespace Specht.Tests.Engine;
 /// decision 0009).
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerDiscoveryIntegrationTests
+public sealed class SpechtCheckDiscoveryIntegrationTests
 {
     /// <summary>Gets the layouts a manifest declares, and each layout's name and count as the outputs must list them.</summary>
     public static TheoryData<string, string, string> DeclaredLayouts { get; } = new()
@@ -110,7 +110,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         Declare(tree, "layouts", JsonNode.Parse(layouts)!);
 
         // When
-        var document = SpechtReportDocument.From(tree.Run());
+        var document = new SpechtReportDocumentMapper().Map(tree.Run());
 
         // Then
         string.Join(", ", Listed(document)).Should().Be(expected, because);
@@ -130,7 +130,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         var schema = JsonSchema.FromText(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "docs", "schema", "report.schema.json")));
 
         // When
-        using var json = JsonDocument.Parse(SpechtReportDocument.From(tree.Run()).ToJson());
+        using var json = JsonDocument.Parse(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(tree.Run())));
         var result = schema.Evaluate(json.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
 
         // Then
@@ -174,7 +174,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
     }
 
     private static IEnumerable<string> Listed(SpechtReportDocument document) =>
-        JsonNode.Parse(document.ToJson())!["layouts"]!.AsArray().Select(static layout => string.Create(
+        JsonNode.Parse(new SpechtReportSerializer().Serialize(document))!["layouts"]!.AsArray().Select(static layout => string.Create(
             CultureInfo.InvariantCulture,
             $"{layout!["layout"]!.GetValue<string>()} {layout["specificationCount"]!.GetValue<int>()}"));
 

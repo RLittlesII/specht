@@ -123,8 +123,8 @@ public sealed partial class ReportSteps
         }
 
         _root = root;
-        _report = EngineServices.Runner().Run(root);
-        Document = SpechtReportDocument.From(_report);
+        _report = EngineServices.Check().Run(root, null);
+        Document = new SpechtReportDocumentMapper().Map(_report);
         (_stdout, _stderr, _) = AcceptanceTool.Launch(root, "--root", ".", "--json");
         Json = _stdout.EndsWith(Environment.NewLine, StringComparison.Ordinal) ? _stdout[..^Environment.NewLine.Length] : _stdout;
     }
@@ -134,7 +134,7 @@ public sealed partial class ReportSteps
         _stdout.Invoking(static stdout => JsonDocument.Parse(stdout).Dispose()).Should().NotThrow(_stderr);
 
     [Then("no diagnostic line and no summary line precede or follow it")]
-    public void ThenNoDiagnosticLineAndNoSummaryLinePrecedeOrFollowIt() => Json.Should().Be(Document.ToJson(), _stderr);
+    public void ThenNoDiagnosticLineAndNoSummaryLinePrecedeOrFollowIt() => Json.Should().Be(new SpechtReportSerializer().Serialize(Document), _stderr);
 
     [Then("the document names the schema version checked against")]
     public void ThenTheDocumentNamesTheSchemaVersionCheckedAgainst()

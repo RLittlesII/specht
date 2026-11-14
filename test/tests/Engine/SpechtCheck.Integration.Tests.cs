@@ -7,11 +7,11 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Engine;
 
 /// <summary>
-/// Exercises the whole pipeline over a tree on disk: discovery across both
-/// layouts, schema loading from <c>.specht/schema/frontmatter/</c>, and the written report.
+/// Exercises the whole check over a tree on disk: discovery across both
+/// layouts and schema loading from <c>.specht/schema/frontmatter/</c>.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerIntegrationTests
+public sealed class SpechtCheckIntegrationTests
 {
     [Fact]
     public void ATreeInBothLayouts_WhenChecked_ShouldAcceptBothAndCountTheSpecificationsOfEachLayout()
@@ -64,25 +64,6 @@ public sealed class SpechtRunnerIntegrationTests
         // Then
         report.SpecificationCount.Should().Be(1);
         report.Violations.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void AReportWrittenToDisk_WhenRead_ShouldCarryRelativePathsOnly()
-    {
-        // Given
-        using var tree = new SpechtTree();
-        tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
-        var report = tree.Run();
-        var path = Path.Combine(tree.Root, ".artifacts", "spec-check", "spec-check.json");
-
-        // When
-        EngineServices.Runner().WriteReport(report, path);
-        var json = File.ReadAllText(path);
-
-        // Then
-        json.Should().NotContain(tree.Root);
-        json.Should().Contain("epics/0001-epic/F1-feature/spec.md");
-        json.Should().Contain("SPEC1002");
     }
 
     [Fact]

@@ -340,7 +340,7 @@ public sealed class MatrixSteps
             .Where(entry => entry.line.StartsWith($"| {_claimId} | {_scenario} |", StringComparison.Ordinal))
             .Select(static entry => entry.index + 1)];
         _row = _rows.FirstOrDefault();
-        _report = EngineServices.Runner().Run(Tree.Root);
+        _report = EngineServices.Check().Run(Tree.Root, null);
     }
 
     [Then("^the waiver rule reports (nothing|one finding) for that row$")]
@@ -429,7 +429,8 @@ public sealed class MatrixSteps
         var original = ((IEnumerable<ISpechtRule>) services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
             rule.Id is not ("SPEC034" or "SPEC035"));
         var baseline = new SpechtEvaluator(original, new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
-        SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
+        new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(_report!))
+            .Should().Be(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(baseline)));
         _report!.RulesEvaluated.Should().Be(21);
     }
 

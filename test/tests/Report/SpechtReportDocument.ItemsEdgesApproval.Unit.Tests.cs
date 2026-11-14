@@ -20,7 +20,7 @@ public sealed class SpechtReportDocumentItemsEdgesApprovalUnitTests
         var report = new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model);
 
         // When
-        var document = SpechtReportDocument.From(report);
+        var document = new SpechtReportDocumentMapper().Map(report);
 
         // Then
         var violations = document.Violations.Where(violation => violation.RuleId == ruleId
@@ -29,6 +29,9 @@ public sealed class SpechtReportDocumentItemsEdgesApprovalUnitTests
         violations.Should().NotBeEmpty(because).And.AllSatisfy(violation =>
             JsonNode.DeepEquals(violation.Expected, expected).Should().BeTrue(
                 "{0}: expected {1}, but got {2}", because, expected.ToJsonString(), violation.Expected.ToJsonString()));
-        document.ToJson().Should().Be(SpechtReportDocument.From(new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model)).ToJson(), because);
+        new SpechtReportSerializer().Serialize(document).Should().Be(
+            new SpechtReportSerializer().Serialize(
+                new SpechtReportDocumentMapper().Map(new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model))),
+            because);
     }
 }

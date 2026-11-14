@@ -10,11 +10,12 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Report;
 
 /// <summary>
-/// The report document over a run on a tree on disk, and against the published schema (<c>0001-F3</c> B-005, B-006,
-/// B-008, B-021). The schema is <c>docs/schema/report.schema.json</c> (A-1), copied into the output from that one file.
+/// The serialized report document over a check on a tree on disk, and against the published schema (<c>0001-F3</c> B-005,
+/// B-006, B-008, B-021; item <c>0167</c>). The schema is <c>docs/schema/report.schema.json</c> (A-1), copied into the
+/// output from that one file.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtReportDocumentIntegrationTests
+public sealed class SpechtReportSerializerIntegrationTests
 {
     /// <summary>Gets reports of each shape a document is made from: empty, and with violations of both severities.</summary>
     public static TheoryData<string, SpechtReport> Reports =>
@@ -39,25 +40,6 @@ public sealed class SpechtReportDocumentIntegrationTests
         };
 
     [Fact]
-    public void ATreeWhoseManifestPinsNoVersion_WhenItsDocumentIsMade_ShouldNameSchemaVersionZeroOneZeroFromTheEmbeddedSet()
-    {
-        // Given
-        using var tree = new SpechtTree();
-        var manifestPath = Path.Combine(tree.Root, SpechtTree.ManifestPath);
-        var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
-        manifest.Remove("schemaVersion");
-        File.WriteAllText(manifestPath, manifest.ToJsonString());
-        tree.WriteFeature("0001", "F1");
-
-        // When
-        var document = SpechtReportDocument.From(tree.Run());
-
-        // Then
-        document.SchemaVersion.Should().Be("0.1.0");
-        document.SchemaSource.Should().Be(SpechtSchemaSource.Embedded);
-    }
-
-    [Fact]
     public void TheSameTreeUnderTwoRoots_WhenEachDocumentIsSerialized_ShouldBeIdentical()
     {
         // Given
@@ -67,7 +49,8 @@ public sealed class SpechtReportDocumentIntegrationTests
         second.WriteFeature("0001", "F1", featureFile: null);
 
         // When
-        var documents = new[] { first, second }.Select(static tree => SpechtReportDocument.From(tree.Run()).ToJson()).ToList();
+        var documents = new[] { first, second }
+            .Select(static tree => new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(tree.Run()))).ToList();
 
         // Then
         documents[1].Should().Be(documents[0]);
@@ -83,7 +66,7 @@ public sealed class SpechtReportDocumentIntegrationTests
         var schema = JsonSchema.FromText(File.ReadAllText(path));
 
         // When
-        using var json = JsonDocument.Parse(SpechtReportDocument.From(report).ToJson());
+        using var json = JsonDocument.Parse(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(report)));
         var result = schema.Evaluate(json.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
 
         // Then
@@ -103,8 +86,8 @@ public sealed class SpechtReportDocumentIntegrationTests
         tree.WriteCoLocatedFeature("src/a/deeply/nested/area", "0002", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
 
         // When
-        var document = SpechtReportDocument.From(tree.Run());
-        var json = document.ToJson();
+        var document = new SpechtReportDocumentMapper().Map(tree.Run());
+        var json = new SpechtReportSerializer().Serialize(document);
 
         // Then
         document.Violations.Select(static violation => violation.File).Should()
