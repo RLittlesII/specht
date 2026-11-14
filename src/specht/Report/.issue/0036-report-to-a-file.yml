@@ -2,14 +2,14 @@ id: "0036"
 type: task
 title: Write the document to the --report path
 
-status: ready-for-architecture
+status: ready
 
 risk: 2
 
 parent: "0033"
 children: []
 
-depends_on: ["0034", "0026", "0035", "0167"] # B-003 compares with 0035's stdout document; `SpecReportStore` is 0167's
+depends_on: ["0034", "0026", "0035", "0167"] # B-003 compares with 0035's stdout document; `SpechtReportStore` is 0167's
 spikes: []
 
 spec: src/specht/Report/.spec/README.md
@@ -23,31 +23,25 @@ claims:
   - B-025
 
 created: "2026-10-08"
-updated: "2026-11-08"
+updated: "2026-11-14"
 closed: null
 
 summary: |
   `--report <path>` writes the document to that path, creating directories
   and replacing an existing file (decision 0002), as the one write a check
   makes (C-7), while stdout keeps the line stream. Also carries the claims
-  that span both options — identical documents and an unchanged exit code —
-  so it waits on 0035.
+  that span both options - identical documents and an unchanged exit code.
 
-  Reshaped 2026-10-11 on ADR-0010 (accepted 2026-10-11,
-  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md,
-  § "Items reshaped"). The claims are unchanged; the shape of what delivers
-  them is decided. `--report` is a second message beside the check, in
-  cqrsz's shape: a static class `SaveReport` in `Specht.Check`, nesting
-  `SaveReport.Command` and its `Handler`, registered by hand in
-  `AddSpechtEngine()` and dispatched through `ICqrs`. The handler maps the
-  report with `SpecReportDocumentMapper`, serialises it with
-  `SpecReportSerializer` and writes it through `SpecReportStore`, the one
-  type that holds the file system for a report. The command sends
-  `Check.Query`, then `SaveReport.Command` with the report and the path;
-  it names no store and no serializer. It is the "second handler" that
-  ADR-0010 § "Each interface, and what earns it" has the handler contracts
-  wait for. Type names are ADR-0010's; each carries the prefix item 0100
-  gives it once that lands.
+  Shaped 2026-11-14 on ADR-0026 and item 0167 (decision of that date):
+  `CheckCommand` takes `SpechtReportStore` beside the
+  `SpechtReportDocumentMapper` and `SpechtReportSerializer` it takes for
+  `--json`, and given `--report` writes
+  `store.Save(serializer.Serialize(mapper.Map(report)), path)`. No command
+  or handler type, and no dispatch.
+
+  Superseded: the reshape of 2026-10-11 on ADR-0010, a `SaveReport.Command`
+  handler dispatched through `ICqrs`. ADR-0026 supersedes ADR-0010's
+  mediator clauses; the decision of 2026-10-11 stays as the record.
 
 acceptance_criteria:
   - "B-003 — `--json` and `--report` documents identical"
@@ -58,8 +52,8 @@ acceptance_criteria:
   - "B-025 — stdout keeps the lines and summary"
   - "0001-F2 B-012's report exemption, with C-7 — the file `--report` names is the only write under the root (0001-F2 decision 0005)"
   - "§ 9 carries a row naming a test for each id above."
-  - "ADR-0010, as reshaped 2026-10-11: the write is a `SaveReport.Command` its handler answers over `SpecReportStore`, sent through `ICqrs`; no command in `src/tool` and no handler but this one writes a report, and the store is the only type on the path that holds an `IFileSystem`."
-  - "ADR-0010, as reshaped: the bytes B-003 compares come from one `SpecReportDocumentMapper` and one `SpecReportSerializer`, shared with `--json`."
+  - "ADR-0026 and item 0167, as shaped 2026-11-14: `CheckCommand` writes the document through `SpechtReportStore.Save`, the only type on the path that holds an `IFileSystem`; no other code in `src/tool` writes a report."
+  - "As shaped 2026-11-14: the bytes B-003 compares come from the one `SpechtReportDocumentMapper` and the one `SpechtReportSerializer` `CheckCommand` takes, shared with `--json`."
 
 decisions:
   - |
@@ -83,8 +77,34 @@ decisions:
     rejected, and its `--report` row stays open for the owner. Also, by
     spec-author: the `depends_on` comment no longer names the mediator,
     which ADR-0026 supersedes; `SpecReportStore` is still 0167's.
+  - |
+    2026-11-14, spec-author, a role judgement and not the repository
+    owner's: reshaped on ADR-0026, which supersedes ADR-0010's mediator
+    clauses and keeps direct calls in the hosts, and on item 0167's split
+    of the runner's report write into three types, whose decision of
+    2026-10-31, accepted by the owner on 2026-11-13, left this item's shape
+    to this item. `CheckCommand` takes `SpechtReportStore` by constructor,
+    beside the `SpechtReportDocumentMapper` and `SpechtReportSerializer` it
+    takes for `--json` (0167, decision of 2026-11-13, item 3), and given
+    `--report <path>` writes
+    `store.Save(serializer.Serialize(mapper.Map(report)), path)` with that
+    same mapper and serializer. No `SaveReport` command or handler type,
+    and no dispatch. The command calls the engine and writes its output,
+    as it does for `--json`, so `0001-F2` C-4 holds. Criteria 9 and 10 are
+    rewritten in place to this shape and keep their numbers; the summary
+    takes the `Specht` prefix item 0100 gave the types, and `Specht.Cqrs`,
+    which ADR-0026 removed from 0167, leaves `out_of_scope`. The six claims
+    are unchanged, and no claim, constraint or scenario of `0001-F3` or
+    `0001-F2` changes. `0001-F3` OQ-8, what `--report` does when a run
+    exits `2` or `3`, stays open and is not resolved here: in this shape
+    the write follows a check that returned a report, so such a run writes
+    nothing and leaves a file at the path as it was, which is OQ-8's
+    reading (a), not its proposed default (b). Status `ready`: 0034, 0026
+    and 0035 are done; 0167's pull request is open, and this item's branch
+    stacks on it.
 
 out_of_scope:
   - "Refusing, appending to or backing up an existing file — § 5 #7."
   - "Any write but this file — C-7; a run with no report path writes nothing, 0001-F2 B-012 (0030)."
-  - "`Specht.Cqrs`, `SpecReportDocumentMapper`, `SpecReportSerializer` and `SpecReportStore` themselves - item 0167."
+  - "`SpechtReportDocumentMapper`, `SpechtReportSerializer` and `SpechtReportStore` themselves - item 0167."
+  - "What `--report` does when a run exits `2` or `3` - `0001-F3` OQ-8, open."
