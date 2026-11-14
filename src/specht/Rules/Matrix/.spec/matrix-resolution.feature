@@ -259,6 +259,15 @@ Feature: Matrix resolution
     Then the missing-scenario rule reports that row
     And the status rule reports nothing for that row
 
+  @B-012 @boundary
+  Scenario: A row reported for its missing scenario is not reported for an unknown status
+    Given the manifest pins schema version 0.4.0 instead
+    And an active claim B-004 whose tag no scenario carries
+    And its matrix row's Status is "Done"
+    When the check runs
+    Then the missing-scenario rule reports that row
+    And the status rule reports nothing for that row
+
   @B-013
   Scenario Outline: A covered row whose scenario or tests do not resolve is reported
     Given the manifest pins schema version 0.4.0 instead
@@ -282,6 +291,30 @@ Feature: Matrix resolution
     And a row whose Status is "Covered", whose scenario resolves and whose Test cell is the missing marker
     When the check runs
     Then the status rule reports that row
+
+  @B-013
+  Scenario: A covered row with no inline code in its Test cell is reported by the status and unresolved-test rules
+    Given the manifest pins schema version 0.4.0 instead
+    And the manifest declares the test files "test/**/*.cs"
+    And a row whose Status is "Covered", whose scenario resolves and whose Test cell is "AlphaTest" with no inline code
+    When the check runs
+    Then the status rule reports that row
+    And the unresolved-test rule reports that row, expecting a test name in inline code
+
+  @B-013
+  Scenario Outline: A covered row of a claim that is not live is judged like any other
+    Given the manifest pins schema version 0.4.0 instead
+    And the manifest declares the test files "test/**/*.cs"
+    And a matrix row for claim B-004 whose Status is "Covered" and whose tests all resolve
+    And claim B-004 <claim>, and no scenario carries its tag
+    When the check runs
+    Then the status rule reports that row
+
+    Examples:
+      | claim                                |
+      | is marked "Withdrawn"                |
+      | is marked "Superseded"               |
+      | is not among the acceptance criteria |
 
   @B-014
   Scenario Outline: A partial row with nothing resolved is reported
@@ -542,3 +575,17 @@ Feature: Matrix resolution
     And no matrix row for claim B-004
     When the check runs
     Then the missing-scenario rule reports nothing
+
+  @B-028
+  Scenario Outline: A claim tag on a Feature or a Rule with no scenario under it resolves a covered row's scenario
+    Given the manifest pins schema version 0.4.0 instead
+    And the manifest declares the test files "test/**/*.cs"
+    And an active claim B-004 whose only tag is <where>
+    And its matrix row's Status is "Covered" and its tests all resolve
+    When the check runs
+    Then the status rule reports nothing for that row
+
+    Examples:
+      | where                                               |
+      | on a Rule that holds no scenario                    |
+      | on the companion's Feature, which holds no scenario |

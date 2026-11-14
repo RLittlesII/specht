@@ -21,6 +21,7 @@ claims:
   - B-015
   - B-016
   - B-017
+  - B-028
 
 created: "2026-11-01"
 updated: "2026-11-13"
@@ -59,6 +60,7 @@ acceptance_criteria:
   - "B-015 — stale missing row"
   - "B-016 — no tests key: scenario and a named test only, never stale"
   - "B-017 — unknown status marker"
+  - "B-028 — a claim tag on any tag line carries the row's claim tag, as for SPEC4008 (decision 0007)"
   - "`0001-F7` B-014 — SPEC4010 joins schema 0.4.0's vocabulary here, the version 0436 cuts, with its rule page (`0001-F3` B-031) and a relock of 0.4.0 (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.4.0: the item stops and the version goes to the owner (decision 0005)."
   - "Decision 0002 call 3 — every row SPEC4010 reports on this repository's tree, pinned 0.4.0 by 0436, fixed in this pull request; `./build.sh Specht` gives 0 errors"
@@ -89,6 +91,15 @@ decisions:
     without it, so this item waits on 0436 as well as through 0336; the
     title, the summary and the vocabulary, relock and pin criteria name
     0.4.0. The id, the file name and the claims are unchanged.
+  - |
+    2026-11-13, spec-author: on test-writer's six open cases in section 8
+    (decision 0007), as spec-author's reading, not the owner's. Case 2:
+    B-028 added and claimed here, SPEC4010 reading carried as SPEC4008
+    does (B-026; C-3). Cases 3 and 4 are stated by B-013 and B-014 and by
+    B-012, and gain scenarios; case 5 gains a B-013 scenario. Cases 1 (B-012
+    with SPEC4008 off) and 6 (an empty Scenario cell under title matching)
+    change a verdict no claim states and are put to the owner; no claim is
+    written for them.
 
 out_of_scope:
   - "SPEC4009's report of the same row: 0334 (B-006)."
