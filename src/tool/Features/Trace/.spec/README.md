@@ -106,15 +106,263 @@ The check reports only the rows that fail. A reader who wants to see where every
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: implementer, 2026-11-14 (item 0442: the command, its lines and its document, designed) -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                                                                        | Classification | Owner                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, and in what order (B-001, B-007)                                                       | Business       | The check's discovery, through `SpechtModelReader.Read` (C-1)                                                                            |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-006)                                         | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                                                                       |
+| A specification's path and qualified id (B-003)                                                                                | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `TraceDocument.From`                                                  |
+| A claim's id, line and § 3 status, every claims-table row in row order (B-001, B-003, B-007)                                   | Business       | `SpechtClaims`, through `MatrixResolver.ResolveClaims` (C-1)                                                                             |
+| A claim's § 9 row, its cells read by column position (B-003)                                                                   | Business       | `MatrixResolver.Resolve`, through `ResolveClaims` (C-1)                                                                                  |
+| Which row a claim named by several reads: the first in document order (B-001, B-003)                                           | Business       | `TraceDocument.From`; the implementer's reading, § 7 "Readings"                                                                          |
+| Which scenarios carry a claim's tag, their own or inherited, under the tag-case setting (B-001, B-003)                         | Business       | `MatrixResolver.ResolveClaims`, giving `MatrixClaimResolution.Scenarios` (C-1)                                                           |
+| Whether a named test resolves against the declared test files, and its file and line (B-003)                                   | Technical      | `MatrixResolver.Resolve` over `SpechtModel.TestFiles` (C-1)                                                                              |
+| Whether a row's tests are skipped: its Status is the waived, withdrawn or superseded marker (B-019)                            | Business       | `MatrixRowResolution.Skips`, shared with `SPEC4009`'s `UnresolvedTestRule` (C-1)                                                         |
+| A test's resolution as one of A-1's four values, `skipped` before the resolver's three (B-003, B-019)                          | Business       | `TraceDocument.From`                                                                                                                     |
+| The document's members, which are absent rather than `null`, and their fixed shape (B-002, B-003; C-3)                         | Both           | `TraceDocument` and its member records, held to `docs/schema/trace.schema.json`                                                          |
+| Byte-identical serialization (B-007)                                                                                           | Technical      | `TraceDocument.ToJson`                                                                                                                   |
+| Each line's five tab-separated fields, its two counts, `none` and `0/0` (B-001)                                                | Business       | `TraceDocument.Lines`                                                                                                                    |
+| Parsing the options, choosing the form by `--json`, writing stdout and stderr, folding exceptions into exit codes (B-006; C-4) | Both           | `TraceCommand`                                                                                                                           |
+| The check's report holding no trace (B-009)                                                                                    | Business       | `SpechtReportDocument` and `docs/schema/report.schema.json`, unchanged                                                                   |
+| No write, no network, no absolute path (C-2)                                                                                   | Technical      | `TraceCommand`, which calls nothing that writes; the root-relative paths `FeatureSpec`, `FeatureFile` and `SpechtTestFile` already carry |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: implementer, 2026-11-14 (item 0442: the command, its lines and its document, designed) -->
 
-Pending: owned by `implementer`, written after agreement.
+The design for item `0442` (B-001 to B-003, B-006, B-007, B-009, B-019), not yet built. A type that exists links the
+file that declares it; a planned type is named in code and is linked once it is built, from when the compiler is the
+authority on its members.
+
+### Reading the tree
+
+The command calls the check's own read,
+[`SpechtModelReader.Read(root, null)`](../../../../specht/Model/SpechtModelReader.cs), as
+[`FactsCommand`](../../Facts/FactsCommand.cs) does: it checks the root, reads, parses and pins the manifest, discovers,
+and parses every specification and companion, and it reads the files `tests.files` declares into
+`SpechtModel.TestFiles`, none without the key. Every claim, row, scenario and test comes from the parse the check
+evaluates (C-1). No rule runs: the model is resolved and projected, never evaluated, so the trace judges nothing and
+gives `0` whatever it shows (B-006).
+
+The read throws the check's typed exceptions, and the command folds them as `FactsCommand` does (B-006):
+`SpechtRootNotFoundException` and `SpechtManifestNotFoundException` exit `ExitCodes.MissingInput` (`2`);
+`SpechtManifestUnreadableException` and `SpechtManifestException` exit `ExitCodes.InvalidManifest` (`3`). Each writes
+one `specht: ` line to stderr, in the words `FactsCommand` writes, and nothing to stdout.
+
+### Resolution through the matrix resolver
+
+[`MatrixResolver`](../../../../specht/Rules/Matrix/MatrixResolver.cs), the singleton `AddSpechtEngine` registers, is
+the one resolver (C-1). It gives most of what the trace reads, and three changes in `Rules/Matrix/` give the rest. The
+trace adds no join, tag lookup or marker test of its own.
+
+1. **`ResolveClaims` takes the test files.** A fourth parameter, `IReadOnlyList<SpechtTestFile> files`, is handed to
+   its `Resolve` call, which passes `[]` today, so each claim's rows carry resolved tests. The trace passes
+   `model.TestFiles`. [`StatusRule`](../../../../specht/Rules/Matrix/StatusRule.cs),
+   [`MissingScenarioRule`](../../../../specht/Rules/Matrix/MissingScenarioRule.cs) and
+   [`RetiredClaimRule`](../../../../specht/Rules/Matrix/RetiredClaimRule.cs) pass `[]`, as `WaiverRule` and
+   `ScenarioTitleRule` pass it to `Resolve`, so each gets what it gets today and no verdict changes.
+2. **`MatrixClaimResolution` carries the scenarios carrying its tag.** A last member, `Scenarios`: each companion
+   scenario whose `FeatureScenario.Tags` - its own, its Feature's, its Rule's and, for an outline, its Examples' - hold
+   the claim id under `ClaimTagIgnoreCase`'s comparer, the comparer `ClaimTags` uses. A scenario is listed once however
+   many of its tags match, in companion order and then file order, as a
+   [`MatrixScenarioResolution`](../../../../specht/Rules/Matrix/MatrixScenarioResolution.cs) with status `Resolved`,
+   its file and its keyword line: the evidence record `Resolve` already builds for a Scenario cell's title, and a
+   scenario carrying the claim's tag is what `Resolved` means there. `Tags` stays as it is: the rules read tag lines,
+   and a tag on a Feature line is one even where the file has no scenario.
+3. **`MatrixRowResolution.Skips(markers)`.** True when the row's trimmed Status equals the waived, withdrawn or
+   superseded marker, ordinally. A marker the manifest lacks matches nothing, so under a pin that declares none of the
+   three, schema `0.1.0`, it is false and does not throw. [`UnresolvedTestRule`](../../../../specht/Rules/Matrix/UnresolvedTestRule.cs)
+   replaces its `exempt` array with it: the same three markers and the same comparison, so `SPEC4009`'s verdicts do not
+   change (`0001-F12` B-002, B-006), and the trace and the check cannot disagree about which rows are skipped (C-1). Its
+   own missing-marker test of the Test cell stays in the rule: a Test cell holding the missing marker names no test in
+   inline code, so the trace lists none.
+
+### The document
+
+Engine folder `src/specht/Trace/`, namespace `Specht.Trace`, beside `Report/` and `Facts/` in ADR-0010's list. It reads
+`Rules/` for the resolver, `Model/` and `Manifest/`, each below it. One record per level, as `Facts/` has; the
+resolver's records are not published, since their `Status` and `Tests` members and any later change to them would
+reach the document (C-3).
+
+| Type              | Members, in order                                                                 | Claims            |
+| ----------------- | --------------------------------------------------------------------------------- | ----------------- |
+| `TraceDocument`   | `specifications`                                                                  | B-002, B-007      |
+| `FeatureTrace`    | `path`, `id`, `claims`                                                            | B-003             |
+| `ClaimTrace`      | `id`, `line`, `status`, `row`, `scenarios`, `tests`                               | B-003             |
+| `RowTrace`        | `line`, `claim`, `scenario`, `test`, `status`                                     | B-003             |
+| `ScenarioTrace`   | `title`, `file`, `line`                                                           | B-003             |
+| `TestTrace`       | `name`, `resolution`, `file`, `line`                                              | B-003, B-019      |
+| `TraceResolution` | `Resolved`, `Unresolved`, `Unconfigured`, `Skipped`; written `resolved` and so on | A-1, B-003, B-019 |
+
+`TraceDocument.From(SpechtModel model, MatrixResolver resolver)` walks `model.Features` in discovery order, leaving out
+a Feature with a `ClaimFileSet` (§ "Readings"), and gives each the claims
+`resolver.ResolveClaims(feature, model.Schemas.Structure, model.Claims[feature], model.TestFiles)` returns, in § 3
+order (B-007). It is a function of the model and the resolver alone, which holds no state.
+
+| Member              | Value                                                                                                                                                                    | Claim        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| `path`              | `FeatureSpec.RelativePath`: root-relative, `/`-separated                                                                                                                 | B-003        |
+| `id`                | `FeatureSpec.Identity` when the Feature is in `SpechtModel.FeaturesWithIdentity`, else `null`, as the facts document gives it                                            | B-003        |
+| claim `id`, `line`  | `SpechtClaim.Id`, the trimmed first cell as written, and `SpechtClaim.Line`                                                                                              | B-003        |
+| claim `status`      | `MatrixClaimResolution.Status`: the claims table's fourth cell, trimmed, `""` when the row has none                                                                      | B-003        |
+| `row`               | The first of `MatrixClaimResolution.Rows`: its line and its four cells by position (`0001-F12` B-001) as the parse gives them, trimmed; absent when the claim has no row | B-003        |
+| `scenarios`         | `MatrixClaimResolution.Scenarios`: title, file and line; `[]` when no scenario carries the tag                                                                           | B-003        |
+| `tests`             | The first row's `Tests`, in cell order, a name the cell gives twice listed twice; `[]` without a row                                                                     | B-003        |
+| test `resolution`   | `skipped` when the row `Skips` the manifest's markers; otherwise the `MatrixTestStatus` the resolver gives                                                               | B-003, B-019 |
+| test `file`, `line` | `MatrixTestResolution.File` and `Line`, present only for `resolved`; absent for the other three                                                                          | B-003        |
+
+A claim carrying one resolved and one unresolved test, from a specification whose path is
+`src/a/.spec/README.md`:
+
+```json
+{
+  "specifications": [
+    {
+      "path": "src/a/.spec/README.md",
+      "id": "0001-F1",
+      "claims": [
+        {
+          "id": "B-001",
+          "line": 40,
+          "status": "Active",
+          "row": {
+            "line": 90,
+            "claim": "B-001",
+            "scenario": "One line per claim",
+            "test": "Prints_one_line, Prints_none",
+            "status": "Partial"
+          },
+          "scenarios": [
+            {
+              "title": "One line per claim",
+              "file": "src/a/.spec/a.feature",
+              "line": 7
+            }
+          ],
+          "tests": [
+            {
+              "name": "Prints_one_line",
+              "resolution": "resolved",
+              "file": "test/ATests.cs",
+              "line": 12
+            },
+            { "name": "Prints_none", "resolution": "unresolved" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`ToJson` uses `System.Text.Json` with options in one `static readonly` field, as `FactsDocument` does: indented, `"\n"`
+line endings, camelCase names, and `JsonStringEnumConverter(JsonNamingPolicy.CamelCase)` for `TraceResolution`, as
+[`SpechtReportSerializer`](../../../../specht/Report/SpechtReportSerializer.cs) writes the report's enums. `row`,
+`file` and `line` carry `[property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]`, so B-003's absent
+members are absent, not `null`; every other member is always written, `id` as `null` when the Feature has no identity.
+Nothing in the document reads the clock, the machine or the environment, and every list follows discovery, row, cell or
+file order, never a hash or a dictionary's order, so the same tree gives the same bytes (B-007).
+
+### Readings
+
+The implementer's, not the owner's. None changes what a claim states for a tree the check accepts.
+
+1. **A claim named by several § 9 rows reads the first, in document order.** B-001 and B-003 say "its § 9 row"; the
+   check reports a second row (`SPEC4004`), so the case arises only in a tree that fails. The other rows are not
+   listed; listing them would be a `rows` member, an addition C-3 allows.
+2. **Every claims-table row is a claim**, a row whose id the grammar refuses and two rows sharing an id included, each
+   its own line and element in row order, as `ResolveClaims` gives them and as the facts document gives every row
+   (`0132-F2` B-013). Two rows sharing an id read the same § 9 row.
+3. **A native-claim Feature, one with a `ClaimFileSet`, is left out**, as the facts document and the `0001-F12` rules
+   leave it out, and `ResolveClaims` returns no claim for it. `0001-F16` B-024, item `0396`, adds it, each claim with
+   the status `none`.
+4. **Under a schema `0.1.0` pin, until item `0444`, no row is skipped**: that manifest declares no waived, withdrawn or
+   superseded marker, so `Skips` matches nothing, and its tests are `unconfigured`, since that pin declares no `tests`.
+   B-019's "the waived marker" under `0.1.0` is B-011's `0.2.0` default, which item `0444` supplies. The command runs,
+   and exits `0`, under every shipped pin (A-2).
+
+### The text form
+
+Without `--json`, `TraceDocument.Lines()` gives one line per claim, specification by specification and claim by claim
+in the document's order (B-001, B-007): five fields separated by single tab characters, as the facts lines are. Each is
+made from the document, so the two forms cannot disagree.
+
+| Field     | Value                                                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| path      | the specification's `path`                                                                                               |
+| id        | the claim's `id`                                                                                                         |
+| status    | the `row`'s `status`, or `none` when the claim has no row                                                                |
+| scenarios | the number of `scenarios`, in decimal, invariant culture                                                                 |
+| tests     | `<resolved>/<named>`: the tests whose resolution is `resolved`, out of those that are not `skipped`; `0/0` without a row |
+
+So `src/a/.spec/README.md`, a tab, `B-002`, a tab, `Covered`, a tab, `2`, a tab, `2/3`. An `unconfigured` or
+`unresolved` test counts in the second number only, and a `skipped` one in neither (B-001). In each text field a tab,
+line feed or carriage return is written as one space, as `FactsDocument` writes its fields, so every line has five
+fields. A row whose Status cell is empty gives an empty field, not `none`.
+
+### The published schema
+
+`docs/schema/trace.schema.json`, draft 2020-12, as the report and facts
+schemas are, with `additionalProperties` `false` at every level (B-002). Required: `specifications` at the root; `path`,
+`id` and `claims` on a specification; `id`, `line`, `status`, `scenarios` and `tests` on a claim, `row` optional; all
+five members on a row; `title`, `file` and `line` on a scenario; `name` and `resolution` on a test, `resolution` an enum
+of A-1's four values, with an `if`/`then`/`else` requiring `file` and `line` when it is `resolved` and forbidding both
+otherwise (B-003). `path` and every `file` take the facts schema's `path` pattern: non-empty, not starting with `/`, no
+drive letter, no `\` (C-2). `id` is `["string", "null"]`. `test/tests/tests.csproj` and
+`test/acceptance/acceptance.csproj` already copy `docs/schema/*.json` into their output, so no project file changes.
+
+### The command
+
+`TraceCommand`, `specht trace [--root <DIR>] [--json]`, in `src/tool/Features/Trace/TraceCommand.cs` with its nested
+`Settings`. It injects the console, `SpechtModelReader`, `MatrixResolver` and an optional error writer, as
+`FactsCommand` does. It resolves the root with `Path.GetFullPath`, reads the model, makes `TraceDocument.From`, writes
+`ToJson` or each of `Lines()` through `console.Profile.Out.Writer`, which writes no markup, and returns
+`ExitCodes.Success` (B-006). It reads no Markdown, Gherkin or test file (C-4), and calls nothing that writes, so a run
+creates, modifies and deletes nothing and makes no network call (C-2).
+
+`TraceRegistration`, beside it, adds `trace` to the configurator with the description "Print where every claim
+stands." as `FactsRegistration` does (ADR-0007), and [`Program.cs`](../../../Program.cs) adds `.AddTrace()` to its
+chain. No service is registered: `AddSpechtEngine` already registers `SpechtModelReader` and `MatrixResolver`.
+
+[`docs/cli.md`](../../../../../docs/cli.md) gains a `specht trace` section, its options and its exit codes, and its
+opening paragraph names `trace`; the `0002-F1` test holds the page to the help. The `AGENTS.md` CLI block gains
+`specht trace [--root <dir>] [--json]`. The command adds no rule id and is not schema-versioned (A-2).
+
+### The check's report
+
+Nothing in `Report/` changes (B-009). `SpechtReportDocument` has no trace member, and the report schema's
+`additionalProperties` `false` refuses one; a test holds it.
+
+### Where later items attach
+
+Each later item adds; none renames or retypes a member (C-3).
+
+- `0443` (B-004, B-005, B-020): `Resolve` gives `unconfigured` when the manifest has no `tests` key, `From` reads
+  `Skips` before the resolver's status, and no rule runs, so a rule set `off` hides nothing. This design gives all three; the item adds their
+  tests, and a production change only where one fails.
+- `0444` (B-010 to B-012): `Resolve` already reads the § 9 columns by position under every pin, and a `0.1.0` manifest
+  carries no `tests`. What it adds is the waived, withdrawn and superseded markers at their `0.2.0` defaults for `Skips`
+  under a `0.1.0` pin; where the defaults are read from is its design. `Skips` takes the markers, so its signature
+  stays.
+- `0445` (B-008, B-013 to B-018): a `--report <PATH>` option and its write; the text written is `ToJson`'s, so the
+  document on stdout and the file are one string written twice (B-017). The write itself is its design.
+- `0396` (`0001-F16` B-024): the native-claim Features, each claim `none`.
+
+### Rejected
+
+- **`skipped` as a fourth `MatrixTestStatus`, set by the resolver.** `MatrixTestStatus` is the text resolution of a
+  name (`0001-F12` B-001); whether a row's tests are resolved at all is a reading of its Status, which the rules make
+  per row. `SPEC4009` and `SPEC4010` would each have to learn a value they never act on.
+- **Joining `Resolve`'s rows to the claims in the trace, or reading scenario tags there.** A second join and a second
+  tag lookup beside `ResolveClaims`, free to disagree with it (C-1).
+- **A marker test of its own in `TraceDocument`.** The same three markers `UnresolvedTestRule` tests, in a second place
+  (C-1).
+- **`row`, `file` and `line` written as `null`.** B-003 says absent; the schema can then require them exactly when a
+  test resolves.
+- **A `TraceReader` service wrapping the read and the projection.** One existing call and one pure function; a third
+  type would only forward.
+- **`--schema-source` or a path selector.** No claim states either.
 
 ## 8. Testing Strategy
 
