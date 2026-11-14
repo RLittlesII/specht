@@ -9,7 +9,7 @@ namespace Specht.Tests.Rules;
 /// titles <c>4. Claims</c>, <c>7. Matrix</c> and <c>11. Approvals</c> are cited <c>§ 4</c>, <c>§ 7</c> and <c>§ 11</c>, at
 /// schema 0.3.0; the unnumbered titles <c>Claims</c>, <c>Matrix</c> and <c>Approvals</c> are cited <c>## Claims</c>,
 /// <c>## Matrix</c> and <c>## Approvals</c>, at the oldest pin each rule ships at (0.1.0, 0.3.0 for SPEC022, SPEC032 and
-/// SPEC035, or 0.4.0 for SPEC023).
+/// SPEC035, or 0.4.0 for SPEC023 and SPEC033).
 /// </summary>
 public sealed class RetitledSectionMessages : TheoryData<string, string, string, string?, string, string>
 {
@@ -75,6 +75,14 @@ public sealed class RetitledSectionMessages : TheoryData<string, string, string,
             "SPEC023",
             titles.Manifest("0.4.0"),
             Frontmatter + titles.ClaimTable("B-001") + titles.MatrixTable(matrixRow),
+            null,
+            titles.MatrixReference,
+            "§ 9");
+
+        Add(
+            "SPEC033",
+            titles.Manifest("0.4.0"),
+            Frontmatter + titles.ClaimTable("B-001") + titles.MatrixTable(Row("B-009", "It holds", "`AlphaTest`", "Covered")),
             null,
             titles.MatrixReference,
             "§ 9");
