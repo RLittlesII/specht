@@ -118,39 +118,42 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-13 -->
+<!-- last written by: implementer, 2026-11-14 -->
 
-| Concern                                                                                                                                                       | Classification | Owner                                                                                                                                          |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)                                                        | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)                                                                |
-| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004)                                              | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From`                                                        |
-| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                                                                        | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                                                                             |
-| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                                                                  | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`                                                                    |
-| Byte-identical serialization (B-022)                                                                                                                          | Technical      | `FactsDocument.ToJson`                                                                                                                         |
-| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)                                                        | Both           | `FactsCommand`                                                                                                                                 |
-| A claim's id and line as the check reads them, every row kept, two sharing an id included (B-005, B-013; C-1)                                                 | Business       | `SpechtClaims` through `SpechtModel.Claims`, projected by `FactsDocument.From`                                                                 |
-| A claim's text, and its status as its row writes it (B-005, B-012; C-5)                                                                                       | Business       | `FactsDocument.From`, reading the claims table's cells by header                                                                               |
-| Finding the constraints section under the heading `sections` lists, and its cells under the engine's headers (B-006; C-1, C-7)                                | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
-| A claim's and a constraint's members, with no coverage member (B-025; C-3)                                                                                    | Both           | `ClaimFacts` and `ConstraintFacts`, held to `docs/schema/facts.schema.json`                                                                    |
-| Finding the out-of-scope and open-questions sections under the headings `sections` lists, and their cells under the engine's headers (B-007, B-008; C-1, C-7) | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
-| Whether an open question is resolved, on OQ-2's default, its Resolution given as written beside it (B-008; C-5)                                               | Business       | `FactsDocument.From`                                                                                                                           |
-| A missing section, or one with no table the parse reads, emptying only its own member (B-015; C-1)                                                            | Both           | `MarkdownTextReader` through `SpechtDocumentParser`, which gives such a section no table; `FactsDocument.From`, which reads each section alone |
-| An out-of-scope row's and an open question's members (B-007, B-008; C-3)                                                                                      | Both           | `OutOfScopeFacts` and `OpenQuestionFacts`, held to `docs/schema/facts.schema.json`                                                             |
-| Which files are the records beside a specification, in both layouts, listed without reading them (B-011, B-022; C-2)                                          | Business       | `ISpecDiscovery.FindRecords` in `SpechtDiscovery`                                                                                              |
-| Reading the records for the facts alone, the check's read left as it is, so a record is never a specification and no verdict changes (B-011; C-4)             | Technical      | `SpechtModelReader.ReadRecords` through `SpechtTreeStore`                                                                                      |
-| A record's frontmatter and the first line under its `## Status` heading, through the check's own frontmatter reader and Markdown parse (B-011; C-1)           | Technical      | `SpechtModelBuilder.Record` through `FrontmatterReader` and `SpechtDocumentParser.FirstLine`, giving a `RecordFile`                            |
-| A record's kind, number, title and path, and its status on OQ-3's default, a missing or unreadable part emptying only its own member (B-011, B-013; C-5)      | Business       | `FactsDocument.From`                                                                                                                           |
-| A record's members (B-011; C-3)                                                                                                                               | Both           | `RecordFacts`, held to `docs/schema/facts.schema.json`                                                                                         |
-| Calling the records read beside the model read (C-4)                                                                                                          | Technical      | `FactsCommand`                                                                                                                                 |
-| Which given specifications a path selects: the one at that path, or every one under a directory by whole segments, in order (B-018, B-019; C-2)               | Business       | `FactsDocument.Select`                                                                                                                         |
-| Taking the path as typed, and folding an empty selection into exit `4`, stdout empty and one `specht: ` line on stderr (B-020; C-4)                           | Both           | `FactsCommand`                                                                                                                                 |
+| Concern                                                                                                                                                              | Classification | Owner                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, in what order, and that an epic file is not one (B-001, B-026)                                                               | Business       | The check's discovery, `ISpecDiscovery`, through `SpechtModelReader.Read` (C-1)                                                                |
+| A specification's path, qualified id, statuses and dependency lists as its frontmatter gives them (B-003, B-004)                                                     | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `FactsDocument.From`                                                        |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-021)                                                                               | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                                                                             |
+| The document's members and their fixed shape under every pin (B-002, B-014, B-017; C-3, C-5)                                                                         | Both           | `FactsDocument` and `FeatureFacts`, held to `docs/schema/facts.schema.json`                                                                    |
+| Byte-identical serialization (B-022)                                                                                                                                 | Technical      | `FactsDocument.ToJson`                                                                                                                         |
+| Parsing the options, writing stdout and stderr, folding exceptions into exit codes (B-021, B-023; C-4)                                                               | Both           | `FactsCommand`                                                                                                                                 |
+| A claim's id and line as the check reads them, every row kept, two sharing an id included (B-005, B-013; C-1)                                                        | Business       | `SpechtClaims` through `SpechtModel.Claims`, projected by `FactsDocument.From`                                                                 |
+| A claim's text, and its status as its row writes it (B-005, B-012; C-5)                                                                                              | Business       | `FactsDocument.From`, reading the claims table's cells by header                                                                               |
+| Finding the constraints section under the heading `sections` lists, and its cells under the engine's headers (B-006; C-1, C-7)                                       | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
+| A claim's and a constraint's members, with no coverage member (B-025; C-3)                                                                                           | Both           | `ClaimFacts` and `ConstraintFacts`, held to `docs/schema/facts.schema.json`                                                                    |
+| Finding the out-of-scope and open-questions sections under the headings `sections` lists, and their cells under the engine's headers (B-007, B-008; C-1, C-7)        | Both           | `FactsDocument.From` through `SpechtDocument.Section`                                                                                          |
+| Whether an open question is resolved, on OQ-2's default, its Resolution given as written beside it (B-008; C-5)                                                      | Business       | `FactsDocument.From`                                                                                                                           |
+| A missing section, or one with no table the parse reads, emptying only its own member (B-015; C-1)                                                                   | Both           | `MarkdownTextReader` through `SpechtDocumentParser`, which gives such a section no table; `FactsDocument.From`, which reads each section alone |
+| An out-of-scope row's and an open question's members (B-007, B-008; C-3)                                                                                             | Both           | `OutOfScopeFacts` and `OpenQuestionFacts`, held to `docs/schema/facts.schema.json`                                                             |
+| Which files are the records beside a specification, in both layouts, listed without reading them (B-011, B-022; C-2)                                                 | Business       | `ISpecDiscovery.FindRecords` in `SpechtDiscovery`                                                                                              |
+| Reading the records for the facts alone, the check's read left as it is, so a record is never a specification and no verdict changes (B-011; C-4)                    | Technical      | `SpechtModelReader.ReadRecords` through `SpechtTreeStore`                                                                                      |
+| A record's frontmatter and the first line under its `## Status` heading, through the check's own frontmatter reader and Markdown parse (B-011; C-1)                  | Technical      | `SpechtModelBuilder.Record` through `FrontmatterReader` and `SpechtDocumentParser.FirstLine`, giving a `RecordFile`                            |
+| A record's kind, number, title and path, and its status on OQ-3's default, a missing or unreadable part emptying only its own member (B-011, B-013; C-5)             | Business       | `FactsDocument.From`                                                                                                                           |
+| A record's members (B-011; C-3)                                                                                                                                      | Both           | `RecordFacts`, held to `docs/schema/facts.schema.json`                                                                                         |
+| Calling the records read beside the model read (C-4)                                                                                                                 | Technical      | `FactsCommand`                                                                                                                                 |
+| Which given specifications a path selects: the one at that path, or every one under a directory by whole segments, in order (B-018, B-019; C-2)                      | Business       | `FactsDocument.Select`                                                                                                                         |
+| Taking the path as typed, and folding an empty selection into exit `4`, stdout empty and one `specht: ` line on stderr (B-020; C-4)                                  | Both           | `FactsCommand`                                                                                                                                 |
+| Which facts are text lines, in what order, and each line's five tab-separated fields, a tab or line break inside a field written as a space (B-022, B-024; C-2, C-5) | Business       | `FactsDocument.Lines`                                                                                                                          |
+| Choosing the form by `--json` alone, writing the lines through the raw writer, the same refusals and exit codes in both forms (B-020, B-021, B-024; C-4)             | Both           | `FactsCommand`                                                                                                                                 |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 -->
+<!-- last written by: implementer, 2026-11-14 -->
 
-The design for items `0364`, `0365`, `0366`, `0368` and `0369`, as built. Each built type is declared in the file it
-links; the compiler is the authority on its members and signatures.
+The design for items `0364`, `0365`, `0366`, `0368` and `0369`, as built, and for item `0370`, not yet built (§ "The
+text form"). Each built type is declared in the file it links; the compiler is the authority on its members and
+signatures.
 
 ### Reading the tree
 
@@ -626,6 +629,105 @@ specht facts src/tool --root . --json                                   # every 
 specht facts src/toolbox --root . --json                                # none here: exit 4, empty stdout (B-020)
 ```
 
+### The text form
+
+Item `0370`'s design, not yet built. Without `--json` the command prints one line per fact (B-024), in the shape OQ-5's
+default records: five fields separated by single tab characters, as `0001-F10` decision 0002 lists the rules. OQ-5
+stays open; its default is read here and nothing more. The document gains no member and the schema does not change: the
+lines are made from the document `From` and `Select` already give, so the two forms cannot disagree about a fact (C-3).
+
+**Which facts are lines.** The four B-024 names, and only those: each element of a specification's `claims`,
+`constraints`, `outOfScope` and `openQuestions`. A record is no line, and neither is a § 10 entry or a § 12 row when
+item `0367` gives them: B-024 names none of them, and the document carries them (item `0370` out of scope). The
+identity members, `path` to `children`, are no line of their own; a specification's path begins each of its facts'
+lines. A withdrawn claim, two claims sharing an id, a row whose id the grammar refuses and a row under a header the
+table lacks are each a line, since each is a fact the document gives (B-012, B-013; C-5).
+
+**The fields.** In this order, each the document member's value with no reading of its own:
+
+| Field | Claim                      | Constraint                 | Out-of-scope row           | Open question              |
+| ----- | -------------------------- | -------------------------- | -------------------------- | -------------------------- |
+| path  | the specification's `path` | the specification's `path` | the specification's `path` | the specification's `path` |
+| kind  | `claim`                    | `constraint`               | `outOfScope`               | `openQuestion`             |
+| id    | `id`                       | `id`                       | `number`                   | `id`                       |
+| line  | `line`                     | `line`                     | `line`                     | `line`                     |
+| text  | `text`                     | `text`                     | `item`                     | `question`                 |
+
+The kind is fixed text in the engine, one private constant each in `FactsDocument`. `claim`, `constraint` and
+`openQuestion` are the type names schema `0.4.0`'s shipped manifest gives those three in its `ids` key, and `outOfScope`, for which `ids`
+has no type, is the document's member name; a record's kind is likewise an `ids` type name (§ "Records beside a
+specification"). None has a space or a tab, and none is read from the manifest (C-7), so a line has the same kind under
+every pin (B-017). The line is the decimal number, invariant culture. The text is the cell as the parse gives it, the
+same text the JSON carries: literals and code-span contents, trimmed, with no Markdown marker. A `null` value - a text
+under a header the table lacks - is an empty field, so every line has five fields and four tabs. No other member is a
+field: a claim's status, what a constraint rules out, an exclusion reason, an open question's Blocks, resolution and
+`resolved` are in the document, and OQ-5's default names five fields.
+
+**A tab or a line break inside a field.** A pipe-table row is one source line, so the parse gives no cell a line break;
+a tab inside a cell can reach the parse's text, and a file name can hold a tab. Either would break the line: a tab adds a field, a line
+break a line, and B-024 states one line per fact. So in every field, each tab (U+0009), line feed (U+000A) and carriage
+return (U+000D) is written as one space (U+0020), one private method serving all five; nothing else in a field changes,
+and nothing is collapsed or trimmed beyond the parse's own trim. The JSON form keeps the text as the parse gives it, so
+a reader that needs the exact characters reads the document.
+
+**The order.** Specification by specification, in the document's order, which is discovery order (B-001) narrowed by a
+path (B-018, B-019); within one, its claims, then its constraints, then its out-of-scope rows, then its open questions,
+each in row order, the order the members hold them. Nothing is sorted, so the lines are a function of the document alone
+and the same tree and arguments give the same bytes (B-022).
+
+**Where the lines are made.** One public method on the document,
+[`FactsDocument`](../../../../specht/Facts/FactsDocument.cs)`.Lines()`, gives `IReadOnlyList<string>`, one string per
+fact with no line terminator, as `SpechtReportDocument.SummaryLines()` gives the check's summary (§ "Where later items
+attach"). The row records carry values and no logic and do not change; the command formats nothing (C-4).
+
+**The command.** [`FactsCommand`](../FactsCommand.cs) loses its first branch: the usage refusal without `--json`, the
+`specht facts [<path>] [--root <dir>] --json` line on stderr and exit `2` before the tree is read, is removed, and no
+usage line remains in the command. It reads, projects and selects as built; then, with `--json`, it writes `ToJson()` as
+built, and without it, each of `Lines()` through `console.Profile.Out.Writer.WriteLine`, the raw writer, as `rules`
+writes its lines and the check its violations, so no markup parsing touches a `[` in a text and no line wraps. The
+option `--json` keeps its name and type; its help description becomes `Print the facts as one JSON document.`, as
+`rules`'s, and the `Settings.Json` and class summaries say the text form is the default.
+
+The refusals and the exit codes are the same in both forms and come in the same order:
+
+1. A missing root or manifest exits `2`, a rejected manifest `3`, before any selection and before anything reaches
+   stdout (B-021).
+2. A typed path selecting no specification exits `4` with nothing on stdout (B-020). What exits `4` is an empty
+   `Specifications` in the selected document, as built, never an empty list of lines, so a selected specification with no claim, constraint,
+   out-of-scope row or open question writes no line and exits `0`.
+3. Otherwise exit `0`, whatever the check would report (B-013). A tree with no Feature specification, or whose
+   specifications hold no fact that is a line, writes nothing on stdout without `--json`, as `{"specifications": []}`
+   is written with it.
+
+**The pages.** [`docs/cli.md`](../../../../../docs/cli.md) § `specht facts`: the synopsis becomes
+`specht facts [<path>] [--root <DIR>] [--json]`; a paragraph says that without `--json` each stdout line is one claim,
+constraint, out-of-scope row or open question, five fields separated by single tabs - path, kind (`claim`,
+`constraint`, `outOfScope` or `openQuestion`), id (an out-of-scope row's number), line and text (an out-of-scope row's
+item, an open question's question) - in discovery order and, within a specification, in that order of kinds, with a tab
+or line break inside a field written as a space and records not listed; the `--json` row says `Prints the facts as one
+JSON document.` without `Required.`; **Stdout** says the document is written with `--json`; the exit-code paragraph
+drops `2` without `--json`; and `specht facts --root .` joins the examples.
+[`docs/exit-codes.md`](../../../../../docs/exit-codes.md) row `2` drops `` `facts` without `--json` ``;
+[`ExitCodes.cs`](../../../ExitCodes.cs)'s `MissingInput` summary names no facts usage and does not change. AGENTS.md
+§ CLI's synopsis line and [`src/tool/README.md`](../../../README.md)'s become `specht facts [<path>] [--root <dir>]
+[--json]`. The `0002-F1` test reads option names, which do not change.
+
+A specification with two claims, one constraint, one out-of-scope row and one open question gives five lines, shown here
+as their fields:
+
+| path                       | kind           | id      | line | text                                            |
+| -------------------------- | -------------- | ------- | ---- | ----------------------------------------------- |
+| `src/area/.spec/README.md` | `claim`        | `B-001` | 61   | Given a tree, this Feature gives its facts.     |
+| `src/area/.spec/README.md` | `claim`        | `B-002` | 62   | Given a flag, this Feature writes one document. |
+| `src/area/.spec/README.md` | `constraint`   | `C-1`   | 68   | Offline and read-only.                          |
+| `src/area/.spec/README.md` | `outOfScope`   | `1`     | 77   | Any other input                                 |
+| `src/area/.spec/README.md` | `openQuestion` | `OQ-1`  | 112  | Which input comes first?                        |
+
+```sh
+specht facts --root .                                    # every fact of every specification, one line each (B-024)
+specht facts src/tool --root . | cut -f1,2,3             # path, kind and id of the facts under src/tool
+```
+
 ### Where later items attach
 
 Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
@@ -644,8 +746,9 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
   `Features/Facts/` (C-4); § "Records beside a specification".
 - `0369`, built: the path selector, `FactsDocument.Select`, narrows `FactsDocument.Specifications` in the engine; the
   command maps an empty selection to `ExitCodes.NotFound`; no member is added; § "Selecting by path".
-- `0370`: the text lines, made by the engine from `FactsDocument` as `SpechtReportDocument.SummaryLines` makes the
-  check's summary; the command only writes them.
+- `0370`, designed: the text lines, made by the engine from `FactsDocument` in `Lines()`, as
+  `SpechtReportDocument.SummaryLines` makes the check's summary; the command only writes them, and the usage refusal
+  without `--json` goes; no member is added; § "The text form".
 
 ### The published schema
 
@@ -793,6 +896,40 @@ specification. The command adds no rule id (C-5).
 - **An epic file's path selecting its epic.** An epic gives no facts (B-026), so no document holds it to select;
   selecting it would need an epic member no claim states (OQ-6).
 - **Selecting by id, such as `0132-F2`.** § 5 row 3 and item `0307`.
+- **The text lines formatted in `FactsCommand`, as `RulesCommand` formats its own.** § "Where later items attach" puts
+  them in the engine beside `SummaryLines`, and a command parses, calls and folds (C-4); the engine method is what a
+  unit test reaches without a console.
+- **A `ToText()` giving one string with its line terminators.** The engine would choose the terminator, which the
+  check's lines and `rules`'s leave to the writer's `WriteLine`; a list of lines does the same, as `SummaryLines` does.
+- **More fields than five: a claim's status, what a constraint rules out, an exclusion reason, an open question's
+  Blocks, resolution or `resolved`.** OQ-5's default names five; each is in the document, and a field per kind would
+  give lines of different widths.
+- **A line for a record, a § 10 entry or a § 12 row.** B-024 names claims, constraints, § 5 rows and open questions;
+  item `0370`'s out-of-scope list keeps the rest in the document.
+- **A header line, a blank line between specifications, or a summary line.** Each is a line that is no fact, so a
+  reader counting or splitting lines would have to skip it; `rules` prints none either
+  ([`docs/cli.md`](../../../../../docs/cli.md) § `specht rules`).
+- **An aligned table through Spectre's `Table`.** A layout on stdout, which `0001-F10` decision 0002 rejects for the
+  rules for the same reason; the raw writer keeps the lines as written.
+- **Kinds spelled `out-of-scope` and `open-question`, or `§ 5`, or plural as the members are.** None is a name the
+  manifest or the document already uses; `claim`, `constraint` and `openQuestion` are the manifest's `ids` type names,
+  and `outOfScope` the member's.
+- **The kinds read from the manifest's `ids` key.** C-7 reads only `sections`, `roles` and `tables`, and a consumer's
+  `ids` could rename a kind under one pin and not another (B-017).
+- **A `null` written as `null`.** A text reading `null` would look the same; the empty field is the absent value, as a
+  JSON reader reads `null`.
+- **A tab or line break kept as it is.** A tab adds a field and a line break a line, against B-024's one line per fact.
+- **A tab or line break escaped as `\t` and `\n`.** A reversible escape needs `\` escaped too, so every text holding a
+  backslash would differ from the document's; the JSON form already carries the exact text, and a space keeps the line
+  readable as written.
+- **Quoting a field that holds a tab, CSV-style.** A reader splitting on tabs would need a quote rule no other line the
+  tool prints has.
+- **The lines sorted by line number, by kind across the tree, or by id.** A reading the document does not make; the
+  document's order is already discovery order and row order.
+- **Exit `4` when a selected specification gives no line.** B-020 maps a selection with no specification to `4`; a
+  selected specification with no fact is found and empty, as it is with `--json`.
+- **A `--text` flag, or the usage refusal kept until a flag is given.** B-024 gives the lines without `--json`, and the
+  default output is the one item `0364` held back (§ "Rejected", "Writing the JSON document without `--json`").
 
 ## 8. Testing Strategy
 
