@@ -13,6 +13,7 @@ namespace Specht.Model;
 internal sealed class MarkdownTextReader
 {
     /// <implements epic="0001" feature="F1" claim="B-004" />
+    /// <implements epic="0132" feature="F2" claim="B-009" />
     public IReadOnlyList<MarkdownTextSection> Read(string text, MarkdownPipeline pipeline)
     {
         var document = Markdown.Parse(text, pipeline);
@@ -26,6 +27,7 @@ internal sealed class MarkdownTextReader
             }
 
             var table = NextTable(document, index);
+            var items = OwnItems(document, index);
 
             sections.Add(new MarkdownTextSection(
                 HeadingText(heading),
@@ -35,6 +37,8 @@ internal sealed class MarkdownTextReader
                 table is null ? [] : BodyRowLines(table))
             {
                 RowCodeSpans = table is null ? [] : BodyCodeSpans(table),
+                Items = items.Select(ItemText).ToList(),
+                ItemLines = items.Select(static item => item.Line + 1).ToList(),
             });
         }
 
@@ -104,6 +108,38 @@ internal sealed class MarkdownTextReader
 
         return null;
     }
+
+    /// <implements epic="0132" feature="F2" claim="B-009" />
+    private static List<ListItemBlock> OwnItems(MarkdownDocument document, int headingIndex) =>
+        document.Skip(headingIndex + 1)
+            .TakeWhile(static block => block is not HeadingBlock { Level: 2 })
+            .OfType<ListBlock>()
+            .SelectMany(static list => list.OfType<ListItemBlock>())
+            .ToList();
+
+    /// <implements epic="0132" feature="F2" claim="B-009" />
+    private static string ItemText(ListItemBlock item) =>
+        string.Join(" ", item.Descendants<ParagraphBlock>()
+            .Where(static paragraph => paragraph.Inline is not null && !InTable(paragraph))
+            .Select(static paragraph => string.Concat(paragraph.Inline!.Descendants().Select(ItemVisible)).Trim()));
+
+    /// <implements epic="0132" feature="F2" claim="B-009" />
+    private static bool InTable(Block block)
+    {
+        for (var parent = block.Parent; parent is not null; parent = parent.Parent)
+        {
+            if (parent is Table)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <implements epic="0132" feature="F2" claim="B-009" />
+    private static string ItemVisible(MarkdownObject descendant) =>
+        descendant is LineBreakInline ? " " : Visible(descendant);
 
     /// <implements epic="0001" feature="F1" claim="B-004" />
     private static IReadOnlyList<string> HeaderCells(Table table) =>

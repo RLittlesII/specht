@@ -207,7 +207,10 @@ line and whether it is resolved: not when the resolution is empty or its first
 word is `Open`, then each record in the `adr`, `decisions` and `lessons` folders
 beside it with its kind, the first word of its file name, its frontmatter
 `title`, its status - the first word under an ADR's `## Status` heading, none
-for a decision or a lesson - and its path. Every row is given, a withdrawn claim and two claims sharing an
+for a decision or a lesson - and its path, then each lessons-and-deltas entry,
+a list item's text or a table row's cells, with its line, in line order, and
+each sign-off row with its section, status, reviewer, note and line, read under
+the sign-off headers the manifest names. Every row is given, a withdrawn claim and two claims sharing an
 id included, and a claim carries no coverage. A missing section, or one with no
 table, gives no rows of its own and leaves the others. Epic files are not given.
 No rule runs, so the document carries no violation, count or verdict.

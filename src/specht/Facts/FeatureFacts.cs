@@ -16,12 +16,16 @@ namespace Specht.Facts;
 /// <param name="OutOfScope">Every row of the out-of-scope table, in row order; empty without an out-of-scope section or table.</param>
 /// <param name="OpenQuestions">Every row of the open-questions table, in row order; empty without an open-questions section or table.</param>
 /// <param name="Records">The records beside the specification, in ordinal order of path; empty when it has none.</param>
+/// <param name="Deltas">Every list item and table row of the lessons-and-deltas section, in line order; empty without either.</param>
+/// <param name="SignOff">Every row of the sign-off table, in row order; empty without a sign-off section or table.</param>
 /// <implements epic="0132" feature="F2" claim="B-003" />
 /// <implements epic="0132" feature="F2" claim="B-004" />
 /// <implements epic="0132" feature="F2" claim="B-005" />
 /// <implements epic="0132" feature="F2" claim="B-006" />
 /// <implements epic="0132" feature="F2" claim="B-007" />
 /// <implements epic="0132" feature="F2" claim="B-008" />
+/// <implements epic="0132" feature="F2" claim="B-009" />
+/// <implements epic="0132" feature="F2" claim="B-010" />
 /// <implements epic="0132" feature="F2" claim="B-011" />
 /// <implements epic="0132" feature="F2" claim="B-015" />
 public sealed record FeatureFacts(
@@ -36,4 +40,6 @@ public sealed record FeatureFacts(
     IReadOnlyList<ConstraintFacts> Constraints,
     IReadOnlyList<OutOfScopeFacts> OutOfScope,
     IReadOnlyList<OpenQuestionFacts> OpenQuestions,
-    IReadOnlyList<RecordFacts> Records);
+    IReadOnlyList<RecordFacts> Records,
+    IReadOnlyList<DeltaFacts> Deltas,
+    IReadOnlyList<SignOffFacts> SignOff);

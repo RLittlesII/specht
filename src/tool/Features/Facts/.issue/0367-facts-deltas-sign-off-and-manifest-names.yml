@@ -2,7 +2,7 @@ id: "0367"
 type: task
 title: Lessons, sign-off rows and manifest-named sections in the facts
 
-status: ready
+status: done
 
 value: 3
 risk: 3
@@ -21,8 +21,8 @@ claims:
   - B-016
 
 created: "2026-11-06"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-14"
+closed: "2026-11-14"
 
 summary: |
   As a maintainer reviewing work I want each Feature's § 10 lessons and deltas entries and § 12 sign-off rows in the facts, read under the headings, roles and table headers the pinned manifest names, so that a consumer who renamed them gets the same answer.

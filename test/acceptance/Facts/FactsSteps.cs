@@ -10,7 +10,8 @@ namespace Specht.Acceptance.Facts;
 /// <summary>
 /// Steps for <c>src/tool/Features/Facts/.spec/facts.feature</c> (<c>0132-F2</c>): item 0364 binds B-001 to B-004, B-014,
 /// B-017, B-021 to B-023 and B-026, item 0365 binds B-005, B-006, B-012, B-013 and B-025, item 0366 binds B-007,
-/// B-008 and B-015, item 0368 binds B-011, item 0369 binds B-018 to B-020, and item 0370 binds B-024. Each launches the
+/// B-008 and B-015, item 0368 binds B-011, item 0369 binds B-018 to B-020, item 0370 binds B-024, and item 0367 binds
+/// B-009, B-010 and B-016, leaving the B-016 Outline's renamed-constraints row unbound until OQ-7 is answered. Each launches the
 /// built tool over a synthetic tree; a scenario naming no form runs <c>specht facts --json</c>, and the text form runs
 /// <c>specht facts</c> alone. The root sits one folder below a temporary directory, so a run that writes beside the root
 /// is seen. The rest of the file's scenarios stay pending for their items.
@@ -168,6 +169,73 @@ public sealed class FactsSteps
         Tree.WriteCoLocatedFeature(ThirdArea, "0001", "F3");
         ThirdPath.Should().StartWith(_directory).And.NotStartWith(_directory + "/");
         EngineServices.Reader().Read(Tree.Root, null).Features.Select(static feature => feature.RelativePath).Should().Contain(ThirdPath);
+    }
+
+    [Given("the first specification records two lessons and deltas entries as list items")]
+    public void GivenDeltaListItems()
+    {
+        _firstSections = Replace(
+            _firstSections,
+            "10. Lessons / Spec Deltas",
+            "## 10. Lessons / Spec Deltas\n\n- 2026-10-30, after review round 1. B-001 narrowed to one input.\n"
+                + "- 2026-10-31, after review round 2. B-002 gains an example.\n");
+        _deltas =
+        [
+            ("- 2026-10-30", "2026-10-30, after review round 1. B-001 narrowed to one input.", []),
+            ("- 2026-10-31", "2026-10-31, after review round 2. B-002 gains an example.", []),
+        ];
+        WriteSpecifications(Tree);
+    }
+
+    [Given("the first specification records two lessons and deltas entries as table rows")]
+    public void GivenDeltaTableRows()
+    {
+        _firstSections = Replace(
+            _firstSections,
+            "10. Lessons / Spec Deltas",
+            "## 10. Lessons / Spec Deltas\n\n| Trigger | Change | Affected IDs |\n| ------- | ------ | ------------ |\n"
+                + "| Review round 1 | B-001 narrowed to one input | B-001 |\n| Review round 2 | B-002 gains an example | B-002 |\n");
+        _deltas =
+        [
+            ("| Review round 1 |", null, ["Review round 1", "B-001 narrowed to one input", "B-001"]),
+            ("| Review round 2 |", null, ["Review round 2", "B-002 gains an example", "B-002"]),
+        ];
+        WriteSpecifications(Tree);
+    }
+
+    [Given("the manifest names the claims section {string}")]
+    public void GivenManifestNamesClaimsSection(string heading) => NameSection("claims", "3. Acceptance Criteria", heading);
+
+    [Given("the manifest names the sign-off rows section {string}")]
+    public void GivenManifestNamesSignOffSection(string heading) => NameSection("signOff", "12. Sign-off", heading);
+
+    [Given("the manifest names the constraints section {string}")]
+    public void GivenManifestNamesConstraintsSection(string heading) =>
+        EditManifest(manifest => manifest["sections"] = new JsonArray(manifest["sections"]!.AsArray()
+            .Select(entry => (JsonNode?) (entry!.GetValue<string>() == "4. Constraints" ? heading : entry.GetValue<string>()))
+            .ToArray()));
+
+    [Given("the first specification's claims sit under {string}")]
+    public void GivenFirstClaimsUnder(string heading) => RenameFirstSection("3. Acceptance Criteria", heading);
+
+    [Given("the first specification's sign-off rows sit under {string}")]
+    public void GivenFirstSignOffRowsUnder(string heading) => RenameFirstSection("12. Sign-off", heading);
+
+    [Given("the first specification's constraints sit under {string}")]
+    public void GivenFirstConstraintsUnder(string heading) => RenameFirstSection("4. Constraints", heading);
+
+    [Given("the manifest gives every column of the sign-off table a name other than the default")]
+    public void GivenRenamedSignOffHeaders() =>
+        EditManifest(static manifest => manifest["tables"]!["signOff"] = new JsonArray("Part", "State", "By", "Comment"));
+
+    [Given("the first specification's sign-off table uses those names")]
+    public void GivenFirstSignOffTableUsesThoseNames()
+    {
+        _firstSections = Replace(
+            _firstSections,
+            "12. Sign-off",
+            "## 12. Sign-off\n\n| Part | State | By | Comment |\n| ---- | ----- | -- | ------- |\n| 1-5 | \U0001F7E1 | spec-reviewer | Draft |\n");
+        WriteSpecifications(Tree);
     }
 
     [When("the facts are given")]
@@ -365,6 +433,55 @@ public sealed class FactsSteps
             .Should().Equal(("OQ-1", LineOf(FirstPath, "| OQ-1 |")));
     }
 
+    [Then("the first specification carries both entries, each with the line it is on")]
+    public void ThenBothDeltaEntriesWithTheirLines() =>
+        Specification(FirstPath)["deltas"].Should().BeOfType<JsonArray>().Which.Select(static entry => entry!["line"]!.GetValue<int>())
+            .Should().Equal(_deltas.Select(entry => LineOf(FirstPath, entry.Prefix)));
+
+    [Then("each entry carries its text")]
+    public void ThenEachEntryCarriesItsText() =>
+        Specification(FirstPath)["deltas"].Should().BeOfType<JsonArray>().Which
+            .Select(static entry => (entry!["text"]?.GetValue<string>(), entry["cells"]!.AsArray().Count))
+            .Should().Equal(_deltas.Select(static entry => (entry.Text, 0)));
+
+    [Then("each entry carries its row's cells")]
+    public void ThenEachEntryCarriesItsRowsCells() =>
+        Specification(FirstPath)["deltas"].Should().BeOfType<JsonArray>().Which
+            .Select(static entry => (
+                entry!["text"]?.GetValue<string>(),
+                string.Join('|', entry["cells"]!.AsArray().Select(static cell => cell!.GetValue<string>()))))
+            .Should().Equal(_deltas.Select(static entry => ((string?) null, string.Join('|', entry.Cells))));
+
+    [Then("each sign-off row carries its section, its status, its reviewer, its note and the line it is on")]
+    public void ThenEachSignOffRow()
+    {
+        foreach (var path in new[] { FirstPath, SecondPath })
+        {
+            SignOffRows(path).Should().Equal(("1-5", "\U0001F7E1", "spec-reviewer", "Draft", LineOf(path, "| 1-5 |")));
+        }
+    }
+
+    [Then("the first specification's claims are given")]
+    public void ThenFirstClaimsGiven() =>
+        Specification(FirstPath)["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["text"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("B-001", "It gives the facts.", LineOf(FirstPath, "| B-001 |")),
+                ("B-002", "It gives them as JSON.", LineOf(FirstPath, "| B-002 |")));
+
+    [Then("the first specification's constraints are given")]
+    public void ThenFirstConstraintsGiven() =>
+        Specification(FirstPath)["constraints"].Should().BeOfType<JsonArray>().Which
+            .Select(static constraint => (constraint!["id"]!.GetValue<string>(), constraint["text"]!.GetValue<string>(), constraint["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("C-1", "Offline and read-only.", LineOf(FirstPath, "| C-1 |")),
+                ("C-2", "One parser.", LineOf(FirstPath, "| C-2 |")));
+
+    [Then("the first specification's sign-off rows are given")]
+    [Then("each sign-off row is given with its section, its status, its reviewer and its note")]
+    public void ThenFirstSignOffRowsGiven() =>
+        SignOffRows(FirstPath).Should().Equal(("1-5", "\U0001F7E1", "spec-reviewer", "Draft", LineOf(FirstPath, "| 1-5 |")));
+
     [Then("the first specification carries three records")]
     public void ThenThreeRecords() =>
         Specification(FirstPath)["records"].Should().BeOfType<JsonArray>().Which.Should().HaveCount(3);
@@ -522,6 +639,40 @@ public sealed class FactsSteps
         tree.WriteFeatureFile(tree.WriteCoLocatedFeature("src/second", "0001", "F2", _second, Sections), FeatureFile);
     }
 
+    private (string?, string?, string?, string?, int)[] SignOffRows(string path) =>
+        Specification(path)["signOff"].Should().BeOfType<JsonArray>().Which.Select(static row => (
+                row!["section"]?.GetValue<string>(),
+                row["status"]?.GetValue<string>(),
+                row["reviewer"]?.GetValue<string>(),
+                row["note"]?.GetValue<string>(),
+                row["line"]!.GetValue<int>()))
+            .ToArray();
+
+    private void EditManifest(Action<JsonObject> edit)
+    {
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        edit(manifest);
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
+    private void NameSection(string role, string title, string heading) =>
+        EditManifest(manifest =>
+        {
+            manifest["sections"] = new JsonArray(manifest["sections"]!.AsArray()
+                .Select(entry => (JsonNode?) (entry!.GetValue<string>() == title ? heading : entry.GetValue<string>()))
+                .ToArray());
+            manifest["roles"]![role] = heading;
+        });
+
+    private void RenameFirstSection(string title, string heading)
+    {
+        _firstSections = _firstSections
+            .Select(section => section.StartsWith($"## {title}\n", StringComparison.Ordinal) ? $"## {heading}\n" + section[$"## {title}\n".Length..] : section)
+            .ToList();
+        WriteSpecifications(Tree);
+    }
+
     private void WhenFactsAreGivenFor(string path) =>
         _result = AcceptanceTool.Launch(Tree.Root, "facts", path, "--root", _rootArgument, "--json");
 
@@ -578,6 +729,7 @@ public sealed class FactsSteps
     private string _firstFeatureFile = FeatureFile;
     private string _withdrawn = string.Empty;
     private string _resolution = string.Empty;
+    private (string Prefix, string? Text, string[] Cells)[] _deltas = [];
     private SpechtTree? _tree;
     private SpechtTree? _other;
     private string _rootArgument = ".";

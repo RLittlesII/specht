@@ -12,4 +12,8 @@ internal sealed record MarkdownTextSection(
     IReadOnlyList<int> RowLines)
 {
     public IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> RowCodeSpans { get; init; } = [];
+
+    public IReadOnlyList<string> Items { get; init; } = [];
+
+    public IReadOnlyList<int> ItemLines { get; init; } = [];
 }
