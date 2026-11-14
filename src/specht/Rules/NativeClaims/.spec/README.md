@@ -505,7 +505,7 @@ reading. No type is added.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-13 (item 0390: the native claim reader; item 0389 review round 1: B-028 reference written into the step; B-031 null row) -->
+<!-- last written by: test-writer, 2026-11-13 (item 0390: the native claim reader, findings updated after the § 10 amendments and OQ-10; item 0389 review round 1: B-028 reference written into the step; B-031 null row) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -613,9 +613,10 @@ is hard to test.
 `MockFileSystem` tree through `EngineServices.Reader(fileSystem)` and observes
 `model.ClaimSets`. Each tree pins `0.4.0` and sets `claim.source` `gherkin` with
 one claim file set, `.spec/features/arithmetic/*.feature` for Feature
-`arithmetic` unless a row names its own. Each replaces `exclusions` with `obj`,
-because the shipped `/.spec` would exclude every path the Feature's scenarios
-use (finding 2 below). A row's manifest members and file text come from a
+`arithmetic` unless a row names its own. Each replaces `exclusions` with `obj`:
+under B-001 as written a set honours `exclusions`, and the shipped `/.spec`
+would exclude every path the Feature's scenarios use (finding 2 below, OQ-10).
+A row's manifest members and file text come from a
 `[ClassData]` type beside the class. `GherkinClaimTextReaderUnitTests`, in
 `test/tests/Model/GherkinClaimTextReader.Unit.Tests.cs`, calls the reader
 directly. Test-writer added the declarations § 7 names that a test reads, with
@@ -727,7 +728,10 @@ B-011, B-012, B-013, B-025 and B-030 scenarios.
 - No output of this item prints a claim. So a step that asserts on claims reads
   the same tree's model in-process through `EngineServices.Reader()`, after
   first asserting that the run did not exit `3`.
-- The Background's root removes `/.spec` from `exclusions` (finding 2).
+- The Background's step `the manifest's "exclusions" does not hold "/.spec"`
+  removes that entry from the manifest's list, and nothing else does (finding
+  2). The root step only writes the tree and the pin, and declares no epic
+  grammar.
 - A tag sits on the line before its element's keyword. A Rule's scenarios and an
   outline's Examples are written at fixed lines.
 - "The scenario is marked planned" and "that block's rows are marked planned"
@@ -736,8 +740,8 @@ B-011, B-012, B-013, B-025 and B-030 scenarios.
 - "The claims of one file precede another's" compares the positions of their
   rows.
 
-Red: every scenario but one fails on an empty `ClaimSets`. B-004's `Feature | 1`
-row throws instead (finding 1).
+Red: every scenario of this item fails on an empty `ClaimSets` or catalogue,
+B-004's `Feature | 2` row included.
 
 **Not asserted**, as no claim of this item states it:
 
@@ -748,28 +752,28 @@ row throws instead (finding 1).
 **Testability.** The design leaves every mechanism reachable in memory through
 `SpechtModelReader.Read`. Two findings:
 
-1. For `spec-author`: B-004's `Feature | 1` Examples row cannot be built. A
-   claim tag sits on a line before the keyword it declares on, so a tagged
-   Feature's keyword is never at line 1. The step refuses the row rather than
-   move it. The row needs amending, for example to line 2, and B-004 is
-   `Partial` until then.
-2. For `spec-author` and `implementer`: every shipped manifest's `exclusions`
-   holds `/.spec`. So the Feature's own example glob,
-   `.spec/features/arithmetic/*.feature`, matches nothing under the default
-   exclusions, and B-016 would report the set. The tests remove the entry. A
-   claim or a design choice should say whether a claim file set is read under
-   `exclusions` as they ship.
+1. Resolved. B-004's Examples row put a tagged Feature at line 1, which no file
+   can hold, because a claim tag sits on a line before the keyword it declares
+   on. Spec-author amended the row to line 2 (§ 10), and the step builds it.
+   The step still refuses a keyword line with no line above it for the tag.
+2. Open as OQ-10. Every shipped manifest's `exclusions` holds `/.spec`, so the
+   Feature's example glob, `.spec/features/arithmetic/*.feature`, matches
+   nothing under the default exclusions. The tests hold B-001 as written: a set
+   reads its files outside `exclusions`. The Background states the
+   precondition, and the unit trees replace `exclusions`. If the owner rules
+   for option (b) or (c), B-001's unit test gains a row that reads a set under
+   the shipped `exclusions`.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-13 (item 0390: B-001, B-004 to B-007, B-011 to B-013, B-025 and B-030 rows) -->
+<!-- last written by: test-writer, 2026-11-13 (item 0390: B-001, B-004 to B-007, B-011 to B-013, B-025 and B-030 rows; B-004 Covered after its Feature row was amended) -->
 
 | Claim ID | Scenario                                                                                                                                                                                      | Test                                                                                                                                                                                                                                                                                                                                   | Status  |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | B-001    | Claims come from the claim files a set names                                                                                                                                                  | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimFileSet_WhenReadUnderAGherkinClaimSource_ShouldBuildItsClaimsFromTheFeatureFilesItsGlobMatchesOutsideExclusionsWithNoClaimsTable`                                                                                                                                   | Covered |
 | B-002    | Without the selection nothing changes                                                                                                                                                         | `NativeClaimsSteps`; `SpechtManifestParserClaimMembersUnitTests.AManifestWithoutAGherkinClaimSource_WhenParsedUnderZeroFourZero_ShouldReadMarkdownClaimsAndNoClaimFileSet`                                                                                                                                                             | Covered |
 | B-003    | A record supplies lifecycle and edges; none means current                                                                                                                                     | Missing                                                                                                                                                                                                                                                                                                                                | Missing |
-| B-004    | A claim tag declares a claim at its element                                                                                                                                                   | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimTagOnAnElement_WhenRead_ShouldDeclareOneClaimAsAuthoredAtTheElementsKeywordLine`                                                                                                                                                                                    | Partial |
+| B-004    | A claim tag declares a claim at its element                                                                                                                                                   | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimTagOnAnElement_WhenRead_ShouldDeclareOneClaimAsAuthoredAtTheElementsKeywordLine`                                                                                                                                                                                    | Covered |
 | B-005    | An ordinary tag declares nothing                                                                                                                                                              | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.ATagTheClaimTagFormOrTheClaimGrammarRejects_WhenRead_ShouldDeclareNoClaim`                                                                                                                                                                                                | Covered |
 | B-006    | An outline declares one claim                                                                                                                                                                 | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimTagOnAnElement_WhenRead_ShouldDeclareOneClaimAsAuthoredAtTheElementsKeywordLine`, its Scenario Outline row                                                                                                                                                          | Covered |
 | B-007    | A Rule declares once for its scenarios                                                                                                                                                        | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimTagOnAnElement_WhenRead_ShouldDeclareOneClaimAsAuthoredAtTheElementsKeywordLine`, its Rule row                                                                                                                                                                      | Covered |

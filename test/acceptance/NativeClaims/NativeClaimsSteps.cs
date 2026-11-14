@@ -14,8 +14,7 @@ namespace Specht.Acceptance.NativeClaims;
 /// item 0389, B-002, B-027, B-028, B-029 and B-031, and for the native claim reader of item 0390, B-001, B-004 to B-007,
 /// B-011 to B-013, B-025 and B-030. The other scenarios bind only the Background and are left out as pending. A root is a
 /// synthetic tree holding one co-located Markdown specification, so a claim read from a claims table is observable, and
-/// its manifest declares no epic grammar, as the Background's claim file set carries no epic (B-027), and does not exclude
-/// the root's <c>.spec</c> folder, which holds the claim files the scenarios name. The manifest is edited in memory and
+/// its manifest declares no epic grammar, as the Background's claim file set carries no epic (B-027). The manifest is edited in memory and
 /// written when the check runs; "the check runs" launches the built tool on the root, the only place an exit code and its
 /// streams are seen. The catalogue is printed by no command before item 0391, so a step that reads it reads the model the
 /// engine builds of the same root. "The output of the same tree before this Feature" is written here, not produced by the
@@ -34,12 +33,15 @@ public sealed class NativeClaimsSteps
         Manifest = JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
         Manifest["schemaVersion"] = pin;
         Manifest["identifiers"]!.AsObject().Remove("epic");
-        Manifest["exclusions"] = new JsonArray(Manifest["exclusions"]!.AsArray()
-            .Select(static entry => entry!.GetValue<string>())
-            .Where(static entry => entry != "/.spec")
-            .Select(static entry => (JsonNode?) JsonValue.Create(entry))
-            .ToArray());
     }
+
+    [Given("the manifest's {string} does not hold {string}")]
+    public void GivenTheManifestsDoesNotHold(string path, string entry) =>
+        Set(path, new JsonArray(((JsonArray) Node(path)!)
+            .Select(static node => node!.GetValue<string>())
+            .Where(value => value != entry)
+            .Select(static value => (JsonNode?) JsonValue.Create(value))
+            .ToArray()));
 
     [Given("the manifest sets {string} to {string}")]
     public void GivenTheManifestSetsTo(string path, string value) => Set(path, JsonValue.Create(value));
