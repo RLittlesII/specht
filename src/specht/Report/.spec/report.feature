@@ -482,7 +482,7 @@ Feature: The report contract
 
   @B-036
   Scenario: A scenario-title violation says the tag and the titles
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And the manifest turns scenario title matching on
     And the root holds a specification whose row for claim B-001 names a title no scenario tagged @B-001 has
     When the check runs with JSON output
@@ -506,7 +506,7 @@ Feature: The report contract
 
   @B-039
   Scenario: An unresolved-test violation says the name, the files and the forms
-    Given the manifest pins schema version "0.2.0"
+    Given the manifest pins schema version "0.3.0"
     And the manifest declares the test files "test/**/*.cs" and the declaration form "void {test}("
     And the root holds a specification whose row names the test "ScenarioNobodyWrote"
     When the check runs with JSON output
