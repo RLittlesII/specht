@@ -1594,6 +1594,22 @@ Feature: Schema versioning
       | declares the claim and scenario grammars "^X-[0-9]+$" under identifiers                   | the claim and scenario grammars |
       | holds a claim record under ids and a claim grammar under identifiers                      | the claim grammar               |
 
+  @B-156 @B-159 @boundary
+  Scenario Outline: Upgrade refuses a mint entry for a type outside the seven
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest opts <type> ids in to Nano ID under the mint key
+    When upgrade runs against it
+    Then nothing is written
+    And the exit code is 3
+    And the standard error names the <type> mint entry as the consumer wrote it
+    And the standard error names no ids record
+
+    Examples:
+      | type    |
+      | epic    |
+      | Feature |
+      | task    |
+
   @B-160
   Scenario: Upgrade without old id settings leaves the ids key as it is
     Given a root whose manifest pins schema version 0.4.0
