@@ -55,6 +55,21 @@ public interface ISpecDiscovery
     IReadOnlyList<string> FindCompanions(string root, SpechtLocation specification, SpechtDiscoveryInputs inputs);
 
     /// <summary>
+    /// Discovers the companion files beside no specification: every file a companion glob matches in a directory the
+    /// directory part of a layout glob matches, outside the manifest's exclusions, whose directory is that of no
+    /// specification in <paramref name="specifications"/> (<c>0001-F6</c> B-013).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="specifications">The discovered specifications, of every layout.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>The root-relative path of each companion beside no specification, in ordinal order.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-013" />
+    IReadOnlyList<string> FindOrphanCompanions(
+        string root,
+        IEnumerable<SpechtLocation> specifications,
+        SpechtDiscoveryInputs inputs);
+
+    /// <summary>
     /// Discovers the records in one folder beside <paramref name="specification"/>: every Markdown file directly in the
     /// child folder named <paramref name="folder"/>, compared ordinally, of the folder holding the specification file
     /// (<c>0132-F2</c> B-011).

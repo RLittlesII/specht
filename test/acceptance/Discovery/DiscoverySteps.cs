@@ -32,6 +32,9 @@ namespace Specht.Acceptance.Discovery;
 /// before it is discovered through git. The clean checkout is a shared clone of the repository this assembly was built in,
 /// checked out at that repository's <c>HEAD</c> in a temporary directory with no hook able to run, and nothing is
 /// committed from it; a link is made with a target relative to the root, so the tree holds no absolute path.
+/// Item 0441 binds B-013: a scenario file is written below the root, never in the root's own <c>.spec/</c>, which the
+/// default <c>/.spec</c> exclusion skips, and the orphan-companion rule's findings are the violations reported under the
+/// id its key <c>SPEC024</c> takes at the pin.
 /// </summary>
 [Binding]
 [Scope(Feature = "Discovery")]
@@ -316,6 +319,23 @@ public sealed class DiscoverySteps(PackedTool tool)
         File.Exists(Path.Combine(Tree.Root, Subject)).Should().BeTrue("the specification is reachable through the link");
     }
 
+    [Given("the manifest pins schema version {string}")]
+    public void GivenTheManifestPinsSchemaVersion(string pin) => Manifest["schemaVersion"] = pin;
+
+    [Given(@"^the root holds a ""\.spec/"" directory with a scenario file and no specification$")]
+    public void GivenTheRootHoldsASpecDirectoryWithAScenarioFileAndNoSpecification() =>
+        Tree.WriteRaw(ScenarioFile = "src/a/.spec/a.feature", OrphanScenario);
+
+    [Given("the root holds a scenario file under {string}")]
+    public void GivenTheRootHoldsAScenarioFileUnder(string folder) => Tree.WriteRaw(ScenarioFile = $"{folder}a.feature", OrphanScenario);
+
+    [Given(@"^the root holds a ""\.spec/"" directory with a specification and its scenario file$")]
+    public void GivenTheRootHoldsASpecDirectoryWithASpecificationAndItsScenarioFile()
+    {
+        Write("src/a/.spec/README.md", "F1");
+        Tree.WriteRaw(ScenarioFile = "src/a/.spec/a.feature", OrphanScenario);
+    }
+
     [When("specifications, items, epics and companions are discovered through git")]
     [When("they are discovered through git")]
     [When("the specifications are discovered through git")]
@@ -535,6 +555,18 @@ public sealed class DiscoverySteps(PackedTool tool)
         Paths(Walked).Should().NotContain(Subject);
     }
 
+    [Then("the orphan-companion rule reports that scenario file at line 0, as a warning")]
+    public void ThenTheOrphanCompanionRuleReportsThatScenarioFileAtLine0AsAWarning() =>
+        Orphans.Should().ContainSingle().Which.Should().Match<SpechtViolation>(violation =>
+            violation.File == ScenarioFile && violation.Line == 0 && violation.Severity == SpechtSeverity.Warning);
+
+    [Then("the orphan-companion rule reports nothing")]
+    public void ThenTheOrphanCompanionRuleReportsNothing()
+    {
+        File.Exists(Path.Combine(Tree.Root, ScenarioFile)).Should().BeTrue("the scenario file is in the tree the check ran on");
+        Orphans.Should().BeEmpty();
+    }
+
     [AfterScenario]
     public void DeleteTree()
     {
@@ -587,6 +619,10 @@ public sealed class DiscoverySteps(PackedTool tool)
 
         set;
     }
+
+    private string ScenarioFile { get => field ?? throw new InvalidOperationException("No step wrote that scenario file."); set; }
+
+    private IEnumerable<SpechtViolation> Orphans => Report.Violations.Where(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC024"));
 
     private IEnumerable<string> Reported => Report.Violations.Select(static violation => violation.File).Distinct();
 
@@ -785,6 +821,8 @@ public sealed class DiscoverySteps(PackedTool tool)
     private const string AbsentProgram = "specht-git-that-does-not-exist";
 
     private const string Link = "linked";
+
+    private const string OrphanScenario = "Feature: Orphan\n\n  Scenario: It does the thing\n    Given a thing\n";
 
     private const string PhantomTag =
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";

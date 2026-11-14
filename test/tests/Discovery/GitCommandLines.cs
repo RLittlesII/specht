@@ -7,7 +7,8 @@ namespace Specht.Tests.Discovery;
 /// <c>\</c>, so no glob has a literal head git would read as a prefix and none spells a <c>\</c> it did not have (B-007;
 /// item 0009), each bare exclusion an <c>--exclude</c> pattern at any depth below the root and an exclude glob pathspec, and
 /// each root-relative exclusion an <c>--exclude</c> pattern at that place and an exclude literal pathspec (<c>0001-F6</c>
-/// B-005, B-007, B-010, C-1, C-2; decisions 0002, 0010).
+/// B-005, B-007, B-010, C-1, C-2; decisions 0002, 0010). The orphan-companion finder's globs are the directory part of
+/// each layout glob joined to each companion glob (B-013; item 0441).
 /// </summary>
 public sealed class GitCommandLines : TheoryData<string, string, string, string, string[]>
 {
@@ -84,6 +85,21 @@ public sealed class GitCommandLines : TheoryData<string, string, string, string,
                 ":(glob)[]!]x/a.md",
                 ":(glob)[]^]x/a.md",
                 ":(glob)[]]x/a.md",
+            ]);
+        Add(
+            "the orphan-companion finder asks for each layout glob's directory part joined to each companion glob, in layout order",
+            "repo",
+            """{ "exclusions": ["obj", "/.spec"] }""",
+            "orphan companions",
+            [
+                .. LsFiles,
+                "--exclude=/**/obj/",
+                "--exclude=/.spec/",
+                "--",
+                ":(glob)[e]pics/**/*.feature",
+                ":(glob)**/.spec/*.feature",
+                ":(exclude,glob)**/obj/**",
+                ":(exclude,literal).spec",
             ]);
     }
 

@@ -1,8 +1,8 @@
 id: "0441"
 type: task
-title: Report a companion file beside no specification, SPEC024
+title: Report a companion file beside no specification, SPEC2003
 
-status: ready
+status: done
 
 risk: 2
 
@@ -19,12 +19,13 @@ claims:
 
 created: "2026-11-14"
 updated: "2026-11-14"
-closed: null
+closed: "2026-11-14"
 
 summary: |
   A file a `companionFiles` entry matches, in a directory the directory
   part of a layout glob matches and beside no specification of any
-  layout, is reported `SPEC024` at warning, at line `0`.
+  layout, is reported `SPEC2003` at warning, at line `0`; `SPEC024` is
+  its working name (decision 0013).
 
   The rule enters schema `0.4.0` (OQ-22, decision 0012), which item
   0436 cut and no tag carries: `0.2.0` to `0.3.1` are published without
@@ -33,18 +34,21 @@ summary: |
   it (`0001-F7` C-17, decision 0014).
 
   The companion globs and the layouts are read from the manifest
-  already (B-001, B-003; item 0005, done). This repository's tree,
-  pinned `0.4.0`, holds no `.feature` file in a `.spec/` directory
-  without a `README.md` on 2026-11-14, so the rule reports nothing
-  here when it lands.
+  already (B-001, B-003; item 0005, done). On this repository's tree,
+  pinned `0.4.0`, the check reports two `SPEC2003` warnings on
+  2026-11-14: the `epics` layout's directory part is `epics/**`, and
+  `epics/0201-spec-code-analysis/spikes/0236/reqnroll/alpha.feature`
+  and `epics/0201-spec-code-analysis/spikes/0236/reqnroll-beta/beta.feature`
+  sit there beside no `spec.md`. No `.feature` file sits in a `.spec/`
+  directory without a `README.md`.
 
   Risk 2: discovery already finds the companions and the
   specifications; the rule compares the two sets, and adds one rule id
   to an unpublished version.
 
 acceptance_criteria:
-  - "B-013 — a companion beside no specification, in a layout's directory part: SPEC024 at warning, line 0; a `.feature` under `test/` not reported"
-  - "Its id the next free one in its ADR-0029 group, on the owner's approval in this item's pull request; working name SPEC024"
+  - "B-013 — a companion beside no specification, in a layout's directory part: SPEC2003 at warning, line 0; a `.feature` under `test/` not reported"
+  - "Its id SPEC2003, keyed by its working name SPEC024 (decision 0013)"
   - "`0001-F7` B-014 — the id joins schema 0.4.0 (decision 0012), with its rule page (`0001-F3` B-031) and a relock while no published package carries 0.4.0 (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.4.0: the item stops and the version goes to the owner."
   - "§ 9 carries a row naming a test for each id above."
@@ -66,6 +70,24 @@ decisions:
     the default spec-author's. B-013 now reads "`0.4.0` or later"
     (decision 0012). Status ready; the id still enters 0.4.0 in place
     with its rule page and a relock in this item's pull request.
+  - |
+    2026-11-14, spec-author: the repository owner, asked which four-digit
+    id SPEC024 takes in schema 0.4.0 under ADR-0029, selected
+    "(c) SPEC2003, Structure group", relayed in session by the coordinating
+    session; the options' wording was that session's and the delivering
+    session's. B-013 names `SPEC2003`, keyed by its working name `SPEC024`
+    (decision 0013). The id criterion names it.
+  - |
+    2026-11-14, spec-author: the check warns twice on this tree, not
+    zero as the summary said, on the two spike `.feature` files under
+    `epics/0201-spec-code-analysis/spikes/0236/`. Asked, the repository
+    owner selected "(a) Accept, fix summary", relayed in session by the
+    coordinating session; the options' wording was the delivering
+    session's. Not chosen: (b) also exclude that spike folder in
+    `.specht/manifest.json`; (c) amend B-013 so `epics/**` companions
+    count only in a Feature directory. No exclusion is added and B-013
+    is unchanged; the spike files' follow-up is not part of this item
+    and has no item. The summary now names the two warnings.
 
 out_of_scope:
   - "`SPEC014`, a required directory with no specification - B-014, B-015; no item."

@@ -42,6 +42,7 @@ public sealed class SpechtModelReader(
     /// <exception cref="SpechtManifestException">The manifest or a selected schema is rejected.</exception>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-034" />
+    /// <implements epic="0001" feature="F6" claim="B-013" />
     /// <implements epic="0001" feature="F16" claim="B-001" />
     /// <implements epic="0001" feature="F16" claim="B-004" />
     /// <implements epic="0001" feature="F16" claim="B-003" />
@@ -77,6 +78,7 @@ public sealed class SpechtModelReader(
             ClaimFiles = claimFiles,
             ClaimRecords = recordPaths,
             ClaimLocations = claimLocations,
+            OrphanCompanions = discovery.FindOrphanCompanions(root, specifications, inputs),
         };
         var paths = specifications.Select(static location => location.RelativePath)
             .Concat(companions.SelectMany(static paths => paths))
