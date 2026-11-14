@@ -92,14 +92,14 @@ Feature: Native Gherkin claims
   Scenario: A claim tag on an Examples block is reported
     Given ".spec/features/arithmetic/add.feature" has an Examples block tagged "@B-005" at line 14
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(14): error SPEC026:" naming "B-005"
+    Then the output has a line ".spec/features/arithmetic/add.feature(14): error SPEC4012:" naming "B-005"
     And Feature "F1" has no claim "B-005"
 
   @B-010
   Scenario: A scenario with no claim is reported
     Given ".spec/features/arithmetic/add.feature" has a scenario at line 9 with no claim tag of its own, its Rule or its Feature
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(9): warning SPEC025:"
+    Then the output has a line ".spec/features/arithmetic/add.feature(9): warning SPEC4011:"
     And the exit code is 0 without "--strict"
 
   @B-010
@@ -148,21 +148,21 @@ Feature: Native Gherkin claims
   Scenario: A claim file in another language is reported
     Given ".spec/features/arithmetic/add.feature" opens with "# language: de" at line 1
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(1): error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/add.feature(1): error SPEC4013:"
     And Feature "F1" has no claim from that file
 
   @B-015
   Scenario: A claim file with no Feature line is reported
     Given ".spec/features/arithmetic/notes.feature" has no "Feature:" line
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/notes.feature: error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/notes.feature: error SPEC4013:"
     And Feature "F1" has no claim from that file
 
   @B-016
   Scenario: A set matching no file is reported
     Given no file matches ".spec/features/arithmetic/*.feature" outside the exclusions
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/*.feature: error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/*.feature: error SPEC4013:"
     And the exit code is 1
 
   @B-017
@@ -188,7 +188,7 @@ Feature: Native Gherkin claims
     Given the manifest declares a second claim file set with glob ".spec/features/**/add.feature" and feature "F2"
     And ".spec/features/arithmetic/add.feature" exists
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature: error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/add.feature: error SPEC4013:"
     And neither Feature "F1" nor Feature "F2" has a claim from that file
 
   @B-019
@@ -196,7 +196,7 @@ Feature: Native Gherkin claims
     Given the manifest sets "claim.scopes.featureTag" to "@spec.feature:{feature}"
     And ".spec/features/arithmetic/add.feature" tags its Feature "@spec.feature:F2" at line 1
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(1): error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/add.feature(1): error SPEC4013:"
 
   @B-019
   Scenario: A Feature-level tag that agrees, or none, is not reported
@@ -204,7 +204,7 @@ Feature: Native Gherkin claims
     And ".spec/features/arithmetic/add.feature" tags its Feature "@spec.feature:F1"
     And ".spec/features/arithmetic/subtract.feature" has no Feature-level tag
     When the check runs
-    Then no "SPEC027" is reported for either file
+    Then no "SPEC4013" is reported for either file
 
   @B-020
   Scenario: A record needs every section but the claims table
@@ -403,7 +403,7 @@ Feature: Native Gherkin claims
     Given the claim file set names the record "<record>"
     And <condition>
     When the check runs
-    Then the output has a line "<record>: error SPEC027:"
+    Then the output has a line "<record>: error SPEC4013:"
 
     Examples:
       | record                              | condition                            |
@@ -415,7 +415,7 @@ Feature: Native Gherkin claims
   Scenario: An absolute record is reported at the manifest
     Given the claim file set names a record at an absolute path
     When the check runs
-    Then the output has a line ".specht/manifest.json: error SPEC027:"
+    Then the output has a line ".specht/manifest.json: error SPEC4013:"
     And no output line holds an absolute path
 
   @B-035
@@ -470,7 +470,7 @@ Feature: Native Gherkin claims
     Given ".spec/features/arithmetic/add.feature" has an untagged scenario titled "B-009 adds two numbers"
     When the check runs
     Then Feature "F1" has no claim "B-009"
-    And the scenario is reported under "SPEC025"
+    And the scenario is reported under "SPEC4011"
 
   @boundary
   Scenario: A record's differing identity is not reported

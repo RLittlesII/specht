@@ -1,6 +1,6 @@
 id: "0394"
 type: task
-title: Report a claim tag on an Examples block, SPEC026, in schema 0.4.0
+title: Report a claim tag on an Examples block, SPEC4012, in schema 0.4.0
 
 status: ready
 
@@ -33,7 +33,7 @@ summary: |
 
 acceptance_criteria:
   - "B-009 — a claim tag on an Examples block: reported at its line, error, no claim recorded"
-  - "Its id the next free one in its ADR-0029 group, on the owner's approval in this item's pull request; working name SPEC026 (OQ-5)"
+  - "Its id SPEC4012, in the claims group (ADR-0029), fixed by the owner's selection of 2026-11-14 (decision 0004); working name SPEC026 (OQ-5)"
   - "`0001-F7` B-014 — the id joins 0.4.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock while no published package carries 0.4.0 (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "`0001-F7` B-066 — holds, 0.4.0's minor being greater than 0.3.1's; the id still reports only when `claim.source` is `gherkin` (C-3)"
   - "Under 0.4.0, a tree without `claim.source: gherkin` gets the verdicts it got before this item (B-002, C-3); `0001-F7` B-154 does not apply, since 0.3.1 and 0.4.0 are not patch neighbours (`0001-F7` OQ-78)"
@@ -62,6 +62,14 @@ decisions:
     resolved there. This supersedes the 2026-11-07 `blocked` entry,
     recorded as it was: the rule enters `0.4.0`, and `0001-F7` B-154
     compares patch neighbours only, which `0.3.1` and `0.4.0` are not.
+  - |
+    2026-11-14, spec-author: the id is `SPEC4012`, on the repository
+    owner's selection "Fixed 4011, 4012, 4013 (Recommended)" (decision
+    0004); the option's wording is the coordinating session's. The
+    title and the id criterion name it; the criterion was "the next
+    free one in its ADR-0029 group, on the owner's approval in this
+    item's pull request". The working name `SPEC026` stays in the
+    entries above as written.
 
 out_of_scope:
   - "A planned tag on an Examples block, which marks rows planned, B-013 - 0390."
