@@ -509,7 +509,7 @@ reading. No type is added.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-13 (item 0390: the native claim reader, findings updated after the § 10 amendments and OQ-10; item 0389 review round 1: B-028 reference written into the step; B-031 null row) -->
+<!-- last written by: test-writer, 2026-11-13 (item 0390 review round 1: finding 2 resolved by OQ-10, the declarations stated as the red state at 1782f082; item 0390: the native claim reader; item 0389 review round 1: B-028 reference written into the step; B-031 null row) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -623,16 +623,21 @@ would exclude every path the Feature's scenarios use (finding 2 below, OQ-10).
 A row's manifest members and file text come from a
 `[ClassData]` type beside the class. `GherkinClaimTextReaderUnitTests`, in
 `test/tests/Model/GherkinClaimTextReader.Unit.Tests.cs`, calls the reader
-directly. Test-writer added the declarations § 7 names that a test reads, with
-no behaviour:
+directly.
 
-- `GherkinClaimDeclaration.Scenarios`, which the reader fills with an empty list;
+The tests were written red at `1782f082`. Test-writer added the declarations
+§ 7 names that a test reads, with no behaviour then:
+
+- `GherkinClaimDeclaration.Scenarios`, which the reader filled with an empty
+  list;
 - `SpechtClaim.Path` and `SpechtClaim.Declaration`;
-- `SpechtClaims.FileSet`, always null;
-- `SpechtModel.ClaimSets`, always empty.
+- `SpechtClaims.FileSet`, then always null;
+- `SpechtModel.ClaimSets`, then always empty.
 
-`SpechtListing.ClaimFiles` and the second `SpechtClaims` constructor are not
-declared, because no test reads them.
+`SpechtListing.ClaimFiles` and the second `SpechtClaims` constructor were left
+to implementer, because no test reads them. Implementer built all of them at
+`0bd82fb3`, as § 7 records. Each "Red" below is the failure a test gave at
+`1782f082`. Every test of this item passes from `0bd82fb3` on.
 
 - **B-001** - mechanism: `SpechtModelReader.Read` expands each set through
   `ISpecDiscovery.FindTestFiles` outside `exclusions`, keeps the `.feature`
@@ -744,8 +749,8 @@ B-011, B-012, B-013, B-025 and B-030 scenarios.
 - "The claims of one file precede another's" compares the positions of their
   rows.
 
-Red: every scenario of this item fails on an empty `ClaimSets` or catalogue,
-B-004's `Feature | 2` row included.
+Red, at `4949c8b8`: every scenario of this item failed on an empty `ClaimSets`
+or catalogue, B-004's `Feature | 2` row included. They pass from `0bd82fb3` on.
 
 **Not asserted**, as no claim of this item states it:
 
@@ -760,13 +765,12 @@ B-004's `Feature | 2` row included.
    can hold, because a claim tag sits on a line before the keyword it declares
    on. Spec-author amended the row to line 2 (§ 10), and the step builds it.
    The step still refuses a keyword line with no line above it for the tag.
-2. Open as OQ-10. Every shipped manifest's `exclusions` holds `/.spec`, so the
-   Feature's example glob, `.spec/features/arithmetic/*.feature`, matches
-   nothing under the default exclusions. The tests hold B-001 as written: a set
-   reads its files outside `exclusions`. The Background states the
-   precondition, and the unit trees replace `exclusions`. If the owner rules
-   for option (b) or (c), B-001's unit test gains a row that reads a set under
-   the shipped `exclusions`.
+2. Resolved as OQ-10, for option (a) (§ 10, § 11). Every shipped manifest's
+   `exclusions` holds `/.spec`, so the Feature's example glob,
+   `.spec/features/arithmetic/*.feature`, matches nothing under the default
+   exclusions. B-001 stands as written: a set reads its files outside
+   `exclusions`. The tests hold it so. The Background states the precondition,
+   and the unit trees replace `exclusions`.
 
 ## 9. Traceability Matrix
 
