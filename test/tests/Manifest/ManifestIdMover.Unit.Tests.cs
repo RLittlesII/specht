@@ -54,17 +54,17 @@ public sealed class ManifestIdMoverUnitTests
 
     [Theory]
     [ClassData(typeof(MovedMintEntries))]
-    public void AMintEntry_WhenMoved_ShouldBecomeItsRecordsMintLessItsPrefixOrAsItIsWhenNotAnObject(string entry, string expected)
+    public void AMintEntry_WhenMoved_ShouldBecomeItsRecordsMintLessItsPrefixOrAsItIsWhenNotAnObject(string type, string entry, string expected)
     {
         // Given
-        var text = $$$"""{"schemaVersion":"0.4.0","mint":{"claim":{{{entry}}}}}""";
+        var text = $$$"""{"schemaVersion":"0.4.0","mint":{"{{{type}}}":{{{entry}}}}}""";
         var mover = new ManifestIdMover(new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions()), EngineServices.Versions());
 
         // When
         var moved = mover.Move(text);
 
         // Then
-        var record = JsonNode.Parse(moved)!["ids"]!["claim"]!.AsObject();
+        var record = JsonNode.Parse(moved)!["ids"]![type]!.AsObject();
         record.ContainsKey("mint").Should().BeTrue();
         JsonNode.DeepEquals(record["mint"], JsonNode.Parse(expected)).Should().BeTrue(record.ToJsonString());
     }
@@ -161,6 +161,38 @@ public sealed class ManifestIdMoverUnitTests
 
         moveBytes.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Be(message);
         bytes.Should().Equal(Encoding.UTF8.GetBytes(text));
+    }
+
+    [Theory]
+    [ClassData(typeof(CaseDistinctClaimAndScenarioGrammars))]
+    public void ClaimAndScenarioGrammarsWhoseHeadsDifferOnlyInCase_WhenMovedWithTheTagCaseNotIgnored_ShouldBecomeTwoRecords(string text)
+    {
+        // Given
+        var mover = new ManifestIdMover(new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions()), EngineServices.Versions());
+
+        // When
+        var moved = JsonNode.Parse(mover.Move(text))!["ids"]!;
+
+        // Then
+        moved["claim"]!["plain"]!.GetValue<string>().Should().Be("X-{id}");
+        moved["scenario"]!["plain"]!.GetValue<string>().Should().Be("x-{id}");
+    }
+
+    [Theory]
+    [ClassData(typeof(OldIdSettingsBesideAnIdsThatIsNotAnObject))]
+    public void OldIdSettingsBesideAnIdsThatIsNotAnObject_WhenMoved_ShouldReturnTheSameTextAndTheSameBytes(string text)
+    {
+        // Given
+        var bytes = Encoding.UTF8.GetBytes(text);
+        var mover = new ManifestIdMover(new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions()), EngineServices.Versions());
+
+        // When
+        var movedText = mover.Move(text);
+        var movedBytes = mover.Move(bytes);
+
+        // Then
+        movedText.Should().BeSameAs(text);
+        movedBytes.Should().BeSameAs(bytes);
     }
 
     [Theory]

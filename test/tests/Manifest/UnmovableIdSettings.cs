@@ -5,8 +5,9 @@ namespace Specht.Tests.Manifest;
 /// B-159), and every member the refusal names: a grammar that is not B-155's shape - unanchored, not text, an alternation
 /// outside a group, an empty pattern, an escaped closing dollar; a <c>mint</c> prefix that is not the head of the type's
 /// <c>plain</c> after the move - the shipped one, a moved one, or not text; an <c>ids</c> record for a type an old setting also
-/// holds, the grammar customised or a shipped default; claim and scenario grammars whose move gives one head; and three faults
-/// at once.
+/// holds, the grammar customised or a shipped default; claim and scenario grammars whose move gives one head, the same text, or
+/// text differing only in case where <c>claim.tagIgnoreCase</c> is <c>true</c> (<c>0001-F5</c> B-094); a moved claim grammar
+/// whose head is that of the consumer's own <c>ids.scenario</c> record; and three faults at once.
 /// </summary>
 public sealed class UnmovableIdSettings : TheoryData<string, string[]>
 {
@@ -30,6 +31,12 @@ public sealed class UnmovableIdSettings : TheoryData<string, string[]>
             ["identifiers.claim"]);
         Add("""{"schemaVersion":"0.4.0","ids":{"adr":{"plain":"{id}","id":"[0-9]{4}"}},"mint":{"adr":{"strategy":"nanoid"}}}""", ["mint.adr"]);
         Add("""{"schemaVersion":"0.4.0","identifiers":{"claim":"^X-[0-9]+$","scenario":"^X-[0-9]+$"}}""", ["identifiers.claim", "identifiers.scenario"]);
+        Add(
+            """{"schemaVersion":"0.4.0","claim":{"tagIgnoreCase":true},"identifiers":{"claim":"^X-[0-9]+$","scenario":"^x-[0-9]+$"}}""",
+            ["identifiers.claim", "identifiers.scenario"]);
+        Add(
+            """{"schemaVersion":"0.4.0","ids":{"scenario":{"plain":"X-{id}","id":"[0-9]+"}},"identifiers":{"claim":"^X-[0-9]+$"}}""",
+            ["identifiers.claim", "ids.scenario"]);
         Add(
             """
             {
