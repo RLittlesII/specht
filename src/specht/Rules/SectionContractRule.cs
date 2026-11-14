@@ -17,7 +17,7 @@ public sealed class SectionContractRule : ISpechtRule
     {
         var expected = model.Schemas.Structure.Sections;
 
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             var titles = feature.Document.Sections.Select(section => section.Title).ToList();
 

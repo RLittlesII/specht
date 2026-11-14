@@ -36,7 +36,64 @@ public sealed class SpechtTreeStore(IFileSystem fileSystem)
     public SpechtTree Load(string root, IReadOnlyList<string> relativePaths) =>
         new(relativePaths.Select(relative => new SpechtTreeFile(relative, fileSystem.File.ReadAllBytes(Under(root, relative)))).ToArray());
 
+    /// <summary>
+    /// Reads the one file <paramref name="relativePath"/> names under <paramref name="root"/>, its <c>.</c> and <c>..</c>
+    /// segments resolved in turn, or nothing when the path is rooted, leaves the root, names no file or cannot be read
+    /// (<c>0001-F16</c> B-035, item <c>0391</c>).
+    /// </summary>
+    /// <param name="root">The directory the path is relative to.</param>
+    /// <param name="relativePath">The path as a manifest writes it, its segments separated by <c>/</c>.</param>
+    /// <returns>The file under its resolved root-relative path, or null.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-035" />
+    public SpechtTreeFile? TryLoad(string root, string relativePath)
+    {
+        if (fileSystem.Path.IsPathRooted(relativePath))
+        {
+            return null;
+        }
+
+        var segments = new List<string>();
+        foreach (var segment in relativePath.Split(['/', fileSystem.Path.DirectorySeparatorChar]))
+        {
+            if (segment is "" or ".")
+            {
+                continue;
+            }
+
+            if (segment == "..")
+            {
+                if (segments.Count == 0)
+                {
+                    return null;
+                }
+
+                segments.RemoveAt(segments.Count - 1);
+                continue;
+            }
+
+            segments.Add(segment);
+        }
+
+        var resolved = string.Join('/', segments);
+        var path = Under(root, resolved);
+        if (segments.Count == 0 || !fileSystem.File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            return new SpechtTreeFile(resolved, fileSystem.File.ReadAllBytes(path));
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     /// <implements epic="0109" feature="F1" claim="B-016" />
+    /// <implements epic="0001" feature="F1" claim="B-004" />
+    /// <implements epic="0001" feature="F16" claim="B-035" />
     private string Under(string root, string relative) =>
         fileSystem.Path.Combine(root, relative.Replace('/', fileSystem.Path.DirectorySeparatorChar));
 }

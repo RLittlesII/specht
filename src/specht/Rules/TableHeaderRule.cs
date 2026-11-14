@@ -14,7 +14,7 @@ public sealed class TableHeaderRule : ISpechtRule
     /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             foreach (var (role, headers) in model.Schemas.Structure.Tables)
             {

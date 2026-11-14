@@ -53,11 +53,28 @@ public sealed class FeatureSpec
     /// <summary>The grammar its claim ids and claim tags are read with; null reads the manifest's <c>identifiers.claim</c>.</summary>
     public SpechtClaimGrammar? ClaimGrammar { get; }
 
-    /// <summary>The epic frontmatter value, or <c>null</c>.</summary>
-    public string? Epic => Document.Frontmatter.Text(Keys.Epic);
+    /// <summary>The claim file set that names this Feature, the same instance as the manifest's entry; null for a layout's Feature.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-026" />
+    public SpechtClaimFileSet? ClaimFileSet { get; init; }
 
-    /// <summary>The id frontmatter value, or <c>null</c>.</summary>
-    public string? Id => Document.Frontmatter.Text(Keys.Id);
+    /// <summary>The root-relative path of the claim file set's loaded record; null for a layout's Feature or a set read with no record.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-003" />
+    public string? Record { get; init; }
+
+    /// <summary>
+    /// A native Feature's lifecycle: its record's text at the manifest's lifecycle key, or <c>current</c> with no record;
+    /// null for a layout's Feature.
+    /// </summary>
+    /// <implements epic="0001" feature="F16" claim="B-003" />
+    public string? Lifecycle { get; init; }
+
+    /// <summary>The epic frontmatter value, or <c>null</c>; a native Feature's is its claim file set's, whatever its record declares.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-037" />
+    public string? Epic => ClaimFileSet is { } set ? set.Epic : Document.Frontmatter.Text(Keys.Epic);
+
+    /// <summary>The id frontmatter value, or <c>null</c>; a native Feature's is its claim file set's, whatever its record declares.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-037" />
+    public string? Id => ClaimFileSet is { } set ? set.Feature : Document.Frontmatter.Text(Keys.Id);
 
     /// <summary>The specification's maturity frontmatter value, or <c>null</c>.</summary>
     public string? SpecStatus => Document.Frontmatter.Text(Keys.SpecStatus);

@@ -130,6 +130,14 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         return @"\A" + string.Concat(segments).TrimEnd('/') + @"\z";
     }
 
+    /// <summary>The root-relative directory holding <paramref name="relative"/>, empty at the root.</summary>
+    /// <param name="relative">A root-relative path, its segments separated by <c>/</c>.</param>
+    /// <returns>The part of the path before its last <c>/</c>.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F16" claim="B-026" />
+    internal static string DirectoryOf(string relative) =>
+        relative.LastIndexOf('/') is var slash and >= 0 ? relative[..slash] : string.Empty;
+
     /// <implements epic="0001" feature="F6" claim="B-001" />
     /// <implements epic="0001" feature="F6" claim="B-008" />
     private static IEnumerable<(string Path, string Relative)> Matching(List<(string Path, string Relative)> files, IReadOnlyList<string> globs)
@@ -147,10 +155,6 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         exclusions.Any(entry => entry.StartsWith('/')
             ? entry.AsSpan(1).SequenceEqual(relative)
             : relative.Length > 0 && entry == relative[(relative.LastIndexOf('/') + 1)..]);
-
-    /// <implements epic="0001" feature="F6" claim="B-001" />
-    private static string DirectoryOf(string relative) =>
-        relative.LastIndexOf('/') is var slash and >= 0 ? relative[..slash] : string.Empty;
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
     private static Func<string, bool> CompanionShapes(IReadOnlyList<string> globs)

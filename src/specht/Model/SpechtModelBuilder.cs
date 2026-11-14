@@ -46,6 +46,8 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
                 grammar));
         }
 
+        features.AddRange(NativeFeatures(structure, listing, texts));
+
         var items = new List<ChildItem>();
         var shapes = structure.Forms is null ? null : new SpechtTaskShapes(structure.Discovery.TaskFiles, structure.Identifiers["task"]);
 
@@ -128,6 +130,45 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         }
 
         return sets;
+    }
+
+    /// <summary>
+    /// Makes one Feature of each claim file set that has a location: its document the loaded record, or empty text with no
+    /// record; no companion; the grammar of a Feature with no claim prefix whatever the record declares; its identity the
+    /// set's; and its lifecycle the record's text at the manifest's lifecycle key, or <c>current</c> with no record.
+    /// </summary>
+    /// <param name="structure">The effective manifest.</param>
+    /// <param name="listing">What discovery listed.</param>
+    /// <param name="texts">The text of every listed file and loaded record, by root-relative path.</param>
+    /// <returns>The native Features, in the manifest's order of their sets; none unless <c>claim.source</c> is <c>gherkin</c>.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-003" />
+    /// <implements epic="0001" feature="F16" claim="B-026" />
+    /// <implements epic="0001" feature="F16" claim="B-032" />
+    /// <implements epic="0001" feature="F16" claim="B-036" />
+    /// <implements epic="0001" feature="F16" claim="B-037" />
+    private IEnumerable<FeatureSpec> NativeFeatures(SpechtStructure structure, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
+    {
+        if (structure.ClaimInput is not { Source: SpechtClaimSource.Gherkin } input)
+        {
+            yield break;
+        }
+
+        for (var index = 0; index < input.Files.Count; index++)
+        {
+            if (listing.ClaimLocations[index] is not { } location)
+            {
+                continue;
+            }
+
+            var record = listing.ClaimRecords[index];
+            var document = documents.Parse(record is null ? string.Empty : texts[record], location.RelativePath);
+            yield return new FeatureSpec(location, document, [], structure.FeatureKeys, structure.Forms, structure.ClaimGrammar(null))
+            {
+                ClaimFileSet = input.Files[index],
+                Record = record,
+                Lifecycle = record is null ? "current" : document.Frontmatter.Text(input.LifecycleKey),
+            };
+        }
     }
 
     private const string StatusTitle = "Status";
