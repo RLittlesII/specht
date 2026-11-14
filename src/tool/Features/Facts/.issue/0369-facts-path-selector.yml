@@ -2,7 +2,7 @@ id: "0369"
 type: task
 title: Select the facts by path
 
-status: ready
+status: in-progress
 
 value: 3
 risk: 2
@@ -21,7 +21,7 @@ claims:
   - B-020
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-13"
 closed: null
 
 summary: |
