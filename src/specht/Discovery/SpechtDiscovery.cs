@@ -54,7 +54,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         var shapes = new SpechtTaskShapes(inputs.TaskFiles, taskGrammar);
 
         return specifications
-            .SelectMany(specification => Beside(root, specification, shapes.IsMatch))
+            .SelectMany(specification => Beside(root, specification.Directory, shapes.IsMatch))
             .Order(StringComparer.Ordinal)
             .ToList();
     }
@@ -82,7 +82,24 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     /// <returns>The root-relative path of each companion file, in ordinal order of file name.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<string> FindCompanions(string root, SpechtLocation specification, SpechtDiscoveryInputs inputs) =>
-        Beside(root, specification, CompanionShapes(inputs.CompanionFiles)).ToList();
+        Beside(root, specification.Directory, CompanionShapes(inputs.CompanionFiles)).ToList();
+
+    /// <summary>
+    /// Discovers the records in one folder beside <paramref name="specification"/>: every Markdown file directly in the
+    /// child folder named <paramref name="folder"/>, compared ordinally, of the folder holding the specification file,
+    /// entering no folder that is a link (<c>0132-F2</c> B-011).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="specification">The specification.</param>
+    /// <param name="folder">The record folder's name, such as <c>adr</c>.</param>
+    /// <returns>The root-relative path of each record, in ordinal order of file name; empty without that folder.</returns>
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    public IReadOnlyList<string> FindRecords(string root, SpechtLocation specification, string folder) =>
+        fileSystem.Directory.EnumerateDirectories(Under(root, specification.Directory))
+            .Where(child => string.Equals(fileSystem.Path.GetFileName(child), folder, StringComparison.Ordinal)
+                && fileSystem.DirectoryInfo.New(child).LinkTarget is null)
+            .SelectMany(_ => Beside(root, Joined(specification.Directory, folder), static name => name.EndsWith(".md", StringComparison.Ordinal)))
+            .ToList();
 
     /// <summary>
     /// Lists each declared test file once, in root-relative ordinal order, outside the manifest's exclusions; with no glob
@@ -179,6 +196,10 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     private static string Escaped(string text, string special) =>
         string.Concat(text.Select(character => special.Contains(character, StringComparison.Ordinal) ? "\\" + character : character.ToString()));
 
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private static string Joined(string directory, string name) => directory.Length == 0 ? name : directory + "/" + name;
+
     /// <implements epic="0001" feature="F6" claim="B-005" />
     /// <implements epic="0001" feature="F6" claim="B-006" />
     /// <implements epic="0001" feature="F6" claim="B-007" />
@@ -260,13 +281,18 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
-    private IEnumerable<string> Beside(string root, SpechtLocation specification, Func<string, bool> matches) =>
-        fileSystem.Directory.EnumerateFiles(
-                fileSystem.Path.Combine(root, specification.Directory.Replace('/', fileSystem.Path.DirectorySeparatorChar)))
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private IEnumerable<string> Beside(string root, string directory, Func<string, bool> matches) =>
+        fileSystem.Directory.EnumerateFiles(Under(root, directory))
             .Select(path => fileSystem.Path.GetFileName(path))
             .Where(matches)
             .Order(StringComparer.Ordinal)
-            .Select(name => specification.Directory.Length == 0 ? name : specification.Directory + "/" + name);
+            .Select(name => Joined(directory, name));
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private string Under(string root, string directory) =>
+        fileSystem.Path.Combine(root, directory.Replace('/', fileSystem.Path.DirectorySeparatorChar));
 
     private const string Wildcards = @"\*?[";
 

@@ -23,6 +23,7 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
     /// <inheritdoc />
     /// <implements epic="0132" feature="F2" claim="B-001" />
     /// <implements epic="0132" feature="F2" claim="B-002" />
+    /// <implements epic="0132" feature="F2" claim="B-011" />
     /// <implements epic="0132" feature="F2" claim="B-021" />
     /// <implements epic="0132" feature="F2" claim="B-023" />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
@@ -34,7 +35,9 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
 
         try
         {
-            console.Profile.Out.Writer.WriteLine(FactsDocument.From(reader.Read(Path.GetFullPath(settings.Root), null)).ToJson());
+            var root = Path.GetFullPath(settings.Root);
+            var model = reader.Read(root, null);
+            console.Profile.Out.Writer.WriteLine(FactsDocument.From(model, reader.ReadRecords(root, model.Features)).ToJson());
             return Task.FromResult(ExitCodes.Success);
         }
         catch (SpechtRootNotFoundException)

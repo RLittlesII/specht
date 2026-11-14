@@ -74,6 +74,30 @@ public sealed class SpechtModelReader(
     }
 
     /// <summary>
+    /// Reads the decision, ADR and lesson records beside each of <paramref name="features"/>, for the facts alone; the
+    /// check's <see cref="Read"/> lists and reads none (<c>0132-F2</c> B-011, B-022).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="features">The Features <see cref="Read"/> gave.</param>
+    /// <returns>Each Feature's records, its ADRs, then its decisions, then its lessons, each in ordinal order of file name.</returns>
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    /// <implements epic="0132" feature="F2" claim="B-022" />
+    public IReadOnlyDictionary<FeatureSpec, IReadOnlyList<RecordFile>> ReadRecords(string root, IReadOnlyList<FeatureSpec> features)
+    {
+        var listed = features
+            .Select(feature => (Feature: feature, Records: RecordFolders
+                .SelectMany(folder => discovery.FindRecords(root, feature.Location, folder.Name).Select(path => (Path: path, folder.Kind)))
+                .ToArray()))
+            .ToArray();
+        var paths = listed.SelectMany(static entry => entry.Records.Select(static record => record.Path)).Distinct(StringComparer.Ordinal).ToArray();
+        var texts = tree.Load(root, paths).Files.ToDictionary(static file => file.RelativePath, static file => file.Text(), StringComparer.Ordinal);
+
+        return listed.ToDictionary(
+            static entry => entry.Feature,
+            entry => (IReadOnlyList<RecordFile>) entry.Records.Select(record => builder.Record(record.Path, record.Kind, texts[record.Path])).ToArray());
+    }
+
+    /// <summary>
     /// Reads the manifest and the frontmatter schemas this invocation's selection, or else the manifest's, names: the
     /// embedded set, the local files, or a recorded upstream source's verified local copy (<c>0001-F7</c> B-024, B-077).
     /// </summary>
@@ -187,4 +211,6 @@ public sealed class SpechtModelReader(
             throw new SpechtManifestException($"{path}: the selected disk schema could not be read.");
         }
     }
+
+    private static readonly (string Name, string Kind)[] RecordFolders = [("adr", "adr"), ("decisions", "decision"), ("lessons", "lesson")];
 }

@@ -20,7 +20,7 @@ depends_on: ["F5"]
 blocks: ["F16", "0101/F7", "0101/F8", "0132/F2"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-11-10"
+updated: "2026-11-13"
 github_issue: null
 synced_at: null
 ---
@@ -146,7 +146,7 @@ discovery keys and the existing path-identity checks. Discovery receives the
 same `SpechtDiscoveryInputs` after manifest validation; no glob helper, layout
 identity rule, exclusion semantics or finding order changes in D1.
 
-<!-- last written by: implementer, 2026-11-09 (item 0008: case 4 cites the test pinning its mode) -->
+<!-- last written by: implementer, 2026-11-13 (`0132-F2` item 0368: `FindRecords` in the table of finders; `Beside` takes a root-relative directory) -->
 
 Design for item `0005` (B-001, B-002, B-003, B-009, B-012), item `0006` (B-004) and item `0007` (B-006), as built. brief § 5 "Discovery cost" is the drafted direction for `0007` and `0008`; `0007` is built as "Design for item `0007`" below says, and `0008` is built as "Design for item `0008`" below says.
 
@@ -201,10 +201,11 @@ That value is a new record, `SpechtDiscoveryInputs`, in its own file: `Layouts`,
 | `FindChildItems(root, specifications, inputs, taskGrammar)` | `TaskFiles`               | Beside each specification, the root-relative path of every file whose name matches any one of the shapes, once, ordinally. `taskGrammar` is `identifiers.task`, which the reader passes. Replaces `IsItemFileName`, which had no other caller                       |
 | `FindEpics(root, inputs)`                                   | `EpicFiles`, `Exclusions` | The path of every file whose root-relative path matches any one of the globs and is not excluded, once, ordinally by root-relative path. Moves the `epics` and `epic.md` enumeration out of the model load                                                          |
 | `FindCompanions(root, specification, inputs)`               | `CompanionFiles`          | Beside one specification, the root-relative path of every file whose name matches any one of the globs, once, ordinally. Moves the `*.feature` enumeration out of the model load                                                                                    |
+| `FindRecords(root, specification, folder)`                  | Nothing                   | Directly in the child folder named `folder`, compared ordinally and not a link, of one specification's folder, the root-relative path of every file whose name ends `.md`, ordinally; `[]` without that folder. Added for `0132-F2` B-011 (item `0368`)             |
 
 The signatures are the ones `test-writer` declared (§ 8), less the leading `IFileSystem` argument each carried until item `0107` made it the constructor's. The static members that took no `IFileSystem` - `FindSpecifications(root)`, `FindChildItems(specifications)` and `IsItemFileName` - went with their one caller, the static `SpechtModel.Load`, itself now `SpechtModelLoader.Load`. `Relative(root, path)` moved, unchanged, to `SpecPath` in `Model/` (item `0107`, ADR-0005 (a)), so no rule calls into discovery. Item `0166` gave `FindChildItems` and `FindCompanions` a leading `root`: a location no longer carries an absolute directory, so `Beside` joins the root to the location's relative directory to list the folder, and prefixes each name it keeps with that relative directory.
 
-Five private functions sit beneath them. `Files` walks the tree from the root one directory at a time, entering no directory an exclusion skips (B-006, item `0007`), and returns every file it lists with its root-relative path taken through the `IFileSystem`'s own `Path` over full paths, because a `MockFileSystem` returns rooted paths for a relative root. `Matching` takes a list of globs and keeps the files any one of them matches, ordinally; `FindSpecifications` hands it a layout's one glob, `FindEpics` the `EpicFiles` list. `Beside` takes a list of expressions and lists the files in one specification's folder whose names match any one. Both are one filter over the files, not one pass per entry, so a list's order and length never change the order of what is found, and a file is returned once however many entries match it (B-012). `Pattern` turns a glob into an expression. `Skips` decides one directory.
+Five private functions sit beneath them. `Files` walks the tree from the root one directory at a time, entering no directory an exclusion skips (B-006, item `0007`), and returns every file it lists with its root-relative path taken through the `IFileSystem`'s own `Path` over full paths, because a `MockFileSystem` returns rooted paths for a relative root. `Matching` takes a list of globs and keeps the files any one of them matches, ordinally; `FindSpecifications` hands it a layout's one glob, `FindEpics` the `EpicFiles` list. `Beside` takes a root-relative directory and a list of expressions and lists the files in that folder whose names match any one: one specification's folder for `FindChildItems` and `FindCompanions`, and a record folder beside it for `FindRecords` (`0132-F2` item `0368`). Both are one filter over the files, not one pass per entry, so a list's order and length never change the order of what is found, and a file is returned once however many entries match it (B-012). `Pattern` turns a glob into an expression. `Skips` decides one directory.
 
 A directory is skipped when its name equals a bare-name entry, or when its root-relative path is a `/` entry's path, so a file is excluded exactly when one of its ancestors is; a file's own name is never compared. `Pattern` is the one function that turns a glob into a regular expression: the layouts, `epicFiles`, `taskFiles` and `companionFiles` all pass through it, each `taskFiles` entry with `{task}` replaced by the task grammar less its `^` and `$`, as one named group, `task`, in [`SpechtTaskShapes`](../SpechtTaskShapes.cs) (`0001-F5` item `0016`), which also hands the model the text that group captured.
 

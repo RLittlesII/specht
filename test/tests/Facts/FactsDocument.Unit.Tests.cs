@@ -8,12 +8,12 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Facts;
 
 /// <summary>
-/// The facts document projected from a model built in memory (<c>0132-F2</c> B-001, B-003 to B-008, B-012, B-013, B-015,
-/// B-017, B-022, B-025, B-026): every Feature specification in the model's order and no epic, each with the path,
+/// The facts document projected from a model built in memory (<c>0132-F2</c> B-001, B-003 to B-008, B-011 to B-013,
+/// B-015, B-017, B-022, B-025, B-026): every Feature specification in the model's order and no epic, each with the path,
 /// identity, statuses and dependency lists its frontmatter gives, every claim, constraint, out-of-scope and open-question
 /// row with its cells and line and no coverage, each open question's resolved state on OQ-2's default, an out-of-scope
-/// section missing or with no table leaving only its own rows out, the same members under two pins, and the same text for
-/// the same model.
+/// section missing or with no table leaving only its own rows out, the records it is handed beside each Feature with the
+/// number and status OQ-3's default reads, the same members under two pins, and the same text for the same model.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FactsDocumentUnitTests
@@ -28,7 +28,7 @@ public sealed class FactsDocumentUnitTests
             new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/alpha/.spec/README.md")));
 
         // When
-        var document = JsonNode.Parse(FactsDocument.From(model).ToJson())!;
+        var document = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!;
 
         // Then
         document["specifications"]!.AsArray().Select(static specification => specification!["path"]!.GetValue<string>()).Should().Equal(
@@ -45,7 +45,7 @@ public sealed class FactsDocumentUnitTests
             .WithFeatures(new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("epics/0001-epic/F1-feature/spec.md")));
 
         // When
-        var document = JsonNode.Parse(FactsDocument.From(model).ToJson())!;
+        var document = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!;
 
         // Then
         document["specifications"]!.AsArray().Select(static specification => specification!["path"]!.GetValue<string>()).Should().Equal(
@@ -70,7 +70,7 @@ public sealed class FactsDocumentUnitTests
                     }))));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["path"]!.GetValue<string>().Should().Be("src/facts/.spec/README.md");
@@ -98,7 +98,7 @@ public sealed class FactsDocumentUnitTests
                     }))));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["dependsOn"]!.AsArray().Select(static value => value!.GetValue<string>()).Should().Equal("F9", "0002/F3");
@@ -135,7 +135,7 @@ public sealed class FactsDocumentUnitTests
         SpechtModel second = new SpechtModelFixture().WithManifest(new JsonObject { ["schemaVersion"] = secondPin }).WithFeatures(features);
 
         // When
-        var documents = new[] { first, second }.Select(static model => JsonNode.Parse(FactsDocument.From(model).ToJson())!).ToArray();
+        var documents = new[] { first, second }.Select(static model => JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!).ToArray();
 
         // Then
         var members = documents.Select(static document => document["specifications"]!.AsArray()
@@ -167,9 +167,9 @@ public sealed class FactsDocumentUnitTests
             new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/second/.spec/README.md")))).ToArray();
 
         // When
-        var first = FactsDocument.From(models[0]).ToJson();
-        var again = FactsDocument.From(models[0]).ToJson();
-        var second = FactsDocument.From(models[1]).ToJson();
+        var first = FactsDocument.From(models[0], NoRecords).ToJson();
+        var again = FactsDocument.From(models[0], NoRecords).ToJson();
+        var second = FactsDocument.From(models[1], NoRecords).ToJson();
 
         // Then
         first.Should().NotBeEmpty();
@@ -191,7 +191,7 @@ public sealed class FactsDocumentUnitTests
                     .WithSections(new SpechtSection("3. Acceptance Criteria", 10, headers, [first, second], [14, 15]))));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["claims"].Should().BeOfType<JsonArray>().Which.Select(static claim => (
@@ -221,7 +221,7 @@ public sealed class FactsDocumentUnitTests
                         [24, 25]))));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["constraints"].Should().BeOfType<JsonArray>().Which.Select(static constraint => (
@@ -250,7 +250,7 @@ public sealed class FactsDocumentUnitTests
                         [14, 15]))));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["claims"].Should().BeOfType<JsonArray>().Which
@@ -281,7 +281,7 @@ public sealed class FactsDocumentUnitTests
             ("B-001", true), ("B-001", true), ("claim one", false));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["claims"].Should().BeOfType<JsonArray>().Which
@@ -319,7 +319,7 @@ public sealed class FactsDocumentUnitTests
         model.Features[0].FeatureFiles.Should().ContainSingle().Which.Scenarios.Should().ContainSingle();
 
         // When
-        var json = FactsDocument.From(model).ToJson();
+        var json = FactsDocument.From(model, NoRecords).ToJson();
 
         // Then
         JsonNode.Parse(json)!["specifications"]![0]!["claims"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle()
@@ -344,7 +344,7 @@ public sealed class FactsDocumentUnitTests
                         [34, 35]))));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["outOfScope"].Should().BeOfType<JsonArray>().Which.Select(static row => (
@@ -374,7 +374,7 @@ public sealed class FactsDocumentUnitTests
                         [114]))));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["openQuestions"].Should().BeOfType<JsonArray>().Which.Select(static question => (
@@ -405,7 +405,7 @@ public sealed class FactsDocumentUnitTests
                 .WithDocument(new SpechtDocumentFixture().WithRelativePath("src/first/.spec/README.md").WithSections(sections)));
 
         // When
-        var specification = JsonNode.Parse(FactsDocument.From(model).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
 
         // Then
         specification["outOfScope"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
@@ -416,4 +416,97 @@ public sealed class FactsDocumentUnitTests
         specification["openQuestions"].Should().BeOfType<JsonArray>().Which
             .Select(static question => (question!["id"]!.GetValue<string>(), question["line"]!.GetValue<int>())).Should().Equal(("OQ-1", 114));
     }
+
+    [Fact]
+    public void RecordsBesideOneFeatureAndNoneBesideAnother_WhenTheDocumentIsMade_ShouldCarryEachRecordsKindNumberTitleStatusAndPathAndNoRecordForTheOther()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/area/.spec/README.md")),
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/other/.spec/README.md")));
+        var records = new Dictionary<FeatureSpec, IReadOnlyList<RecordFile>>
+        {
+            [model.Features[0]] =
+            [
+                new RecordFileFixture()
+                    .WithRelativePath("src/area/.spec/adr/0001-read-each-record-as-written.md")
+                    .WithKind("adr")
+                    .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["title"] = "ADR-0001: Read each record as written" }))
+                    .WithStatusLine("Accepted, 2026-10-12, by the owner"),
+                new RecordFileFixture()
+                    .WithRelativePath("src/area/.spec/decisions/0001-the-records-are-given.md")
+                    .WithKind("decision")
+                    .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["title"] = "Decision 0001: the records are given" }))
+                    .WithStatusLine("Accepted, 2026-10-12, by the owner"),
+                new RecordFileFixture()
+                    .WithRelativePath("src/area/.spec/lessons/0001-a-lesson-with-no-frontmatter.md")
+                    .WithKind("lesson")
+                    .WithFrontmatter(new FrontmatterFixture().WithNode(null))
+                    .WithStatusLine("Accepted, 2026-10-12, by the owner"),
+            ],
+        };
+
+        // When
+        var specifications = JsonNode.Parse(FactsDocument.From(model, records).ToJson())!["specifications"]!.AsArray();
+
+        // Then
+        specifications[0]!["records"].Should().BeOfType<JsonArray>().Which.Select(static record => (
+                record!["kind"]!.GetValue<string>(),
+                record["number"]!.GetValue<string>(),
+                record["title"]?.GetValue<string>(),
+                record["status"]?.GetValue<string>(),
+                record["path"]!.GetValue<string>()))
+            .Should().Equal(
+                ("adr", "0001", "ADR-0001: Read each record as written", "Accepted", "src/area/.spec/adr/0001-read-each-record-as-written.md"),
+                ("decision", "0001", "Decision 0001: the records are given", null, "src/area/.spec/decisions/0001-the-records-are-given.md"),
+                ("lesson", "0001", null, null, "src/area/.spec/lessons/0001-a-lesson-with-no-frontmatter.md"));
+        specifications[0]!["records"]!.AsArray().Select(static record => record!.AsObject().Select(static member => member.Key).ToArray())
+            .Should().AllSatisfy(static members => members.Should().Equal("kind", "number", "title", "status", "path"));
+        specifications[1]!["records"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsRecordNumbers))]
+    public void ARecordsFileName_WhenTheDocumentIsMade_ShouldCarryItsFirstWordAsTheNumber(string path, string? number)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/area/.spec/README.md")));
+        var records = new Dictionary<FeatureSpec, IReadOnlyList<RecordFile>>
+        {
+            [model.Features[0]] = [new RecordFileFixture().WithRelativePath(path).WithKind("decision")],
+        };
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, records).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        var record = specification["records"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle().Which!.AsObject();
+        record.Should().ContainKey("number");
+        (record["number"]?.GetValue<string>()).Should().Be(number);
+        record["path"]!.GetValue<string>().Should().Be(path);
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsAdrStatusLines))]
+    public void AnAdrsStatusLine_WhenTheDocumentIsMade_ShouldCarryItsFirstWordAsWrittenAsTheStatus(string? statusLine, string? status)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithFeatures(
+            new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithRelativePath("src/area/.spec/README.md")));
+        var records = new Dictionary<FeatureSpec, IReadOnlyList<RecordFile>>
+        {
+            [model.Features[0]] = [new RecordFileFixture().WithKind("adr").WithStatusLine(statusLine)],
+        };
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, records).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        var record = specification["records"].Should().BeOfType<JsonArray>().Which.Should().ContainSingle().Which!.AsObject();
+        record.Should().ContainKey("status");
+        (record["status"]?.GetValue<string>()).Should().Be(status);
+    }
+
+    private static readonly Dictionary<FeatureSpec, IReadOnlyList<RecordFile>> NoRecords = [];
 }

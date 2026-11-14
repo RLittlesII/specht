@@ -8,7 +8,7 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Facts;
 
 /// <summary>
-/// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-008, B-012 to
+/// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-008, B-011 to
 /// B-015, B-017, B-021 to B-023, B-025, B-026), launched as a shell launches it, its output validated against the published facts schema at
 /// <c>docs/schema/facts.schema.json</c> (OQ-1's default), copied into the output from that one file.
 /// </summary>
@@ -568,6 +568,127 @@ public sealed class FactsCommandIntegrationTests
         specification["openQuestions"].Should().BeOfType<JsonArray>().Which
             .Select(static question => (question!["id"]!.GetValue<string>(), question["line"]!.GetValue<int>()))
             .Should().Equal(("OQ-1", LineOf(lines, "| OQ-1 |")));
+    }
+
+    [Fact]
+    public void RecordsBesideSpecificationsInBothLayouts_WhenFactsAreGivenAsJson_ShouldCarryEachRecordsKindNumberTitleStatusAndPathInOrdinalOrderOfPath()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        tree.WriteCoLocatedFeature("src/area", "0001", "F1");
+        tree.WriteFeature("0001", "F2");
+        tree.WriteRaw("src/area/.spec/lessons/0001-a-lesson.md", "---\ntitle: \"Lesson 0001: a lesson\"\ntype: lesson\n---\n\n# Lesson 0001\n");
+        tree.WriteRaw(
+            "src/area/.spec/decisions/0002-later.md",
+            "---\ntitle: \"Decision 0002: later\"\ntype: decision\n---\n\n# Decision 0002\n\n## Status\n\nAccepted.\n");
+        tree.WriteRaw("src/area/.spec/decisions/0001-first.md", "---\ntitle: \"Decision 0001: first\"\ntype: decision\n---\n\n# Decision 0001\n");
+        tree.WriteRaw(
+            "src/area/.spec/adr/0001-read-each-record-as-written.md",
+            "---\ntitle: \"ADR-0001: Read each record as written\"\ntype: adr\n---\n\n# ADR-0001\n\n## Status\n\nAccepted, 2026-10-12, by the owner.\n");
+        tree.WriteRaw(
+            "epics/0001-epic/F2-feature/adr/0001-a-legacy-record.md",
+            "---\ntitle: \"ADR-0001: A legacy record\"\ntype: adr\n---\n\n# ADR-0001\n\n## Status\n\nproposed - awaiting the owner\n");
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        var specifications = JsonNode.Parse(Stdout)!["specifications"]!.AsArray()
+            .ToDictionary(static specification => specification!["path"]!.GetValue<string>(), static specification => specification!);
+        specifications.Keys.Should().BeEquivalentTo(["src/area/.spec/README.md", "epics/0001-epic/F2-feature/spec.md"]);
+        specifications["src/area/.spec/README.md"]["records"].Should().BeOfType<JsonArray>().Which.Select(static record => (
+                record!["kind"]!.GetValue<string>(),
+                record["number"]!.GetValue<string>(),
+                record["title"]!.GetValue<string>(),
+                record["status"]?.GetValue<string>(),
+                record["path"]!.GetValue<string>()))
+            .Should().Equal(
+                ("adr", "0001", "ADR-0001: Read each record as written", "Accepted", "src/area/.spec/adr/0001-read-each-record-as-written.md"),
+                ("decision", "0001", "Decision 0001: first", null, "src/area/.spec/decisions/0001-first.md"),
+                ("decision", "0002", "Decision 0002: later", null, "src/area/.spec/decisions/0002-later.md"),
+                ("lesson", "0001", "Lesson 0001: a lesson", null, "src/area/.spec/lessons/0001-a-lesson.md"));
+        specifications["epics/0001-epic/F2-feature/spec.md"]["records"].Should().BeOfType<JsonArray>().Which.Select(static record => (
+                record!["kind"]!.GetValue<string>(),
+                record["number"]!.GetValue<string>(),
+                record["title"]!.GetValue<string>(),
+                record["status"]?.GetValue<string>(),
+                record["path"]!.GetValue<string>()))
+            .Should().Equal(("adr", "0001", "ADR-0001: A legacy record", "proposed", "epics/0001-epic/F2-feature/adr/0001-a-legacy-record.md"));
+    }
+
+    [Fact]
+    public void RecordsWithNoOrAnUnreadableFrontmatterNoStatusSectionOrNoLeadingWord_WhenFactsAreGivenAsJson_ShouldGiveEachWithOnlyThatMemberNull()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        tree.WriteCoLocatedFeature("src/area", "0001", "F1");
+        tree.WriteRaw(
+            "src/area/.spec/adr/0001-no-status-section.md",
+            "---\ntitle: \"ADR-0001: No status\"\ntype: adr\n---\n\n# ADR-0001\n\n## Context\n\nAccepted.\n");
+        tree.WriteRaw("src/area/.spec/adr/0002-an-unreadable-frontmatter.md", "---\ntitle: [unclosed\n---\n\n# ADR-0002\n\n## Status\n\nAccepted.\n");
+        tree.WriteRaw("src/area/.spec/decisions/-a-leading-dash.md", "---\ntitle: \"Decision: a leading dash\"\ntype: decision\n---\n\n# Decision\n");
+        tree.WriteRaw("src/area/.spec/lessons/0001-no-frontmatter.md", "# Lesson 0001\n\nNo frontmatter.\n");
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!["records"].Should().BeOfType<JsonArray>().Which
+            .Select(static record => (
+                record!["kind"]!.GetValue<string>(),
+                record["number"]?.GetValue<string>(),
+                record["title"]?.GetValue<string>(),
+                record["status"]?.GetValue<string>(),
+                record["path"]!.GetValue<string>()))
+            .Should().Equal(
+                ("adr", "0001", "ADR-0001: No status", null, "src/area/.spec/adr/0001-no-status-section.md"),
+                ("adr", "0002", null, "Accepted", "src/area/.spec/adr/0002-an-unreadable-frontmatter.md"),
+                ("decision", null, "Decision: a leading dash", null, "src/area/.spec/decisions/-a-leading-dash.md"),
+                ("lesson", "0001", null, null, "src/area/.spec/lessons/0001-no-frontmatter.md"));
+    }
+
+    [Fact]
+    public void RecordsBesideASpecification_WhenTheTreeIsCheckedAndItsFactsAreGiven_ShouldDiscoverNoRecordAsASpecificationAndChangeNoVerdict()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        tree.WriteCoLocatedFeature("src/area", "0001", "F1");
+        var before = AcceptanceTool.Launch(tree.Root, "--json");
+        tree.WriteRaw("src/area/.spec/adr/0001-an-adr.md", "---\ntitle: \"ADR-0001: An ADR\"\ntype: feature\nid: F9\n---\n\n## Status\n\nAccepted.\n");
+        tree.WriteRaw("src/area/.spec/decisions/0001-a-decision.md", "---\nepic: \"0001\"\nid: F1\n---\n\n# Specification: F1\n");
+        tree.WriteRaw("src/area/.spec/lessons/0001-a-lesson.md", "# Lesson\n");
+        var discovered = EngineServices.Reader().Read(tree.Root, null).Features.Select(static feature => feature.RelativePath).ToArray();
+
+        // When
+        var after = AcceptanceTool.Launch(tree.Root, "--json");
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        discovered.Should().Equal("src/area/.spec/README.md");
+        after.ExitCode.Should().Be(before.ExitCode, after.Stderr);
+        after.Stdout.Should().Be(before.Stdout);
+        ExitCode.Should().Be(0, Stderr);
+        var specification = JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        specification["path"]!.GetValue<string>().Should().Be("src/area/.spec/README.md");
+        specification["records"].Should().BeOfType<JsonArray>().Which.Select(static record => record!["path"]!.GetValue<string>()).Should().Equal(
+            "src/area/.spec/adr/0001-an-adr.md", "src/area/.spec/decisions/0001-a-decision.md", "src/area/.spec/lessons/0001-a-lesson.md");
     }
 
     private static EvaluationResults Evaluate(JsonElement document)

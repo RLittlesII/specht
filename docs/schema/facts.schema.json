@@ -23,7 +23,8 @@
           "claims",
           "constraints",
           "outOfScope",
-          "openQuestions"
+          "openQuestions",
+          "records"
         ],
         "properties": {
           "path": {
@@ -181,6 +182,46 @@
                   "description": "The row's one-based line.",
                   "type": "integer",
                   "minimum": 1
+                }
+              }
+            }
+          },
+          "records": {
+            "description": "Every Markdown file directly in the adr, decisions and lessons folders beside the specification, in ordinal order of path; empty when it has none. A record's body is not given.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "number", "title", "status", "path"],
+              "properties": {
+                "kind": {
+                  "description": "The kind its folder gives.",
+                  "type": "string",
+                  "enum": ["decision", "adr", "lesson"]
+                },
+                "number": {
+                  "description": "The file name's first word, up to the first character that is neither a letter nor a digit, as written; null when the name begins with no such word.",
+                  "type": ["string", "null"]
+                },
+                "title": {
+                  "description": "The frontmatter's title as written; null when the frontmatter is missing or unreadable or its title is absent or not a string.",
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "description": "For an adr, the first word, as written, of the first line under its Status heading, or null; null for a decision and a lesson.",
+                  "type": ["string", "null"]
+                },
+                "path": {
+                  "description": "Relative to the root the tool was given, with / separators; never absolute.",
+                  "type": "string",
+                  "minLength": 1,
+                  "not": {
+                    "anyOf": [
+                      { "pattern": "^/" },
+                      { "pattern": "^[A-Za-z]:" },
+                      { "pattern": "\\\\" }
+                    ]
+                  }
                 }
               }
             }

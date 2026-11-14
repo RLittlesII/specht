@@ -50,6 +50,40 @@ internal sealed class MarkdownTextReader
             .Select(CellText)
             .ToList();
 
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    public string? FirstLine(string text, string title, MarkdownPipeline pipeline)
+    {
+        var document = Markdown.Parse(text, pipeline);
+
+        for (var index = 0; index < document.Count; index++)
+        {
+            if (document[index] is HeadingBlock { Level: 2 } heading && string.Equals(HeadingText(heading), title, StringComparison.Ordinal))
+            {
+                return document.Skip(index + 1)
+                    .TakeWhile(static block => block is not HeadingBlock { Level: 2 })
+                    .SelectMany(Paragraphs)
+                    .Select(FirstLineText)
+                    .FirstOrDefault();
+            }
+        }
+
+        return null;
+    }
+
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private static IEnumerable<ParagraphBlock> Paragraphs(Block block) => block switch
+    {
+        ParagraphBlock paragraph => [paragraph],
+        ContainerBlock container => container.Descendants<ParagraphBlock>(),
+        _ => [],
+    };
+
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private static string FirstLineText(ParagraphBlock paragraph) =>
+        paragraph.Inline is null
+            ? string.Empty
+            : string.Concat(paragraph.Inline.Descendants().TakeWhile(static inline => inline is not LineBreakInline).Select(Visible)).Trim();
+
     /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string HeadingText(HeadingBlock heading) =>
         heading.Inline is null ? string.Empty : Flatten(heading.Inline);
@@ -101,11 +135,14 @@ internal sealed class MarkdownTextReader
 
     /// <summary>The visible literals and leaf code-span content of a Markdown node.</summary>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    private static string Flatten(MarkdownObject node) =>
-        string.Concat(node.Descendants().Select(static descendant => descendant switch
-        {
-            LiteralInline literal => literal.ToString(),
-            CodeInline code => code.Content,
-            _ => string.Empty,
-        })).Trim();
+    private static string Flatten(MarkdownObject node) => string.Concat(node.Descendants().Select(Visible)).Trim();
+
+    /// <implements epic="0001" feature="F1" claim="B-004" />
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private static string Visible(MarkdownObject descendant) => descendant switch
+    {
+        LiteralInline literal => literal.ToString(),
+        CodeInline code => code.Content,
+        _ => string.Empty,
+    };
 }
