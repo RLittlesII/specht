@@ -44,22 +44,43 @@ public sealed class SpechtModelReader(
     /// <implements epic="0001" feature="F5" claim="B-034" />
     /// <implements epic="0001" feature="F16" claim="B-001" />
     /// <implements epic="0001" feature="F16" claim="B-004" />
+    /// <implements epic="0001" feature="F16" claim="B-003" />
+    /// <implements epic="0001" feature="F16" claim="B-026" />
+    /// <implements epic="0001" feature="F16" claim="B-035" />
+    /// <implements epic="0001" feature="F16" claim="B-036" />
     public SpechtModel Read(string root, SchemaSourceSelection? selection)
     {
         var schemas = ReadSchemas(root, selection);
         var structure = schemas.Structure;
         var inputs = structure.Discovery;
-        var specifications = discovery.FindSpecifications(root, inputs);
+        IReadOnlyList<SpechtClaimFileSet> sets = structure.ClaimInput is { Source: SpechtClaimSource.Gherkin } input ? input.Files : [];
+        var records = sets.Select(set => set.Record is { } record ? tree.TryLoad(root, record) : null).ToArray();
+        var recordPaths = records.Select(static record => record?.RelativePath).ToArray();
+        var specifications = discovery.FindSpecifications(root, inputs)
+            .Where(location => !recordPaths.Contains(location.RelativePath, StringComparer.Ordinal))
+            .ToArray();
+        IReadOnlyList<IReadOnlyList<string>> claimFiles = sets.Select(set => discovery.FindTestFiles(root, [set.Glob], inputs.Exclusions)
+                .Where(static path => path.EndsWith(".feature", StringComparison.Ordinal))
+                .ToArray())
+            .ToArray();
+        var claimLocations = sets.Select((set, index) => (recordPaths[index] ?? claimFiles[index].FirstOrDefault()) is { } path
+                ? new SpechtLocation(path, new SpechtLayout("claims", set.Glob), SpechtDiscovery.DirectoryOf(path))
+                : null)
+            .ToArray();
         var companions = specifications.Select(location => discovery.FindCompanions(root, location, inputs)).ToArray();
-        var items = discovery.FindChildItems(root, specifications, inputs, structure.Identifiers["task"]);
+        var recordLocations = claimLocations.Where((_, index) => recordPaths[index] is not null)
+            .OfType<SpechtLocation>()
+            .Where(location => !specifications.Any(specification => specification.Directory == location.Directory))
+            .DistinctBy(static location => location.Directory, StringComparer.Ordinal);
+        var items = discovery.FindChildItems(root, specifications.Concat(recordLocations), inputs, structure.Identifiers["task"]);
         IReadOnlyList<string> epics = structure.EpicLess ? [] : discovery.FindEpics(root, inputs);
         var tests = structure.Tests is { } declared ? discovery.FindTestFiles(root, declared.Files, inputs.Exclusions) : [];
-        IReadOnlyList<IReadOnlyList<string>> claimFiles = structure.ClaimInput is { Source: SpechtClaimSource.Gherkin } input
-            ? input.Files.Select(set => discovery.FindTestFiles(root, [set.Glob], inputs.Exclusions)
-                .Where(static path => path.EndsWith(".feature", StringComparison.Ordinal))
-                .ToArray()).ToArray()
-            : [];
-        var listing = new SpechtListing(specifications, companions, items, epics, tests) { ClaimFiles = claimFiles };
+        var listing = new SpechtListing(specifications, companions, items, epics, tests)
+        {
+            ClaimFiles = claimFiles,
+            ClaimRecords = recordPaths,
+            ClaimLocations = claimLocations,
+        };
         var paths = specifications.Select(static location => location.RelativePath)
             .Concat(companions.SelectMany(static paths => paths))
             .Concat(items)
@@ -69,6 +90,10 @@ public sealed class SpechtModelReader(
             .Distinct(StringComparer.Ordinal)
             .ToArray();
         var texts = tree.Load(root, paths).Files.ToDictionary(static file => file.RelativePath, static file => file.Text(), StringComparer.Ordinal);
+        foreach (var record in records.OfType<SpechtTreeFile>())
+        {
+            texts[record.RelativePath] = record.Text();
+        }
 
         return builder.Build(schemas, listing, texts);
     }

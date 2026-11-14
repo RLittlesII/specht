@@ -24,7 +24,7 @@ public sealed class ClaimIdRule : ISpechtRule
         var manifestGrammar = structure.ClaimGrammar(null);
         var claimsReference = structure.SectionReference("claims");
 
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             var claims = model.Claims[feature];
             var claimGrammar = feature.ClaimGrammar ?? manifestGrammar;

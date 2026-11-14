@@ -51,6 +51,7 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
         var listed = structure.Sections;
         var signOffHeaders = structure.Tables.TryGetValue(SignOffRole, out var named) ? named : EngineSignOffHeaders;
         return new(model.Features
+            .Where(static feature => feature.ClaimFileSet is null)
             .Select(feature => new FeatureFacts(
                 feature.RelativePath,
                 identified.Contains(feature) ? feature.Identity : null,

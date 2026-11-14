@@ -6,9 +6,11 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Manifest;
 
 /// <summary>
-/// The <c>claim</c> members beneath <c>0001-F16</c> B-002, B-027, B-028, B-029 and B-031 (item <c>0389</c>): from schema
+/// The <c>claim</c> members beneath <c>0001-F16</c> B-002, B-027, B-028, B-029 and B-031 (item <c>0389</c>) and B-038
+/// (item <c>0391</c>): from schema
 /// <c>0.4.0</c> the parser reads the claim source and the claim file sets, a source left out or <c>markdown</c> reads as
-/// Markdown with no set, a set's identity follows the epic grammar, an invalid set is rejected naming
+/// Markdown with no set, a set's identity follows the epic grammar, an invalid set, one whose identity its grammars do
+/// not match included, is rejected naming
 /// <c>claim.files</c>, and a source outside the two is rejected naming <c>claim.source</c>; below <c>0.4.0</c> the
 /// members go unread. Each test parses with the shipped catalog, whose <c>0.4.0</c> manifest carries the
 /// <c>claim</c> defaults <c>0001-F16</c> § 7 names, which a <c>gherkin</c> source leaving out the tag lists and the
@@ -96,7 +98,7 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
             ["claim"] = new JsonObject
             {
                 ["source"] = "gherkin",
-                ["files"] = new JsonArray(new JsonObject { ["glob"] = ".spec/features/arithmetic/*.feature", ["feature"] = "arithmetic" }),
+                ["files"] = new JsonArray(new JsonObject { ["glob"] = ".spec/features/arithmetic/*.feature", ["feature"] = "F1" }),
             },
         };
 

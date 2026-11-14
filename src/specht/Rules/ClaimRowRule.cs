@@ -25,7 +25,7 @@ public sealed class ClaimRowRule : ISpechtRule
         model.EnsureClaimGrammar();
         var structure = model.Schemas.Structure;
 
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             var claims = model.Claims[feature];
             var matrix = model.MatrixSections[feature];
