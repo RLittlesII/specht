@@ -589,3 +589,41 @@ Feature: Matrix resolution
       | where                                               |
       | on a Rule that holds no scenario                    |
       | on the companion's Feature, which holds no scenario |
+
+  @B-029
+  Scenario Outline: A row reported for its missing scenario is not reported for its status at any level of the missing-scenario rule
+    Given the manifest pins schema version 0.4.0 instead
+    And the manifest sets the missing-scenario rule to <level>
+    And an active claim B-004 whose tag no scenario carries
+    And its matrix row's Status is "Covered"
+    When the check runs
+    Then the status rule reports nothing for that row
+
+    Examples:
+      | level   |
+      | error   |
+      | warning |
+      | off     |
+
+  @B-030
+  Scenario Outline: Under title matching a covered row whose Scenario cell names no title is reported
+    Given the manifest pins schema version 0.4.0 instead
+    And the manifest declares the test files "test/**/*.cs"
+    And the manifest turns scenario title matching on
+    And an active claim B-004 whose tag a scenario carries
+    And its matrix row's Status is "Covered", its tests all resolve and its Scenario cell <cell>
+    When the check runs
+    Then the status rule reports that row
+
+    Examples:
+      | cell                          |
+      | is empty                      |
+      | holds only semicolons, spaced |
+
+  @B-008 @boundary
+  Scenario: Under title matching a Scenario cell that names no title is not reported by the scenario-title rule
+    Given the manifest pins schema version 0.3.0 instead
+    And the manifest turns scenario title matching on
+    And a matrix row whose Scenario cell is empty
+    When the check runs
+    Then the scenario-title rule reports nothing for that row
