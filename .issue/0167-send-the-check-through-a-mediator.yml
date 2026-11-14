@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-11-13"
+updated: "2026-11-14"
 closed: "2026-11-13"
 
 summary: |
@@ -365,6 +365,14 @@ decisions:
     the coordinator's and the selection the owner's. On the quiet
     machine neither pair flags the mean or the allocation (entry
     above), so the change proceeds on that instruction.
+  - |
+    2026-11-14, repository owner, recorded by spec-author: asked by the
+    coordinator whether to run the step the benchmarker's entry of
+    2026-11-13 on the rebase names, a rerun of the guard at 100
+    specifications against `a68ef2f7` on a quiet host, the owner declined,
+    replying "No, diff is identical". The question's wording is the
+    coordinator's, not the owner's. The rerun is not run, and the open
+    point in that entry is closed by this answer.
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."
