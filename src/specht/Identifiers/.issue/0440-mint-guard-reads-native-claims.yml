@@ -62,8 +62,16 @@ decisions:
     session by the coordinating session. One item, spec-author's cut,
     not an owner ruling. OQ-19's request is two claims, B-079 and B-080,
     so each carries one assertion.
+  - |
+    2026-11-14, spec-author: on OQ-22 the repository owner rejected the
+    three options an agent wrote and asked for an analysis of what the
+    `mint` surface needs, relayed in session by the coordinating
+    session; no default is adopted. This item proceeds on what is built
+    and does not decide OQ-22. OQ-23 and OQ-24 raised on the owner's
+    selections "(i) Raise as OQ-23" and "(i) Raise as open question".
 
 out_of_scope:
-  - "Naming a Feature a claim file set names with no record at a `.spec/README.md` - OQ-22."
-  - "A guard over a native Feature's scenario ids - B-042 is unchanged."
+  - "Naming a Feature a claim file set names other than by a folder that holds a `.spec/README.md` - OQ-22, open with no default; this item proceeds on what is built, `--feature` resolving only such a folder (B-059, B-060)."
+  - "The claim and scenario form for a Feature a claim file set names whose README declares a claim prefix - OQ-23, open; C-19 and B-063 are unchanged."
+  - "A scenario guard over the `.feature` files a Feature's claim file sets match beyond its companions - OQ-24, open; B-042 is unchanged."
   - "The check keying native claims under their Feature - `0001-F16` item 0391."
