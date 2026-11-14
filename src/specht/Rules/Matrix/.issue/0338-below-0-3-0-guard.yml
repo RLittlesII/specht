@@ -2,7 +2,7 @@ id: "0338"
 type: test
 title: Prove the scenario, test and status rules do not run below the schema version each enters
 
-status: ready
+status: in-progress
 
 risk: 2
 
@@ -18,7 +18,7 @@ claims:
   - B-021
 
 created: "2026-11-01"
-updated: "2026-11-12"
+updated: "2026-11-14"
 closed: null
 
 summary: |
