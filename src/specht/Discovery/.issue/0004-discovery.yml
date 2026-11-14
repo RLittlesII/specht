@@ -2,7 +2,7 @@ id: "0004"
 type: feature
 title: Discovery reads what to find and skip from the manifest
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 3
@@ -31,7 +31,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-11-14"
-closed: null
+closed: "2026-11-14"
 
 summary: |
   As the maintainer of a repository with a large tree or its own layout, I

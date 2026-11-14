@@ -24,6 +24,7 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <implements epic="0001" feature="F5" claim="B-006" />
     /// <implements epic="0001" feature="F5" claim="B-079" />
     /// <implements epic="0001" feature="F5" claim="B-080" />
+    /// <implements epic="0001" feature="F6" claim="B-013" />
     public SpechtModel Build(SpechtSchemas schemas, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
     {
         var structure = schemas.Structure;
@@ -67,7 +68,10 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         var epics = listing.Epics.Select(path => new EpicFile(path, frontmatter.Parse(texts[path]))).ToList();
         var tests = listing.TestFiles.Select(path => new SpechtTestFile(path, texts[path])).ToList();
 
-        return new SpechtModel(features, items, epics, schemas, tests, ClaimSets(structure, structure.ClaimInput?.Files ?? [], listing.ClaimFiles, texts));
+        return new SpechtModel(features, items, epics, schemas, tests, ClaimSets(structure, structure.ClaimInput?.Files ?? [], listing.ClaimFiles, texts))
+        {
+            OrphanCompanions = listing.OrphanCompanions,
+        };
     }
 
     /// <summary>

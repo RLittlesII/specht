@@ -85,6 +85,33 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         Beside(root, specification.Directory, CompanionShapes(inputs.CompanionFiles)).ToList();
 
     /// <summary>
+    /// Discovers the companion files beside no specification: every file a companion glob matches in a directory the
+    /// directory part of a layout glob matches, outside the manifest's exclusions, whose directory is that of no
+    /// specification in <paramref name="specifications"/> (<c>0001-F6</c> B-013).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="specifications">The discovered specifications, of every layout.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>The root-relative path of each companion beside no specification, in ordinal order.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-013" />
+    public IReadOnlyList<string> FindOrphanCompanions(
+        string root,
+        IEnumerable<SpechtLocation> specifications,
+        SpechtDiscoveryInputs inputs)
+    {
+        var candidates = inputs.Layouts
+            .SelectMany(layout => inputs.CompanionFiles.Select(entry => Joined(DirectoryOf(layout.Glob), entry)))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        var occupied = specifications.Select(static specification => specification.Directory).ToHashSet(StringComparer.Ordinal);
+
+        return Matching(Files(root, candidates, inputs.Exclusions), candidates)
+            .Select(static file => file.Relative)
+            .Where(relative => !occupied.Contains(DirectoryOf(relative)))
+            .ToList();
+    }
+
+    /// <summary>
     /// Discovers the records in one folder beside <paramref name="specification"/>: every Markdown file directly in the
     /// child folder named <paramref name="folder"/>, compared ordinally, of the folder holding the specification file,
     /// entering no folder that is a link (<c>0132-F2</c> B-011).
@@ -214,6 +241,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         string.Concat(text.Select(character => special.Contains(character, StringComparison.Ordinal) ? "\\" + character : character.ToString()));
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-013" />
     /// <implements epic="0132" feature="F2" claim="B-011" />
     private static string Joined(string directory, string name) => directory.Length == 0 ? name : directory + "/" + name;
 

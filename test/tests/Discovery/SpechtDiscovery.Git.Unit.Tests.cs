@@ -81,6 +81,7 @@ public sealed class SpechtDiscoveryGitUnitTests
             "specifications" => discovery.FindSpecifications(root, inputs).Count,
             "epics" => discovery.FindEpics(root, inputs).Count,
             "test files" => discovery.FindTestFiles(root, ["test/**/*.cs", "**/*.fs"], inputs.Exclusions).Count,
+            "orphan companions" => discovery.FindOrphanCompanions(root, [], inputs).Count,
             _ => throw new ArgumentOutOfRangeException(nameof(finder), finder, "Not a finder."),
         };
 
