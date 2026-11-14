@@ -29,7 +29,8 @@ public static class ExitCodes
     /// <summary>
     /// A target named on the command line is not found in the shipped catalog, the manifest's <c>mint</c> key, or from schema
     /// 0.4.0 the type's <c>ids</c> record, holds no entry for the type requested or its entry names no strategy, or the
-    /// folder <c>mint</c>'s <c>--feature</c> names holds no Feature's <c>.spec/</c>.
+    /// folder <c>mint</c>'s <c>--feature</c> names holds no Feature's <c>.spec/</c>, or the path <c>facts</c> is given selects no
+    /// specification.
     /// </summary>
     public const int NotFound = 4;
 }

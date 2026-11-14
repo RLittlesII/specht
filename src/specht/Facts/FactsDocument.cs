@@ -65,6 +65,26 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
     /// <implements epic="0132" feature="F2" claim="B-022" />
     public string ToJson() => JsonSerializer.Serialize(this, Options);
 
+    /// <summary>
+    /// Gives the document holding the specifications <paramref name="path"/> selects, in this document's order: the one whose
+    /// path is the text, or every one under the directory it names by whole path segments, every trailing <c>/</c> removed
+    /// first. Any other text selects none.
+    /// </summary>
+    /// <param name="path">A root-relative, <c>/</c>-separated path, compared ordinally.</param>
+    /// <returns>The selected document, with no specification when the path selects none.</returns>
+    /// <implements epic="0132" feature="F2" claim="B-018" />
+    /// <implements epic="0132" feature="F2" claim="B-019" />
+    /// <implements epic="0132" feature="F2" claim="B-020" />
+    public FactsDocument Select(string path)
+    {
+        var trimmed = path.TrimEnd('/');
+        var directory = trimmed + "/";
+        return new(Specifications
+            .Where(specification => string.Equals(specification.Path, trimmed, StringComparison.Ordinal)
+                || specification.Path.StartsWith(directory, StringComparison.Ordinal))
+            .ToList());
+    }
+
     /// <implements epic="0132" feature="F2" claim="B-005" />
     /// <implements epic="0132" feature="F2" claim="B-012" />
     /// <implements epic="0132" feature="F2" claim="B-013" />
