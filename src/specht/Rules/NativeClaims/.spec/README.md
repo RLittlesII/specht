@@ -130,7 +130,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-13 (item 0390 built: the native claim reader's rows) -->
+<!-- last written by: implementer, 2026-11-13 (item 0391 designed: a set's record, identity and report); before: implementer, 2026-11-13 (item 0390 built: the native claim reader's rows) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -156,10 +156,21 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | A native claim is the record a § 3 row becomes, its source as provenance (C-5)                                                                             | Both           | `SpechtClaim.Path` and `SpechtClaim.Declaration`; `SpechtClaims`' set constructor; `SpechtModel.ClaimSets`                                                                  |
 | A claim file the reader cannot read declares nothing, and the run goes on                                                                                  | Technical      | `GherkinClaimTextException` caught per file in `SpechtModelBuilder.Build`; item `0395` reports it                                                                           |
 | The same tree gives the same catalogue (B-030, B-011)                                                                                                      | Technical      | Manifest order, ordinal path order, document order; nothing ordered by a hash                                                                                               |
+| A set becomes one native Feature: a `FeatureSpec` keyed into `Claims` with the set's `SpechtClaims` (B-001, B-003, C-5)                                    | Business       | Item `0391`: `SpechtModelBuilder.Build`; `FeatureSpec.ClaimFileSet`; `SpechtModel`'s `Claims`, by reference to the set                                                      |
+| The Feature's identity is the set's `epic` and `feature`, never the record's keys (B-001, B-027)                                                           | Business       | Item `0391`: `FeatureSpec.Epic` and `FeatureSpec.Id` read `ClaimFileSet` first                                                                                              |
+| A record supplies frontmatter, lifecycle through `claim.lifecycleKey`, and edges; none means `current` and no edge (B-003; A-3)                            | Business       | Item `0391`: the record parsed as the Feature's document; `FeatureSpec.Lifecycle`; the existing dependency graph                                                            |
+| A record is held by `SPEC1001` and `SPEC1002`, and its items by `SPEC1003`; a record-less Feature has nothing to hold (B-003)                              | Business       | Item `0391`: the two Feature frontmatter rules skip a set with no `record`; record locations join `FindChildItems`' input                                                   |
+| A record's `claim_prefix` does not choose the grammar (B-032)                                                                                              | Business       | Item `0391`: the native `FeatureSpec` takes `ClaimGrammar(null)`, as item `0390`'s reader does                                                                              |
+| Discovery does not also read a record as a layout's Feature (B-017, B-026)                                                                                 | Technical      | Item `0391`: `SpechtModelReader.Read` drops a discovered specification whose path is a set's `record`                                                                       |
+| One identity in two sets, or a set and a layout's specification, is `SPEC3002` at each (B-017)                                                             | Business       | Item `0391`: `DuplicateIdentityRule` over `FeaturesWithIdentity`, natives included; where it reports a set is § 7 question 2                                                |
+| Counted and listed under the layout `claims`, by the record or the first claim file (B-026; OQ-7)                                                          | Business       | Item `0391`: `SpechtEvaluator.Evaluate` adds the `claims` entry under `claim.source` `gherkin`; `SpechtLocation.RelativePath`; what "listed" observes is § 7 question 1     |
+| No verdict items `0392` and `0396` own appears early on a native Feature (B-008, B-020, B-021, B-023, B-024; C-3)                                          | Technical      | Item `0391`: ten rules and `FactsDocument.From` skip a Feature with a `ClaimFileSet`, each lifted by the item that owns its claim                                           |
+| A tree without `claim.source` `gherkin` keeps every verdict, count and listing (B-002; C-3)                                                                | Business       | No native Feature is built, the `claims` entry is not added and every skip is vacuous                                                                                       |
+| Every native path is root-relative, and nothing is written (C-2, C-6)                                                                                      | Technical      | The record path as the manifest gives it and discovery's relative paths; no rule writes                                                                                     |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 (item 0390 built: the native claim reader; the record-prefix answer recorded) -->
+<!-- last written by: implementer, 2026-11-13 (item 0391 designed: a set's record, identity and report; B-032 cited in item 0390's text); before: implementer, 2026-11-13 (item 0390 built) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -381,7 +392,7 @@ scope form without its placeholder throws in that constructor; both are item
 The grammar is `ClaimGrammar(null)`, the tree's, and stays so when item `0391`
 reads a set's `record`: the owner selected "(b) No, record is lifecycle" for
 `0391`, which § 10 reads as a record's claim prefix not selecting a native
-Feature's grammar. The group around the pattern keeps an alternation in a
+Feature's grammar (B-032). The group around the pattern keeps an alternation in a
 declared grammar under the lookahead.
 
 **Reading a file.** `GherkinClaimTextReader.Read(path, text)` per claim file,
@@ -484,8 +495,8 @@ record is read, item `0391` (B-003).
 The record-prefix question this design raised for item `0391` is answered: the
 owner selected "(b) No, record is lifecycle", which § 10 reads as a set's
 `record` supplying frontmatter, lifecycle and edges only, the tree's grammar
-reading the tags, so `0391` keeps the one `GherkinClaimTags` this item composes. The claim that
-says so is `0391`'s to add.
+reading the tags, so `0391` keeps the one `GherkinClaimTags` this item composes. B-032
+says so.
 
 **Reuse.** `GherkinClaimTextReader` and its records, `GherkinClaimTagForm`,
 `ISpecDiscovery.FindTestFiles`, `SpechtTreeStore.Load`,
@@ -507,6 +518,179 @@ reading. No type is added.
   reading, `SpechtDiscovery.Pattern`, is discovery's own; one listing per set
   reuses its public method.
 - Dropping a repeated id from the rows: B-008 reports every declaration.
+
+### A claim file set's record, identity and report (item `0391`)
+
+Designed, not built. Item `0390` reads each set into
+`SpechtModel.ClaimSets`, and no rule reads it. This item makes each set one
+native Feature, a [`FeatureSpec`](../../../Model/FeatureSpec.cs) in
+`SpechtModel.Features`, so the rules that should see it do (B-003, B-017,
+B-026). The rules whose claims later items own skip it until those items
+land. Nothing here runs unless `ClaimInput.Source` is `Gherkin`, so a tree
+without the selection keeps every verdict, count and listing (B-002, C-3).
+
+**Where a native Feature sits.** `SpechtModelReader.Read`, after item
+`0390`'s set listing, does three things for each set:
+
+| Step                  | What it does                                                                                                                                                                                                                                                         |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Location              | The record's path when the set has a `record`, else the first of `ClaimFiles[i]`, which discovery lists in ordinal order (B-026; OQ-7). The layout is `new SpechtLayout("claims", set.Glob)`, with no path identity                                                  |
+| No second reading     | A specification the layouts discovered at a set's `record` path, compared ordinally, is dropped before companions and items are found, so the record is read once, as the native Feature's document, and never as a layout's Feature too                             |
+| Items beside a record | Each record's location joins the specifications passed to `ISpecDiscovery.FindChildItems`, so `SPEC1003` and `SPEC5001` to `SPEC5004` hold the record's items and children as they hold any specification's (B-003; § 5 row 13). A record-less Feature lists no item |
+
+The locations go on `SpechtListing.ClaimLocations`, a new init member at the
+index of `ClaimFiles`, and each record's path joins the paths
+`SpechtTreeStore.Load` reads (C-2). `SpechtLocation` gains a static factory
+that takes a relative path and a layout and holds the directory rule that
+`SpechtDiscovery.DirectoryOf` holds today; discovery and the reader both call
+it, so the directory of a location has one implementation.
+
+**The Feature.** `SpechtModelBuilder.Build` makes one `FeatureSpec` per
+location, after the layouts' Features:
+
+| `FeatureSpec` member              | A layout's Feature      | A native Feature                                                                                                     |
+| --------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `Document`                        | the specification       | the record, parsed by `SpechtDocumentParser`; with no record, the parse of empty text at the first claim file's path |
+| `FeatureFiles`                    | its companions          | none; B-021 makes the claim files its companions, item `0392`                                                        |
+| `ClaimGrammar`                    | from its `claim_prefix` | `ClaimGrammar(null)`, whatever the record's `claim_prefix` says (B-032), the grammar item `0390`'s reader uses       |
+| `ClaimFileSet`, a new init member | `null`                  | the set, the same instance as `ClaimInput.Files[i]`                                                                  |
+| `Epic`, `Id`                      | the frontmatter's       | the set's `Epic` and `Feature` (B-001, B-027); the record's own keys are not read for identity                       |
+| `Lifecycle`, a new init member    | `null`                  | the record's frontmatter text at `ClaimInput.LifecycleKey`, `null` when absent; `current` when the set has no record |
+
+`Lifecycle` reads as the analyzer's catalogue reads it,
+[`GherkinCatalogReader`](../../../../analyzers/Bindings/Gherkin/GherkinCatalogReader.cs):
+the text at the lifecycle key, or `current` with no record (A-3). The key
+comes from the manifest (C-4). `SpecStatus` and `Status` still read
+`keys.feature.specStatus` and `keys.feature.status` from the document, so the approval rules
+read a record as they read any specification.
+
+Edges come from the document as for any Feature: `FeatureSpec.Strings` over
+`keys.feature.dependsOn` and `keys.feature.blocks`. A record-less Feature's empty document
+declares none (B-003). Because `Epic` and `Id` are set, every native Feature
+is in `FeaturesWithIdentity`, so the dependency graph resolves an edge to it
+and from it, and `SPEC6001` to `SPEC6003` hold it.
+
+**Its claims.** `SpechtModel` keys each native Feature in `Claims` to the
+`SpechtClaims` of `ClaimSets` whose `FileSet` is the same instance as the
+Feature's `ClaimFileSet`, compared by reference, because two manifest entries
+can hold equal values. A layout Feature's claims are still derived from its
+table. No claim file is read twice, and no claims table is read for a native
+Feature (B-001). `MatrixSections` reads the document as before: a record's
+matrix, or `null`.
+
+**Frontmatter (B-003).** `SPEC1001` and `SPEC1002` hold a record as any
+specification. `FrontmatterPresentRule` and `FeatureFrontmatterRule` skip a
+Feature whose `ClaimFileSet` has no `Record`: nothing is authored to hold, and
+the empty document would otherwise be reported as missing frontmatter. That
+skip is permanent; it is B-003, not a deferral.
+
+**One identity (B-017).** `DuplicateIdentityRule` already groups
+`FeaturesWithIdentity` by `Identity`, so a set beside another set, or beside
+a layout's specification, with the same identity is reported at each, under
+the identity form the manifest declares. The layout's specification is
+reported where it is today: its path, at the frontmatter's id line. Where a
+set is reported is question 2 below.
+
+**Count and listing (B-026).** `SpechtEvaluator.Evaluate` appends one
+`SpechtReportLayout` named `claims`, after the manifest's layouts, counting
+the Features with a `ClaimFileSet`. It does so only under `claim.source`
+`gherkin`, so the summary and `layouts` of any other tree are unchanged.
+`SpecificationCount`, `model.Features.Count`, includes native Features. A
+native Feature's path, wherever a rule names it, is its location: the record,
+or the first claim file. What "lists" observes beyond that is question 1.
+
+**What stays silent until its item.** With native Features in `Features`,
+these rules would report on them before the items that own their claims say
+what holds. Each one skips a Feature whose `ClaimFileSet` is not `null` until
+that item replaces the skip:
+
+| Rule                                           | Type                  | Would report today                                                                         | Lifted by            |
+| ---------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------ | -------------------- |
+| `SPEC2001`                                     | `SectionContractRule` | a record's missing claims section; every section of a record-less Feature's empty document | `0392`, B-020        |
+| `SPEC2002`                                     | `TableHeaderRule`     | a record's tables, before B-020 says which are held                                        | `0392`, B-020        |
+| `SPEC4001`                                     | `CompanionFileRule`   | `found 0 '.feature' files` on every native Feature                                         | `0392`, B-021        |
+| `SPEC4002`                                     | `ClaimTagRule`        | nothing today, with no companions; skipped so B-021 decides it                             | `0392`, B-021        |
+| `SPEC4003`                                     | `ClaimIdRule`         | no row, since a native `Section` is `null`; the shared-head finding at the Feature's path  | `0392`, B-008        |
+| `SPEC4004`                                     | `ClaimRowRule`        | nothing, since a native `Section` is `null`; skipped so B-023 and B-024 decide it          | `0396`, B-023, B-024 |
+| `SPEC4005`, `SPEC4006`, `SPEC4007`, `SPEC4009` | the `0001-F12` rules  | a record's § 9 rows resolved against no companion                                          | `0396`, B-023, B-024 |
+
+`SPEC3001` needs no skip: the `claims` layout has no path identity, and B-027
+makes a set's `epic` present wherever the epic grammar is declared, so
+`PathIdentityRule` passes over every native Feature. `SPEC7001` and
+`SPEC7002` read a record as any specification (OQ-4) and a record-less
+Feature's `SpecStatus` is `null`, so they need none. `specht facts` lists
+`model.Features` (`0132-F2`); no claim says what it carries for a native
+Feature, so `FactsDocument.From` skips one too, and its output is unchanged.
+
+Each skip is a predicate on `ClaimFileSet` in the rule's loop. There is no
+model member and no base class: the skips are lifted one rule at a time, and
+item `0396` removes the last one.
+
+**Determinism and paths (B-030, C-2, C-6).** Native Features follow the
+layouts' Features in manifest order. A record path is the manifest's text, read as
+root-relative, and question 3 covers one that is not; the first claim file is
+discovery's relative path. No rule writes.
+
+**Questions.** These change behaviour, so they go to spec-author for § 11.
+Nothing above decides them:
+
+1. **What B-026's "counted among `features`" and "lists it" observe.**
+   (a) The summary's and `layouts`' `claims` entry and `SpecificationCount`
+   count it, and "lists" is the path its findings carry; the report document
+   is unchanged. (b) A new report member lists each Feature by identity,
+   layout and path; that changes `0001-F3` B-005 and needs a claim there.
+   (c) It is counted under the manifest's layout named `features`, beside a
+   `claims` entry. Today no report member lists a Feature by path, and the
+   summary has no total, only one count per layout. Recommended: (a).
+2. **Where `SPEC3002` reports a set (B-017, "at each place the identity is
+   declared").** (a) At the native Feature's path, its record or first claim
+   file, line `0`. (b) At `.specht/manifest.json`, line `0`, where the set
+   declares the identity; two sets would give two lines at one path.
+   (c) At a record's frontmatter id line, else line `0`. Recommended: (a).
+3. **A `record` that is absent, unreadable, absolute or outside the root.**
+   Today `SpechtTreeStore.Load` would throw. (a) A `SPEC027` violation at the
+   record's path, line `0`, as B-014 reports an unreadable claim file; the
+   Feature is then read as record-less. This needs a claim, item `0395`.
+   (b) An invalid manifest, exit `3`, naming `claim.files[i].record`.
+   (c) Read as record-less, silently. Recommended: (a).
+4. **A set with no `record` and no claim file.** B-016 reports it as
+   `SPEC027`, item `0395`, and B-026 gives it no path. (a) It is no Feature:
+   not counted and no identity. (b) It is a Feature listed by its glob, which
+   OQ-7 rejected as a path. Recommended: (a).
+5. **A record whose own `id` or `epic` differs from its set's.** (a) The
+   set's identity holds, and the record's keys are held only by `SPEC1002`'s
+   schema, with nothing reported. (b) The mismatch is reported, which needs a
+   claim and a rule. (c) The record's identity holds. B-001 and B-027 read as
+   (a), which this design takes; only whether to report is open.
+6. **A manifest layout already named `claims`.** (a) The summary carries two
+   entries with that name. (b) The native count merges into it. (c) The
+   manifest is invalid, exit `3`. Recommended: (a); it is the only reading
+   with no new verdict.
+
+**Testability.** Every step runs in memory. `SpechtModelReader.Read` over a
+`MockFileSystem` tree through `EngineServices` reads `Features`, `Claims` and
+the listing. `SpechtModelBuilder.Build` takes a hand-built listing with
+`ClaimLocations`. `SpechtEvaluator.Evaluate` gives the summary and `layouts`.
+Each skip is a test that a native Feature gets no finding from the rule,
+beside today's test that a layout Feature still does.
+
+**Reuse.** `FeatureSpec`, `SpechtDocumentParser`, `DuplicateIdentityRule`,
+`SpechtDependencyGraph`, `ISpecDiscovery.FindChildItems`, `SpechtTreeStore`,
+`SpechtReportLayout` and item `0390`'s `ClaimSets` carry the work. No type is
+added.
+
+**Rejected.**
+
+- A second list, `NativeFeatures`, read by the rules that should see native
+  Features: `SPEC1001`, `SPEC1002`, `SPEC3002`, `SPEC5001` to `SPEC5004` and
+  `SPEC6001` to `SPEC6003` would each need a second loop, and a dependency
+  edge between the two lists would need both. One list with ten skips is
+  the smaller change, and the skips shrink.
+- Leaving a record to its layout and adding the set's claims to that Feature:
+  a record outside every layout glob would be no Feature at all, and a record
+  inside one would be held to the claims table B-020 removes.
+- A record's `claim_prefix` choosing the grammar: B-032, the owner's
+  selection "(b) No, record is lifecycle".
 
 ## 8. Testing Strategy
 
