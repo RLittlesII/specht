@@ -130,9 +130,24 @@ decisions:
     write without confining it to the root. This item takes B-046 as
     criterion 13; the § 9 criterion becomes 14 and names all three new
     claims.
+  - |
+    2026-11-14, spec-author, a role judgement and not the repository
+    owner's, on `spec-reviewer`'s findings for this item: the option B-046
+    rejects, resolving a relative `--report` path from the root, is
+    recorded with its cost as `0001-F3` § 5 row 14. The precedent runs both
+    ways: `docs/cli.md` resolves `specht frontmatter`'s document path from
+    the working directory and `specht facts`' `<path>` from the root, which
+    selects inside the tree, where `--report` names an output the caller
+    places. Cost of rejecting it: a run with `--root <DIR>` from outside
+    the root writes a relative report path under the working directory,
+    not beside the tree. Also raised: `0001-F3` OQ-10, what `--report` does
+    beside `--explain`, which no claim says; not decided here, and the
+    built behaviour is described there. No claim or criterion changes.
 
 out_of_scope:
   - "Refusing, appending to or backing up an existing file — § 5 #7."
   - "Any write but this file — C-7; a run with no report path writes nothing, 0001-F2 B-012 (0030)."
   - "`SpechtReportDocumentMapper`, `SpechtReportSerializer` and `SpechtReportStore` themselves - item 0167."
   - "A document at the path for a run that exits `2` or `3` - `0001-F3` § 5 #13."
+  - "Resolving a relative `--report` path from the root - `0001-F3` § 5 #14."
+  - "What `--report` does beside `--explain` - `0001-F3` OQ-10, open."
