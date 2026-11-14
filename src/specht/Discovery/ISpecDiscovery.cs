@@ -67,6 +67,18 @@ public interface ISpecDiscovery
     IReadOnlyList<string> FindRecords(string root, SpechtLocation specification, string folder);
 
     /// <summary>
+    /// Lists the claim files of one claim file set: each <c>.feature</c> file its glob matches outside the manifest's
+    /// exclusions (<c>0001-F16</c> B-001).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="glob">The set's glob.</param>
+    /// <param name="exclusions">The selected manifest's directory exclusions.</param>
+    /// <returns>The root-relative path of each claim file, in root-relative ordinal order.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    /// <implements epic="0001" feature="F19" claim="B-078" />
+    IReadOnlyList<string> FindClaimFiles(string root, string glob, IReadOnlyList<string> exclusions);
+
+    /// <summary>
     /// Lists each declared test file once, in root-relative ordinal order, outside the manifest's exclusions; with no glob
     /// declared it lists nothing.
     /// </summary>

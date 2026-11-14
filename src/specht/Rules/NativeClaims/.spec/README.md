@@ -180,7 +180,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -373,7 +373,15 @@ a new init member at the index of `ClaimInput.Files`, empty by default, as
 sets match, or that is also a companion, is read once. The builder takes each
 text from that dictionary and touches no file system.
 
-**The tag forms.** `SpechtModelBuilder.ClaimSets`, a private step of `Build`
+From item `0440` (`0001-F19` B-078) that listing is
+`ISpecDiscovery.FindClaimFiles(root, set.Glob, exclusions)`, the same
+`FindTestFiles` call and `.feature` filter in one place, and
+`SpechtModelBuilder.ClaimSets` is `internal static`, taking the sets and each
+one's listed files, so `0001-F19`'s collision guard reads one Feature's sets
+through the same reader. `Build` hands it every set and
+`SpechtListing.ClaimFiles`, so the check reads as described here.
+
+**The tag forms.** `SpechtModelBuilder.ClaimSets`, a step of `Build`
 declared in [`SpechtModelBuilder.cs`](../../../Model/SpechtModelBuilder.cs),
 composes one `GherkinClaimTags` and reads every set with it, since every set
 reads the tree's grammar:

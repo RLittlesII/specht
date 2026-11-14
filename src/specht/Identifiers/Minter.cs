@@ -78,6 +78,9 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-075" />
     /// <implements epic="0001" feature="F19" claim="B-076" />
     /// <implements epic="0001" feature="F19" claim="B-077" />
+    /// <implements epic="0001" feature="F19" claim="B-078" />
+    /// <implements epic="0001" feature="F19" claim="B-079" />
+    /// <implements epic="0001" feature="F19" claim="B-080" />
     public string Mint(SpechtManifestDocument manifest, string type, string root, string? feature) =>
         manifest.Structure.Ids is { } records
             ? MintFromRecord(manifest.Structure, records, manifest.Document, type, root, feature)
@@ -111,8 +114,9 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
 
     /// <summary>
     /// Builds the strategy <c>mint[type]</c> names from that entry alone and draws one id from it, once every one of C-13's
-    /// types <c>mint</c> opts in has a grammar in <c>identifiers</c>. A member opts its type in when it is an object whose
-    /// <c>strategy</c> is a string. The formatting decorator starts each candidate with the entry's prefix, the validation
+    /// types <c>mint</c> opts in has a grammar in <c>identifiers</c>. A member opts its type in when it is one of C-13's types
+    /// and an object whose <c>strategy</c> is a string; a member of any other name opts nothing in, whatever <c>identifiers</c>
+    /// holds for it (B-079, B-080). The formatting decorator starts each candidate with the entry's prefix, the validation
     /// decorator refuses one the type's <c>identifiers</c> grammar does not match, and the guard draws again while the tree under
     /// <paramref name="root"/> holds the formatted candidate.
     /// </summary>
@@ -124,7 +128,7 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <returns>The id.</returns>
     /// <exception cref="IdRefusedException">
     /// One of C-13's types <c>mint</c> opts in has no grammar, <c>mint</c> opts in <c>epic</c>, <c>feature</c> or
-    /// <c>task</c>, the type is not opted in or its entry names no strategy (an
+    /// <c>task</c>, the type is none of C-13's types, is not opted in or its entry names no strategy (an
     /// <see cref="IdNotOptedInException"/>), its entry names a strategy other than <c>nanoid</c> or <c>snowflake</c>, the
     /// type is per-Feature and the request names no Feature (an <see cref="IdFeatureNotNamedException"/>) or a folder that
     /// holds none (an <see cref="IdFeatureNotFoundException"/>), the strategy refuses its settings or its clock reads earlier
@@ -164,6 +168,8 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-059" />
     /// <implements epic="0001" feature="F19" claim="B-060" />
     /// <implements epic="0001" feature="F19" claim="B-061" />
+    /// <implements epic="0001" feature="F19" claim="B-079" />
+    /// <implements epic="0001" feature="F19" claim="B-080" />
     private string MintBelowIds(JsonObject manifest, string type, string root, SpechtDiscoveryInputs discovery, string? feature)
     {
         var mint = manifest["mint"] as JsonObject;
@@ -184,7 +190,7 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
             }
         }
 
-        if (mint?[type] is not JsonObject entry)
+        if (!Types.Contains(type) || mint?[type] is not JsonObject entry)
         {
             throw new IdNotOptedInException($"The type '{type}' is not opted in under 'mint'.");
         }
@@ -202,7 +208,8 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <summary>
     /// Mints from the type's <c>ids</c> record once no record's <c>mint</c> names a <c>prefix</c> (B-075): the strategy its
     /// <c>mint</c> names, its head for the Feature's claim prefix ahead of each draw, its grammar and the other type's longer
-    /// head as validation, and the guard over the headed candidate (B-063, B-065 to B-068, B-070 to B-077).
+    /// head as validation, and the guard over the headed candidate (B-063, B-065 to B-068, B-070 to B-077), which for a
+    /// <c>claim</c> also holds the claims the check builds from the Feature's claim file sets (B-078).
     /// </summary>
     /// <param name="structure">The manifest's structure, which holds the records, the Feature keys and the claim tag case setting.</param>
     /// <param name="records">The seven effective records.</param>
@@ -225,6 +232,7 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
     /// <implements epic="0001" feature="F19" claim="B-075" />
     /// <implements epic="0001" feature="F19" claim="B-076" />
     /// <implements epic="0001" feature="F19" claim="B-077" />
+    /// <implements epic="0001" feature="F19" claim="B-078" />
     private string MintFromRecord(
         SpechtStructure structure, IReadOnlyDictionary<string, SpechtIdRecord> records, JsonObject manifest, string type, string root, string? feature)
     {
@@ -251,7 +259,9 @@ public sealed class Minter(IRandomSource random, HeldIds held, IClock clock)
         var formatted = new FormattingDecorator(strategy, JsonValue.Create(record.Head(heads.Prefix)), entry["encoding"], name, type, key);
         var validated = new ValidationDecorator(
             formatted, record.Grammar(heads.Prefix), $"ids.{type}.id", type, Reserved(type, heads), structure.TagComparison);
-        return new CollisionGuardDecorator(validated, entry["attempts"], type, held.Of(type, root, structure.Discovery, location), key).Next();
+        var names = held.Of(type, root, structure.Discovery, location);
+        IReadOnlyList<string> holding = type == "claim" && location is not null ? [.. names, .. held.NativeClaimsOf(root, structure, location)] : names;
+        return new CollisionGuardDecorator(validated, entry["attempts"], type, holding, key).Next();
     }
 
     /// <summary>The Feature a per-Feature type is minted for, as the check lists it; nothing for a repository-wide type.</summary>
