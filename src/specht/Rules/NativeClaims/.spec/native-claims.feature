@@ -40,6 +40,7 @@ Feature: Native Gherkin claims
   @B-003
   Scenario: No record means a current Feature with no edges
     Given the claim file set names no record
+    And the glob matches ".spec/features/arithmetic/add.feature"
     When the check runs
     Then Feature "F1" has the lifecycle "current"
     And Feature "F1" declares no dependency edge
@@ -271,19 +272,30 @@ Feature: Native Gherkin claims
       | the Feature              | every Scenario and Scenario Outline in the file |
 
   @B-026
-  Scenario: A native Feature is counted under a claims entry
+  Scenario: A native Feature is counted under a claims entry in the summary
     Given the glob matches ".spec/features/arithmetic/add.feature"
-    When the check runs with "--json"
-    Then the summary counts 1 under "claims", after the manifest's layouts
-    And the report's layouts count 1 under "claims", after the manifest's layouts
+    When the check runs
+    Then the summary lines count 1 under "claims", after the manifest's layouts
 
   @B-026
-  Scenario: A manifest layout named claims keeps its own entry
+  Scenario: A native Feature is counted under a claims entry in the report
+    Given the glob matches ".spec/features/arithmetic/add.feature"
+    When the check runs with "--json"
+    Then the report's layouts count 1 under "claims", after the manifest's layouts
+
+  @B-026
+  Scenario: A manifest layout named claims keeps its own entry in the summary
+    Given the manifest declares a layout named "claims" that discovers one specification
+    And the glob matches ".spec/features/arithmetic/add.feature"
+    When the check runs
+    Then the summary lines have two "claims" counts, the manifest layout's first
+
+  @B-026
+  Scenario: A manifest layout named claims keeps its own entry in the report
     Given the manifest declares a layout named "claims" that discovers one specification
     And the glob matches ".spec/features/arithmetic/add.feature"
     When the check runs with "--json"
-    Then the summary has two "claims" counts, the manifest layout's first
-    And the report's layouts have two "claims" entries, the manifest layout's first
+    Then the report's layouts have two "claims" entries, the manifest layout's first
 
   @B-026
   Scenario: A native Feature is reported at its record
@@ -426,8 +438,8 @@ Feature: Native Gherkin claims
     Given the claim file set names no record
     And no file matches ".spec/features/arithmetic/*.feature" outside the exclusions
     And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
-    When the check runs with "--json"
-    Then the summary counts 0 under "claims"
+    When the check runs
+    Then the summary lines count no Feature under "claims"
     And no "SPEC3002" is reported
 
   @B-037
