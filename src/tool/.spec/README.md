@@ -2903,7 +2903,7 @@ naming the `mint` entry as a whole name and no `ids` record.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-14 (OQ-75 resolved, moot under `0.4.0`); spec-author, 2026-11-12 (one `ids` record per type: OQ-78 raised and resolved, the `0.minor` cut checked, the move into `ids`, OQ-79 raised); spec-author, 2026-11-08 (item `0352`: OQ-77 raised on spec-review round 2) -->
+<!-- last written by: spec-author, 2026-11-14 (item `0393` review round 1: the OQ-75 entry's § 8 note stated as of its writing); spec-author, 2026-11-14 (OQ-75 resolved, moot under `0.4.0`); spec-author, 2026-11-12 (one `ids` record per type: OQ-78 raised and resolved, the `0.minor` cut checked, the move into `ids`, OQ-79 raised); spec-author, 2026-11-08 (item `0352`: OQ-77 raised on spec-review round 2) -->
 
 **Independent review correction, 2026-10-14.** ADR-0014 records the owner's
 benchmark gate and evaluation of martinothamar/Mediator. The premature CQRS,
@@ -2916,7 +2916,7 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 - 2026-11-14, spec-author, on the owner's selection "(c) Moot under 0.4.0", relayed through the coordinating session, whose wording the option is. OQ-75 is resolved: it does not apply, since `0001-F16`'s rules enter `0.4.0`, a `0.minor` step, and B-154 compares patch neighbours alone (OQ-78).
   - Unchanged: B-014, B-154, C-11 and `0001-F3` B-005. No claim or constraint text changed.
   - `0001-F16` items `0393` to `0395`, which named OQ-75 as what they waited on, no longer wait on it.
-  - Not edited, as test-writer's: § 8's "Open, item `0388`" note still reads OQ-75 as unanswered.
+  - Not edited here, as test-writer's: § 8's "Open, item `0388`" note read OQ-75 as unanswered when this entry was written; test-writer has since edited it.
 
 - 2026-11-12, one `ids` record per type, spec-author, on the owner's selections recorded in [`0001-F19` decision 0005](../../specht/Identifiers/.spec/decisions/0005-mint-reads-one-ids-record-per-type-from-schema-0-4-0.md). Schema `0.4.0` is cut from `0.3.1`, which a published package carries, as a `0.minor` step (`0001-F5` A-8, decision 0024).
   - Raised: OQ-78, whether the wider shipped `claim` grammar is a patch. Resolved the same day by the owner, "0.4.0, widen all seven (Recommended)": a `0.minor` step, so C-11 holds as written.

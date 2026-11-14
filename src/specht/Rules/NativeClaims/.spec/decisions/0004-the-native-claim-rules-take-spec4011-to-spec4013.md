@@ -56,6 +56,7 @@ one `main` would each take `SPEC4011`.
 
 ## Affects
 
+OQ-5, whose resolution left the ids undecided, noted with this record;
 B-009, B-010, B-014 to B-016, B-018, B-019, B-033 and B-034, each amended
 to name its id; their scenarios in `native-claims.feature`; § 10; Tasks;
 items `0393` to `0395`. § 7's working names are the implementer's to rename.
