@@ -132,8 +132,6 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         return sets;
     }
 
-    private const string StatusTitle = "Status";
-
     /// <summary>
     /// Makes one Feature of each claim file set that has a location: its document the loaded record, or empty text with no
     /// record; no companion; the grammar of a Feature with no claim prefix whatever the record declares; its identity the
@@ -172,4 +170,6 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
             };
         }
     }
+
+    private const string StatusTitle = "Status";
 }
