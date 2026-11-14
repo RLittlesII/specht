@@ -98,7 +98,13 @@ public sealed class SpechtEvaluatorNativeFeaturesUnitTests
     public void AMatrixRuleOverANativeFeatureWithAClaim_WhenEvaluated_ShouldReportNothingAndNotFail(string members, string ruleId)
     {
         // Given
-        (string Path, string Text)[] tree = [(Add, AddsTwoNumbers)];
+        (string Path, string Text)[] tree =
+        [
+            (Add, AddsTwoNumbers),
+            (".spec/features/arithmetic/README.md",
+                "---\nid: F1\n---\n\n## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| --- | --- | --- | --- |\n"
+                + "| B-001 | Adds | | Covered |\n"),
+        ];
 
         // When
         var violations = Evaluate(members, tree).Violations;

@@ -742,7 +742,7 @@ and item `0390`'s `ClaimSets` carry the work. No type is added.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-14 (item 0391 review round 1, finding 1: the matrix rules over a native Feature); before: test-writer, 2026-11-13 (item 0391: a claim file set's record, identity and report; the item 0390 trees renamed to Feature F1); before: test-writer, 2026-11-13 (item 0390 review round 1: finding 2 resolved by OQ-10, the declarations stated as the red state at 1782f082; item 0390: the native claim reader) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0391, after the rebase onto main with 0337: SPEC4010 over a native Feature's record matrix); before: test-writer, 2026-11-14 (item 0391 review round 1, finding 1: the matrix rules over a native Feature); before: test-writer, 2026-11-13 (item 0391: a claim file set's record, identity and report; the item 0390 trees renamed to Feature F1); before: test-writer, 2026-11-13 (item 0390 review round 1: finding 2 resolved by OQ-10, the declarations stated as the red state at 1782f082; item 0390: the native claim reader) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1059,18 +1059,25 @@ against the production code at `cc1c2146` with those declarations.
   implementation must not break.
 
   The third mechanism keeps a native Feature evaluable by the rules that
-  resolve claims through `MatrixResolver.ResolveClaims`, which reads a claim's
-  matrix status from `SpechtClaims.Section`, `null` for a native Feature. A
-  rule that throws there is reported by `FaultIsolatedRule` as a failure at
-  `.specht/manifest.json`, line `0`, so a native Feature with a claim would
-  fail the check. Test:
+  read claims or a matrix through `MatrixResolver`. `ResolveClaims` reads a
+  claim's matrix status from `SpechtClaims.Section`, `null` for a native
+  Feature. A rule that throws there is reported by `FaultIsolatedRule` as a
+  failure at `.specht/manifest.json`, line `0`, so a native Feature with a
+  claim would fail the check. `Resolve` reads the matrix of the native
+  Feature's document, which is its record, so a rule that walks those rows
+  reports verdicts that B-023 and B-024 leave to item `0396`. Test:
   `AMatrixRuleOverANativeFeatureWithAClaim_WhenEvaluated_ShouldReportNothingAndNotFail`,
-  over `NativeMatrixRuleSilences`, a tree holding `add.feature` alone. Its
-  rows are `SPEC4008` at its default level and `SPEC4006`, off by default, at
-  `error`. Each checks that the rule reports nothing. Red, from review round 1:
-  the `SPEC4008` row reads `Rule SPEC4008 failed with NullReferenceException.`
-  The `SPEC4006` row passes when written, since `RetiredClaimRule` already
-  skips a native Feature; with that skip removed it fails the same way.
+  over `NativeMatrixRuleSilences`. Its tree holds `add.feature` and a record
+  whose § 9 matrix has a `Covered` row for `B-001`, and each set names that
+  record. Its rows are `SPEC4008` and `SPEC4010` at their default level and
+  `SPEC4006`, off by default, at `error`. Each checks that the rule reports
+  nothing. Red, from review round 1: the `SPEC4008` row reads
+  `Rule SPEC4008 failed with NullReferenceException.` The `SPEC4006` row
+  passes when written, since `RetiredClaimRule` then skipped a native Feature;
+  with that skip removed it fails the same way. Red, after the rebase onto
+  item `0337`: the `SPEC4010` row reads
+  `.spec/features/arithmetic/README.md(9): error SPEC4010: § 9 status 'Covered' overclaims: its scenario does not resolve [B-001]`,
+  since `StatusRule` walks `Resolve`'s rows with no skip.
 
 - **B-017** - mechanism: `DuplicateIdentityRule` groups `FeaturesWithIdentity`,
   which holds a native Feature because its `Epic` and `Id` are set, and reports
@@ -1186,9 +1193,9 @@ one.
 - what a rule that § 7 skips reports for a native Feature. The skips defer
   B-008, B-020, B-021, B-023 and B-024 to items `0392` and `0396`. A test
   that a skipped rule is silent would assert a deferral, not a claim. The one
-  exception is the matrix rules, `SPEC4008` and `SPEC4006`: without the skip
-  they fail on a native Feature rather than report on it, which B-003's third
-  mechanism pins. Item `0396` replaces that test's silence with the verdicts
+  exception is the matrix rules, `SPEC4008`, `SPEC4006` and `SPEC4010`:
+  without a skip they fail on a native Feature, or report on its record's
+  matrix, which B-003's third mechanism pins. Item `0396` replaces that test's silence with the verdicts
   B-023 and B-024 state;
 - a record that `TryLoad` cannot read, items `0395` (B-033 to B-035);
 - the claim files as a native Feature's companions, item `0392` (B-021).
