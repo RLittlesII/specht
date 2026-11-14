@@ -2,7 +2,7 @@ id: "0337"
 type: task
 title: Report a § 9 status the scenarios and tests do not bear out, SPEC4010, in schema 0.4.0
 
-status: ready
+status: in-progress
 
 risk: 4
 
@@ -23,7 +23,7 @@ claims:
   - B-017
 
 created: "2026-11-01"
-updated: "2026-11-12"
+updated: "2026-11-13"
 closed: null
 
 summary: |
