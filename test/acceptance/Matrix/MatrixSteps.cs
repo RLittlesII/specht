@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-020, B-022 to B-027).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-020, B-022 to B-028).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -348,6 +348,29 @@ public sealed class MatrixSteps
         _status = status;
     }
 
+    [Given("^a row whose Status is \"([^\"]*)\", whose scenario (resolves|does not resolve) and whose Test cell is \"([^\"]*)\" with no inline code$")]
+    public void GivenStatusScenarioAndPlainTestCell(string status, string scenario, string cell)
+    {
+        GivenStatusAndScenario(status, scenario);
+        GivenPlainTestCell(cell);
+    }
+
+    [Given("a matrix row for claim B-004 whose Status is {string} and whose tests all resolve")]
+    public void GivenRowWithResolvedTests(string status) => GivenStatusAndHeldTests(status, "`AlphaTest`, `BetaTest`");
+
+    [Given("its matrix row's Status is {string} and its tests all resolve")]
+    public void GivenMatrixStatusWithResolvedTests(string status) => GivenRowWithResolvedTests(status);
+
+    [Given("claim B-004 is marked {string}, and no scenario carries its tag")]
+    public void GivenRetiredUncarriedClaim(string status) => GivenUntaggedClaim(status);
+
+    [Given("claim B-004 is not among the acceptance criteria, and no scenario carries its tag")]
+    public void GivenUndeclaredUncarriedClaim()
+    {
+        _criterionId = "B-001";
+        _tags = string.Empty;
+    }
+
     [Given("the sign-off table uses the manifest's renamed column headers")]
     public void GivenRenamedHeaders()
     {
@@ -371,7 +394,7 @@ public sealed class MatrixSteps
         var sections = SpechtTree.Sections.Select(section => section.Split('\n')[0] switch
         {
             "## 3. Acceptance Criteria" => "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n"
-                + $"| {_claimId} | Behavior | Decision | {_claim} |\n",
+                + $"| {_criterionId ?? _claimId} | Behavior | Decision | {_claim} |\n",
             "## 9. Traceability Matrix" => $"## 9. Traceability Matrix\n\n| {_matrix} |\n| --- | --- | --- | --- |\n"
                 + string.Concat(Enumerable.Repeat($"| {_claimId} | {_scenario} | {_test} | {_status} |\n", _rowCount)),
             "## 12. Sign-off" => $"## 12. Sign-off\n\n| {_headers} |\n| --- | --- | --- | --- |\n| 1-5 | {_signOff} | {_reviewer} | Decision |\n",
@@ -552,6 +575,7 @@ public sealed class MatrixSteps
     private SpechtReport? _report;
     private string _claim = "Active";
     private string _claimId = "B-004";
+    private string? _criterionId;
     private string _matrix = "Claim ID | Scenario | Test | Status";
     private string _renamed = string.Empty;
     private string _extension = ".cs";

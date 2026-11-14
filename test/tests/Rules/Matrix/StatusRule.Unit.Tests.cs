@@ -8,7 +8,7 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Rules.Matrix;
 
 /// <summary>
-/// SPEC033 over an in-memory tree whose matrix headers and markers are renamed (0001-F12 B-012 to B-017, A-1 to A-3, C-3, C-5),
+/// SPEC033 over an in-memory tree whose matrix headers and markers are renamed (0001-F12 B-012 to B-017, B-028, A-1 to A-3, C-3, C-5),
 /// alone and beside SPEC023 and SPEC032 under the 0.4.0 pin, which reports them under <c>SPEC4010</c>, <c>SPEC4008</c> and
 /// <c>SPEC4009</c> (ADR-0029; decision 0005).
 /// </summary>
@@ -88,7 +88,7 @@ public sealed class StatusRuleUnitTests
     [Theory]
     [ClassData(typeof(StatusBesideOtherRules))]
     public void AMatrixRow_WhenTheMissingScenarioUnresolvedTestAndStatusRulesEvaluate_ShouldReportTheStatusBesideSpec4009AndNeverBesideSpec4008(
-        bool carried, string test, string status, string[] expected)
+        string criterion, string companion, string test, string status, string[] expected)
     {
         // Given
         IFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -105,14 +105,13 @@ public sealed class StatusRuleUnitTests
                 ## 3. Acceptance Criteria
                 | ID | Claim | Source | Status |
                 | --- | --- | --- | --- |
-                | B-001 | Behavior | Decision | Active |
+                | {{criterion}} |
                 ## 9. Traceability Matrix
                 | Claim | Case | Tests | State |
                 | --- | --- | --- | --- |
                 | B-001 | First case | {{test}} | {{status}} |
                 """),
-            [Path.Combine("repo", "src", "sample", ".spec", "sample.feature")] =
-                new($"Feature: Sample\n\n{(carried ? "  @B-001\n" : string.Empty)}  Scenario: First case\n    Given a thing\n"),
+            [Path.Combine("repo", "src", "sample", ".spec", "sample.feature")] = new(companion),
             [Path.Combine("repo", "test", "Names.cs")] = new("class Names\n{\n    void AlphaTest() {}\n    void BetaTest() {}\n}\n"),
         });
         var model = EngineServices.Reader(fileSystem).Read(fileSystem.Path.GetFullPath("repo"), null);
