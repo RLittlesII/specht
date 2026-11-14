@@ -28,6 +28,9 @@
 0436
 0437
 0438
+# 0440, the guard over native claims and a mint member outside the id types;
+# added by the owner's selection, 2026-11-14.
+0440
 # Remaining matrix validation, moved from 0.4.0 beside facts and coverage.
 0335
 0336

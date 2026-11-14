@@ -773,3 +773,31 @@ Feature: Id generation
     When a claim id is requested for that Feature
     Then the minted id begins with "ACTIVITY-"
     And the check accepts it as a claim id of that Feature
+
+  @B-078
+  Scenario Outline: A claim id is checked against the claims a Feature's Gherkin files declare
+    Given a manifest pinned to schema 0.4.0 that opts claim ids in to Nano ID
+    And it takes the claims of a Feature that declares no prefix from that Feature's Gherkin files
+    And <an element> in those files already declares the claim id that would be minted first
+    When a claim id is requested for that Feature
+    Then the minted id is one no claim of that Feature is declared with
+
+    Examples:
+      | an element  |
+      | a scenario  |
+      | a rule      |
+      | the Feature |
+
+  @B-079 @boundary
+  Scenario: A mint entry for a name that is no id type mints nothing
+    Given a manifest pinned to schema 0.3.1
+    And its id settings opt the name "widget" in to Nano ID with a size of 6
+    When an id of the type "widget" is requested
+    Then nothing is written on standard output
+
+  @B-080 @boundary
+  Scenario: A mint entry for a name that is no id type is not found
+    Given a manifest pinned to schema 0.3.1
+    And its id settings opt the name "widget" in to Nano ID with a size of 6
+    When an id of the type "widget" is requested
+    Then the request ends as it does for something named on the command line that is not found
