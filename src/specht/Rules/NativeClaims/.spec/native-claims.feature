@@ -10,15 +10,15 @@ Feature: Native Gherkin claims
     And the manifest's "exclusions" does not hold "/.spec"
     And the manifest declares no epic grammar
     And the manifest sets "claim.source" to "gherkin"
-    And "claim.files" holds one claim file set with glob ".spec/features/arithmetic/*.feature" and feature "arithmetic"
+    And "claim.files" holds one claim file set with glob ".spec/features/arithmetic/*.feature" and feature "F1"
     And the manifest leaves "claim.tag" and "ids.claim" at their defaults
 
   @B-001
   Scenario: Claims come from the claim files a set names
     Given ".spec/features/arithmetic/add.feature" declares scenarios tagged "@B-001" and "@B-002"
     When the check runs
-    Then Feature "arithmetic" has the claims "B-001" and "B-002"
-    And no claims table is read for Feature "arithmetic"
+    Then Feature "F1" has the claims "B-001" and "B-002"
+    And no claims table is read for Feature "F1"
 
   @B-002
   Scenario: Without the selection nothing changes
@@ -33,22 +33,22 @@ Feature: Native Gherkin claims
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And the record's frontmatter sets "spec_status" to "approved" and "depends_on" to "F2"
     When the check runs
-    Then Feature "arithmetic" has the lifecycle "approved"
-    And Feature "arithmetic" depends on "F2"
+    Then Feature "F1" has the lifecycle "approved"
+    And Feature "F1" depends on "F2"
     And the record's frontmatter is held to the Feature schema
 
   @B-003
   Scenario: No record means a current Feature with no edges
     Given the claim file set names no record
     When the check runs
-    Then Feature "arithmetic" has the lifecycle "current"
-    And Feature "arithmetic" declares no dependency edge
+    Then Feature "F1" has the lifecycle "current"
+    And Feature "F1" declares no dependency edge
 
   @B-004
   Scenario Outline: A claim tag declares a claim at its element
     Given ".spec/features/arithmetic/add.feature" carries "@B-001" on a <element> at line <line>
     When the check runs
-    Then Feature "arithmetic" has the claim "B-001" located at ".spec/features/arithmetic/add.feature" line <line>
+    Then Feature "F1" has the claim "B-001" located at ".spec/features/arithmetic/add.feature" line <line>
 
     Examples:
       | element          | line |
@@ -61,21 +61,21 @@ Feature: Native Gherkin claims
   Scenario: An ordinary tag declares nothing
     Given ".spec/features/arithmetic/add.feature" has a scenario tagged "@B-001" and "@smoke" and "@B-01"
     When the check runs
-    Then Feature "arithmetic" has exactly the claim "B-001"
+    Then Feature "F1" has exactly the claim "B-001"
     And no violation names "@smoke" or "@B-01"
 
   @B-006
   Scenario: An outline declares one claim
     Given ".spec/features/arithmetic/add.feature" has a Scenario Outline tagged "@B-003" with three Examples rows
     When the check runs
-    Then Feature "arithmetic" has the claim "B-003" exactly once
+    Then Feature "F1" has the claim "B-003" exactly once
     And the claim is located at the Scenario Outline's keyword line
 
   @B-007
   Scenario: A Rule declares once for its scenarios
     Given ".spec/features/arithmetic/add.feature" has a Rule tagged "@B-004" holding two untagged scenarios
     When the check runs
-    Then Feature "arithmetic" has the claim "B-004" exactly once
+    Then Feature "F1" has the claim "B-004" exactly once
     And the claim is located at the Rule's keyword line
     And no violation names either scenario
 
@@ -92,7 +92,7 @@ Feature: Native Gherkin claims
     Given ".spec/features/arithmetic/add.feature" has an Examples block tagged "@B-005" at line 14
     When the check runs
     Then the output has a line ".spec/features/arithmetic/add.feature(14): error SPEC026:" naming "B-005"
-    And Feature "arithmetic" has no claim "B-005"
+    And Feature "F1" has no claim "B-005"
 
   @B-010
   Scenario: A scenario with no claim is reported
@@ -133,14 +133,14 @@ Feature: Native Gherkin claims
     Given the manifest leaves "claim.plannedTags" at its default
     And ".spec/features/arithmetic/add.feature" has a scenario tagged "@B-001" and "@ignore"
     When the check runs
-    Then Feature "arithmetic" has the claim "B-001"
+    Then Feature "F1" has the claim "B-001"
     And the scenario is marked planned in the catalogue
 
   @B-013
   Scenario: A planned Examples block keeps its outline's claim
     Given ".spec/features/arithmetic/add.feature" has a Scenario Outline tagged "@B-003" with an Examples block tagged "@ignore"
     When the check runs
-    Then Feature "arithmetic" has the claim "B-003"
+    Then Feature "F1" has the claim "B-003"
     And that block's rows are marked planned in the catalogue
 
   @B-014
@@ -148,14 +148,14 @@ Feature: Native Gherkin claims
     Given ".spec/features/arithmetic/add.feature" opens with "# language: de" at line 1
     When the check runs
     Then the output has a line ".spec/features/arithmetic/add.feature(1): error SPEC027:"
-    And Feature "arithmetic" has no claim from that file
+    And Feature "F1" has no claim from that file
 
   @B-015
   Scenario: A claim file with no Feature line is reported
     Given ".spec/features/arithmetic/notes.feature" has no "Feature:" line
     When the check runs
     Then the output has a line ".spec/features/arithmetic/notes.feature(0): error SPEC027:"
-    And Feature "arithmetic" has no claim from that file
+    And Feature "F1" has no claim from that file
 
   @B-016
   Scenario: A set matching no file is reported
@@ -168,39 +168,39 @@ Feature: Native Gherkin claims
   Scenario: One identity declared by a set and a discovered specification
     Given the claim file set names no record
     And the glob matches ".spec/features/arithmetic/add.feature"
-    And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
+    And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
     When the check runs
     Then the output has a line "src/arithmetic/.spec/README.md(" naming "SPEC3002"
     And the output has a line ".spec/features/arithmetic/add.feature(0):" naming "SPEC3002"
 
   @B-017
   Scenario: One identity declared by two sets
-    Given the manifest declares a second claim file set with glob ".spec/features/sums/*.feature" and feature "arithmetic"
+    Given the manifest declares a second claim file set with glob ".spec/features/sums/*.feature" and feature "F1"
     And neither set names a record
     And the globs match ".spec/features/arithmetic/add.feature" and ".spec/features/sums/total.feature"
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(0):" naming "SPEC3002" with the identifier "arithmetic"
-    And the output has a line ".spec/features/sums/total.feature(0):" naming "SPEC3002" with the identifier "arithmetic"
+    Then the output has a line ".spec/features/arithmetic/add.feature(0):" naming "SPEC3002" with the identifier "F1"
+    And the output has a line ".spec/features/sums/total.feature(0):" naming "SPEC3002" with the identifier "F1"
 
   @B-018
   Scenario: A file two sets match is reported
-    Given the manifest declares a second claim file set with glob ".spec/features/**/add.feature" and feature "sums"
+    Given the manifest declares a second claim file set with glob ".spec/features/**/add.feature" and feature "F2"
     And ".spec/features/arithmetic/add.feature" exists
     When the check runs
     Then the output has a line ".spec/features/arithmetic/add.feature(0): error SPEC027:"
-    And neither Feature "arithmetic" nor Feature "sums" has a claim from that file
+    And neither Feature "F1" nor Feature "F2" has a claim from that file
 
   @B-019
   Scenario: A Feature-level tag that disagrees with its set is reported
     Given the manifest sets "claim.scopes.featureTag" to "@spec.feature:{feature}"
-    And ".spec/features/arithmetic/add.feature" tags its Feature "@spec.feature:sums" at line 1
+    And ".spec/features/arithmetic/add.feature" tags its Feature "@spec.feature:F2" at line 1
     When the check runs
     Then the output has a line ".spec/features/arithmetic/add.feature(1): error SPEC027:"
 
   @B-019
   Scenario: A Feature-level tag that agrees, or none, is not reported
     Given the manifest sets "claim.scopes.featureTag" to "@spec.feature:{feature}"
-    And ".spec/features/arithmetic/add.feature" tags its Feature "@spec.feature:arithmetic"
+    And ".spec/features/arithmetic/add.feature" tags its Feature "@spec.feature:F1"
     And ".spec/features/arithmetic/subtract.feature" has no Feature-level tag
     When the check runs
     Then no "SPEC027" is reported for either file
@@ -225,8 +225,8 @@ Feature: Native Gherkin claims
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And three claim files sit beside the record
     When the check runs
-    Then no "SPEC4001" is reported for Feature "arithmetic"
-    And no "SPEC4002" is reported for Feature "arithmetic"
+    Then no "SPEC4001" is reported for Feature "F1"
+    And no "SPEC4002" is reported for Feature "F1"
 
   @B-022
   Scenario: A claim file is not a stray companion
@@ -253,9 +253,9 @@ Feature: Native Gherkin claims
   Scenario: Without a matrix the trace says none
     Given the claim file set names no record
     When the check runs
-    Then no "SPEC4004" and no rule of Feature "0001-F12" is reported for Feature "arithmetic"
+    Then no "SPEC4004" and no rule of Feature "0001-F12" is reported for Feature "F1"
     When "specht trace" runs
-    Then each claim of Feature "arithmetic" has the status "none"
+    Then each claim of Feature "F1" has the status "none"
 
   @B-025
   Scenario Outline: The scenarios carrying a claim
@@ -288,7 +288,7 @@ Feature: Native Gherkin claims
   @B-026
   Scenario: A native Feature is reported at its record
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
-    And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
+    And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
     When the check runs
     Then the output has a line ".spec/features/arithmetic/README.md(" naming "SPEC3002"
 
@@ -296,16 +296,16 @@ Feature: Native Gherkin claims
   Scenario: A native Feature with no record is reported at its first claim file
     Given the claim file set names no record
     And the glob matches ".spec/features/arithmetic/subtract.feature" and ".spec/features/arithmetic/add.feature"
-    And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
+    And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
     When the check runs
     Then the output has a line ".spec/features/arithmetic/add.feature(" naming "SPEC3002"
 
   @B-027
   Scenario: A set's identity carries an epic under the epic grammar
     Given the manifest declares "identifiers.epic"
-    And the claim file set has epic "0001" and feature "arithmetic"
+    And the claim file set has epic "0001" and feature "F1"
     When the check runs
-    Then Feature "arithmetic" has the identity "0001" "arithmetic"
+    Then Feature "F1" has the identity "0001" "F1"
 
   @B-027
   Scenario: A set without an epic under the epic grammar is an invalid manifest
@@ -384,7 +384,7 @@ Feature: Native Gherkin claims
     And the record's frontmatter sets "claim_prefix" to "ADD-"
     And ".spec/features/arithmetic/add.feature" has scenarios tagged "@B-001" and "@ADD-002"
     When the check runs
-    Then Feature "arithmetic" has exactly the claim "B-001"
+    Then Feature "F1" has exactly the claim "B-001"
 
   @B-033
   Scenario Outline: A record the check cannot read is reported
@@ -411,8 +411,8 @@ Feature: Native Gherkin claims
     Given the claim file set names a record that <condition>
     And the glob matches ".spec/features/arithmetic/add.feature"
     When the check runs
-    Then Feature "arithmetic" has the lifecycle "current"
-    And Feature "arithmetic" declares no dependency edge
+    Then Feature "F1" has the lifecycle "current"
+    And Feature "F1" declares no dependency edge
 
     Examples:
       | condition                        |
@@ -425,7 +425,7 @@ Feature: Native Gherkin claims
   Scenario: A set with no record and no claim file is no Feature
     Given the claim file set names no record
     And no file matches ".spec/features/arithmetic/*.feature" outside the exclusions
-    And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
+    And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
     When the check runs with "--json"
     Then the summary counts 0 under "claims"
     And no "SPEC3002" is reported
@@ -435,14 +435,29 @@ Feature: Native Gherkin claims
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And the record's frontmatter sets "id" to "F9"
     When the check runs
-    Then Feature "arithmetic" has the identity "arithmetic"
+    Then Feature "F1" has the identity "F1"
     And no Feature has the identity "F9"
+
+  @B-038
+  Scenario Outline: A set identity outside its grammar is an invalid manifest
+    Given the manifest <grammar>
+    And the claim file set has <identity>
+    When the check runs
+    Then the exit code is 3
+    And stderr names "claim.files"
+    And no violation is printed
+
+    Examples:
+      | grammar                     | identity                             |
+      | declares no epic grammar    | feature "arithmetic"                 |
+      | declares "identifiers.epic" | epic "0001" and feature "arithmetic" |
+      | declares "identifiers.epic" | epic "1" and feature "F1"            |
 
   @boundary
   Scenario: A claim is never inferred from a title or a step
     Given ".spec/features/arithmetic/add.feature" has an untagged scenario titled "B-009 adds two numbers"
     When the check runs
-    Then Feature "arithmetic" has no claim "B-009"
+    Then Feature "F1" has no claim "B-009"
     And the scenario is reported under "SPEC025"
 
   @boundary
