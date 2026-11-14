@@ -124,6 +124,7 @@ public sealed class SchemaVersions
             { Major: 0, Minor: 4, Patch: 0 } => new(Shipped(new SemanticVersion(0, 3, 1)), StringComparer.Ordinal)
             {
                 ["SPEC023"] = "SPEC4008",
+                ["SPEC024"] = "SPEC2003",
                 ["SPEC033"] = "SPEC4010",
             },
             _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),

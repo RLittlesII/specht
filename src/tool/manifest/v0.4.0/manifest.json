@@ -164,6 +164,7 @@
     "SPEC1004": "error",
     "SPEC2001": "error",
     "SPEC2002": "error",
+    "SPEC2003": "warning",
     "SPEC3001": "error",
     "SPEC3002": "error",
     "SPEC4001": "error",

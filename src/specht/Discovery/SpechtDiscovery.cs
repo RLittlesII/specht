@@ -97,7 +97,19 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
     public IReadOnlyList<string> FindOrphanCompanions(
         string root,
         IEnumerable<SpechtLocation> specifications,
-        SpechtDiscoveryInputs inputs) => [];
+        SpechtDiscoveryInputs inputs)
+    {
+        var candidates = inputs.Layouts
+            .SelectMany(layout => inputs.CompanionFiles.Select(entry => Joined(DirectoryOf(layout.Glob), entry)))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        var occupied = specifications.Select(static specification => specification.Directory).ToHashSet(StringComparer.Ordinal);
+
+        return Matching(Files(root, candidates, inputs.Exclusions), candidates)
+            .Select(static file => file.Relative)
+            .Where(relative => !occupied.Contains(DirectoryOf(relative)))
+            .ToList();
+    }
 
     /// <summary>
     /// Discovers the records in one folder beside <paramref name="specification"/>: every Markdown file directly in the
@@ -229,6 +241,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem, IChildProcess childP
         string.Concat(text.Select(character => special.Contains(character, StringComparison.Ordinal) ? "\\" + character : character.ToString()));
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    /// <implements epic="0001" feature="F6" claim="B-013" />
     /// <implements epic="0132" feature="F2" claim="B-011" />
     private static string Joined(string directory, string name) => directory.Length == 0 ? name : directory + "/" + name;
 
