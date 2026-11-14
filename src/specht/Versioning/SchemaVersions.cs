@@ -121,7 +121,11 @@ public sealed class SchemaVersions
                 ["SPEC060"] = "SPEC7001",
                 ["SPEC061"] = "SPEC7002",
             },
-            { Major: 0, Minor: 4, Patch: 0 } => new(Shipped(new SemanticVersion(0, 3, 1)), StringComparer.Ordinal) { ["SPEC023"] = "SPEC4008" },
+            { Major: 0, Minor: 4, Patch: 0 } => new(Shipped(new SemanticVersion(0, 3, 1)), StringComparer.Ordinal)
+            {
+                ["SPEC023"] = "SPEC4008",
+                ["SPEC033"] = "SPEC4010",
+            },
             _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),
         };
     }
