@@ -239,5 +239,93 @@ public sealed class MatrixResolverUnitTests
         rows.Should().BeEmpty();
     }
 
+    [Fact]
+    public void AClaimWhoseRowNamesATestADeclaredFileHolds_WhenClaimsAreResolvedWithTheFiles_ShouldCarryEachTestsResolutionFileAndLine()
+    {
+        // Given
+        var document = DocumentParser.Parse("""
+            ## 3. Acceptance Criteria
+            | ID | Claim | Source | Status |
+            | --- | --- | --- | --- |
+            | B-001 | It traces. | brd | Active |
+
+            ## 9. Traceability Matrix
+            | Claim ID | Scenario | Test | Status |
+            | --- | --- | --- | --- |
+            | B-001 | Tracing | `Alpha`, `Beta` | Partial |
+            """, "src/sample/.spec/README.md");
+        var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0","tests":{"files":["test/**/*.cs"]}}""");
+        SpechtTestFile file = new SpechtTestFileFixture().WithText("// preface\nvoid Alpha()");
+
+        // When
+        var claim = new MatrixResolver().ResolveClaims(
+            new FeatureSpecFixture().WithDocument(document), structure, new SpechtClaims(document, structure, null), [file]).Single();
+
+        // Then
+        claim.Rows.Should().ContainSingle().Which.Tests.Should().Equal(
+            new MatrixTestResolution("Alpha", MatrixTestStatus.Resolved, "test/sample.cs", 2),
+            new MatrixTestResolution("Beta", MatrixTestStatus.Unresolved));
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimScenarioCompanions))]
+    public void ACompanionScenarioCarryingAClaimsTag_WhenClaimsAreResolved_ShouldListEachSuchScenarioOnceInCompanionThenFileOrder(
+        bool tagIgnoreCase, string claim, string[] titles, string[] files, int[] lines)
+    {
+        // Given
+        var structure = EngineServices.Parser().Parse(new JsonObject
+        {
+            ["schemaVersion"] = "0.3.0",
+            ["claim"] = new JsonObject { ["tagIgnoreCase"] = tagIgnoreCase },
+        }.ToJsonString());
+        var document = DocumentParser.Parse($$"""
+            ## 3. Acceptance Criteria
+            | ID | Claim | Source | Status |
+            | --- | --- | --- | --- |
+            | {{claim}} | It traces. | brd | Active |
+            """, "src/sample/.spec/README.md");
+        FeatureSpec feature = new FeatureSpecFixture()
+            .WithDocument(document)
+            .WithFeatureFiles(
+                new FeatureTagParser().Read("src/sample/.spec/a.feature", """
+                    @B-001
+                    Feature: Sample
+
+                      @B-002
+                      Scenario: First case
+                        Given a thing
+
+                      @B-002 @b-002
+                      Scenario: Twice tagged
+                        Given a thing
+
+                      @B-005
+                      Rule: A rule
+
+                        @B-003
+                        Scenario Outline: Second case
+                          Given <thing>
+
+                          @B-004
+                          Examples:
+                            | thing |
+                            | one   |
+                    """, structure),
+                new FeatureTagParser().Read("src/sample/.spec/b.feature", """
+                    Feature: Other
+
+                      @B-002
+                      Scenario: Third case
+                        Given a thing
+                    """, structure));
+
+        // When
+        var resolved = new MatrixResolver().ResolveClaims(feature, structure, new SpechtClaims(document, structure, null), []).Single();
+
+        // Then
+        resolved.Scenarios.Should().Equal(titles.Select((title, index) =>
+            new MatrixScenarioResolution(title, MatrixScenarioStatus.Resolved, files[index], lines[index])));
+    }
+
     private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

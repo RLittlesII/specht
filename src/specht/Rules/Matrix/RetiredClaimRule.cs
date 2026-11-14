@@ -24,7 +24,7 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
         var matrixReference = structure.SectionReference("matrix");
         foreach (var feature in model.Features)
         {
-            foreach (var claim in resolver.ResolveClaims(feature, structure, model.Claims[feature]))
+            foreach (var claim in resolver.ResolveClaims(feature, structure, model.Claims[feature], []))
             {
                 if (!string.Equals(claim.Status, markers["withdrawn"], StringComparison.Ordinal)
                     && !string.Equals(claim.Status, markers["superseded"], StringComparison.Ordinal))

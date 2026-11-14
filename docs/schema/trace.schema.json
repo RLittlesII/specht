@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "specht trace",
+  "description": "The document specht trace writes for --json (0001-F13): every claim of every specification with its traceability row, the scenarios carrying its tag and the resolution of each test it names, with no violation, count or verdict. Within a tool major version it changes only by addition (C-3).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specifications"],
+  "properties": {
+    "specifications": {
+      "description": "Every Feature specification the check discovers with a claims table, in discovery order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "id", "claims"],
+        "properties": {
+          "path": {
+            "description": "Relative to the root the tool was given, with / separators; never absolute.",
+            "type": "string",
+            "minLength": 1,
+            "not": {
+              "anyOf": [
+                {
+                  "pattern": "^/"
+                },
+                {
+                  "pattern": "^[A-Za-z]:"
+                },
+                {
+                  "pattern": "\\\\"
+                }
+              ]
+            }
+          },
+          "id": {
+            "description": "The qualified Feature id the check reads, such as 0001-F13, or null when the specification has no identity.",
+            "type": ["string", "null"]
+          },
+          "claims": {
+            "description": "Every row of the claims table, in row order.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "line", "status", "scenarios", "tests"],
+              "properties": {
+                "id": {
+                  "description": "The claim id as the claims table's first cell writes it, trimmed.",
+                  "type": "string"
+                },
+                "line": {
+                  "description": "The claim's one-based line in the specification.",
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "status": {
+                  "description": "The claims table's Status cell, trimmed; empty when the row has none.",
+                  "type": "string"
+                },
+                "row": {
+                  "description": "The first traceability row naming the claim, in document order; absent when none does.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["line", "claim", "scenario", "test", "status"],
+                  "properties": {
+                    "line": {
+                      "description": "The row's one-based line in the specification.",
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "claim": {
+                      "description": "The first cell, the claim, trimmed.",
+                      "type": "string"
+                    },
+                    "scenario": {
+                      "description": "The second cell, the scenario, trimmed.",
+                      "type": "string"
+                    },
+                    "test": {
+                      "description": "The third cell's visible text, trimmed.",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "The fourth cell, the coverage status, trimmed.",
+                      "type": "string"
+                    }
+                  }
+                },
+                "scenarios": {
+                  "description": "Each companion scenario carrying the claim's tag, its own or inherited, once, in companion order and then file order.",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["title", "file", "line"],
+                    "properties": {
+                      "title": {
+                        "description": "The scenario's title.",
+                        "type": "string"
+                      },
+                      "file": {
+                        "description": "The companion holding the scenario, relative to the root with / separators; never absolute.",
+                        "type": "string",
+                        "minLength": 1,
+                        "not": {
+                          "anyOf": [
+                            {
+                              "pattern": "^/"
+                            },
+                            {
+                              "pattern": "^[A-Za-z]:"
+                            },
+                            {
+                              "pattern": "\\\\"
+                            }
+                          ]
+                        }
+                      },
+                      "line": {
+                        "description": "The one-based line of the scenario's keyword.",
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    }
+                  }
+                },
+                "tests": {
+                  "description": "Each test the row's Test cell names in inline code, in cell order; empty without a row.",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "resolution"],
+                    "properties": {
+                      "name": {
+                        "description": "The name the Test cell gives, with its dotted qualifiers.",
+                        "type": "string"
+                      },
+                      "resolution": {
+                        "description": "resolved when a declared test file holds it, unresolved when none does, unconfigured when the manifest declares no test files, skipped when the row's Status is the waived, withdrawn or superseded marker.",
+                        "enum": [
+                          "resolved",
+                          "unresolved",
+                          "unconfigured",
+                          "skipped"
+                        ]
+                      },
+                      "file": {
+                        "description": "The file holding the test, relative to the root with / separators; only when it resolves.",
+                        "type": "string",
+                        "minLength": 1,
+                        "not": {
+                          "anyOf": [
+                            {
+                              "pattern": "^/"
+                            },
+                            {
+                              "pattern": "^[A-Za-z]:"
+                            },
+                            {
+                              "pattern": "\\\\"
+                            }
+                          ]
+                        }
+                      },
+                      "line": {
+                        "description": "The one-based line of the test's declaration; only when it resolves.",
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    },
+                    "if": {
+                      "properties": {
+                        "resolution": {
+                          "const": "resolved"
+                        }
+                      }
+                    },
+                    "then": {
+                      "required": ["file", "line"]
+                    },
+                    "else": {
+                      "not": {
+                        "anyOf": [
+                          {
+                            "required": ["file"]
+                          },
+                          {
+                            "required": ["line"]
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

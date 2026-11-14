@@ -1,7 +1,7 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
 using Specht.Discovery;
 
-namespace Specht.Tests.Rules.Matrix;
+namespace Specht.Tests.Shared;
 
 /// <summary>A synthetic test file's text and root-relative path.</summary>
 [AutoFixture(typeof(SpechtTestFile))]

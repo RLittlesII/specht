@@ -11,4 +11,21 @@ namespace Specht.Rules.Matrix;
 /// <implements epic="0001" feature="F12" claim="B-001" />
 public sealed record MatrixRowResolution(
     int Line, string Claim, string Scenario, string Test, string Status, IReadOnlyList<MatrixTestResolution> Tests,
-    IReadOnlyList<MatrixScenarioResolution> Scenarios);
+    IReadOnlyList<MatrixScenarioResolution> Scenarios)
+{
+    /// <summary>
+    /// Whether the row's tests are skipped: its trimmed Status equals the waived, withdrawn or superseded marker, ordinally.
+    /// A marker <paramref name="markers"/> lacks matches nothing.
+    /// </summary>
+    /// <param name="markers">The selected manifest's markers.</param>
+    /// <returns>True when the row's tests are neither resolved nor judged.</returns>
+    /// <implements epic="0001" feature="F12" claim="B-002" />
+    /// <implements epic="0001" feature="F13" claim="B-019" />
+    public bool Skips(IReadOnlyDictionary<string, string> markers)
+    {
+        var status = Status.Trim();
+        return SkippingMarkers.Any(marker => markers.TryGetValue(marker, out var text) && string.Equals(status, text, StringComparison.Ordinal));
+    }
+
+    private static readonly string[] SkippingMarkers = ["waived", "withdrawn", "superseded"];
+}

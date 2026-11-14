@@ -7,9 +7,15 @@ namespace Specht.Rules.Matrix;
 /// <param name="Status">The fourth claim-table cell.</param>
 /// <param name="Rows">The matrix rows naming the claim.</param>
 /// <param name="Tags">The companion tags matching under the configured tag-case setting.</param>
+/// <param name="Scenarios">
+/// Each companion scenario whose own or inherited tags carry the claim under the tag-case setting, once, in companion order
+/// and then file order.
+/// </param>
 /// <implements epic="0001" feature="F12" claim="B-001" />
+/// <implements epic="0001" feature="F13" claim="B-003" />
 public sealed record MatrixClaimResolution(
-    SpechtClaim Claim, string Status, IReadOnlyList<MatrixRowResolution> Rows, IReadOnlyList<FeatureTag> Tags)
+    SpechtClaim Claim, string Status, IReadOnlyList<MatrixRowResolution> Rows, IReadOnlyList<FeatureTag> Tags,
+    IReadOnlyList<MatrixScenarioResolution> Scenarios)
 {
     /// <summary>
     /// Whether <c>SPEC4008</c>'s condition holds at <paramref name="row"/>: the claim is live, no companion tag carries it,
