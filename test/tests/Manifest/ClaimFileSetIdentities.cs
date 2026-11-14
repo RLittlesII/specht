@@ -11,11 +11,11 @@ public sealed class ClaimFileSetIdentities : TheoryData<string, string?, string>
     {
         Add("""
             { "identifiers": { "epic": "^[0-9]{4}$" }, "claim": { "source": "gherkin",
-              "files": [ { "glob": ".spec/features/arithmetic/*.feature", "feature": "arithmetic", "epic": "0001" } ] } }
-            """, "0001", "arithmetic");
+              "files": [ { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1", "epic": "0001" } ] } }
+            """, "0001", "F1");
         Add("""
             { "claim": { "source": "gherkin",
-              "files": [ { "glob": ".spec/features/arithmetic/*.feature", "feature": "arithmetic" } ] } }
-            """, null, "arithmetic");
+              "files": [ { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1" } ] } }
+            """, null, "F1");
     }
 }

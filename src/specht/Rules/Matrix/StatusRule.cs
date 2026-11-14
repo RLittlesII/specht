@@ -28,7 +28,7 @@ public sealed class StatusRule(MatrixResolver resolver) : ISpechtRule
         var matrixReference = structure.SectionReference("matrix");
         var configured = structure.Tests is not null;
         string[] known = ["covered", "partial", "missing", "waived", "withdrawn", "superseded"];
-        foreach (var feature in model.Features)
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             var claims = resolver.ResolveClaims(feature, structure, model.Claims[feature])
                 .ToLookup(static claim => claim.Claim.Id, StringComparer.Ordinal);

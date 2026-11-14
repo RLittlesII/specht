@@ -12,12 +12,14 @@ namespace Specht.Acceptance.NativeClaims;
 /// <summary>
 /// Steps for <c>src/specht/Rules/NativeClaims/.spec/native-claims.feature</c> (0001-F16), bound for the claim members of
 /// item 0389, B-002, B-027, B-028, B-029 and B-031, and for the native claim reader of item 0390, B-001, B-004 to B-007,
-/// B-011 to B-013, B-025 and B-030. The other scenarios bind only the Background and are left out as pending. A root is a
-/// synthetic tree holding one co-located Markdown specification, so a claim read from a claims table is observable, and
-/// its manifest declares no epic grammar, as the Background's claim file set carries no epic (B-027). The manifest is edited in memory and
-/// written when the check runs; "the check runs" launches the built tool on the root, the only place an exit code and its
-/// streams are seen. The catalogue is printed by no command before item 0391, so a step that reads it reads the model the
-/// engine builds of the same root. "The output of the same tree before this Feature" is written here, not produced by the
+/// B-011 to B-013, B-025 and B-030, and for a claim file set's record, identity and report of item 0391, B-003, B-017,
+/// B-026, B-032 and B-036 to B-038. The other scenarios bind only the Background and are left out as pending. A root is a
+/// synthetic tree holding one co-located Markdown specification, <c>F5</c>, so a claim read from a claims table is
+/// observable and no identity a scenario names collides with it. The manifest is edited in memory and written when the
+/// check runs; "the check runs" launches the built tool on the root, the only place an exit code and its streams are
+/// seen. A record is written with a full Feature frontmatter, <c>id</c> <c>F1</c>, and the keys a scenario sets over it.
+/// The catalogue, a native Feature's lifecycle, edges and identity are printed by no command, so a step that reads them
+/// reads the model the engine builds of the same root. "The output of the same tree before this Feature" is written here, not produced by the
 /// tool under test: this tree's clean output under schema <c>0.3.1</c>, exit <c>0</c>, an empty stderr and the four summary
 /// lines that <c>specht.tool</c> <c>0.5.35-preview</c>, which predates this Feature, prints for it (B-028).
 /// </summary>
@@ -29,10 +31,9 @@ public sealed class NativeClaimsSteps
     public void GivenARootWithAManifestPinnedToSchema(string pin)
     {
         _tree = new SpechtTree();
-        _tree.WriteCoLocatedFeature("src/arithmetic", "0001", "F1");
+        _tree.WriteCoLocatedFeature("src/arithmetic", "0001", "F5");
         Manifest = JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
         Manifest["schemaVersion"] = pin;
-        Manifest["identifiers"]!.AsObject().Remove("epic");
     }
 
     [Given("the manifest's {string} does not hold {string}")]
@@ -119,6 +120,7 @@ public sealed class NativeClaimsSteps
     public void GivenTheManifestsIsOneEntryBesideNo(string path, string source) => Remove(source);
 
     [Given("{string} declares scenarios tagged {string} and {string}")]
+    [Given("{string} has scenarios tagged {string} and {string}")]
     public void GivenDeclaresScenariosTaggedAnd(string path, string first, string second) =>
         Tree.WriteRaw(
             path,
@@ -248,8 +250,78 @@ public sealed class NativeClaimsSteps
         Tree.WriteRaw(second, "Feature: Second\n\n  @B-002\n  Scenario: Adds\n    Given two numbers\n");
     }
 
+    [Given("the claim file set has feature {string}")]
+    public void GivenTheClaimFileSetHasFeature(string feature) => ClaimFileSet["feature"] = feature;
+
+    [Given("the claim file set names the record {string}")]
+    public void GivenTheClaimFileSetNamesTheRecord(string path)
+    {
+        ClaimFileSet["record"] = path;
+        _record = path;
+        if (Path.GetFullPath(Path.Combine(Tree.Root, path)).StartsWith(Tree.Root + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
+            WriteRecord();
+        }
+    }
+
+    [Given("the record's frontmatter sets {string} to {string}")]
+    public void GivenTheRecordsFrontmatterSetsTo(string key, string value)
+    {
+        _recordFrontmatter[key] = ListKeys.Contains(key) ? $"[\"{value}\"]" : $"\"{value}\"";
+        WriteRecord();
+    }
+
+    [Given("the record's frontmatter sets {string} to {string} and {string} to {string}")]
+    public void GivenTheRecordsFrontmatterSetsToAndTo(string first, string firstValue, string second, string secondValue)
+    {
+        GivenTheRecordsFrontmatterSetsTo(first, firstValue);
+        GivenTheRecordsFrontmatterSetsTo(second, secondValue);
+    }
+
+    [Given("the claim file set names no record")]
+    public void GivenTheClaimFileSetNamesNoRecord() => ClaimFileSet.Remove("record");
+
+    [Given("neither set names a record")]
+    public void GivenNeitherSetNamesARecord()
+    {
+        foreach (var set in ((JsonArray) Node("claim.files")!).Cast<JsonObject>())
+        {
+            set.Remove("record");
+        }
+    }
+
+    [Given("the glob matches {string}")]
+    public void GivenTheGlobMatches(string path) => Tree.WriteRaw(path, "Feature: Arithmetic\n\n  @B-001\n  Scenario: Adds\n    Given two numbers\n");
+
+    [Given("the globs match {string} and {string}")]
+    public void GivenTheGlobsMatchAnd(string first, string second) => GivenTheGlobMatchesAnd(first, second);
+
+    [Given("no file matches {string} outside the exclusions")]
+    public void GivenNoFileMatchesOutsideTheExclusions(string glob)
+    {
+        var directory = Path.Combine(Tree.Root, Path.GetDirectoryName(glob)!);
+        (Directory.Exists(directory) ? Directory.EnumerateFiles(directory, Path.GetFileName(glob)) : []).Should().BeEmpty();
+    }
+
+    [Given("the layouts discover {string} with id {string}")]
+    public void GivenTheLayoutsDiscoverWithId(string path, string id) => Tree.WriteSpecification(path, "0001", id);
+
+    [Given("the manifest declares a second claim file set with glob {string} and feature {string}")]
+    public void GivenTheManifestDeclaresASecondClaimFileSetWithGlobAndFeature(string glob, string feature) =>
+        ((JsonArray) Node("claim.files")!).Add(new JsonObject { ["glob"] = glob, ["feature"] = feature });
+
+    [Given("the manifest declares a layout named {string} that discovers one specification")]
+    public void GivenTheManifestDeclaresALayoutNamedThatDiscoversOneSpecification(string name)
+    {
+        ((JsonArray) Manifest["layouts"]!).Insert(0, new JsonObject { ["name"] = name, ["glob"] = $"docs/{name}/**/spec.md" });
+        Tree.WriteSpecification($"docs/{name}/spec.md", "0001", "F7");
+    }
+
     [When("the check runs")]
     public void WhenTheCheckRuns() => _run = Launch();
+
+    [When("the check runs with {string}")]
+    public void WhenTheCheckRunsWith(string argument) => _run = Launch(argument);
 
     [When("the check runs again")]
     public void WhenTheCheckRunsAgain() => _run = Launch();
@@ -295,6 +367,83 @@ public sealed class NativeClaimsSteps
         EngineServices.Manifest(new FileSystem(), Tree.Root).ClaimInput!.Files.Should().ContainSingle()
             .Which.Should().Match<SpechtClaimFileSet>(set => set.Feature == feature && set.Epic == epic && feature == expectedFeature);
     }
+
+    [Then("Feature {string} has the identity {string}")]
+    public void ThenFeatureHasTheIdentity(string feature, string identity) => NativeFeature(feature).Identity.Should().Be(identity);
+
+    [Then("no Feature has the identity {string}")]
+    public void ThenNoFeatureHasTheIdentity(string identity)
+    {
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        Model().Features.Should().NotContain(feature => feature.Identity == identity);
+    }
+
+    [Then("Feature {string} has the lifecycle {string}")]
+    public void ThenFeatureHasTheLifecycle(string feature, string lifecycle) => NativeFeature(feature).Lifecycle.Should().Be(lifecycle);
+
+    [Then("Feature {string} depends on {string}")]
+    public void ThenFeatureDependsOn(string feature, string target)
+    {
+        var native = NativeFeature(feature);
+        native.Strings(native.Keys.DependsOn).Should().Equal(target);
+    }
+
+    [Then("Feature {string} declares no dependency edge")]
+    public void ThenFeatureDeclaresNoDependencyEdge(string feature)
+    {
+        var native = NativeFeature(feature);
+        native.Strings(native.Keys.DependsOn).Concat(native.Strings(native.Keys.Blocks)).Should().BeEmpty();
+    }
+
+    [Then("the record's frontmatter is held to the Feature schema")]
+    public void ThenTheRecordsFrontmatterIsHeldToTheFeatureSchema()
+    {
+        var record = _record ?? throw new InvalidOperationException("No record was named.");
+        Diagnostics().Should().NotContain(line => line.StartsWith($"{record}(", StringComparison.Ordinal)
+            && (line.Contains(" SPEC1001:", StringComparison.Ordinal) || line.Contains(" SPEC1002:", StringComparison.Ordinal)));
+        _recordFrontmatter["spec_status"] = "\"unknown\"";
+        WriteRecord();
+        _run = Launch();
+        Diagnostics().Should().Contain(line =>
+            line.StartsWith($"{record}(", StringComparison.Ordinal) && line.Contains(" SPEC1002:", StringComparison.Ordinal));
+    }
+
+    [Then("the output has a line {string} naming {string}")]
+    public void ThenTheOutputHasALineNaming(string start, string ruleId) =>
+        Diagnostics().Should().Contain(line => line.StartsWith(start, StringComparison.Ordinal) && line.Contains($" {ruleId}:", StringComparison.Ordinal));
+
+    [Then("the output has a line {string} naming {string} with the identifier {string}")]
+    public void ThenTheOutputHasALineNamingWithTheIdentifier(string start, string ruleId, string identifier) =>
+        Diagnostics().Should().Contain(line => line.StartsWith(start, StringComparison.Ordinal)
+            && line.Contains($" {ruleId}:", StringComparison.Ordinal)
+            && line.EndsWith($"[{identifier}]", StringComparison.Ordinal));
+
+    [Then("no {string} is reported")]
+    public void ThenNoIsReported(string ruleId) => Diagnostics().Should().NotContain(line => line.Contains($" {ruleId}:", StringComparison.Ordinal));
+
+    [Then("the summary lines count {int} under {string}, after the manifest's layouts")]
+    public void ThenTheSummaryLinesCountUnderAfterTheManifestsLayouts(int count, string layout)
+    {
+        var entries = SummaryCounts();
+        entries[ManifestLayoutCounts(entries).Length..].Should().Equal($"{layout} {count}");
+    }
+
+    [Then("the summary lines count no Feature under {string}")]
+    public void ThenTheSummaryLinesCountNoFeatureUnder(string layout) => ThenTheSummaryLinesCountUnderAfterTheManifestsLayouts(0, layout);
+
+    [Then("the summary lines have two {string} counts, the manifest layout's first")]
+    public void ThenTheSummaryLinesHaveTwoCountsTheManifestLayoutsFirst(string layout) =>
+        TwoEntries(SummaryCounts(), layout);
+
+    [Then("the report's layouts count {int} under {string}, after the manifest's layouts")]
+    public void ThenTheReportsLayoutsCountUnderAfterTheManifestsLayouts(int count, string layout)
+    {
+        var entries = ReportLayouts();
+        entries[ManifestLayoutCounts(entries).Length..].Should().Equal($"{layout} {count}");
+    }
+
+    [Then("the report's layouts have two {string} entries, the manifest layout's first")]
+    public void ThenTheReportsLayoutsHaveTwoEntriesTheManifestLayoutsFirst(string layout) => TwoEntries(ReportLayouts(), layout);
 
     [Then("the output equals the output of the same tree before this Feature")]
     public void ThenTheOutputEqualsTheOutputOfTheSameTreeBeforeThisFeature() =>
@@ -410,6 +559,41 @@ public sealed class NativeClaimsSteps
 
     private SpechtModel Model() => EngineServices.Reader().Read(Tree.Root, null);
 
+    private FeatureSpec NativeFeature(string feature)
+    {
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        return Model().Features.Should().ContainSingle(spec => spec.ClaimFileSet != null && spec.ClaimFileSet.Feature == feature).Subject;
+    }
+
+    private string[] SummaryCounts() =>
+        Run.Stdout.Split('\n').Select(static line => line.TrimEnd('\r'))
+            .Should().ContainSingle(static line => line.StartsWith(SummaryStart, StringComparison.Ordinal))
+            .Subject[SummaryStart.Length..].Split(", ");
+
+    private string[] ReportLayouts() =>
+        JsonNode.Parse(Run.Stdout)!["layouts"]!.AsArray()
+            .Select(static entry => $"{entry!["layout"]!.GetValue<string>()} {entry["specificationCount"]!.GetValue<int>()}")
+            .ToArray();
+
+    private string[] ManifestLayoutCounts(string[] entries)
+    {
+        var names = ((JsonArray) Manifest["layouts"]!).Select(static layout => layout!["name"]!.GetValue<string>()).ToArray();
+        entries.Length.Should().BeGreaterThan(names.Length, "the manifest's layouts are followed by one more entry");
+        entries[..names.Length].Select(static entry => entry[..entry.LastIndexOf(' ')]).Should().Equal(names);
+        return entries[..names.Length];
+    }
+
+    private void TwoEntries(string[] entries, string layout)
+    {
+        var manifest = ManifestLayoutCounts(entries);
+        manifest.Should().ContainSingle(entry => entry.StartsWith($"{layout} ", StringComparison.Ordinal));
+        entries.Should().HaveCount(manifest.Length + 1);
+        entries[^1].Should().StartWith($"{layout} ");
+    }
+
+    private void WriteRecord() =>
+        Tree.WriteSpecification(_record ?? throw new InvalidOperationException("No record was named."), "0001", "F1", _recordFrontmatter);
+
     private SpechtClaims ClaimSet(string feature)
     {
         Run.ExitCode.Should().NotBe(3, Run.Stderr);
@@ -427,10 +611,10 @@ public sealed class NativeClaimsSteps
     private string[] Diagnostics() =>
         Run.Stdout.Split('\n').Where(static line => Regex.IsMatch(line, ": (error|warning) SPEC[0-9]")).ToArray();
 
-    private (string Stdout, string Stderr, int ExitCode) Launch()
+    private (string Stdout, string Stderr, int ExitCode) Launch(params string[] arguments)
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        return AcceptanceTool.Launch(Tree.Root, "--root", ".");
+        return AcceptanceTool.Launch(Tree.Root, ["--root", ".", .. arguments]);
     }
 
     private JsonNode? Node(string path) =>
@@ -460,6 +644,8 @@ public sealed class NativeClaimsSteps
         (members.Length == 1 ? Manifest : Node(string.Join('.', members[..^1])) as JsonObject)?.Remove(members[^1]);
     }
 
+    private const string SummaryStart = "specifications: ";
+
     private static readonly string OutputBeforeThisFeature = string.Join(
         Environment.NewLine,
         "specifications: epics 0, features 1",
@@ -467,6 +653,8 @@ public sealed class NativeClaimsSteps
         "rules evaluated: 23",
         "errors: 0, warnings: 0",
         string.Empty);
+
+    private static readonly string[] ListKeys = ["children", "depends_on", "blocks", "spikes"];
 
     private static readonly string[] ScenarioSetLayout =
     [
@@ -494,6 +682,8 @@ public sealed class NativeClaimsSteps
 
     private readonly Dictionary<string, int[]> _keywordLines = new(StringComparer.Ordinal);
 
+    private readonly Dictionary<string, string> _recordFrontmatter = new(StringComparer.Ordinal);
+
     private (string Id, string? Epic, string Feature, string State)[]? _catalogue;
 
     private (string Stdout, string Stderr, int ExitCode)? _second;
@@ -501,6 +691,8 @@ public sealed class NativeClaimsSteps
     private string? _claimFile;
 
     private string? _claimId;
+
+    private string? _record;
 
     private SpechtTree? _tree;
 

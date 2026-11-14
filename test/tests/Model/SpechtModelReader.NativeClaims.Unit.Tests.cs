@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Tests.Shared;
@@ -12,8 +13,11 @@ namespace Specht.Tests.Model;
 /// <c>claim.source</c> is <c>gherkin</c> (<c>0001-F16</c> B-001, B-004 to B-007, B-011 to B-013, B-030; C-1, C-2, C-4,
 /// C-5; § 7, item <c>0390</c>): each claim file set's claims are read from the <c>.feature</c> files its glob matches
 /// outside <c>exclusions</c>, with the tag form, grammar and tag lists the manifest gives, onto
-/// <see cref="SpechtModel.ClaimSets"/>. Unless a test says otherwise, the manifest holds one set, glob
-/// <c>.spec/features/arithmetic/*.feature</c> and feature <c>arithmetic</c>, and excludes <c>obj</c> alone.
+/// <see cref="SpechtModel.ClaimSets"/>; and each set is one native Feature in <see cref="SpechtModel.Features"/>, whose
+/// lifecycle and edges its <c>record</c> gives, whose identity is the set's and whose claim grammar no record chooses,
+/// located at its record or else its first claim file, and none for a set with neither (B-003, B-017, B-026, B-032,
+/// B-036, B-037; § 7, item <c>0391</c>). Unless a test says otherwise, the manifest holds one set, glob
+/// <c>.spec/features/arithmetic/*.feature</c> and feature <c>F1</c>, and excludes <c>obj</c> alone.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtModelReaderNativeClaimsUnitTests
@@ -22,7 +26,7 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
     public void AClaimFileSet_WhenReadUnderAGherkinClaimSource_ShouldBuildItsClaimsFromTheFeatureFilesItsGlobMatchesOutsideExclusionsWithNoClaimsTable()
     {
         // Given
-        const string Members = """{ "claim": { "files": [ { "glob": ".spec/features/**/*", "feature": "arithmetic" } ] } }""";
+        const string Members = """{ "claim": { "files": [ { "glob": ".spec/features/**/*", "feature": "F1" } ] } }""";
 
         // When
         var model = Read(
@@ -33,7 +37,7 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
 
         // Then
         var set = model.ClaimSets.Should().ContainSingle().Subject;
-        set.FileSet.Should().Be(new SpechtClaimFileSet(".spec/features/**/*", "arithmetic", null, null));
+        set.FileSet.Should().Be(new SpechtClaimFileSet(".spec/features/**/*", "F1", null, null));
         set.Section.Should().BeNull();
         set.Rows.Select(static claim => (claim.Path, claim.Id)).Should().Equal((Add, "B-001"), (Add, "B-002"));
     }
@@ -156,8 +160,8 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
         // Given
         const string Members = """
             { "claim": { "files": [
-              { "glob": ".spec/features/sums/*.feature", "feature": "sums" },
-              { "glob": ".spec/features/arithmetic/*.feature", "feature": "arithmetic" } ] } }
+              { "glob": ".spec/features/sums/*.feature", "feature": "F2" },
+              { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1" } ] } }
             """;
 
         // When
@@ -179,7 +183,7 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
             (".spec/features/sums/total.feature", "Feature: Total\n\n  @B-009\n  Scenario: Totals\n    Given numbers\n"));
 
         // Then
-        model.ClaimSets.Select(static set => set.FileSet!.Feature).Should().Equal("sums", "arithmetic");
+        model.ClaimSets.Select(static set => set.FileSet!.Feature).Should().Equal("F2", "F1");
         model.ClaimSets.Select(static set => set.Rows.Select(static claim => (claim.Path, claim.Id)).ToArray())
             .Should().BeEquivalentTo(
                 [
@@ -187,6 +191,115 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
                     [(Add, "B-002"), (Add, "B-001"), (Add, "B-003"), (Add, "B-005"), (Subtract, "B-004")],
                 ],
                 static options => options.WithStrictOrdering());
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimFileSetRecords))]
+    public void AClaimFileSet_WhenRead_ShouldMakeOneNativeFeatureWithItsRecordsLifecycleAndEdgesOrCurrentAndNoEdgeWithoutARecord(
+        string members, string? recordText, string lifecycle, string[] dependsOn, string? record)
+    {
+        // Given
+        (string Path, string Text)[] files = recordText is null ? [(Add, AddsTwoNumbers)] : [(Add, AddsTwoNumbers), (Record, recordText)];
+
+        // When
+        var model = Read(members, files);
+
+        // Then
+        var feature = model.Features.Should().ContainSingle(static feature => feature.ClaimFileSet != null).Subject;
+        feature.Record.Should().Be(record);
+        feature.Lifecycle.Should().Be(lifecycle);
+        feature.Strings(feature.Keys.DependsOn).Should().Equal(dependsOn);
+        feature.Strings(feature.Keys.Blocks).Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(NativeFeatureLocations))]
+    public void ANativeFeature_WhenRead_ShouldBeLocatedInTheClaimsLayoutAtItsRecordOrElseItsFirstClaimFileInOrdinalOrder(
+        string members, string[] claimFiles, string path)
+    {
+        // Given
+        var files = claimFiles.Select(static file => (Path: file, Text: AddsTwoNumbers)).Append((Path: Record, Text: "---\nid: F1\n---\n")).ToArray();
+
+        // When
+        var model = Read(members, files);
+
+        // Then
+        var feature = model.Features.Should().ContainSingle(static feature => feature.ClaimFileSet != null).Subject;
+        feature.RelativePath.Should().Be(path);
+        feature.Location.Layout.Should().Be(new SpechtLayout("claims", ".spec/features/arithmetic/*.feature"));
+    }
+
+    [Fact]
+    public void AClaimFileSetWithNoRecordWhoseGlobMatchesNoFeatureFile_WhenRead_ShouldMakeNoFeatureAndKeepItsEmptyClaimSet()
+    {
+        // Given
+        const string Members = """
+            { "claim": { "files": [
+              { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1" },
+              { "glob": ".spec/features/sums/*.feature", "feature": "F2" } ] } }
+            """;
+
+        // When
+        var model = Read(Members, (".spec/features/sums/total.feature", AddsTwoNumbers));
+
+        // Then
+        model.Features.Where(static feature => feature.ClaimFileSet != null).Select(static feature => feature.Id).Should().Equal("F2");
+        model.ClaimSets.Select(static set => (set.FileSet!.Feature, set.Rows.Count)).Should().Equal(("F1", 0), ("F2", 1));
+    }
+
+    [Theory]
+    [ClassData(typeof(RecordIdentities))]
+    public void ARecordDeclaringAnIdentityOtherThanItsSets_WhenRead_ShouldLeaveTheNativeFeatureTheSetsIdentity(
+        string members, string recordFrontmatter, string? epic, string id)
+    {
+        // Given
+        var record = (Record, $"---\n{recordFrontmatter}\n---\n\n# Arithmetic\n");
+
+        // When
+        var model = Read(members, (Add, AddsTwoNumbers), record);
+
+        // Then
+        var feature = model.Features.Should().ContainSingle(static feature => feature.ClaimFileSet != null).Subject;
+        (feature.Epic, feature.Id).Should().Be((epic, id));
+        model.Features.Should().NotContain(static feature => feature.Id == "F9");
+    }
+
+    [Fact]
+    public void ARecordDeclaringAClaimPrefix_WhenRead_ShouldLeaveTheNativeFeatureTheGrammarOfAFeatureWithNoPrefix()
+    {
+        // Given
+        const string Members = """
+            { "claim": { "files": [
+              { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1", "record": ".spec/features/arithmetic/README.md" } ] } }
+            """;
+
+        // When
+        var model = Read(
+            Members,
+            (Record, "---\nid: F1\nclaim_prefix: ADD-\n---\n\n# Arithmetic\n"),
+            (Add, "Feature: Arithmetic\n\n  @B-001\n  Scenario: Adds\n    Given two numbers\n\n  @ADD-002\n  Scenario: Adds three\n    Given three numbers\n"));
+
+        // Then
+        var feature = model.Features.Should().ContainSingle(static feature => feature.ClaimFileSet != null).Subject;
+        feature.ClaimGrammar.Should().Be(model.Schemas.Structure.ClaimGrammar(null));
+        model.Claims.Should().ContainKey(feature).WhoseValue.Rows.Select(static claim => claim.Id).Should().Equal("B-001");
+    }
+
+    [Fact]
+    public void ARecordALayoutAlsoDiscovers_WhenRead_ShouldBeReadOnceAsTheNativeFeatureAndNotAsTheLayoutsFeature()
+    {
+        // Given
+        const string Members = """
+            { "claim": { "files": [
+              { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1", "record": "src/arithmetic/.spec/README.md" } ] } }
+            """;
+
+        // When
+        var model = Read(Members, (Add, AddsTwoNumbers), ("src/arithmetic/.spec/README.md", "---\nid: F1\n---\n\n# Arithmetic\n"));
+
+        // Then
+        model.Features.Should().ContainSingle(static feature => feature.RelativePath == "src/arithmetic/.spec/README.md")
+            .Which.ClaimFileSet.Should().NotBeNull();
     }
 
     private static SpechtModel Read(string members, params (string Path, string Text)[] files)
@@ -201,7 +314,7 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
         }
 
         claim["source"] = "gherkin";
-        claim["files"] ??= new JsonArray(new JsonObject { ["glob"] = ".spec/features/arithmetic/*.feature", ["feature"] = "arithmetic" });
+        claim["files"] ??= new JsonArray(new JsonObject { ["glob"] = ".spec/features/arithmetic/*.feature", ["feature"] = "F1" });
         var fileSystem = new MockFileSystem(
             files.Append((Path: SpechtTree.ManifestPath, Text: manifest.ToJsonString()))
                 .ToDictionary(
@@ -212,6 +325,10 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
     }
 
     private const string Add = ".spec/features/arithmetic/add.feature";
+
+    private const string AddsTwoNumbers = "Feature: Arithmetic\n\n  @B-001\n  Scenario: Adds\n    Given two numbers\n";
+
+    private const string Record = ".spec/features/arithmetic/README.md";
 
     private const string Subtract = ".spec/features/arithmetic/subtract.feature";
 }

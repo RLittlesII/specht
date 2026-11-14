@@ -396,8 +396,14 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     /// <implements epic="0001" feature="F16" claim="B-027" />
     /// <implements epic="0001" feature="F16" claim="B-029" />
     /// <implements epic="0001" feature="F16" claim="B-031" />
+    /// <implements epic="0001" feature="F16" claim="B-038" />
     private static SpechtClaimInput ClaimInput(
-        JsonObject? claim, JsonObject claimDefaults, JsonObject? claimDocument, bool epicGrammar, List<string> faults)
+        JsonObject? claim,
+        JsonObject claimDefaults,
+        JsonObject? claimDocument,
+        bool epicGrammar,
+        IReadOnlyDictionary<string, string> identifiers,
+        List<string> faults)
     {
         var sourceNode = claim is not null && claim.TryGetPropertyValue("source", out var declaredSource)
             ? declaredSource
@@ -423,7 +429,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
 
         return new SpechtClaimInput(
             source,
-            source == SpechtClaimSource.Gherkin ? FileSets(claim, epicGrammar, faults) : NoFileSets(claim?.ContainsKey("files") == true, faults),
+            source == SpechtClaimSource.Gherkin ? FileSets(claim, epicGrammar, identifiers, faults) : NoFileSets(claim?.ContainsKey("files") == true, faults),
             planned,
             withdrawn,
             superseded,
@@ -445,7 +451,9 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
 
     /// <implements epic="0001" feature="F16" claim="B-027" />
     /// <implements epic="0001" feature="F16" claim="B-029" />
-    private static List<SpechtClaimFileSet> FileSets(JsonObject? claim, bool epicGrammar, List<string> faults)
+    /// <implements epic="0001" feature="F16" claim="B-038" />
+    private static List<SpechtClaimFileSet> FileSets(
+        JsonObject? claim, bool epicGrammar, IReadOnlyDictionary<string, string> identifiers, List<string> faults)
     {
         List<SpechtClaimFileSet> sets = [];
         if (claim is null || !claim.TryGetPropertyValue("files", out var files))
@@ -504,6 +512,17 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
             if (hasRecord && record is null)
             {
                 faults.Add($"claim.files[{index}] has a 'record' that is not text");
+            }
+
+            foreach (var (name, value) in new[] { ("feature", feature), ("epic", epic) })
+            {
+                if (value is not null
+                    && identifiers.TryGetValue(name, out var grammar)
+                    && Compiled($"\\A(?:{grammar})\\z") is { } whole
+                    && !whole.IsMatch(value))
+                {
+                    faults.Add($"claim.files[{index}] has {name} '{value}', which the {name} grammar '{grammar}' does not match");
+                }
             }
 
             if (faults.Count == count)
@@ -949,10 +968,12 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
         var epicGrammar = manifest["identifiers"]?["epic"] is not null;
         var sourceFaults = new List<string>();
         Dictionary<string, string> levels = [];
+        var sections = Strings(Selected(manifest, defaults, "sections", document));
+        var identifiers = Filled(manifest, defaults, "identifiers", document);
         var structure = new SpechtStructure(
-            Strings(Selected(manifest, defaults, "sections", document)),
+            sections,
             tables,
-            Filled(manifest, defaults, "identifiers", document),
+            identifiers,
             SchemaVersion(manifest))
         {
             Discovery = Discovery(manifest, defaults, document),
@@ -968,7 +989,7 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
                 }))),
             ClaimTagForm = tags ? Selected(claim, claimDefaults!, "tag", claimDocument).GetValue<string>() : null,
             ClaimTagIgnoreCase = tags && Selected(claim, claimDefaults!, "tagIgnoreCase", claimDocument).GetValue<bool>(),
-            ClaimInput = claimMembers ? ClaimInput(claim, claimDefaults!, claimDocument, epicGrammar, sourceFaults) : null,
+            ClaimInput = claimMembers ? ClaimInput(claim, claimDefaults!, claimDocument, epicGrammar, identifiers, sourceFaults) : null,
             SchemaSource = SourceSelection(manifest, sourceFaults),
             PinPolicy = Policy(manifest, number, sourceFaults),
             DeclaresEpicGrammar = epicGrammar,

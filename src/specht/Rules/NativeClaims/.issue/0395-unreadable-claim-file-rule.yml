@@ -9,7 +9,7 @@ risk: 3
 parent: "0387"
 children: []
 
-depends_on: ["0390"] # 0390 builds the claim file sets and reads their files
+depends_on: ["0390", "0391"] # 0390 builds the claim file sets and reads their files; 0391 reads a set's record
 spikes: []
 
 spec: src/specht/Rules/NativeClaims/.spec/README.md
@@ -20,9 +20,12 @@ claims:
   - B-016
   - B-018
   - B-019
+  - B-033
+  - B-034
+  - B-035
 
 created: "2026-11-06"
-updated: "2026-11-12"
+updated: "2026-11-13"
 closed: null
 
 summary: |
@@ -31,13 +34,15 @@ summary: |
   a glob matching no file (B-016), a file two sets match (B-018), and a
   Feature-level tag naming another identity under
   `claim.scopes.featureTag` (B-019). Each records no claim from what it
-  reports.
+  reports. A set's `record` that names no file, cannot be read or leads
+  outside the root is reported at its path (B-033), an absolute one at
+  the manifest (B-034), and either leaves the set record-less (B-035).
 
   Risk 3: five conditions, two of them across sets, and B-016 reports
   at a glob as written, a path that names no file.
 
-  Waits on 0390, for the sets and their files; nothing of 0391 is
-  read.
+  Waits on 0390, for the sets and their files, and on 0391, for a set's
+  record.
 
 acceptance_criteria:
   - "B-014 — `# language:` other than `en`: reported at that line, no claim from the file"
@@ -45,6 +50,9 @@ acceptance_criteria:
   - "B-016 — a set's glob matches no file: reported at line 0, path the glob as written"
   - "B-018 — one file matched by two sets: reported at that file, line 0, its claims under neither"
   - "B-019 — under `claim.scopes.featureTag`, a Feature-level tag naming another identity: reported at that tag's line"
+  - "B-033 — a relative `record` naming no file, a file that cannot be read, or a path outside the root: reported at that path as written, line 0"
+  - "B-034 — an absolute `record`: reported at `.specht/manifest.json`, line 0; no absolute path in any output (C-2)"
+  - "B-035 — any of those records: the set read as one with no `record` (B-003, B-026)"
   - "Its id the next free one in its ADR-0029 group, on the owner's approval in this item's pull request; working name SPEC027 (OQ-5)"
   - "`0001-F7` B-014 — the id joins 0.4.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock while no published package carries 0.4.0 (`0001-F7` C-17, decision 0014); 0.1.0 to 0.3.1 unchanged (`0001-F7` C-1)"
   - "`0001-F7` B-066 — holds, 0.4.0's minor being greater than 0.3.1's; the id still reports only when `claim.source` is `gherkin` (C-3)"
@@ -70,6 +78,12 @@ decisions:
     the rule enters schema 0.4.0, not 0.3.1 (decision 0001). The title
     and criteria are restated for 0.4.0. The blocker above is recorded
     as it was and is not judged here.
+  - |
+    2026-11-13, spec-author: B-033 to B-035 added, on the repository
+    owner's selections "(a) SPEC027, record-less (Recommended)" (OQ-13)
+    and "At manifest, line 0 (Recommended)" (OQ-17). They read a set's
+    record, so the item now waits on 0391 as well; the 2026-11-06 entry
+    is recorded as it was.
 
 out_of_scope:
   - "Claim files in a Gherkin language other than English - § 5 row 8."
