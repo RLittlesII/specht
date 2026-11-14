@@ -136,13 +136,20 @@ The check reports what is wrong with a specification tree, and nothing reports w
 | Whether an open question is resolved, on OQ-2's default, its Resolution given as written beside it (B-008; C-5)                                               | Business       | `FactsDocument.From`                                                                                                                           |
 | A missing section, or one with no table the parse reads, emptying only its own member (B-015; C-1)                                                            | Both           | `MarkdownTextReader` through `SpechtDocumentParser`, which gives such a section no table; `FactsDocument.From`, which reads each section alone |
 | An out-of-scope row's and an open question's members (B-007, B-008; C-3)                                                                                      | Both           | `OutOfScopeFacts` and `OpenQuestionFacts`, held to `docs/schema/facts.schema.json`                                                             |
+| Which files are the records beside a specification, in both layouts, listed without reading them (B-011, B-022; C-2)                                          | Business       | `ISpecDiscovery.FindRecords` in `SpechtDiscovery`                                                                                              |
+| Reading the records for the facts alone, the check's read left as it is, so a record is never a specification and no verdict changes (B-011; C-4)             | Technical      | `SpechtModelReader.ReadRecords` through `SpechtTreeStore`                                                                                      |
+| A record's frontmatter and the first line under its `## Status` heading, through the check's own frontmatter reader and Markdown parse (B-011; C-1)           | Technical      | `SpechtModelBuilder.Record` through `FrontmatterReader` and `SpechtDocumentParser.FirstLine`, giving a `RecordFile`                            |
+| A record's kind, number, title and path, and its status on OQ-3's default, a missing or unreadable part emptying only its own member (B-011, B-013; C-5)      | Business       | `FactsDocument.From`                                                                                                                           |
+| A record's members (B-011; C-3)                                                                                                                               | Both           | `RecordFacts`, held to `docs/schema/facts.schema.json`                                                                                         |
+| Calling the records read beside the model read (C-4)                                                                                                          | Technical      | `FactsCommand`                                                                                                                                 |
 
 ## 7. Technical Design
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-The design for items `0364`, `0365` and `0366`, as built. Each built type is declared in the file it links; the
-compiler is the authority on its members and signatures.
+The design for items `0364`, `0365` and `0366`, as built, and for item `0368`, not yet built (§ "Records beside a
+specification"). Each built type is declared in the file it links; the compiler is the authority on its members and
+signatures.
 
 ### Reading the tree
 
@@ -401,6 +408,124 @@ question requires `id` (string), `question`, `blocks` and `resolution` (`["strin
 paragraph in [`docs/cli.md`](../../../../../docs/cli.md) names the out-of-scope rows and open questions among what is
 printed.
 
+### Records beside a specification
+
+Item `0368`'s design, not yet built. `FeatureFacts` gains one member, `records`, at its end: after `openQuestions`, or
+after item `0367`'s members if that item lands first. Every earlier member keeps its name, type and place (C-3):
+
+| Member    | Value                                                                                                                | Claim        |
+| --------- | -------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `records` | One `RecordFacts` per record beside the specification, in ordinal order of root-relative path; `[]` when it has none | B-011, B-022 |
+
+One record in `src/specht/Facts/`, `RecordFacts`, in a file of its own name, carrying values and no logic, written as
+`kind`, `number`, `title`, `status` and `path`.
+
+**Beside a specification.** A record is a file whose name ends `.md`, directly inside a folder named `adr`,
+`decisions` or `lessons` in the folder that holds the specification file, `SpechtLocation.Directory`. In the co-located
+layout that folder is the specification's `.spec/`, so this Feature's decisions are
+`src/tool/Features/Facts/.spec/decisions/*.md`; in the legacy layout it is the Feature's own folder, so
+`epics/0001/F1/adr/*.md` sits beside `epics/0001/F1/spec.md`. One rule serves both layouts, as items and companions are
+found beside the specification file in both. Not a record: a file in a folder below one of the three
+(`adr/archive/`), a file of another extension, a folder whose name differs in case, the repository-wide `.spec/adr/`
+and `.spec/lessons/` at the root, which sit beside no specification (the root `.spec/` holds none and the default
+exclusions skip it, `0001-F6` decision 0003), and the folders beside an epic file, which gives no facts (B-026).
+
+**The listing.** `ISpecDiscovery` gains one finder, implemented in
+[`SpechtDiscovery`](../../../../specht/Discovery/SpechtDiscovery.cs): `FindRecords(root, specification, folder)`, the
+root-relative path of every `.md` file directly in the folder named `folder` beside one specification, in ordinal order
+of file name. It reuses what `FindCompanions` does through the private `Beside`: it lists through the `IFileSystem` in
+both discovery modes, so a record git ignores is found as a companion is. It compares `folder` ordinally against the
+child folders the file system lists, so a path carries the folder's name as it is written, and it enters no folder that
+is a link, as the walk enters none (`0001-F6` B-011). It opens no file, and no exclusion applies, as none applies to a
+companion beside a discovered specification. Building it adds the finder to `0001-F6` § 7's table of finders.
+
+**The read.** [`SpechtModelReader`](../../../../specht/Model/SpechtModelReader.cs) gains
+`ReadRecords(root, features)`, beside `Read`. For each Feature in order it calls `FindRecords` for `adr`, `decisions`
+and `lessons`, in that ordinal order, so each Feature's records come out in ordinal order of root-relative path (B-022);
+it loads every listed path in one `SpechtTreeStore.Load` and hands each text to `SpechtModelBuilder.Record`. It returns
+one list per Feature, keyed by `FeatureSpec` as `SpechtModel.Claims` is. The folder-to-kind table - `adr` to `adr`,
+`decisions` to `decision`, `lessons` to `lesson` - is one private static in the reader, the one place that names the
+folders; the kinds are the three record types of the manifest's `ids` key and the `type` each shipped record template
+writes. No manifest key is read: the folders are the engine's (C-7), so the records are the same under every pin
+(B-017).
+
+`Read` does not change. The check lists, loads and parses no record, `SpechtListing` and `SpechtModel` gain no member,
+and no rule sees a record, so no verdict, count or check timing changes, and a record is never discovered as a
+specification. Only the facts call `ReadRecords`.
+
+**The parse.** `SpechtModelBuilder.Record(path, kind, text)` gives a `RecordFile`, a record in `src/specht/Model/`
+beside [`EpicFile`](../../../../specht/Model/EpicFile.cs), carrying the path, the kind, the frontmatter through the
+existing `FrontmatterReader.Parse`, and `StatusLine`. `StatusLine` comes from a new entry point on the existing parser,
+`SpechtDocumentParser.FirstLine(text, title)`, beside `FirstCells`, over the same pipe-table pipeline and delegating to
+`MarkdownTextReader` as `FirstCells` does, so no second parser exists (C-1). It finds the first level-2 heading whose
+text is `Status`, compared ordinally as `SpechtDocument.Section` compares a title; takes the first paragraph, in
+document order, before the next level-2 heading, one inside a list or a quote included; and gives that paragraph's
+inlines up to its first line break, flattened as a cell is: literals and code-span contents, trimmed. It is `null` with
+no such heading or no paragraph under it. The builder reads the line for every record, whatever its kind, so OQ-3's
+reading lives whole in `FactsDocument`. `SpechtDocumentParser.Parse` and `SpechtSection` do not change.
+
+**The members.** `FactsDocument.From` takes the records beside the model, `From(model, records)`; a Feature the map
+lacks gives `[]`. It stays a function of what it is given (B-022). Each `RecordFile` gives:
+
+| Member   | Value                                                                                                                                                                                                                                                                              |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kind`   | `RecordFile.Kind`: `decision`, `adr` or `lesson`, from the folder                                                                                                                                                                                                                  |
+| `number` | The file name's first word: `0001` for `0001-the-title.md`, and `k3m9xq2a` for a record named by a Nano ID minted under schema `0.4.0` (`0001-F19` B-020). A string, never parsed into a number; `null` when the name begins with a character that is neither a letter nor a digit |
+| `title`  | `Frontmatter.Text("title")`: the frontmatter's `title` as written; `null` when the frontmatter is missing or unreadable, has no `title`, or its `title` is not a string                                                                                                            |
+| `status` | OQ-3's default: for an `adr`, the first word of `StatusLine`, `null` when `StatusLine` is `null` or begins with a character that is neither a letter nor a digit; `null` for a `decision` and a `lesson`                                                                           |
+| `path`   | `RecordFile.RelativePath`: root-relative, `/`-separated (C-2)                                                                                                                                                                                                                      |
+
+A first word is the reading `Resolved` makes of a Resolution (§ "Out-of-scope rows and open questions"): the text up to
+its first character that is neither a letter nor a digit (`char.IsLetterOrDigit`). One private `FirstWord` serves the
+resolution, the number and the status. The status keeps its case: `accepted - 2026-10-08, …` gives `accepted`,
+`Accepted, 2026-10-12, …` gives `Accepted`, and `Rejected — withdrawn …` gives `Rejected`. Nothing maps it to a
+vocabulary or judges it (C-5). OQ-3's reading is one private `RecordStatus` in `FactsDocument`; an answer to OQ-3 that
+differs from the default changes that method and no member (C-3).
+
+**What parses is given.** A record is given whatever its file holds, as every claim row is (B-013, C-5). A missing or
+unreadable frontmatter, which `FrontmatterReader` gives as no node and never throws on, empties `title` alone; an ADR
+with no `## Status` heading, or none with a paragraph under it, empties `status` alone; a file name with no leading word
+empties `number` alone. No record is dropped for its content, its name, or a frontmatter `type` that differs from its
+folder. A file the store cannot open fails the read as a specification the store cannot open fails the check's.
+
+**The command.** [`FactsCommand`](../FactsCommand.cs) gains one call: it reads the model, then
+`ReadRecords(root, model.Features)` on the same reader, and projects both through `From`. It still reads no Markdown,
+YAML or record file itself (C-4), and nothing it calls writes or touches the network (B-023, C-2).
+
+```json
+{
+  "records": [
+    {
+      "kind": "adr",
+      "number": "0001",
+      "title": "ADR-0001: Read each record as written",
+      "status": "Accepted",
+      "path": "src/area/.spec/adr/0001-read-each-record-as-written.md"
+    },
+    {
+      "kind": "decision",
+      "number": "0001",
+      "title": "Decision 0001: the records are given",
+      "status": null,
+      "path": "src/area/.spec/decisions/0001-the-records-are-given.md"
+    },
+    {
+      "kind": "lesson",
+      "number": "0001",
+      "title": null,
+      "status": null,
+      "path": "src/area/.spec/lessons/0001-a-lesson-with-no-frontmatter.md"
+    }
+  ]
+}
+```
+
+The schema gains, on each specification item, `records` in `properties` and in `required`: an array of objects with
+`additionalProperties: false`, each requiring `kind` (string, one of `decision`, `adr` and `lesson`), `number`, `title`
+and `status` (`["string", "null"]`), and `path`, under the report schema's `file` pattern as a specification's `path`
+is. No existing member, type or constraint of the schema changes (C-3). The `specht facts` paragraph in
+[`docs/cli.md`](../../../../../docs/cli.md) names the records among what is printed.
+
 ### Where later items attach
 
 Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
@@ -410,12 +535,14 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
 - `0366`, built: `outOfScope` and `openQuestions` on `FeatureFacts`, after `constraints`, from the sections the
   manifest's `sections` lists, an open question's `resolved` on OQ-2's default; § "Out-of-scope rows and open
   questions".
-- `0367`: `deltas` and `signOff` on `FeatureFacts`, after `openQuestions`, each section found through the private method
-  § "Out-of-scope rows and open questions" names under the manifest's heading (C-7), its cells read through `Cell`. Item
-  `0367` also finds the claims, constraints, out-of-scope and open-questions sections under a heading the manifest
-  renames (B-016), changing how a section is found and no member.
-- `0368`: `records` on `FeatureFacts`. Records are not in the listing today; that item extends the listing through
-  `ISpecDiscovery`, not a read inside `Features/Facts/`.
+- `0367`: `deltas` and `signOff` at the end of `FeatureFacts`, after `openQuestions`, or after `records` if item `0368`
+  lands first, each section found through the private method § "Out-of-scope rows and open questions" names under the
+  manifest's heading (C-7), its cells read through `Cell`. Item `0367` also finds the claims, constraints, out-of-scope
+  and open-questions sections under a heading the manifest renames (B-016), changing how a section is found and no
+  member.
+- `0368`, designed: `records` at the end of `FeatureFacts`, listed by the new finder `ISpecDiscovery.FindRecords` and
+  read by `SpechtModelReader.ReadRecords` beside the check's `Read`, which does not change; never a read inside
+  `Features/Facts/` (C-4); § "Records beside a specification".
 - `0369`: the path selector narrows `FactsDocument.Specifications` in the engine; the command maps an empty selection to
   `ExitCodes.NotFound`.
 - `0370`: the text lines, made by the engine from `FactsDocument` as `SpechtReportDocument.SummaryLines` makes the
@@ -425,7 +552,8 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
 
 [`docs/schema/facts.schema.json`](../../../../../docs/schema/facts.schema.json), OQ-1's default, draft 2020-12 as the
 report schema is. A root object requiring `specifications`; each item requiring the eleven members of § "The
-document", § "Claims and constraints" and § "Out-of-scope rows and open questions", with `id`,
+document", § "Claims and constraints" and § "Out-of-scope rows and open questions", and `records` once item `0368`
+lands (§ "Records beside a specification"), with `id`,
 `specStatus` and `status` typed `["string", "null"]` and the three lists arrays of strings. `path` takes the report schema's `file` pattern: non-empty,
 not starting with `/`, no drive letter, no `\`. `additionalProperties` is `false` at every level, as in the report
 schema, so a violation, a count or a verdict member fails validation (B-014), and each later item that adds a member
@@ -508,6 +636,38 @@ until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` rem
 - **One row record for every section, its cells keyed by header.** The schema would follow each table's headers and
   vary with the tree (C-5), and B-007 and B-008 name the members. The four row shapes share only `line`, so each keeps a
   record of its own.
+- **The records in `SpechtListing` and `SpechtModel`, listed and read by `Read`.** Every check would list, load and
+  parse the records for no rule - 280 files beside this repository's 57 specifications - and the model would carry a
+  member no rule reads, as the constraints member above was rejected. § "Where later items attach" first said the
+  listing; `ReadRecords` beside `Read` keeps the check's read, and its verdicts, as they are.
+- **`FindTestFiles` with the three folders' globs, as `HeldIds` lists record names.** It lists the whole tree to find
+  files beside specifications already found; its git listing leaves out a file git ignores, which `Beside` finds beside
+  the same specification; and a glob built from a folder's name reads a `*` or `[` in it as a wildcard.
+- **A paragraph-text member on `SpechtSection`, filled by `Parse`.** Every check's parse would carry it for no rule;
+  `FirstLine`, beside `FirstCells`, reads only the records the facts ask for.
+- **A records reader in `src/specht/Facts/`, or `From` given the root.** ADR-0010 keeps I/O in the reader that
+  sequences the stores, `Facts/` reads only `Model/`, and `From` stays a function of what it is given (B-022).
+- **`From(model)` kept beside `From(model, records)`.** Its only callers would be tests, and it would give `[]` for a
+  tree that has records.
+- **A flag on `Read` that reads the records too.** `Read` returns the model, which has no place for them; the flag would
+  be a configuration point only the facts set.
+- **The whole first line under `## Status` as the status.** OQ-3's other option; its default is the first word.
+- **A status lower-cased, or mapped to the template's `proposed`, `accepted`, `superseded`, `deprecated` and
+  `rejected`.** A reading of the record, not the record (C-5): this repository's ADRs write `Accepted` and `accepted`,
+  and one opens its Status section with prose, whose first word is given as written.
+- **A status for a decision or a lesson, such as `accepted`.** OQ-3's other option for them; its default gives none.
+- **The status from the manifest's `codeAnalysis.records.adrProfiles` `lifecycle`.** C-7 reads only `sections`, `roles`
+  and `tables`; `codeAnalysis` is the C#-specific section (ADR-0023), and its globs name ADRs across the tree, not the
+  records beside a specification.
+- **`number` as an integer, or the file name's leading digits.** From schema `0.4.0` a record may be named by a Nano ID
+  or a base32 Snowflake id (`0001-F19` B-020, B-030); a Nano ID that begins with a digit would be cut to it, and `0001`
+  would lose its zeros.
+- **`number` from the frontmatter `title`, such as `ADR-0031: …`, or from the `#` heading.** B-011 reads it from the
+  file name, and a title is free text.
+- **`kind` from the frontmatter `type`.** B-011 names the folders, and a record whose frontmatter is unreadable would
+  have no kind.
+- **Every file in the three folders, or the files in folders below them.** A record is a Markdown file written from a
+  `.md` template into the folder itself; an image or a `.gitkeep` beside the records is not one.
 
 ## 8. Testing Strategy
 
