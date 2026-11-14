@@ -593,7 +593,7 @@ manifest-to-discovery seam. Keep current test names in § 9 until they are
 actually renamed during implementation. The default and every-key-omitted
 golden comparisons remain the evidence for unchanged discovery inputs.
 
-<!-- last written by: test-writer, 2026-11-14 (item 0441: B-013's tests and their red run); test-writer, 2026-11-13 (item 0167: the runner's test classes renamed for the check); test-writer, 2026-11-10 (item 0009: round 2 finding 8, the SPEC044 reuse verdict in both trees) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0441: B-013's tests, their red run and their green run); test-writer, 2026-11-13 (item 0167: the runner's test classes renamed for the check); test-writer, 2026-11-10 (item 0009: round 2 finding 8, the SPEC044 reuse verdict in both trees) -->
 
 Written for item `0005` (B-001, B-002, B-003, B-009): its tests ahead of its code at `dfa2936`, the unit tests that waited on the layout record once the code stood, and the one that waited on item `0105`'s `SpechtRunner.Evaluate`. B-004's tests are item `0006`'s, in the entry dated 2026-10-10 below. B-005 to B-008, B-010 and B-011 are other items' to test. B-006's are item `0007`'s, in its entry below; B-005's, B-010's and B-006's remainder are item `0008`'s, in the entry after it; B-007's, B-008's and B-011's are item `0009`'s, in the last entry.
 
@@ -720,6 +720,10 @@ Written for item `0441` (B-013), ahead of its code. The test commit also carries
     - The rule is not in the composed set: `Expected rule not to be <null> because schema 0.4.0 ships the orphan-companion rule.`
     - `SPEC024` under `0.4.0` names itself, `"SPEC024"` where `"SPEC2003"` is expected; the `0.4.0` vocabulary and the composed rule set each hold 27 ids where 28 are expected.
   - `dotnet test --project test/acceptance/acceptance.csproj --framework net11.0 -- --filter-class "*DiscoveryFeature"`: 26, 22 passed, 1 failed, 3 skipped. The reported case fails on `Expected Orphans to contain a single item, but the collection is empty.`; the two boundaries pass and guard the rule; the skipped are B-014's two and B-015's, unbound.
+- **Green** (2026-11-14, `net11.0`), re-run by `test-writer` on `implementer`'s commit `2370ea10`.
+  - The same narrow unit run: 84, 84 passed, 0 failed.
+  - The same `DiscoveryFeature` run: 26, 23 passed, 0 failed, 3 skipped; the reported case and both boundaries pass, and the skipped are B-014's two and B-015's, on `No matching step definition found for one or more steps.`
+  - `implementer`'s run, not re-run here: the full `./build.sh` green, `specht.tests` 3103 unit and 839 integration, acceptance 1861, 1763 passed, 98 skipped, 0 failed; `./build.sh Specht` 26 rules, 0 errors and 2 warnings, the two spike `.feature` files § 7 accepts.
 
 ## 9. Traceability Matrix
 
