@@ -11,7 +11,8 @@ namespace Specht.Tests.Facts;
 /// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-008, B-011 to
 /// B-015, B-017 to B-023, B-025, B-026), launched as a shell launches it, with or without a root-relative path, its
 /// output validated against the published facts schema at <c>docs/schema/facts.schema.json</c> (OQ-1's default), copied
-/// into the output from that one file.
+/// into the output from that one file; and <c>specht facts</c> without <c>--json</c>, one tab-separated line per fact
+/// (B-024, OQ-5's default).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class FactsCommandIntegrationTests
@@ -753,6 +754,64 @@ public sealed class FactsCommandIntegrationTests
         ExitCode.Should().Be(4, Stderr);
         Stdout.Should().BeEmpty();
         Stderr.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public void FeaturesInBothLayoutsWithRecordsBeside_WhenFactsAreGivenAsText_ShouldPrintOneFiveFieldLinePerFactBeginningWithItsPathInDiscoveryOrder()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var sections = SpechtTree.SectionsWith(
+            "11. Open Questions",
+            "## 11. Open Questions\n\n| ID | Question | Blocks | Resolution |\n| -- | -------- | ------ | ---------- |\n"
+                + "| OQ-1 | Which input comes first? | B-001 | Open |\n");
+        var written = new[]
+        {
+            tree.WriteCoLocatedFeature("src/zeta", "0001", "F2", sections: sections),
+            tree.WriteFeature("0001", "F1", sections: sections),
+        };
+        tree.WriteRaw("src/zeta/.spec/decisions/0001-a-decision.md", "---\ntitle: \"Decision 0001: a decision\"\ntype: decision\n---\n\n# Decision 0001\n");
+        var discovered = EngineServices.Reader().Read(tree.Root, null).Features.Select(static feature => feature.RelativePath).ToArray();
+        discovered.Should().HaveCount(2);
+        var lines = written.ToDictionary(
+            path => Path.GetRelativePath(tree.Root, path).Replace('\\', '/'),
+            static path => File.ReadAllLines(path));
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        Stdout.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Should().Equal(discovered.SelectMany(path => new[]
+        {
+            $"{path}\tclaim\tB-001\t{LineOf(lines[path], "| B-001 |")}\tIt does the thing.",
+            $"{path}\tconstraint\tC-1\t{LineOf(lines[path], "| C-1 |")}\tMust be fast.",
+            $"{path}\toutOfScope\t1\t{LineOf(lines[path], "| 1 | Other things |")}\tOther things",
+            $"{path}\topenQuestion\tOQ-1\t{LineOf(lines[path], "| OQ-1 |")}\tWhich input comes first?",
+        }));
+    }
+
+    [Fact]
+    public void ADirectoryRelativeToTheRoot_WhenFactsAreGivenAsTextForIt_ShouldPrintOnlyTheLinesOfTheSpecificationsUnderIt()
+    {
+        // Given
+        using var tree = new SpechtTree(["repo"]);
+        tree.Pin("0.2.0");
+        var tool = tree.WriteCoLocatedFeature("src/tool", "0001", "F1");
+        tree.WriteCoLocatedFeature("src/toolbox", "0001", "F2");
+        EngineServices.Reader().Read(tree.Root, null).Features.Should().HaveCount(2);
+        var lines = File.ReadAllLines(tool);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(Path.GetDirectoryName(tree.Root)!, "facts", "src/tool", "--root", "repo");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        Stdout.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Should().Equal(
+            $"src/tool/.spec/README.md\tclaim\tB-001\t{LineOf(lines, "| B-001 |")}\tIt does the thing.",
+            $"src/tool/.spec/README.md\tconstraint\tC-1\t{LineOf(lines, "| C-1 |")}\tMust be fast.",
+            $"src/tool/.spec/README.md\toutOfScope\t1\t{LineOf(lines, "| 1 | Other things |")}\tOther things");
     }
 
     private static EvaluationResults Evaluate(JsonElement document)

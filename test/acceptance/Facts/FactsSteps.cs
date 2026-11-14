@@ -10,10 +10,10 @@ namespace Specht.Acceptance.Facts;
 /// <summary>
 /// Steps for <c>src/tool/Features/Facts/.spec/facts.feature</c> (<c>0132-F2</c>): item 0364 binds B-001 to B-004, B-014,
 /// B-017, B-021 to B-023 and B-026, item 0365 binds B-005, B-006, B-012, B-013 and B-025, item 0366 binds B-007,
-/// B-008 and B-015, item 0368 binds B-011, and item 0369 binds B-018 to B-020. Each launches the built
-/// tool over a synthetic tree, and a scenario naming no form runs <c>specht facts --json</c>, since the text form is item
-/// 0370's. The root sits one folder below a temporary directory, so a run that writes beside the root is seen. The rest
-/// of the file's scenarios stay pending for their items.
+/// B-008 and B-015, item 0368 binds B-011, item 0369 binds B-018 to B-020, and item 0370 binds B-024. Each launches the
+/// built tool over a synthetic tree; a scenario naming no form runs <c>specht facts --json</c>, and the text form runs
+/// <c>specht facts</c> alone. The root sits one folder below a temporary directory, so a run that writes beside the root
+/// is seen. The rest of the file's scenarios stay pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "The facts command")]
@@ -177,6 +177,9 @@ public sealed class FactsSteps
         _before = Snapshot();
         _result = AcceptanceTool.Launch(Tree.Root, "facts", "--root", _rootArgument, "--json");
     }
+
+    [When("the facts are given as text")]
+    public void WhenFactsAreGivenAsText() => _result = AcceptanceTool.Launch(Tree.Root, "facts", "--root", _rootArgument);
 
     [When("the facts are given for the first specification's path")]
     public void WhenFactsAreGivenForFirstPath() => WhenFactsAreGivenFor(FirstPath);
@@ -444,6 +447,27 @@ public sealed class FactsSteps
     [Then("nothing is written to the standard output")]
     public void ThenNothingOnStdout() => _result.Stdout.Should().BeEmpty();
 
+    [Then("each claim, constraint, out-of-scope row and open question is one line")]
+    public void ThenOneLinePerFact()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stderr);
+        Lines.Should().HaveCount(2 * FactTexts.Length);
+        FactTexts.Should().AllSatisfy(text => Lines.Where(line => line.Contains(text, StringComparison.Ordinal)).Should().HaveCount(2, text));
+    }
+
+    [Then("each line begins with its specification's path relative to the root")]
+    public void ThenEachLineBeginsWithItsPath()
+    {
+        Lines.Should().NotBeEmpty().And.OnlyContain(static line => line.StartsWith(FirstPath, StringComparison.Ordinal)
+            || line.StartsWith(SecondPath, StringComparison.Ordinal));
+        foreach (var path in new[] { FirstPath, SecondPath })
+        {
+            FactTexts.Should().AllSatisfy(text => Lines
+                .Where(line => line.StartsWith(path, StringComparison.Ordinal) && line.Contains(text, StringComparison.Ordinal))
+                .Should().ContainSingle($"{text} is a fact of {path}"));
+        }
+    }
+
     [Then("they hold the two Feature specifications and not the epic")]
     public void ThenFeaturesNotEpic() => Paths.Should().BeEquivalentTo([FirstPath, SecondPath]).And.NotContain(EpicPath);
 
@@ -462,6 +486,8 @@ public sealed class FactsSteps
             return JsonNode.Parse(_result.Stdout)!["specifications"]!.AsArray().Select(static specification => specification!.AsObject()).ToArray();
         }
     }
+
+    private string[] Lines => _result.Stdout.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
     private string[] Paths => Specifications.Select(static specification => specification["path"]!.GetValue<string>()).ToArray();
 
@@ -526,6 +552,9 @@ public sealed class FactsSteps
 
     private const string FeatureFile =
         "Feature: it\n\n  @B-001\n  Scenario: It gives the facts\n    Given a thing\n\n  @B-002\n  Scenario: It gives them as JSON\n    Given a thing\n";
+
+    private static readonly string[] FactTexts =
+        ["It gives the facts.", "It gives them as JSON.", "Offline and read-only.", "One parser.", "Claim coverage", "Any write", "Which one?"];
 
     private static readonly IReadOnlyList<string> Sections = Replace(
         Replace(

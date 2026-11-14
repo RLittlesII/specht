@@ -2,7 +2,7 @@ id: "0370"
 type: task
 title: The facts as text
 
-status: ready
+status: done
 
 value: 3
 risk: 1
@@ -19,8 +19,8 @@ claims:
   - B-024
 
 created: "2026-11-06"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-14"
+closed: "2026-11-14"
 
 summary: |
   As a maintainer at a terminal I want `specht facts` without `--json` to print one line per fact, so that I read or search the tree's claims, constraints, out-of-scope rows and open questions in a shell.
