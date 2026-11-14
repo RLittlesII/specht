@@ -41,6 +41,45 @@ public sealed class SpechtClaims
         TagIds = new ReadOnlySet<string>(tagIds);
     }
 
+    /// <summary>
+    /// Derives a native Feature's claims from its claim file set: each claim its files declare, in file order and then
+    /// document order, located at the keyword line of the element that declares it.
+    /// </summary>
+    /// <param name="set">The claim file set.</param>
+    /// <param name="files">What the shared Gherkin reader read from each of the set's files, in listing order.</param>
+    /// <param name="structure">The effective manifest.</param>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    /// <implements epic="0001" feature="F16" claim="B-004" />
+    /// <implements epic="0001" feature="F16" claim="B-011" />
+    public SpechtClaims(SpechtClaimFileSet set, IReadOnlyList<GherkinClaimText> files, SpechtStructure structure)
+    {
+        FileSet = set;
+        var rows = new List<SpechtClaim>();
+        var ids = new Dictionary<string, int>(StringComparer.Ordinal);
+        var tagIds = new HashSet<string>(structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        foreach (var file in files)
+        {
+            foreach (var declaration in file.Claims)
+            {
+                rows.Add(new SpechtClaim(declaration.Id, declaration.Line, true, null)
+                {
+                    Path = file.RelativePath,
+                    Declaration = declaration,
+                });
+                ids.TryAdd(declaration.Id, declaration.Line);
+                tagIds.Add(declaration.Id);
+            }
+        }
+
+        Rows = rows.AsReadOnly();
+        Ids = new ReadOnlyDictionary<string, int>(ids);
+        TagIds = new ReadOnlySet<string>(tagIds);
+    }
+
+    /// <summary>The claim file set a native Feature's claims are read from; null for a claims table.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    public SpechtClaimFileSet? FileSet { get; }
+
     /// <summary>The claims section, absent when no section has the configured role.</summary>
     public SpechtSection? Section { get; }
 

@@ -12,4 +12,12 @@ public sealed record SpechtListing(
     IReadOnlyList<IReadOnlyList<string>> Companions,
     IReadOnlyList<string> Items,
     IReadOnlyList<string> Epics,
-    IReadOnlyList<string> TestFiles);
+    IReadOnlyList<string> TestFiles)
+{
+    /// <summary>
+    /// The <c>.feature</c> files of each claim file set, at the set's index in the manifest's <c>claim.files</c>, each set's
+    /// in ordinal order of relative path; empty unless <c>claim.source</c> is <c>gherkin</c>.
+    /// </summary>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    public IReadOnlyList<IReadOnlyList<string>> ClaimFiles { get; init; } = [];
+}

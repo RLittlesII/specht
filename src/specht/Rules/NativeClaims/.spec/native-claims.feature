@@ -7,6 +7,7 @@ Feature: Native Gherkin claims
 
   Background:
     Given a root with a manifest pinned to schema "0.4.0"
+    And the manifest's "exclusions" does not hold "/.spec"
     And the manifest sets "claim.source" to "gherkin"
     And "claim.files" holds one claim file set with glob ".spec/features/arithmetic/*.feature" and feature "arithmetic"
     And the manifest leaves "claim.tag" and "ids.claim" at their defaults
@@ -50,7 +51,7 @@ Feature: Native Gherkin claims
 
     Examples:
       | element          | line |
-      | Feature          | 1    |
+      | Feature          | 2    |
       | Rule             | 4    |
       | Scenario         | 7    |
       | Scenario Outline | 12   |
