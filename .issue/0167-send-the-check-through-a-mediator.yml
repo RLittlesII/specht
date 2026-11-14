@@ -215,6 +215,62 @@ decisions:
     from ADR-0010 § "I/O is confined", not as a claim, and the guard is its
     test; the namespace order is that Feature's § 5 row 15, routed to item
     0439. No claim is added.
+  - |
+    2026-11-13, benchmarker: the guard of ADR-0027 for ADR-0010 stage 7.
+    Base `5bad61da` (main, the branch's merge base), head `beb17bcc` (the
+    branch head; `787758a8` and `f0170971` change executed code). One
+    checkout on one host, switched between the two commits, each run
+    `./build.sh Benchmark --benchmark-filter
+    '*CheckBenchmarks.Check(Specifications: N)'`, BenchmarkDotNet 0.15.8
+    default job. Host: Apple M1 Max, 1 CPU, 10 logical and 10 physical
+    cores, macOS Tahoe 26.4 (25E246), .NET SDK 11.0.100, runtime .NET
+    10.0.15 (10.0.1526.53008) Arm64 RyuJIT armv8.0-a, `Toolchain=.NET 10.0`.
+    Entry point measured: on the base `SpechtRunner.Run(root)`, whose
+    one-argument overload passes a `null` schema-source selection; on the
+    head `SpechtCheck.Run(root, null)`. The harness is otherwise the same
+    at both commits.
+    The host was shared with other sessions' builds and tests throughout,
+    so the runs were repeated: three runs at 100 specifications and two at
+    1,000, all recorded here. Run 1, 19:02 to 19:15, order base-100,
+    base-1000, head-100, head-1000; 1-minute load average 38.8, 40.2,
+    280.5 and 119.7 at the starts and 43.5 at the end. Run 2, 19:34 to
+    19:48, alternating base-100, head-100, base-1000, head-1000, each
+    started when the 1-minute load fell below 15; 14.2, 14.1, 14.8 and
+    14.5 at the starts, rising to 48.7, 48.0 and 155.1 during the
+    runs. Run 3, 20:09 to 20:18, base-100 then head-100, the wait for a
+    1-minute load below 10 capped at 20 minutes; 32.6 and 9.3 at the
+    starts, 48.0 and 25.1 at the ends.
+    100 specifications, Mean ± Error, Allocated per operation:
+    run 1 base 102.59 ± 10.24 ms, 40,116,352 B; head 110.89 ± 13.97 ms,
+    40,103,536 B. Run 2 base 76.32 ± 1.35 ms, 40,116,336 B; head
+    115.31 ± 18.09 ms, 40,122,736 B. Run 3 base 77.96 ± 1.71 ms,
+    40,116,336 B; head 96.75 ± 9.66 ms, 40,103,536 B.
+    1,000 specifications: run 1 base 2,568.0 ± 377.9 ms, 394,890,488 B;
+    head 1,408.6 ± 174.5 ms, 394,830,392 B. Run 2 base 1,596.3 ± 256.4
+    ms, 394,890,456 B; head 1,608.2 ± 300.6 ms, 394,891,128 B.
+    Judged by 0109-F5 B-011 and B-012 as `ComparisonEvaluation` applies
+    them under `ComparisonPolicy.Initial` (version 1: time 10%,
+    allocation 10%):
+    - Mean at 100 specifications: flagged, held for the owner's ruling.
+      Run 2 +51.1%, head interval 97.22 to 133.41 ms strictly above the
+      base's 74.98 to 77.67 ms; run 3 +24.1%, 87.09 to 106.41 ms strictly
+      above 76.25 to 79.66 ms. Run 1, +8.1% with overlapping intervals,
+      does not flag.
+    - Mean at 1,000 specifications: no flag. Run 1 -45.1%; run 2 +0.7%,
+      the intervals overlapping.
+    - Allocation at 100 specifications: no flag. Run 1 -0.03%, run 2
+      +0.02%, run 3 -0.03%.
+    - Allocation at 1,000 specifications: no flag. Run 1 -0.02%, run 2
+      +0.0002%.
+    Measured beside the flag, for the ruling and not as a judgement of
+    it: at 100 specifications the head's StdDev was 39.39, 49.53 and 27.25
+    ms against the base's 28.56, 1.38 and 4.67 ms; the minimums were
+    73.70, 75.34 and 75.15 ms against 73.33, 74.04 and 72.91 ms; the
+    medians 95.73, 92.78 and 82.37 ms against 94.37, 76.28 and 76.26 ms.
+    Every run is under a load of 9 or more on 10 cores, the means at
+    1,000 are three to six times the 431 ms of `0109-F3` § 8, and the
+    net11.0 runtime was not measured. The merge waits for the owner's
+    ruling (ADR-0027 § "Enforcement").
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."
