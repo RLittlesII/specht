@@ -21,7 +21,9 @@
           "blocks",
           "children",
           "claims",
-          "constraints"
+          "constraints",
+          "outOfScope",
+          "openQuestions"
         ],
         "properties": {
           "path": {
@@ -110,6 +112,70 @@
                 "rulesOut": {
                   "description": "The cell under the Rules Out header, or null when the table has no such cell.",
                   "type": ["string", "null"]
+                },
+                "line": {
+                  "description": "The row's one-based line.",
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "outOfScope": {
+            "description": "Every row of the out-of-scope table, in row order; empty without an out-of-scope section or a table the parse reads.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["number", "item", "reason", "line"],
+              "properties": {
+                "number": {
+                  "description": "The row's first cell as written, not parsed into a number; empty when the row has none.",
+                  "type": "string"
+                },
+                "item": {
+                  "description": "The cell under the Item header, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "reason": {
+                  "description": "The cell under the Exclusion Reason header, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "line": {
+                  "description": "The row's one-based line.",
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "openQuestions": {
+            "description": "Every row of the open-questions table, in row order; empty without an open-questions section or a table the parse reads.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "question", "blocks", "resolution", "resolved", "line"],
+              "properties": {
+                "id": {
+                  "description": "The row's first cell; empty when the row has none.",
+                  "type": "string"
+                },
+                "question": {
+                  "description": "The cell under the Question header, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "blocks": {
+                  "description": "The cell under the Blocks header as written, not split into ids, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "resolution": {
+                  "description": "The cell under the Resolution header as written, or null when the table has no such cell.",
+                  "type": ["string", "null"]
+                },
+                "resolved": {
+                  "description": "False when the resolution is null, empty, or its first word, up to the first character that is neither a letter nor a digit, is Open in exact case; true otherwise.",
+                  "type": "boolean"
                 },
                 "line": {
                   "description": "The row's one-based line.",
