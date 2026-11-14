@@ -873,5 +873,48 @@ public sealed class FactsDocumentUnitTests
         specification[member].Should().BeOfType<JsonArray>().Which.Select(static entry => entry!["line"]!.GetValue<int>()).Should().Equal(24, 25);
     }
 
+    [Theory]
+    [ClassData(typeof(FactsNumberedSections))]
+    public void ASectionsEntryLeadingWithTheSectionsNumber_WhenTheDocumentIsMade_ShouldReadTheMemberUnderTheFirstSuchEntryNoRoleNamesOrGiveItEmpty(
+        string replaced,
+        string[] entries,
+        string roles,
+        string member,
+        string[] titles,
+        int[] lines)
+    {
+        // Given
+        var listed = ((SpechtModel) new SpechtModelFixture().WithManifest(new JsonObject { ["schemaVersion"] = "0.2.0" })).Schemas.Structure.Sections;
+        listed.Should().Contain(replaced);
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(new JsonObject
+            {
+                ["schemaVersion"] = "0.2.0",
+                ["sections"] = new JsonArray(listed
+                    .SelectMany(entry => entry == replaced ? entries : [entry])
+                    .Select(static entry => (JsonNode?) entry)
+                    .ToArray()),
+                ["roles"] = JsonNode.Parse(roles),
+            })
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+                .WithDocument(new SpechtDocumentFixture()
+                    .WithRelativePath("src/first/.spec/README.md")
+                    .WithSections(titles
+                        .Select(static (title, index) => new SpechtSection(
+                            title,
+                            20 + (10 * index),
+                            ["ID", "Claim", "Source", "Status"],
+                            [["B-001", "It holds.", "the owner", "Active"]],
+                            [24 + (10 * index)]))
+                        .ToArray())));
+
+        // When
+        var specification = JsonNode.Parse(FactsDocument.From(model, NoRecords).ToJson())!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+
+        // Then
+        specification[member].Should().BeOfType<JsonArray>().Which.Select(static entry => entry!["line"]!.GetValue<int>()).Should().Equal(lines);
+    }
+
     private static readonly Dictionary<FeatureSpec, IReadOnlyList<RecordFile>> NoRecords = [];
 }

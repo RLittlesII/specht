@@ -967,6 +967,50 @@ public sealed class FactsCommandIntegrationTests
             .Should().Equal(("1-5", "approved", "spec-reviewer", "Renamed.", LineOf(lines, "| 1-5 |")));
     }
 
+    [Fact]
+    public void AManifestRenamingTheConstraintsSectionUnderItsNumber_WhenFactsAreGivenAsJson_ShouldReadTheConstraintsUnderTheNewTitle()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath)))!.AsObject();
+        manifest["sections"]!.AsArray().Select(static entry => entry!.GetValue<string>()).Should().Contain("4. Constraints");
+        manifest["sections"] = new JsonArray(manifest["sections"]!.AsArray()
+            .Select(static entry => entry!.GetValue<string>() is "4. Constraints" ? "4. Limits" : entry.GetValue<string>())
+            .Select(static title => (JsonNode?) title)
+            .ToArray());
+        tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.Sections
+            .Select(static section => section.StartsWith("## 4. Constraints\n", StringComparison.Ordinal)
+                ? "## 4. Limits\n\n| ID | Constraint | Rules Out |\n| -- | ---------- | --------- |\n"
+                    + "| C-1 | Offline and read-only. | A network call. |\n"
+                    + "| C-2 | One parser. | A second parser. |\n"
+                : section)
+            .ToList());
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        var specification = JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        specification["constraints"].Should().BeOfType<JsonArray>().Which.Select(static constraint => (
+                constraint!["id"]!.GetValue<string>(),
+                constraint["text"]!.GetValue<string>(),
+                constraint["rulesOut"]!.GetValue<string>(),
+                constraint["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("C-1", "Offline and read-only.", "A network call.", LineOf(lines, "| C-1 |")),
+                ("C-2", "One parser.", "A second parser.", LineOf(lines, "| C-2 |")));
+    }
+
     [Theory]
     [ClassData(typeof(FactsPinPairs))]
     public void LessonsAndDeltasAndSignOffRowsUnderTwoShippedPinsWhoseTablesNameNoSignOffHeaders_WhenFactsAreGivenAsJson_ShouldGiveTheSameEntriesAndRows(

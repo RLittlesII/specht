@@ -209,11 +209,20 @@ public sealed class FactsSteps
     [Given("the manifest names the sign-off rows section {string}")]
     public void GivenManifestNamesSignOffSection(string heading) => NameSection("signOff", "12. Sign-off", heading);
 
+    [Given("the manifest names the constraints section {string}")]
+    public void GivenManifestNamesConstraintsSection(string heading) =>
+        EditManifest(manifest => manifest["sections"] = new JsonArray(manifest["sections"]!.AsArray()
+            .Select(entry => (JsonNode?) (entry!.GetValue<string>() == "4. Constraints" ? heading : entry.GetValue<string>()))
+            .ToArray()));
+
     [Given("the first specification's claims sit under {string}")]
     public void GivenFirstClaimsUnder(string heading) => RenameFirstSection("3. Acceptance Criteria", heading);
 
     [Given("the first specification's sign-off rows sit under {string}")]
     public void GivenFirstSignOffRowsUnder(string heading) => RenameFirstSection("12. Sign-off", heading);
+
+    [Given("the first specification's constraints sit under {string}")]
+    public void GivenFirstConstraintsUnder(string heading) => RenameFirstSection("4. Constraints", heading);
 
     [Given("the manifest gives every column of the sign-off table a name other than the default")]
     public void GivenRenamedSignOffHeaders() =>
@@ -459,6 +468,14 @@ public sealed class FactsSteps
             .Should().Equal(
                 ("B-001", "It gives the facts.", LineOf(FirstPath, "| B-001 |")),
                 ("B-002", "It gives them as JSON.", LineOf(FirstPath, "| B-002 |")));
+
+    [Then("the first specification's constraints are given")]
+    public void ThenFirstConstraintsGiven() =>
+        Specification(FirstPath)["constraints"].Should().BeOfType<JsonArray>().Which
+            .Select(static constraint => (constraint!["id"]!.GetValue<string>(), constraint["text"]!.GetValue<string>(), constraint["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("C-1", "Offline and read-only.", LineOf(FirstPath, "| C-1 |")),
+                ("C-2", "One parser.", LineOf(FirstPath, "| C-2 |")));
 
     [Then("the first specification's sign-off rows are given")]
     [Then("each sign-off row is given with its section, its status, its reviewer and its note")]
