@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -177,10 +177,16 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | No verdict items `0392` and `0396` own appears early on a native Feature (B-008, B-020, B-021, B-023, B-024; C-3)                                                   | Technical      | Item `0391`: ten rules, `MatrixResolver.ResolveClaims` (for `SPEC4006` and `SPEC4008`), `FactsDocument.From` and the facts command's record read skip a Feature with a `ClaimFileSet`, each lifted by the item that owns its claim |
 | A tree without `claim.source` `gherkin` keeps every verdict, count and listing (B-002; C-3)                                                                         | Business       | No native Feature is built, the `claims` entry is not added and every skip is vacuous                                                                                                                                              |
 | Every native path is root-relative, and nothing is written (C-2, C-6)                                                                                               | Technical      | `SpechtTreeStore.TryLoad`'s resolved root-relative record path, never a rooted one, and discovery's relative paths; no rule writes                                                                                                 |
+| A scenario carrying no claim, of its own, its Rule's or its Feature's, found once by the shared reader (B-010; A-3, C-1)                                            | Business       | Item `0393`: `GherkinClaimTextReader`'s `SPCT0012` finding, unchanged                                                                                                                                                              |
+| Each claim file's read is kept, so no rule parses a claim file again (C-5)                                                                                          | Technical      | Item `0393`: `SpechtClaims.Files`, the list `SpechtModelBuilder.ClaimSets` already passes; empty for a claims table                                                                                                                |
+| `SPEC4011` reports that scenario at its claim file's path and keyword line, once per file (B-010, C-2)                                                              | Business       | Item `0393`: `ScenarioWithoutClaimRule`, keyed `SPEC025`, over `SpechtModel.ClaimSets`                                                                                                                                             |
+| Warning by default, raised or silenced by the manifest's `rules` (B-010; OQ-5)                                                                                      | Business       | Item `0393`: the rule's `DefaultLevel`; the shipped `0.4.0` manifest's `rules`; the evaluator's stamp                                                                                                                              |
+| The id joins `0.4.0` alone, with its page and a relock; `0.1.0` to `0.3.1` are unchanged (C-3; `0001-F7` B-014, C-1, C-17; `0001-F3` B-031)                         | Technical      | Item `0393`: `SchemaVersions.Shipped`, `docs/rules/v0.4.0/SPEC4011.md`, `./build.sh LockSchemaVersion`                                                                                                                             |
+| Nothing reported without `claim.source` `gherkin` (B-002, C-3)                                                                                                      | Business       | Item `0393`: `SpechtModel.ClaimSets` is empty unless the source is `gherkin`; below `0.4.0` no vocabulary holds the id                                                                                                             |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -521,9 +527,9 @@ record is read, item `0391` (B-003).
 | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `0391` | A native Feature as a `FeatureSpec` from the set's `record` or its first claim file; the record's lifecycle and edges; its identity check and report entry; keying `ClaimSets` into `Claims` |
 | `0392` | `SPEC4003` over native rows across files (B-008); a record's sections (B-020); `SPEC4001` and `SPEC4002` silent (B-021)                                                                      |
-| `0393` | `SPEC025` from the reader's scenario-without-claim finding (B-010)                                                                                                                           |
-| `0394` | `SPEC026` from the reader's Examples-tag finding (B-009)                                                                                                                                     |
-| `0395` | `SPEC027`: an unreadable file, an empty set, a file two sets match with its claims under neither, and the scope forms (B-014 to B-016, B-018, B-019)                                         |
+| `0393` | `SPEC4011` from the reader's scenario-without-claim finding (B-010)                                                                                                                          |
+| `0394` | `SPEC4012` from the reader's Examples-tag finding (B-009)                                                                                                                                    |
+| `0395` | `SPEC4013`: an unreadable file, an empty set, a file two sets match with its claims under neither, and the scope forms (B-014 to B-016, B-018, B-019)                                        |
 | `0396` | Scenario titles, the matrix and the trace over `ClaimSets` (B-022 to B-024)                                                                                                                  |
 
 The record-prefix question this design raised for item `0391` is answered: the
@@ -597,7 +603,7 @@ forward slashes. A segment splits at `/` and at the platform's separator.
 discovery. A `null` is the set read as having no `record` (B-035), so
 `SpechtTreeStore.Load` never sees a record path and nothing throws.
 
-Reporting a `null`, `SPEC027` at the record's path or at the manifest, is item
+Reporting a `null`, `SPEC4013` at the record's path or at the manifest, is item
 `0395`'s (B-033, B-034; OQ-13, OQ-17). Until then the set is read as
 record-less with nothing reported. That is B-035's reading with its report
 still to come, not a third behaviour.
@@ -763,6 +769,205 @@ and item `0390`'s `ClaimSets` carry the work. No type is added.
   one bad record would lose the whole tree's text.
 - B-038 as a rule over native Features. OQ-18 chose an invalid manifest, and
   the parser already holds B-027's and B-029's faults on the same entry.
+
+### A scenario in a claim file with no claim, `SPEC4011` (item `0393`)
+
+Designed, not built. B-010: a Scenario or Scenario Outline in a claim file
+that carries no claim tag of its own, from its Rule or from its Feature is
+reported at its keyword line, at warning by default. The id is `SPEC4011`
+(decision 0004). The shared reader already finds such a scenario; this item
+keeps what it found and reports it.
+
+**What the reader finds.** `GherkinClaimTextReader`'s `Complete` adds one
+`SPCT0012` finding for each case whose own claim ids, its Rule's and the
+Feature's are all empty (`0201-F7` B-015). A case is a `Scenario:` or
+`Example:`, or a `Scenario Outline:` or `Scenario Template:`. Each id is one
+the composed `GherkinClaimTagForm` reads, so inheritance and the tag reading
+are the ones B-004 to B-007 already use (A-3, C-1). The finding's line is the
+case's keyword line, the line `Open` records, never a tag line above it. A
+`Background:` is not a case. A file the reader cannot read throws before
+`Complete` returns, so it has no finding; reporting that file is `SPEC4013`'s
+(B-014, B-015, item `0395`). This item adds no second test of what a scenario
+inherits.
+
+**Keeping the reads (C-5).** `SpechtModelBuilder.ClaimSets` already holds
+each file's `GherkinClaimText` and passes the list to `SpechtClaims`' set
+constructor, which keeps only the declarations. The constructor also keeps
+the list, as a new read-only member, `SpechtClaims.Files`, in listing order.
+The table constructor leaves it empty. No claim file is parsed again. Item
+`0394` can read `SPCT0011` from the same member (B-009).
+
+**The rule.** `ScenarioWithoutClaimRule`, in
+`src/specht/Rules/NativeClaims/ScenarioWithoutClaimRule.cs`, namespace
+`Specht.Rules.NativeClaims`, beside this specification, as
+`MissingScenarioRule` sits beside `0001-F12`'s. `Evaluate` walks
+`model.ClaimSets`, then each set's `Files`, keeping the first read of each
+`RelativePath` under ordinal comparison. Each finding whose `DiagnosticId` is
+`SPCT0012` becomes one `SpechtFinding`:
+
+| Member       | Value                                                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `File`       | the claim file's root-relative path, from discovery (C-2), not the native Feature's location: B-010's `add.feature(9)` |
+| `Line`       | the finding's line, the scenario's keyword line                                                                        |
+| `Identifier` | `null`: the scenario has no claim to name, so the printed line carries no brackets                                     |
+| `Message`    | `scenario declares no claim and inherits none from its Rule or its Feature`                                            |
+
+The message names no section, marker or manifest key, so `0001-F5` B-009's
+message theories do not take it. `SPCT0012` is the shared reader's finding id,
+not a manifest literal (C-4).
+
+**A file two sets match.** Until item `0395`, such a file is listed under
+both sets and read by the one reader, so both reads carry the same findings.
+The first-read-per-path filter reports each scenario once. B-018 then records
+the file's claims under neither set. This design reads the file as still a
+claim file, so its scenarios are still reported, once. Item `0395` keeps the
+file's read where this rule finds it, or moves this filter with it.
+
+**Readings B-010 does not spell out.** Each follows from the reader as built,
+and the analyzer reports the same (A-3):
+
+- A scenario carrying a `claim.plannedTags` tag and no claim is reported. B-013
+  keeps a planned scenario's claim, and this scenario has none to keep.
+- A scenario whose only tags are ordinary, a mistyped claim tag included, is
+  reported (B-005; § 5 row 7).
+- An outline whose only claim tag is on an Examples block is reported. That tag
+  declares nothing (B-009), and `SPEC4012` reports the tag itself.
+- A scenario whose title holds a claim id is reported, and no claim is
+  inferred (C-1; the `@boundary` scenario).
+
+**The id and the vocabulary.** The rule's key is `SPEC025`, its working name,
+as `MissingScenarioRule`'s is `SPEC023` and `StatusRule`'s `SPEC033`
+(ADR-0029 § "The four `0001-F12` rules"; decision 0004's table).
+`SchemaVersions.Shipped`'s `0.4.0` row gains `["SPEC025"] = "SPEC4011"`.
+No lower row holds `SPEC025`. `RuleId` returns a key it does not map
+unchanged, no lower vocabulary holds that key, and the evaluator neither runs
+nor counts the rule below `0.4.0` (`0001-F7` B-014, C-1). `AddSpechtEngine`
+registers it in the ordinal order of its key, after `MissingScenarioRule`
+(`SPEC023`) and before `ClaimIdRule` (`SPEC030`). `FaultIsolatedRule` wraps it
+as it wraps every rule. `0.4.0` is a minor above `0.3.1`, so `0001-F7` B-066
+holds with no `opt_in` mark on the page (`0001-F7` OQ-78).
+
+**The level.** Warning by default: OQ-5's level, as `0201-F7` OQ-5 chose for
+`SPCT0012`. It is written in two places, each read by its own path, as
+`WaiverRule`'s `Off` is:
+
+| Where                                                                               | Read by                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DefaultLevel => SpechtRuleLevel.Warning` on the rule                               | the evaluator, when the manifest's `rules` does not name `SPEC4011`; `SpechtManifestParser` does not fill `rules` from the shipped manifest, so this is every manifest that leaves it out |
+| `"SPEC4011": "warning"` in the shipped `0.4.0` manifest's `rules`, after `SPEC4010` | `init`, which writes the pinned rules at their levels; `InitRuleDefaultsUnitTests` holds each level to its page's Default severity                                                        |
+
+The evaluator stamps a warning, so the check exits `0` on it, and `1` under
+`--strict`. `rules` or `specht rules set SPEC4011 error` raises it, and `off`
+stops it running.
+
+**The rule page.** `docs/rules/v0.4.0/SPEC4011.md`, in the shape of
+`SPEC4008.md`:
+
+- Frontmatter: a `title`, a `description` and `type: rule`.
+- Metadata: Rule ID `SPEC4011`, Family `Feature file` (as `SPEC4001`,
+  `SPEC4002`, `SPEC4007` and `SPEC4008`), Default severity `Warning`, Schema
+  version `0.4.0`.
+- Cause: the message above in its table.
+- Rule description: it reads only under `claim.source` `gherkin`, and only the
+  `.feature` files a set's glob matches. It covers inheritance from a Rule and
+  the Feature, `Example:` and `Scenario Template:`, and the four readings above.
+- An example violation, the corrected file and how to fix.
+
+`0001-F3` B-031 holds `0.4.0`'s pages to its vocabulary, one each, so the page
+and the vocabulary row land in one commit. `specht --explain SPEC4011` prints
+it under a `0.4.0` pin.
+
+**The relock.** No published package carries `0.4.0`; `0.6.4-preview` locks
+`0.1.0` to `0.3.1`, as item `0336` recorded. The digest covers the four
+shipping trees, so the page and the manifest line change it. By `0001-F7`
+decision 0014's procedure, `0.4.0`'s entry in
+`src/tool/schema/versions.lock.json` is removed by hand, then
+`./build.sh LockSchemaVersion` records the newest version again (`0001-F7`
+C-17, B-092). The `0.1.0` to `0.3.1` entries and their files stay
+byte-identical (`0001-F7` C-1).
+
+**The docs.** `docs/what-it-checks.md` gains a `SPEC4011` row after
+`SPEC4010`'s. In `docs/configuration.md`, "No rule reads Gherkin claims yet."
+becomes a sentence naming `SPEC4011`.
+
+**Silent without `gherkin` (B-002, C-3).** Two gates, either one enough:
+
+1. Below `0.4.0` no vocabulary holds the id, so the rule is neither run nor
+   counted (B-028).
+2. Under `0.4.0`, without `claim.source` `gherkin`, `ClaimSets` returns no set,
+   so the rule runs and finds nothing. A companion `.feature` beside a Markdown
+   specification is no claim file: its untagged scenarios are not reported.
+
+Under `0.4.0` every tree counts one more rule evaluated, as it did for
+`SPEC4008` and `SPEC4010`. That is the vocabulary growing, not a verdict.
+`0001-F7` B-154 compares patch neighbours only, and `0.3.1` and `0.4.0` are not
+(`0001-F7` OQ-75, OQ-78). No golden report pins `0.4.0`: the two are the
+`0.1.0` baseline and `engine-v0.3.0.json`. This repository's tree is Markdown,
+so its self-check gains the count and no violation.
+
+**Determinism (B-030).** Sets in manifest order, files in ordinal path order,
+findings in line order, and the evaluator's order sorts the report.
+
+**Testability.** The mechanisms that prove B-010, for `test-writer`'s § 8 and
+§ 9:
+
+- The rule from the composed rule set, through `SpechtEvaluator`, over a model
+  `SpechtModelReader.Read` builds from a `MockFileSystem` tree through
+  `EngineServices`, as `SpechtModelReader.NativeClaims.Unit.Tests` does. The
+  stamped id, level, path, line and identifier are all observable:
+
+  | Case                                                                             | Expected                                                                   |
+  | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+  | an untagged `Scenario:`, `Example:`, `Scenario Outline:` or `Scenario Template:` | one `SPEC4011` warning at its keyword line, the file's path, no identifier |
+  | its tags on lines above the keyword                                              | the keyword's line, not a tag's                                            |
+  | a claim tag on the scenario, on its Rule, or on the Feature                      | none                                                                       |
+  | a Rule with a claim, then a later Rule without                                   | only the later Rule's scenarios                                            |
+  | a planned tag, or only ordinary or mistyped tags                                 | reported                                                                   |
+  | a claim tag on an Examples block only                                            | the outline reported                                                       |
+  | a claim id in the title only                                                     | reported, and no claim                                                     |
+  | a file in another language, or with no `Feature:` line                           | none                                                                       |
+  | one file two sets match                                                          | each scenario once                                                         |
+
+- The level: `DefaultLevel` is `Warning`; a manifest `rules` entry of `error`
+  stamps an error and `off` does not run it; `--strict` exits `1` on the
+  warning alone.
+- Silence: a `0.4.0` Markdown tree with an untagged companion scenario gives
+  no `SPEC4011` (B-002); a `0.3.1` pin with `claim.source` `gherkin` does not
+  evaluate the id, and its rule count is unchanged (B-028, C-3).
+- The vocabulary: `ShippedVocabularies`' `0.4.0` row gains `SPEC4011`;
+  `ZeroFourZeroRuleNames` gains `SPEC025` to `SPEC4011`; the composition id
+  list gains `SPEC025`. The rule-page tests (`0001-F3` B-031),
+  `InitRuleDefaultsUnitTests`, the real-tree numbering test (`0001-F7` B-066)
+  and the lock tests take the page, the manifest line and the relock without
+  a new test.
+- Acceptance: the two `@B-010` scenarios and the `@boundary` title scenario,
+  in `NativeClaimsSteps`.
+
+**Reuse.** The reader's `SPCT0012` finding, `SpechtModelBuilder.ClaimSets`,
+`SpechtClaims`, `SpechtModel.ClaimSets`, the evaluator's selection and stamp,
+`SchemaVersions.Shipped` and `LockSchemaVersion` carry the work. Added: one
+rule and one member.
+
+**Rejected.**
+
+- Recomputing inheritance in the rule from `Declaration.Scenarios`. That
+  member holds only the scenarios that carry a claim, and the rest are not in
+  the model, so the rule would need a second Gherkin reading (A-3, C-1).
+- Reading the claim files again in the rule: C-5's second parse.
+- Walking `model.Features` with a `ClaimFileSet` through `model.Claims`. These
+  are the same reads, reached through a Feature the rule does not use, and a
+  set that makes no Feature has no claim file (B-036).
+- The reader's text as the message. It is the analyzer's wording, capitalised
+  and ending with a period, where an engine message is neither. Getting the
+  title out of it would be a second reading.
+- A title member on `GherkinClaimTextFinding`. It would change a record the
+  analyzer compiles, for a message no claim asks for (§ 5 row 1).
+- A member holding only the `SPCT0012` findings. The whole read is already in
+  hand, and item `0394` reads `SPCT0011` from it.
+- The key `SPEC4011` with a map entry to itself. The rules that entered
+  `0.4.0` are keyed by their working names.
+- A constant for `SPCT0012` in the shared reader: an edit to code the analyzer
+  compiles, for one engine caller.
 
 ## 8. Testing Strategy
 
