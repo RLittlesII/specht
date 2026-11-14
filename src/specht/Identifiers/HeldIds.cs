@@ -1,4 +1,5 @@
 using Specht.Discovery;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Tree;
 
@@ -8,9 +9,11 @@ namespace Specht.Identifiers;
 /// Where the collision guard reads the ids a type already holds in the tree (ADR-0033's <c>HeldIds</c>): the file names in
 /// every <c>adr/</c> folder for <c>adr</c> and in every <c>lessons/</c> folder for <c>lesson</c> (<c>0001-F19</c> B-038,
 /// B-039), and for a per-Feature type the Feature's own places: the file names in its <c>.spec/decisions/</c>, the first
-/// cell of every table row in its <c>.spec/README.md</c> and the tags of its companions (B-040 to B-042). Each is listed
-/// through the check's own discovery and its exclusions, and never written (C-1, C-11). The root <c>.spec/</c>, which the
-/// default exclusions skip as no specification, is read: it is where the repository-wide records live.
+/// cell of every table row in its <c>.spec/README.md</c> and the tags of its companions (B-040 to B-042), and for a
+/// <c>claim</c> under a <c>gherkin</c> claim source also the claims the check builds from the claim file sets of the
+/// Feature's identity or whose <c>record</c> is the Feature's specification (B-078). Each is listed through the check's own
+/// discovery and its exclusions, and never written (C-1, C-11). The root <c>.spec/</c>, which the default exclusions skip as
+/// no specification, is read: it is where the repository-wide records live.
 /// </summary>
 /// <param name="discovery">The listing of the tree.</param>
 /// <param name="tree">The store a Feature's files are read through.</param>
@@ -21,6 +24,7 @@ namespace Specht.Identifiers;
 /// <implements epic="0001" feature="F19" claim="B-040" />
 /// <implements epic="0001" feature="F19" claim="B-041" />
 /// <implements epic="0001" feature="F19" claim="B-042" />
+/// <implements epic="0001" feature="F19" claim="B-078" />
 public sealed class HeldIds(ISpecDiscovery discovery, SpechtTreeStore tree, SpechtDocumentParser documents, FeatureTagParser tags)
 {
     /// <summary>The specification of the Feature a folder, relative to the root, holds, as the check lists it (<c>0001-F19</c> A-7).</summary>
@@ -59,6 +63,43 @@ public sealed class HeldIds(ISpecDiscovery discovery, SpechtTreeStore tree, Spec
         ("scenario", { } spec) => [.. Texts(root, discovery.FindCompanions(root, spec, inputs)).SelectMany(tags.TagNames)],
         _ => [],
     };
+
+    /// <summary>
+    /// The ids of the claims the check builds (<c>0001-F16</c> B-001) from the claim file sets whose Feature identity is the
+    /// one <paramref name="feature"/>'s <c>.spec/README.md</c> frontmatter states: the set's <c>epic</c> and <c>feature</c>
+    /// equal to the Feature's epic and id, or its <c>feature</c> alone where the manifest declares no epic grammar and so no
+    /// set has an <c>epic</c> (<c>0001-F16</c> B-027), and also the sets whose <c>record</c>, resolved by
+    /// <see cref="SpechtTreeStore.TryLoad"/> as the check resolves it, is that <c>.spec/README.md</c>, whatever identity they
+    /// declare (<c>0001-F16</c> B-035, B-037). A <c>record</c> the check reads as none leaves the set matched by identity alone,
+    /// and another Feature's sets hold nothing for this one (<c>0001-F19</c> § 10, readings of B-078).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="structure">The manifest, whose <c>claim</c> members, Feature keys and exclusions are read.</param>
+    /// <param name="feature">The specification of the Feature a <c>claim</c> id is minted for.</param>
+    /// <returns>The claim ids, none unless <c>claim.source</c> is <c>gherkin</c>.</returns>
+    /// <implements epic="0001" feature="F19" claim="B-078" />
+    public IReadOnlyList<string> NativeClaimsOf(string root, SpechtStructure structure, SpechtLocation feature)
+    {
+        if (structure.ClaimInput is not { Source: SpechtClaimSource.Gherkin } input)
+        {
+            return [];
+        }
+
+        var frontmatter = documents.Parse(Texts(root, [feature.RelativePath]).Single(), feature.RelativePath).Frontmatter;
+        var id = frontmatter.Text(structure.FeatureKeys.Id);
+        var epic = frontmatter.Text(structure.FeatureKeys.Epic);
+        var sets = input.Files
+            .Where(set => (string.Equals(set.Feature, id, StringComparison.Ordinal)
+                    && (set.Epic is null || string.Equals(set.Epic, epic, StringComparison.Ordinal)))
+                || (set.Record is { } record
+                    && string.Equals(tree.TryLoad(root, record)?.RelativePath, feature.RelativePath, StringComparison.Ordinal)))
+            .ToArray();
+        var files = sets.Select(set => discovery.FindClaimFiles(root, set.Glob, structure.Discovery.Exclusions)).ToArray();
+        var texts = tree.Load(root, files.SelectMany(static paths => paths).Distinct(StringComparer.Ordinal).ToArray()).Files
+            .ToDictionary(static file => file.RelativePath, static file => file.Text(), StringComparer.Ordinal);
+
+        return [.. SpechtModelBuilder.ClaimSets(structure, sets, files, texts).SelectMany(static claims => claims.Rows).Select(static claim => claim.Id)];
+    }
 
     /// <summary>
     /// The claim prefix a Feature declares: the text its <c>.spec/README.md</c> frontmatter holds under <paramref name="key"/>,

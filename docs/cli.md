@@ -17,7 +17,7 @@ Installed as a local tool, each runs as `dotnet specht`.
 ## `specht`
 
 ```text
-specht [--root <DIR>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <rule id>]
+specht [--root <DIR>] [--strict] [--json] [--report <PATH>] [--schema-source <embedded|disk>] [--explain <rule id>]
 specht --version
 ```
 
@@ -31,6 +31,7 @@ pins. [What it checks](what-it-checks.md) lists the rules, and
 | `--schema-source <embedded\|disk>` | `embedded` or `disk` | Manifest selection, then automatic | Selects frontmatter schemas for this run; overrides a valid manifest selection.                                 |
 | `--strict`                         | none                 | Off                                | Fails on a violation of any severity, not only an error.                                                        |
 | `--json`                           | none                 | Off                                | Writes the report document to stdout in place of the violation lines and summary.                               |
+| `--report <PATH>`                  | Output file          | None                               | Also writes the report document to that file, relative to the working directory.                                |
 | `--explain <rule id>`              | A rule id            | None                               | Prints the entire rule page for the pinned schema version, including YAML frontmatter, without running a check. |
 | `-h, --help`                       | none                 | Off                                | Prints the command's help and checks nothing.                                                                   |
 | `--version`                        | none                 | Off                                | As the only argument, prints the tool's version and checks nothing.                                             |
@@ -59,6 +60,13 @@ Every path is relative to the root. A run that exits `2` or `3` says why on
 stderr. As the only argument, `--version` prints one line instead: the tool's
 version and the commit it was built from, such as `0.1.66+28d0ba692e`. It needs
 no manifest and writes nothing.
+
+**Report file.** `--report <PATH>` writes the same report document `--json`
+prints to that file, creating its directories and replacing a file already
+there; stdout and the exit code are as without it. A relative path is read from
+the working directory, not from `--root`. A run that exits `2` or `3` writes no
+file and creates no directory, and removes a file an earlier run left at the
+path.
 
 **Exit codes.** A check returns `0`, `1`, `2` or `3`; `--explain` can also return
 `4` for an unknown rule. [Exit codes](exit-codes.md) says what each means.
@@ -603,7 +611,10 @@ the record's head: its `form` with the Feature's claim prefix, else its
 record type it names, such as `adr` or `lesson`, needs a grammar in
 `identifiers`; [Configuration](configuration.md) describes both. `epic`,
 `feature` and `task` ids are not minted, and below `0.4.0` an entry that opts
-one in refuses every request.
+one in refuses every request. An entry for a name that is no id type opts
+nothing in. A `claim` id is also none that a claim of the Feature's claim file
+sets declares where `claim.source` is `gherkin`: the sets of its identity and
+those whose `record` is its `.spec/README.md`.
 
 | Option            | Value   | Default               | Does                                                                                                                                                                                                           |
 | ----------------- | ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -625,8 +636,8 @@ than `nanoid` or `snowflake`, settings it cannot draw from, a Snowflake clock
 that reads earlier than at the draw before it, a candidate its type's grammar
 or record's `id` rejects, or one that begins with the other type's longer
 claim or scenario head; `4` for a type with no entry or record `mint`, or
-whose entry names no strategy, or a `--feature` folder that holds no
-Feature's `.spec/`.
+whose entry names no strategy, a name that is no id type, or a `--feature`
+folder that holds no Feature's `.spec/`.
 
 ```sh
 specht mint adr --root .

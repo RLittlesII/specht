@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-10"
-updated: "2026-10-31"
+updated: "2026-11-14"
 closed: null
 
 summary: |
@@ -120,7 +120,8 @@ acceptance_criteria:
     and `src/tool/Features/Init/` holds its slice's registration - services
     on `IServiceCollection`, `AddCommand` on `IConfigurator`."
   - "`src/tool/Program.cs` only calls the factory and runs the app."
-  - "`test/tests/Check/CheckCommand.Integration.Tests.cs` and
+  - "`test/tests/Check/CheckCommand.Integration.Tests.cs`,
+    `test/tests/Check/CheckCommand.Report.Integration.Tests.cs` and
     `test/tests/Init/InitCommand.Integration.Tests.cs` get their registrar
     and configuration from the factory through the one test-tree wrap; no
     other `new CommandAppTester`, `ServiceCollection` or `TypeRegistrar` is
@@ -133,8 +134,9 @@ acceptance_criteria:
     moves behind the factory."
   - "Every check test runs the real engine over a synthetic tree; none hands
     the command a canned report, and no runner is passed into the factory."
-  - "Removed: the private `Check` helper in
-    `test/tests/Check/CheckCommand.Integration.Tests.cs`, and the two
+  - "Removed: the private `Check` helpers in
+    `test/tests/Check/CheckCommand.Integration.Tests.cs` and
+    `test/tests/Check/CheckCommand.Report.Integration.Tests.cs`, and the two
     hand-built `CommandAppTester`s in
     `test/tests/Init/InitCommand.Integration.Tests.cs`."
   - "Removed: the duplicated private static `NewestVersion` in
@@ -250,6 +252,17 @@ decisions:
     design for the owner's review. This item is released when the owner
     accepts that rescoping; the registration tests' collection and open
     point 5 remain for the architecture pass.
+  - |
+    2026-11-14, spec-author, on `spec-reviewer`'s finding for item 0036:
+    item 0036 added
+    `test/tests/Check/CheckCommand.Report.Integration.Tests.cs`, whose
+    private `Check` helper builds its own `ServiceCollection`,
+    `TypeRegistrar` and `CommandAppTester`, as
+    `CheckCommand.Integration.Tests.cs` does; `specht-conventions`
+    § Testing's `Never add` list rules that out, and the factory it waits
+    on is this item's. Criteria 3 and 6 are amended in place to name the
+    class and its helper, keeping their numbers; the out-of-scope row
+    takes the store's `Specht` name. Status stays `blocked`.
 
 out_of_scope:
   - "What any command does - 0001-F2 and 0001-F4 own that."
@@ -257,6 +270,6 @@ out_of_scope:
   - "`SpecCheck` itself, the report types, and deleting `SpechtRunner` - item 0167."
   - "Any mediator or dispatcher, third-party or handwritten - ADR-0026."
   - "Where `init`'s logic lives - ADR-0010 open point 2; `InitCommand` keeps its direct calls here."
-  - "`--report` written through `SpecReportStore` - item 0036."
+  - "`--report` written through `SpechtReportStore` - item 0036."
   - "The acceptance steps that launch the built tool - they compose nothing (ADR-0007). The five step classes that resolve the engine through `EngineServices` are in scope, above."
   - "A new command test, such as the command-tester test 0001-F2 § 9 holds `Partial` for B-012 - test-writer's, once this lands."

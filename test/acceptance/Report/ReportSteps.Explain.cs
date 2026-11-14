@@ -36,7 +36,7 @@ public sealed partial class ReportSteps
             Tree.WriteFeature("0001", "F1", featureFile: null);
         }
 
-        (_stdout, _stderr, _explainExit) = AcceptanceTool.Launch(Tree.Root, "--root", ".", "--explain", id);
+        (_stdout, _stderr, _exit) = AcceptanceTool.Launch(Tree.Root, "--root", ".", "--explain", id);
     }
 
     [Then("the standard output carries what the rule checks")]
@@ -67,7 +67,7 @@ public sealed partial class ReportSteps
     public void ThenExplainPrintedNoText() => _stdout.Should().BeEmpty();
 
     [Then("the exit code is {int}")]
-    public void ThenExplainExitsWith(int code) => _explainExit.Should().Be(code, _stderr);
+    public void ThenTheExitCodeIs(int code) => _exit.Should().Be(code, _stderr);
 
     private string ExplainPage
     {
@@ -84,6 +84,4 @@ public sealed partial class ReportSteps
     } = string.Empty;
 
     private void WriteExplainManifest(string text) => File.WriteAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath), text);
-
-    private int _explainExit;
 }
