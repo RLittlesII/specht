@@ -396,7 +396,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
             SpechtTree.SectionsWith(
                 "9. Traceability Matrix",
                 "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
-                    + "| B-001 | It does the thing | It.Unit.Tests.cs | Done |\n"));
+                    + "| B-001 | It does the thing | `ItDoesTheThing` | Covered |\n"));
 
         // When
         var report = tree.Run();
@@ -414,7 +414,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var sections = SpechtTree.SectionsWith(
             "9. Traceability Matrix",
             "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
-                + "| B-001 | It does the thing | It.Unit.Tests.cs | Done |\n");
+                + "| B-001 | It does the thing | `ItDoesTheThing` | Covered |\n");
         sections = sections
             .Select(static section => section.StartsWith("## 12. Sign-off\n", StringComparison.Ordinal) ? SignedOff : section)
             .ToList();
