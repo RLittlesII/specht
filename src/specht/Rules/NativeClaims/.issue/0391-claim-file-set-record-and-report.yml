@@ -18,6 +18,7 @@ claims:
   - B-003
   - B-017
   - B-026
+  - B-032
 
 created: "2026-11-06"
 updated: "2026-11-13"
@@ -42,6 +43,7 @@ acceptance_criteria:
   - "B-003 — a record supplies frontmatter, lifecycle and edges, held by SPEC1001 to SPEC1003; none means current, no edge"
   - "B-017 — one identity in two sets, or a set and a layout's specification: SPEC3002 at each"
   - "B-026 — counted among `features`; listed by its record, or its first claim file"
+  - "B-032 — a record's `claim_prefix` does not choose the grammar: the tags are read with the tree's claim grammar, so a tag only the prefix admits declares nothing"
   - "Relative paths only (C-2); no file written (C-6)"
   - "Under 0.4.0, a tree without `claim.source: gherkin` gets the verdicts it got before this item (B-002); `0001-F7` B-154 does not apply, since 0.3.1 and 0.4.0 are not patch neighbours (`0001-F7` OQ-78)"
   - "§ 9 carries a row naming a test for each id above."

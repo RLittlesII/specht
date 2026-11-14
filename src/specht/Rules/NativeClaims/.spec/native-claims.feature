@@ -357,6 +357,14 @@ Feature: Native Gherkin claims
       | "Gherkin"    |
       | the number 1 |
 
+  @B-032
+  Scenario: A record's claim prefix does not choose the claim grammar
+    Given the claim file set names the record ".spec/features/arithmetic/README.md"
+    And the record's frontmatter sets "claim_prefix" to "ADD-"
+    And ".spec/features/arithmetic/add.feature" has scenarios tagged "@B-001" and "@ADD-002"
+    When the check runs
+    Then Feature "arithmetic" has exactly the claim "B-001"
+
   @boundary
   Scenario: A claim is never inferred from a title or a step
     Given ".spec/features/arithmetic/add.feature" has an untagged scenario titled "B-009 adds two numbers"
