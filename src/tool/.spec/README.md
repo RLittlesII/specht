@@ -1683,7 +1683,7 @@ structural stage is touched.
 
 ### The move into ids at schema 0.4.0 (item `0438`)
 
-<!-- last written by: implementer, 2026-11-13 (item `0438`, spec-review round 1: a `mint` entry outside the seven refused, the seven read from `IdTypes`, the test seams corrected); implementer, 2026-11-13 (item `0438`: built, on spec-author's settlement of B-156 and B-159); implementer, 2026-11-13 (item `0438`: designed) -->
+<!-- last written by: implementer, 2026-11-13 (item `0438`, spec-review round 2: the refusal of a `mint` entry outside the seven falls after the types' faults and before the shared-head fault, as built); implementer, 2026-11-13 (item `0438`, spec-review round 1: a `mint` entry outside the seven refused, the seven read from `IdTypes`, the test seams corrected); implementer, 2026-11-13 (item `0438`: built, on spec-author's settlement of B-156 and B-159); implementer, 2026-11-13 (item `0438`: designed) -->
 
 **Built 2026-11-13 for item `0438`.** From schema `0.4.0` the
 check rejects the top-level `mint` and the seven `0001-F19` C-13 members of
@@ -1824,8 +1824,9 @@ The faults, each naming the member the consumer wrote:
 
 - A grammar not of B-155's shape, a value that is not text included:
   `identifiers.claim 'B-[0-9]{3}' is not ^, a literal head, a pattern with no alternation outside a group, and $; write ids.claim by hand`.
-- A `mint` entry whose name is neither one of the seven nor `$`-led, after the
-  types' faults and in the order of `mint`, named as the consumer wrote it and
+- A `mint` entry whose name is neither one of the seven nor `$`-led, after
+  every fault of the seven types and before the `claim` and `scenario` head
+  fault, and in the order of `mint`, named as the consumer wrote it and
   never as the `ids` record a move would have written (B-159 as amended;
   `0001-F19` B-062 makes such an entry valid under `0.3.1`):
   `mint.epic names none of the id types adr, lesson, decision, claim, constraint, openQuestion, scenario, so it has no record to move into; remove it by hand`.
@@ -1838,7 +1839,7 @@ The faults, each naming the member the consumer wrote:
 - An `ids.<type>` record beside an `identifiers.<type>` or a `mint.<type>`,
   whether or not B-161 would drop the grammar, naming each old member:
   `ids.claim already holds a record, so identifiers.claim cannot move into it; move it by hand`.
-- `claim` and `scenario` heads that are one after the move, where at least one
+- `claim` and `scenario` heads that are one after the move, last of all, where at least one
   side's grammar moved, naming each side's member the consumer wrote:
   `identifiers.<type>`, moved or dropped, else an `ids.<type>` record, else
   nothing, for the shipped record:
