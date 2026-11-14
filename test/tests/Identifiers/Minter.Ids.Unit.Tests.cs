@@ -481,8 +481,8 @@ public sealed class MinterIdsUnitTests
     }
 
     [Theory]
-    [ClassData(typeof(ClaimFileSetsRecordingTheFeaturesSpecification))]
-    public void ASetOfAnotherIdentityWhoseRecordIsTheFeaturesSpecification_WhenAClaimIdIsMintedForThatFeature_ShouldMintNoCandidateItsFilesDeclare(string set)
+    [ClassData(typeof(ClaimFileSetsSpellingTheFeaturesSpecification))]
+    public void ASetWhoseRecordSpellsTheFeaturesSpecification_WhenAClaimIdIsMinted_ShouldHoldItsClaimsIfTheCheckReadsTheRecord(string set, string expected)
     {
         // Given
         var manifest = $$"""
@@ -513,43 +513,7 @@ public sealed class MinterIdsUnitTests
         var id = minter.Mint(EngineServices.Parser().ParseDocument(manifest), "claim", root, "features/one");
 
         // Then
-        id.Should().Be("B-bb");
-    }
-
-    [Theory]
-    [ClassData(typeof(ClaimFileSetsRecordingNoRecord))]
-    public void ASetOfAnotherIdentityWhoseRecordTheCheckReadsAsNone_WhenAClaimIdIsMintedForTheFeature_ShouldMintTheCandidateItsFilesDeclare(string set)
-    {
-        // Given
-        var manifest = $$"""
-            {
-              "schemaVersion": "0.4.0",
-              "identifiers": { "epic": "^[0-9]{4}$" },
-              "claim": { "source": "gherkin", "files": [ {{set}} ] },
-              "ids": { "claim": { "id": "[ab]+", "mint": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 } } } }
-            }
-            """;
-        var files = new MockFileSystem(new Dictionary<string, MockFileData>
-        {
-            ["repo/.specht/manifest.json"] = new(manifest),
-            ["repo/features/one/.spec/README.md"] = new("---\nid: \"F1\"\nepic: \"0001\"\n---\n# Specification: F1\n"),
-            ["repo/claims/held.feature"] = new("Feature: it\n\n  @B-aa\n  Scenario: It is held\n    Given a thing\n"),
-        });
-        var root = files.Path.GetFullPath("repo");
-        var minter = new Minter(
-            new FixedRandomSource(0, 0, 1, 1),
-            new HeldIds(
-                new SpechtDiscovery(files, new UnexpectedChildProcess()),
-                new SpechtTreeStore(files),
-                new SpechtDocumentParser(new FrontmatterReader()),
-                new FeatureTagParser()),
-            new FixedClock(FixedClock.CheckTime));
-
-        // When
-        var id = minter.Mint(EngineServices.Parser().ParseDocument(manifest), "claim", root, "features/one");
-
-        // Then
-        id.Should().Be("B-aa");
+        id.Should().Be(expected);
     }
 
     private const string Base32 = "0123456789abcdefghjkmnpqrstvwxyz";
