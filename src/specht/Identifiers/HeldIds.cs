@@ -11,9 +11,9 @@ namespace Specht.Identifiers;
 /// B-039), and for a per-Feature type the Feature's own places: the file names in its <c>.spec/decisions/</c>, the first
 /// cell of every table row in its <c>.spec/README.md</c> and the tags of its companions (B-040 to B-042), and for a
 /// <c>claim</c> under a <c>gherkin</c> claim source also the claims the check builds from the claim file sets of the
-/// Feature's identity (B-078). Each is listed through the check's own discovery and its exclusions, and never written (C-1,
-/// C-11). The root <c>.spec/</c>, which the default exclusions skip as no specification, is read: it is where the
-/// repository-wide records live.
+/// Feature's identity or whose <c>record</c> is the Feature's specification (B-078). Each is listed through the check's own
+/// discovery and its exclusions, and never written (C-1, C-11). The root <c>.spec/</c>, which the default exclusions skip as
+/// no specification, is read: it is where the repository-wide records live.
 /// </summary>
 /// <param name="discovery">The listing of the tree.</param>
 /// <param name="tree">The store a Feature's files are read through.</param>
@@ -68,8 +68,10 @@ public sealed class HeldIds(ISpecDiscovery discovery, SpechtTreeStore tree, Spec
     /// The ids of the claims the check builds (<c>0001-F16</c> B-001) from the claim file sets whose Feature identity is the
     /// one <paramref name="feature"/>'s <c>.spec/README.md</c> frontmatter states: the set's <c>epic</c> and <c>feature</c>
     /// equal to the Feature's epic and id, or its <c>feature</c> alone where the manifest declares no epic grammar and so no
-    /// set has an <c>epic</c> (<c>0001-F16</c> B-027). A set's <c>record</c> takes no part in the match, and another Feature's
-    /// sets hold nothing for this one (<c>0001-F19</c> § 10, readings of B-078).
+    /// set has an <c>epic</c> (<c>0001-F16</c> B-027), and also the sets whose <c>record</c>, resolved by
+    /// <see cref="SpechtTreeStore.TryLoad"/> as the check resolves it, is that <c>.spec/README.md</c>, whatever identity they
+    /// declare (<c>0001-F16</c> B-035, B-037). A <c>record</c> the check reads as none leaves the set matched by identity alone,
+    /// and another Feature's sets hold nothing for this one (<c>0001-F19</c> § 10, readings of B-078).
     /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="structure">The manifest, whose <c>claim</c> members, Feature keys and exclusions are read.</param>
@@ -87,8 +89,10 @@ public sealed class HeldIds(ISpecDiscovery discovery, SpechtTreeStore tree, Spec
         var id = frontmatter.Text(structure.FeatureKeys.Id);
         var epic = frontmatter.Text(structure.FeatureKeys.Epic);
         var sets = input.Files
-            .Where(set => string.Equals(set.Feature, id, StringComparison.Ordinal)
-                && (set.Epic is null || string.Equals(set.Epic, epic, StringComparison.Ordinal)))
+            .Where(set => (string.Equals(set.Feature, id, StringComparison.Ordinal)
+                    && (set.Epic is null || string.Equals(set.Epic, epic, StringComparison.Ordinal)))
+                || (set.Record is { } record
+                    && string.Equals(tree.TryLoad(root, record)?.RelativePath, feature.RelativePath, StringComparison.Ordinal)))
             .ToArray();
         var files = sets.Select(set => discovery.FindClaimFiles(root, set.Glob, structure.Discovery.Exclusions)).ToArray();
         var texts = tree.Load(root, files.SelectMany(static paths => paths).Distinct(StringComparer.Ordinal).ToArray()).Files

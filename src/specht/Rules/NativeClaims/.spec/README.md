@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -154,7 +154,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | `specht manifest` prints the filled members (`0001-F9` B-004)                                                                                                       | Technical      | The existing `claimDocument` projection                                                                                                                                                                                            |
 | The shipped defaults join `0.4.0` with a relock while no published package carries it (`0001-F7` C-1, C-17; decision 0001)                                          | Technical      | `src/tool/manifest/v0.4.0/manifest.json`, `./build.sh LockSchemaVersion`                                                                                                                                                           |
 | The native reading runs only under `claim.source` `gherkin`; otherwise the listing, the texts and the model are today's (B-001, B-002, C-3)                         | Business       | `SpechtModelReader.Read` and `SpechtModelBuilder.Build`, on `ClaimInput.Source`                                                                                                                                                    |
-| A set's claim files: the `.feature` files its glob matches outside `exclusions`, root-relative, in ordinal order (B-001, B-030)                                     | Both           | `ISpecDiscovery.FindTestFiles` once per set, onto `SpechtListing.ClaimFiles`                                                                                                                                                       |
+| A set's claim files: the `.feature` files its glob matches outside `exclusions`, root-relative, in ordinal order (B-001, B-030)                                     | Both           | `ISpecDiscovery.FindClaimFiles` once per set, onto `SpechtListing.ClaimFiles`                                                                                                                                                      |
 | Claim files are read as text through `IFileSystem`, each once (C-2)                                                                                                 | Technical      | `SpechtTreeStore.Load`, with every other listed path                                                                                                                                                                               |
 | One tag reading: `claim.tag`, `tagIgnoreCase`, the Feature's claim grammar and `0001-F5` B-095's scenario head (C-1, A-1, B-004, B-005)                             | Business       | The `GherkinClaimTagForm` `SpechtModelBuilder` composes                                                                                                                                                                            |
 | What declares, an outline once, a Rule once, inheritance (B-004, B-006, B-007; A-3)                                                                                 | Business       | `GherkinClaimTextReader`, the reader the analyzer compiles, unchanged in what it reads                                                                                                                                             |
@@ -180,7 +180,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -386,12 +386,16 @@ Feature builds. `HeldIds.NativeClaimsOf` reads the Feature's `.spec/README.md`
 frontmatter itself, the text under the manifest's `FeatureKeys.Id` and
 `FeatureKeys.Epic`, and keeps a set whose `feature` equals that id and, where
 the set has an `epic`, whose `epic` equals that epic, both compared ordinally.
-The set's `record` takes no part (`0001-F19` § 7, item `0440`). Item `0391`,
-not built, makes a native Feature a `FeatureSpec` from the set's `record` or
-its first claim file and keys `ClaimSets` into `Claims` (the table under "What
-stays"). That is a second match of a set to a Feature, so when item `0391`
-lands the two are to be kept to one reading of which Feature a set belongs to.
-Nothing here decides how.
+It also keeps a set whose `record`, resolved through `SpechtTreeStore.TryLoad`
+as `SpechtModelReader.Read` resolves it, gives the README's root-relative path,
+compared ordinally, whatever identity the set declares (B-037; `0001-F19`
+B-078, § 7, item `0440`). A `record` `TryLoad` reads as none leaves the set
+matched by identity alone (B-035). Item `0391` built the check's side: a native
+Feature is a `FeatureSpec` at its set's loaded record, or else its first claim
+file, under the set's identity, and a layout's specification at a loaded
+record's path is dropped ("Where a native Feature sits" and "The Feature",
+below). So the guard and the check resolve a `record` by one reading,
+`TryLoad`'s ("Reading a record").
 
 **The tag forms.** `SpechtModelBuilder.ClaimSets`, a step of `Build`
 declared in [`SpechtModelBuilder.cs`](../../../Model/SpechtModelBuilder.cs),

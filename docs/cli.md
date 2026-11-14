@@ -610,7 +610,8 @@ record type it names, such as `adr` or `lesson`, needs a grammar in
 `feature` and `task` ids are not minted, and below `0.4.0` an entry that opts
 one in refuses every request. An entry for a name that is no id type opts
 nothing in. A `claim` id is also none that a claim of the Feature's claim file
-sets declares where `claim.source` is `gherkin`.
+sets declares where `claim.source` is `gherkin`: the sets of its identity and
+those whose `record` is its `.spec/README.md`.
 
 | Option            | Value   | Default               | Does                                                                                                                                                                                                           |
 | ----------------- | ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

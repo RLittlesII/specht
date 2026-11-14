@@ -229,7 +229,7 @@ its `plain`, then the draw, and the record's `id` must accept the draw; a
 claim or scenario id that would begin with the other type's longer head is
 refused. Where `claim.source` is `gherkin`, a claim id is also none that a
 claim of the Feature's claim file sets declares, the sets whose `epic` and
-`feature` are the Feature's. This record mints claims such as `ACTIVITY-k3x9ab` in a Feature
+`feature` are the Feature's or whose `record` is its `.spec/README.md`. This record mints claims such as `ACTIVITY-k3x9ab` in a Feature
 declaring `claim_prefix: ACTIVITY`, and `B-k3x9ab` in one declaring none:
 
 ```json
