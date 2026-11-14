@@ -11,9 +11,12 @@ namespace Specht.Acceptance.Identifiers;
 /// that Feature's Gherkin files" writes <c>features/one</c> with no claim prefix and sets <c>claim.source</c> to
 /// <c>gherkin</c> with one claim file set, glob <c>features/one/.spec/*.feature</c>, whose identity is that Feature's, epic
 /// <c>0001</c> and feature <c>F1</c>, and whose <c>record</c> is its <c>.spec/README.md</c>, so the set names the Feature
-/// <c>--feature</c> names by both. An element "in those files" that declares the first candidate is written to a second claim
-/// file, <c>held.feature</c>, and the check's own reader must build that claim from the set before the request is made. "No
-/// claim of that Feature" is no claim the check's reader builds from that set. A <c>mint</c> member that is no id type (B-079,
+/// <c>--feature</c> names by both. "It takes claims under another Feature's identity from Gherkin files whose record is the
+/// specification of a Feature that declares no prefix" writes the same Feature and the same set under feature <c>F2</c>, so the
+/// set names <c>features/one</c> by its <c>record</c> alone (B-078, amended 2026-11-14). An element "in those files" that
+/// declares the first candidate is written to a second claim file, <c>held.feature</c>, and the check's own reader must build
+/// that claim from the set before the request is made. "No claim of that Feature" and "no claim in those files" are no claim the
+/// check's reader builds from that set. A <c>mint</c> member that is no id type (B-079,
 /// B-080) is added to the manifest's <c>mint</c> key beside nothing else, with no grammar under <c>identifiers</c>, and its
 /// request launches the built tool.
 /// </summary>
@@ -37,27 +40,11 @@ public sealed partial class IdGenerationSteps
     public void WhenAnIdOfTheTypeIsRequested(string type) => _request = Request(type, forFeature: false);
 
     [Given("^it takes the claims of a Feature that declares no prefix from that Feature's Gherkin files$")]
-    public void GivenItTakesTheClaimsOfAFeatureThatDeclaresNoPrefixFromThatFeaturesGherkinFiles()
-    {
-        _frontmatter = null;
-        Tree.WriteCoLocatedFeature(Feature, "0001", "F1", _frontmatter);
-        var manifest = ReadManifest();
-        if (manifest["claim"] is not JsonObject claim)
-        {
-            claim = [];
-            manifest["claim"] = claim;
-        }
+    public void GivenItTakesTheClaimsOfAFeatureThatDeclaresNoPrefixFromThatFeaturesGherkinFiles() => TakeClaimsUnder("F1");
 
-        claim["source"] = "gherkin";
-        claim["files"] = new JsonArray(new JsonObject
-        {
-            ["glob"] = $"{Feature}/.spec/*.feature",
-            ["epic"] = "0001",
-            ["feature"] = "F1",
-            ["record"] = $"{Feature}/.spec/README.md",
-        });
-        WriteManifest(manifest);
-    }
+    [Given("^it takes claims under another Feature's identity from Gherkin files whose record is the specification of a Feature that declares no prefix$")]
+    public void GivenItTakesClaimsUnderAnotherFeaturesIdentityFromGherkinFilesWhoseRecordIsTheSpecificationOfAFeatureThatDeclaresNoPrefix() =>
+        TakeClaimsUnder("F2");
 
     [Given("^(a scenario|a rule|the Feature) in those files already declares the claim id that would be minted first$")]
     public async Task GivenAnElementInThoseFilesAlreadyDeclaresTheClaimIdThatWouldBeMintedFirst(string element)
@@ -75,7 +62,7 @@ public sealed partial class IdGenerationSteps
         DeclaredClaims().Should().Contain(first);
     }
 
-    [Then("^the minted id is one no claim of that Feature is declared with$")]
+    [Then("^the minted id is one no claim (?:of that Feature|in those files) is declared with$")]
     public void ThenTheMintedIdIsOneNoClaimOfThatFeatureIsDeclaredWith()
     {
         var id = Minted();
@@ -83,9 +70,31 @@ public sealed partial class IdGenerationSteps
         DeclaredClaims().Should().NotBeEmpty().And.NotContain(id);
     }
 
+    private void TakeClaimsUnder(string feature)
+    {
+        _frontmatter = null;
+        Tree.WriteCoLocatedFeature(Feature, "0001", "F1", _frontmatter);
+        var manifest = ReadManifest();
+        if (manifest["claim"] is not JsonObject claim)
+        {
+            claim = [];
+            manifest["claim"] = claim;
+        }
+
+        claim["source"] = "gherkin";
+        claim["files"] = new JsonArray(new JsonObject
+        {
+            ["glob"] = $"{Feature}/.spec/*.feature",
+            ["epic"] = "0001",
+            ["feature"] = feature,
+            ["record"] = $"{Feature}/.spec/README.md",
+        });
+        WriteManifest(manifest);
+    }
+
     private string[] DeclaredClaims() =>
         [.. EngineServices.Reader().Read(Tree.Root, null).ClaimSets
-            .Where(static set => set.FileSet is { Epic: "0001", Feature: "F1" })
+            .Where(static set => set.FileSet is { Glob: $"{Feature}/.spec/*.feature" })
             .SelectMany(static set => set.Rows)
             .Select(static claim => claim.Id)];
 }
