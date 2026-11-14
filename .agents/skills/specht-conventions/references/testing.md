@@ -295,7 +295,7 @@ wall clock.
 - A `Unit` trait on a test that runs a command through `CommandAppTester`.
 - A `ServiceCollection`, `TypeRegistrar` or `CommandAppTester` assembled in a
   test outside the factory (ADR-0007; from item `0144`).
-- A runner passed into the factory, or a canned report handed to the check
+- A check passed into the factory, or a canned report handed to the check
   command.
 - A hand-rolled factory method for test data an AutoFixture can build.
 - Copied facts that differ only in their data, where a `[Theory]` would do.

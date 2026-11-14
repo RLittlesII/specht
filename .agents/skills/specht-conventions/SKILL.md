@@ -48,9 +48,9 @@ build.sh / build.cmd           entry to the NUKE build
 
 src/
   specht/                      specht - the rule engine: discovery, readers, schema loader,
-                               rules, runner, report. Baseline at `e7dba24` (brief § 3).
+                               rules, check, report. Baseline at `e7dba24` (brief § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
-    Model/ Discovery/ Manifest/ Evaluation/ Report/ Versioning/ Composition/ Rules/ Tree/
+    Model/ Discovery/ Manifest/ Evaluation/ Check/ Report/ Versioning/ Composition/ Rules/ Tree/
                                one folder per Feature, and named folders for what several read
   tool/                        specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
