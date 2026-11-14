@@ -36,7 +36,6 @@ public sealed class SpechtTreeStore(IFileSystem fileSystem)
     public SpechtTree Load(string root, IReadOnlyList<string> relativePaths) =>
         new(relativePaths.Select(relative => new SpechtTreeFile(relative, fileSystem.File.ReadAllBytes(Under(root, relative)))).ToArray());
 
-    /// <implements epic="0109" feature="F1" claim="B-016" />
     /// <summary>
     /// Reads the one file <paramref name="relativePath"/> names under <paramref name="root"/>, its <c>.</c> and <c>..</c>
     /// segments resolved in turn, or nothing when the path is rooted, leaves the root, names no file or cannot be read
@@ -92,6 +91,7 @@ public sealed class SpechtTreeStore(IFileSystem fileSystem)
         }
     }
 
+    /// <implements epic="0109" feature="F1" claim="B-016" />
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F16" claim="B-035" />
     private string Under(string root, string relative) =>

@@ -15,8 +15,15 @@ public sealed class MatrixResolver
     /// <param name="claims">The model's already-derived claim rows.</param>
     /// <returns>Claim resolutions in declaration order.</returns>
     /// <implements epic="0001" feature="F12" claim="B-001" />
+    /// <implements epic="0001" feature="F16" claim="B-023" />
+    /// <implements epic="0001" feature="F16" claim="B-024" />
     public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpechtStructure structure, SpechtClaims claims)
     {
+        if (feature.ClaimFileSet is not null)
+        {
+            return [];
+        }
+
         var rows = Resolve(feature, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
         var tags = ClaimTags(feature, structure);
         return claims.Rows.Select((claim, index) => new MatrixClaimResolution(
