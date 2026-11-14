@@ -12,7 +12,9 @@ namespace Specht.Tests.Evaluation;
 /// B-036; § 7, item <c>0391</c>): a record's frontmatter and the items beside it are held as any specification's, and a
 /// set with no record has none to hold; one identity declared by a set and a specification, or by two sets, is reported
 /// at each, a set at its native Feature's path, line <c>0</c>; the report's <c>layouts</c> count native Features under
-/// <c>claims</c>, after the manifest's layouts; and a set that makes no Feature is counted and compared with none. Unless
+/// <c>claims</c>, after the manifest's layouts; a set that makes no Feature is counted and compared with none; and a rule
+/// that resolves claims through the matrix neither reports nor fails over a native Feature, whose verdicts § 7's skip
+/// table leaves to item <c>0396</c>. Unless
 /// a test says otherwise, the manifest holds one set, glob <c>.spec/features/arithmetic/*.feature</c> and feature
 /// <c>F1</c>, with no epic grammar, and excludes <c>obj</c> alone. A finding is read under the id the evaluator reports at
 /// the pin.
@@ -89,6 +91,20 @@ public sealed class SpechtEvaluatorNativeFeaturesUnitTests
         // Then
         report.Layouts.Last().Should().Be(new SpechtReportLayout("claims", 0));
         report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC3002");
+    }
+
+    [Theory]
+    [ClassData(typeof(NativeMatrixRuleSilences))]
+    public void AMatrixRuleOverANativeFeatureWithAClaim_WhenEvaluated_ShouldReportNothingAndNotFail(string members, string ruleId)
+    {
+        // Given
+        (string Path, string Text)[] tree = [(Add, AddsTwoNumbers)];
+
+        // When
+        var violations = Evaluate(members, tree).Violations;
+
+        // Then
+        violations.Where(violation => violation.RuleId == ruleId).Select(static violation => violation.ToString()).Should().BeEmpty();
     }
 
     private static SpechtReport Evaluate(string members, (string Path, string Text)[] files)
