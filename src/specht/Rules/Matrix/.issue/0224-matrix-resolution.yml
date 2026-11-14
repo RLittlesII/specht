@@ -2,7 +2,7 @@ id: "0224"
 type: feature
 title: Matrix resolution
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 4
@@ -43,8 +43,8 @@ claims:
   - B-025
 
 created: "2026-10-15"
-updated: "2026-11-12"
-closed: null
+updated: "2026-11-14"
+closed: "2026-11-14"
 
 summary: |
   As the reviewer reading a § 9 row, I want its scenario, test names,
