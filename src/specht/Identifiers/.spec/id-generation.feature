@@ -788,6 +788,14 @@ Feature: Id generation
       | a rule      |
       | the Feature |
 
+  @B-078
+  Scenario: A claim id is checked against the claims of Gherkin files whose record is a Feature's specification
+    Given a manifest pinned to schema 0.4.0 that opts claim ids in to Nano ID
+    And it takes claims under another Feature's identity from Gherkin files whose record is the specification of a Feature that declares no prefix
+    And a scenario in those files already declares the claim id that would be minted first
+    When a claim id is requested for that Feature
+    Then the minted id is one no claim in those files is declared with
+
   @B-079 @boundary
   Scenario: A mint entry for a name that is no id type mints nothing
     Given a manifest pinned to schema 0.3.1

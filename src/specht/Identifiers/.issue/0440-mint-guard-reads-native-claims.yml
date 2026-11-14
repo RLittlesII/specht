@@ -49,7 +49,7 @@ summary: |
   reader; the refusal joins B-002's existing path.
 
 acceptance_criteria:
-  - "B-078 - a claim candidate a native claim of the Feature already holds is not printed"
+  - "B-078 - a claim candidate a native claim of the Feature already holds is not printed, the Feature's sets being those of its identity and those whose `record` is its `.spec/README.md`"
   - "B-041, B-070 - still hold under a `gherkin` claim source"
   - "B-079, B-080 - below 0.4.0, a request naming a `mint` member outside the ten types prints nothing and exits 4"
   - "§ 9 carries a row naming a test for each id above."
@@ -69,6 +69,16 @@ decisions:
     session; no default is adopted. This item proceeds on what is built
     and does not decide OQ-22. OQ-23 and OQ-24 raised on the owner's
     selections "(i) Raise as OQ-23" and "(i) Raise as open question".
+  - |
+    2026-11-14, spec-author: the repository owner selected "(a) Fix in
+    this PR", relayed in session by the coordinating session, on the
+    finding that the guard held no claim of a set whose `record` is the
+    named Feature's `.spec/README.md` when that README declares another
+    `id` or `epic`, though the check builds them (`0001-F16` B-037).
+    The option's wording is the coordinating session's; only the
+    selection of that label is the owner's. B-078 is amended to hold
+    such a set, its `record` read as the check reads it (`0001-F16`
+    B-035), and gains a second scenario (§ 10).
 
 out_of_scope:
   - "Naming a Feature a claim file set names other than by a folder that holds a `.spec/README.md` - OQ-22, open with no default; this item proceeds on what is built, `--feature` resolving only such a folder (B-059, B-060)."
