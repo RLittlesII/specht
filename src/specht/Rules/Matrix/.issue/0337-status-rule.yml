@@ -2,7 +2,7 @@ id: "0337"
 type: task
 title: Report a § 9 status the scenarios and tests do not bear out, SPEC4010, in schema 0.4.0
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   SPEC4010 reports, at its § 9 row, a status the tree does not bear out: a
