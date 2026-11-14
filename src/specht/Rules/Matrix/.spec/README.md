@@ -5,7 +5,7 @@ type: feature
 id: "F12"
 epic: "0001"
 spec_status: approved
-status: ready-for-architecture
+status: done
 priority: med
 value: 0
 risk: 0
