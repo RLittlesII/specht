@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-020, B-022 to B-030).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-030).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -60,6 +60,9 @@ public sealed class MatrixSteps
         _status = status;
         _test = cell;
     }
+
+    [Given("another row whose Status is {string} and whose Test cell names a test no declared file holds")]
+    public void GivenAnotherUnresolvedRow(string status) => _otherRow = $"| {_claimId} | {_scenario} | `ScenarioNobodyWrote` | {status} |\n";
 
     [Given("a row whose Status is {string} with nothing in its Test cell")]
     public void GivenEmptyTest(string status) => GivenMatrixRow(status, string.Empty);
@@ -126,16 +129,8 @@ public sealed class MatrixSteps
     }
 
     [Given("the manifest pins schema version {string}")]
+    [Given("the manifest pins schema version {word} instead")]
     public void GivenPin(string pin) => Manifest["schemaVersion"] = pin;
-
-    [Given("the manifest pins schema version 0.1.0 instead")]
-    public void GivenOriginalPin() => GivenPin("0.1.0");
-
-    [Given("the manifest pins schema version 0.3.0 instead")]
-    public void GivenMatrixPin() => GivenPin("0.3.0");
-
-    [Given("the manifest pins schema version 0.4.0 instead")]
-    public void GivenMissingScenarioPin() => GivenPin("0.4.0");
 
     [Given("the manifest names the matrix headers {string}, {string}, {string} and {string}")]
     public void GivenMatrixHeaders(string claim, string scenario, string test, string status)
@@ -416,7 +411,7 @@ public sealed class MatrixSteps
             "## 3. Acceptance Criteria" => "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n"
                 + $"| {_criterionId ?? _claimId} | Behavior | Decision | {_claim} |\n",
             "## 9. Traceability Matrix" => $"## 9. Traceability Matrix\n\n| {_matrix} |\n| --- | --- | --- | --- |\n"
-                + string.Concat(Enumerable.Repeat($"| {_claimId} | {_scenario} | {_test} | {_status} |\n", _rowCount)),
+                + string.Concat(Enumerable.Repeat($"| {_claimId} | {_scenario} | {_test} | {_status} |\n", _rowCount)) + _otherRow,
             "## 12. Sign-off" => $"## 12. Sign-off\n\n| {_headers} |\n| --- | --- | --- | --- |\n| 1-5 | {_signOff} | {_reviewer} | Decision |\n",
             _ => section,
         }).ToArray();
@@ -435,6 +430,7 @@ public sealed class MatrixSteps
     public void ThenWaiverCount(string findings) => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().HaveCount(findings == "nothing" ? 0 : 1);
 
     [Then("the waiver rule reports that row")]
+    [Then("the waiver rule reports the waived row")]
     public void ThenWaiverRow() => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().ContainSingle().Which.Line.Should().Be(_row);
 
     [Then("the unresolved-test rule reports that row")]
@@ -533,22 +529,19 @@ public sealed class MatrixSteps
     public void ThenRetiredCount(string findings) => Findings(RuleIds.Under(Manifest, "SPEC035")).Should().HaveCount(findings == "nothing" ? 0 : 1);
 
     [Then("no scenario-title, missing-scenario, unresolved-test, status, waiver or retired-claim finding is reported")]
-    public void ThenNoMatrixFindings()
-    {
-        string[] matrix = [.. new[] { "SPEC022", "SPEC023", "SPEC032", "SPEC033", "SPEC034", "SPEC035" }.Select(id => RuleIds.Under(Manifest, id))];
-        _report!.Violations.Should().NotContain(violation => matrix.Contains(violation.RuleId));
-    }
+    public void ThenNoMatrixFindings() => NoFindings("SPEC022", "SPEC023", "SPEC032", "SPEC033", "SPEC034", "SPEC035");
 
-    [Then("the report is byte-for-byte the one the tool gave that tree before this Feature")]
-    public void ThenOriginalReport()
-    {
-        using var services = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var original = ((IEnumerable<ISpechtRule>) services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
-            rule.Id is not ("SPEC034" or "SPEC035"));
-        var baseline = new SpechtEvaluator(original, new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
-        SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
-        _report!.RulesEvaluated.Should().Be(21);
-    }
+    [Then("no scenario-title, missing-scenario, unresolved-test or status finding is reported")]
+    public void ThenNoScenarioTestOrStatusFindings() => NoFindings("SPEC022", "SPEC023", "SPEC032", "SPEC033");
+
+    [Then("no missing-scenario or status finding is reported")]
+    public void ThenNoMissingScenarioOrStatusFindings() => NoFindings("SPEC023", "SPEC033");
+
+    [Then("the report is byte-for-byte the one the tool gives that tree without the scenario-title, missing-scenario, unresolved-test and status rules")]
+    public void ThenReportWithoutScenarioTestAndStatusRules() => ReportWithout("SPEC022", "SPEC023", "SPEC032", "SPEC033");
+
+    [Then("the report is byte-for-byte the one the tool gives that tree without the missing-scenario and status rules")]
+    public void ThenReportWithoutMissingScenarioAndStatusRules() => ReportWithout("SPEC023", "SPEC033");
 
     [AfterScenario]
     public void DisposeTree() => _tree?.Dispose();
@@ -586,6 +579,20 @@ public sealed class MatrixSteps
         _test = cell;
     }
 
+    private void NoFindings(params string[] keys)
+    {
+        string[] ids = [.. keys.Select(key => RuleIds.Under(Manifest, key))];
+        _report!.Violations.Should().NotContain(violation => ids.Contains(violation.RuleId));
+    }
+
+    private void ReportWithout(params string[] keys)
+    {
+        using var services = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        var kept = ((IEnumerable<ISpechtRule>) services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(rule => !keys.Contains(rule.Id));
+        var baseline = new SpechtEvaluator(kept, new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
+        SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
+    }
+
     private void WriteTest(string name, string text) => Tree.WriteRaw($"test/{name}{_extension}", text);
 
     private IEnumerable<SpechtViolation> Findings(string id) => (_report ?? throw new InvalidOperationException("No check ran.")).Violations
@@ -605,6 +612,7 @@ public sealed class MatrixSteps
     private string _defaultScenario = "Scenario: A scenario\n  Given a thing\n";
     private string _status = "Missing";
     private string _test = "Missing";
+    private string _otherRow = string.Empty;
     private string _tags = string.Empty;
     private string _scenario = "A scenario";
     private string _scenarios = string.Empty;
