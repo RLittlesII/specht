@@ -2,7 +2,7 @@ id: "0390"
 type: task
 title: Read native claims from the tags of a claim file set's .feature files
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -28,7 +28,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   The reader: for each claim file set, the `.feature` files its glob
