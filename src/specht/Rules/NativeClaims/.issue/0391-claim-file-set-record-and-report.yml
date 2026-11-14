@@ -2,7 +2,7 @@ id: "0391"
 type: task
 title: Give a claim file set its record, a single identity and a report entry
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -24,8 +24,8 @@ claims:
   - B-038
 
 created: "2026-11-06"
-updated: "2026-11-13"
-closed: null
+updated: "2026-11-14"
+closed: "2026-11-14"
 
 summary: |
   A native Feature as the rest of the check sees it: its frontmatter,
