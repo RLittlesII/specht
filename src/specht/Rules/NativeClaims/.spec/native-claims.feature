@@ -155,14 +155,14 @@ Feature: Native Gherkin claims
   Scenario: A claim file with no Feature line is reported
     Given ".spec/features/arithmetic/notes.feature" has no "Feature:" line
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/notes.feature(0): error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/notes.feature: error SPEC027:"
     And Feature "F1" has no claim from that file
 
   @B-016
   Scenario: A set matching no file is reported
     Given no file matches ".spec/features/arithmetic/*.feature" outside the exclusions
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/*.feature(0): error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/*.feature: error SPEC027:"
     And the exit code is 1
 
   @B-017
@@ -172,7 +172,7 @@ Feature: Native Gherkin claims
     And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
     When the check runs
     Then the output has a line "src/arithmetic/.spec/README.md(" naming "SPEC3002"
-    And the output has a line ".spec/features/arithmetic/add.feature(0):" naming "SPEC3002"
+    And the output has a line ".spec/features/arithmetic/add.feature:" naming "SPEC3002"
 
   @B-017
   Scenario: One identity declared by two sets
@@ -180,15 +180,15 @@ Feature: Native Gherkin claims
     And neither set names a record
     And the globs match ".spec/features/arithmetic/add.feature" and ".spec/features/sums/total.feature"
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(0):" naming "SPEC3002" with the identifier "F1"
-    And the output has a line ".spec/features/sums/total.feature(0):" naming "SPEC3002" with the identifier "F1"
+    Then the output has a line ".spec/features/arithmetic/add.feature:" naming "SPEC3002" with the identifier "F1"
+    And the output has a line ".spec/features/sums/total.feature:" naming "SPEC3002" with the identifier "F1"
 
   @B-018
   Scenario: A file two sets match is reported
     Given the manifest declares a second claim file set with glob ".spec/features/**/add.feature" and feature "F2"
     And ".spec/features/arithmetic/add.feature" exists
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(0): error SPEC027:"
+    Then the output has a line ".spec/features/arithmetic/add.feature: error SPEC027:"
     And neither Feature "F1" nor Feature "F2" has a claim from that file
 
   @B-019
@@ -302,7 +302,7 @@ Feature: Native Gherkin claims
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/README.md(" naming "SPEC3002"
+    Then the output has a line ".spec/features/arithmetic/README.md:" naming "SPEC3002"
 
   @B-026
   Scenario: A native Feature with no record is reported at its first claim file
@@ -310,7 +310,7 @@ Feature: Native Gherkin claims
     And the glob matches ".spec/features/arithmetic/subtract.feature" and ".spec/features/arithmetic/add.feature"
     And the layouts discover "src/arithmetic/.spec/README.md" with id "F1"
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(" naming "SPEC3002"
+    Then the output has a line ".spec/features/arithmetic/add.feature:" naming "SPEC3002"
 
   @B-027
   Scenario: A set's identity carries an epic under the epic grammar
@@ -403,7 +403,7 @@ Feature: Native Gherkin claims
     Given the claim file set names the record "<record>"
     And <condition>
     When the check runs
-    Then the output has a line "<record>(0): error SPEC027:"
+    Then the output has a line "<record>: error SPEC027:"
 
     Examples:
       | record                              | condition                            |
@@ -415,7 +415,7 @@ Feature: Native Gherkin claims
   Scenario: An absolute record is reported at the manifest
     Given the claim file set names a record at an absolute path
     When the check runs
-    Then the output has a line ".specht/manifest.json(0): error SPEC027:"
+    Then the output has a line ".specht/manifest.json: error SPEC027:"
     And no output line holds an absolute path
 
   @B-035
