@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-011, B-018 to B-020, B-022 to B-027).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-020, B-022 to B-027).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -303,6 +303,51 @@ public sealed class MatrixSteps
         _test = "Missing";
     }
 
+    [Given("^a row whose Status is \"([^\"]*)\", whose scenario (resolves|does not resolve) and whose tests (.+)$")]
+    public void GivenStatusScenarioAndTests(string status, string scenario, string tests)
+    {
+        GivenStatusAndScenario(status, scenario);
+        GivenTestNames("AlphaTest", "BetaTest");
+        _test = tests switch
+        {
+            "all resolve" => "`AlphaTest`, `BetaTest`",
+            "resolve only in part" => "`AlphaTest`, `GammaTest`",
+            "none resolve" => "`GammaTest`, `DeltaTest`",
+            "are the missing marker" => Manifest["markers"]!["missing"]!.GetValue<string>(),
+            _ => throw new ArgumentOutOfRangeException(nameof(tests), tests, "No such set of tests."),
+        };
+    }
+
+    [Given("^a row whose Status is \"([^\"]*)\", whose scenario (resolves|does not resolve) and whose Test cell is the missing marker$")]
+    public void GivenStatusScenarioAndMissingTestCell(string status, string scenario)
+    {
+        GivenStatusAndScenario(status, scenario);
+        GivenMissingTestCell();
+    }
+
+    [Given("^a row whose Status is \"([^\"]*)\", whose scenario (resolves|does not resolve) and whose Test cell names a test no file holds$")]
+    public void GivenStatusScenarioAndUnheldTest(string status, string scenario)
+    {
+        GivenStatusAndScenario(status, scenario);
+        GivenUnresolvedThirdCell();
+    }
+
+    [Given("a row whose Status is {string} and whose Test cell names tests that all resolve")]
+    public void GivenStatusAndResolvedTests(string status) => GivenStatusAndHeldTests(status, "`AlphaTest`, `BetaTest`");
+
+    [Given("a row whose Status is {string} and whose Test cell names one test that resolves and one that does not")]
+    public void GivenStatusAndPartlyResolvedTests(string status) => GivenStatusAndHeldTests(status, "`AlphaTest`, `GammaTest`");
+
+    [Given("a row whose Status is {string} and whose Test cell names a test")]
+    public void GivenStatusAndNamedTest(string status) => GivenStatusAndHeldTests(status, "`AlphaTest`");
+
+    [Given("a row whose Status is {string}")]
+    public void GivenStatusOfACarriedClaim(string status)
+    {
+        _tags = "@B-004\n";
+        _status = status;
+    }
+
     [Given("the sign-off table uses the manifest's renamed column headers")]
     public void GivenRenamedHeaders()
     {
@@ -406,6 +451,35 @@ public sealed class MatrixSteps
     [Then("the missing-scenario rule reports nothing")]
     public void ThenNoMissingScenario() => Findings(RuleIds.Under(Manifest, "SPEC023")).Should().BeEmpty();
 
+    [Then("the status rule reports that row")]
+    public void ThenStatusRow() => StatusRow();
+
+    [Then("^the status rule reports (nothing|one finding) for that row$")]
+    public void ThenStatusCount(string findings)
+    {
+        if (findings == "nothing")
+        {
+            Findings(RuleIds.Under(Manifest, "SPEC033")).Should().BeEmpty();
+        }
+        else
+        {
+            StatusRow();
+        }
+    }
+
+    [Then("the status rule reports that row as stale")]
+    public void ThenStaleRow() => StatusRow().Message.Should().Contain("stale");
+
+    [Then("the status rule reports that row, expecting one of the covered, partial, missing, waived, withdrawn and superseded markers")]
+    public void ThenUnknownStatus()
+    {
+        var finding = StatusRow();
+        foreach (var marker in new[] { "covered", "partial", "missing", "waived", "withdrawn", "superseded" })
+        {
+            finding.Message.Should().Contain(Manifest["markers"]![marker]!.GetValue<string>());
+        }
+    }
+
     [Then("the waiver rule reports nothing")]
     public void ThenNoWaiver() => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().BeEmpty();
 
@@ -446,6 +520,27 @@ public sealed class MatrixSteps
         var finding = Findings(RuleIds.Under(Manifest, "SPEC032")).Should().ContainSingle().Subject;
         finding.Line.Should().Be(_row);
         return finding;
+    }
+
+    private SpechtViolation StatusRow()
+    {
+        var finding = Findings(RuleIds.Under(Manifest, "SPEC033")).Should().ContainSingle().Subject;
+        finding.Line.Should().Be(_row);
+        return finding;
+    }
+
+    private void GivenStatusAndScenario(string status, string scenario)
+    {
+        _tags = "@B-004\n";
+        _status = status;
+        _scenario = scenario == "resolves" ? "A scenario" : "A title no scenario has";
+    }
+
+    private void GivenStatusAndHeldTests(string status, string cell)
+    {
+        GivenTestNames("AlphaTest", "BetaTest");
+        _status = status;
+        _test = cell;
     }
 
     private void WriteTest(string name, string text) => Tree.WriteRaw($"test/{name}{_extension}", text);
