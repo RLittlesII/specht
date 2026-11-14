@@ -134,6 +134,7 @@ public sealed class GherkinClaimTextReader
         }
 
         /// <implements epic="0201" feature="F7" claim="B-008" />
+        /// <implements epic="0001" feature="F16" claim="B-025" />
         public GherkinClaimText Complete()
         {
             if (_docString is not null || _pending.Count > 0 || _feature is null)
@@ -159,9 +160,10 @@ public sealed class GherkinClaimTextReader
                     : element.Kind == GherkinClaimElement.Rule ? _cases.Where(item => item.Rule == element)
                     : _cases.Where(item => item.Self == element);
                 var cases = Array.AsReadOnly(covered.SelectMany(Cases).ToArray());
+                var scenarios = Array.AsReadOnly(covered.Select(static item => item.Self.Line).ToArray());
                 foreach (var id in element.Ids)
                 {
-                    claims.Add(new GherkinClaimDeclaration(id, State(element), element.Line, element.Kind, cases, Array.Empty<int>()));
+                    claims.Add(new GherkinClaimDeclaration(id, State(element), element.Line, element.Kind, cases, scenarios));
                 }
             }
 
