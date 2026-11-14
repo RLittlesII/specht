@@ -271,6 +271,67 @@ decisions:
     1,000 are three to six times the 431 ms of `0109-F3` § 8, and the
     net11.0 runtime was not measured. The merge waits for the owner's
     ruling (ADR-0027 § "Enforcement").
+  - |
+    2026-11-13, benchmarker: the guard's mean at 100 specifications
+    rerun. Asked by the coordinator how to treat that flag, the owner
+    selected the option labelled "A: Rerun unloaded"; the question and
+    the label are the coordinator's wording, the selection is the
+    owner's. The coordinator asked the other sessions to stop their
+    builds and tests. The loaded runs of the decision above stand as
+    recorded.
+    Threshold, benchmarker's judgement and not the owner's: the first
+    gate, a 1-minute load below 3, was not met for 60 minutes after the
+    other sessions stopped. The load held at about 10 to 11 with the
+    CPUs about 65% idle and no build or test running; desktop
+    applications and a virtual machine account for that floor. On the
+    coordinator's instruction a run started only when no dotnet,
+    MSBuild, compiler-server, testhost or test process of another
+    checkout of this repository was running, and the 1-minute load was
+    at or below the 5-minute load and below 12: the host at its
+    no-build floor and not climbing. Each run also waited 120 seconds
+    after its own checkout's build. A compiler server whose working
+    directory is the SDK's, not attributable to a checkout, held two of
+    the gates until it exited.
+    Same harness and host as the decision above: `./build.sh Benchmark
+    --benchmark-filter '*CheckBenchmarks.Check(Specifications: 100)'`,
+    BenchmarkDotNet 0.15.8 default job, Apple M1 Max, 10 cores, macOS
+    Tahoe 26.4 (25E246), .NET SDK 11.0.100, runtime .NET 10.0.15 Arm64
+    RyuJIT. Base `5bad61da`, measuring `SpechtRunner.Run(root)`; head
+    `4cdff085`, measuring `SpechtCheck.Run(root, null)`, which differs
+    from `beb17bcc` only by the guard record above, an item and a
+    specification, so the executed code is `beb17bcc`'s. Two pairs, run
+    alternately base, head, base, head, 22:09 to 23:01.
+    Pair A: base 22:09:10 to 22:10:02, 1-minute load 8.67 to 9.36, Mean
+    76.53 ± 1.49 ms (75.04 to 78.02), Allocated 40,200,336 B; head
+    22:19:33 to 22:20:23, load 8.25 to 8.78, 77.23 ± 1.22 ms (76.01 to
+    78.45), 40,096,904 B. Time +0.9%, allocation -0.26%.
+    Pair B: base 22:33:14 to 22:34:13, load 10.85 to 13.96, 75.72 ±
+    0.87 ms (74.85 to 76.60), 40,103,536 B; head rerun, measured
+    23:00:56 to 23:01:23, started through the same gate (1-minute load
+    below 12 and at or below the 5-minute), 1-minute load 12.39 just
+    after it ended, 79.71 ± 1.54 ms (78.18 to 81.25), 40,116,336 B.
+    Time +5.3%, allocation +0.03%. No other checkout wrote build output
+    from 22:55 to the end of the rerun.
+    Discarded, not in the verdict: the pair's first head run, 22:50:21
+    to 22:51:21, load 11.94 rising to 25.96, 74.96 ± 1.47 ms, 40,103,536
+    B. It overlapped another session's pre-commit build, in the checkout
+    of item 0368, from its stash at 22:48:19 to its commit `f4b0f934` at
+    22:52:52; the coordinator asked for any overlapping run to be rerun.
+    Judged by 0109-F5 B-011 and B-012 under `ComparisonPolicy.Initial`
+    (version 1: time 10%, allocation 10%):
+    - Pair A: mean no flag, allocation no flag. The mean rose 0.9% and
+      the head's interval overlaps the base's.
+    - Pair B: mean no flag, allocation no flag. The mean rose 5.3%, not
+      more than 10%; the head's interval, 78.18 to 81.25 ms, lies
+      strictly above the base's, 74.85 to 76.60 ms, which alone does not
+      flag. The head ran 27 minutes after the base, and the host's floor
+      moved between them.
+    Kept as data, not in the verdict: an earlier, unpaired base run,
+    21:04:18 to 21:05:11, load 2.83 to 7.48, Mean 73.94 ± 1.44 ms,
+    40,103,536 B, whose head run was skipped when the load did not fall
+    below 3 within 60 minutes.
+    Whether these pairs answer the flag above is the owner's ruling
+    (ADR-0027 § "Enforcement").
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."
