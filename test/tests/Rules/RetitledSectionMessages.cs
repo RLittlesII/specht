@@ -8,8 +8,8 @@ namespace Specht.Tests.Rules;
 /// beside it or none, the reference the one finding names and the default reference it no longer names. The numbered
 /// titles <c>4. Claims</c>, <c>7. Matrix</c> and <c>11. Approvals</c> are cited <c>§ 4</c>, <c>§ 7</c> and <c>§ 11</c>, at
 /// schema 0.3.0; the unnumbered titles <c>Claims</c>, <c>Matrix</c> and <c>Approvals</c> are cited <c>## Claims</c>,
-/// <c>## Matrix</c> and <c>## Approvals</c>, at the oldest pin each rule ships at (0.1.0, or 0.3.0 for SPEC022, SPEC032 and
-/// SPEC035).
+/// <c>## Matrix</c> and <c>## Approvals</c>, at the oldest pin each rule ships at (0.1.0, 0.3.0 for SPEC022, SPEC032 and
+/// SPEC035, or 0.4.0 for SPEC023).
 /// </summary>
 public sealed class RetitledSectionMessages : TheoryData<string, string, string, string?, string, string>
 {
@@ -68,6 +68,14 @@ public sealed class RetitledSectionMessages : TheoryData<string, string, string,
             titles.Manifest("0.3.0", titleMatching),
             Frontmatter + titles.ClaimTable("B-001", "B-002") + titles.MatrixTable(Row("B-001", "Other case", "`AlphaTest`", "Covered")),
             Companion + "\n  @B-002\n  Scenario: Other case\n    Given another thing\n",
+            titles.MatrixReference,
+            "§ 9");
+
+        Add(
+            "SPEC023",
+            titles.Manifest("0.4.0"),
+            Frontmatter + titles.ClaimTable("B-001") + titles.MatrixTable(matrixRow),
+            null,
             titles.MatrixReference,
             "§ 9");
 
