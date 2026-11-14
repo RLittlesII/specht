@@ -42,6 +42,8 @@ public sealed class SpechtModelReader(
     /// <exception cref="SpechtManifestException">The manifest or a selected schema is rejected.</exception>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-034" />
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    /// <implements epic="0001" feature="F16" claim="B-004" />
     public SpechtModel Read(string root, SchemaSourceSelection? selection)
     {
         var schemas = ReadSchemas(root, selection);
@@ -52,12 +54,18 @@ public sealed class SpechtModelReader(
         var items = discovery.FindChildItems(root, specifications, inputs, structure.Identifiers["task"]);
         IReadOnlyList<string> epics = structure.EpicLess ? [] : discovery.FindEpics(root, inputs);
         var tests = structure.Tests is { } declared ? discovery.FindTestFiles(root, declared.Files, inputs.Exclusions) : [];
-        var listing = new SpechtListing(specifications, companions, items, epics, tests);
+        IReadOnlyList<IReadOnlyList<string>> claimFiles = structure.ClaimInput is { Source: SpechtClaimSource.Gherkin } input
+            ? input.Files.Select(set => discovery.FindTestFiles(root, [set.Glob], inputs.Exclusions)
+                .Where(static path => path.EndsWith(".feature", StringComparison.Ordinal))
+                .ToArray()).ToArray()
+            : [];
+        var listing = new SpechtListing(specifications, companions, items, epics, tests) { ClaimFiles = claimFiles };
         var paths = specifications.Select(static location => location.RelativePath)
             .Concat(companions.SelectMany(static paths => paths))
             .Concat(items)
             .Concat(epics)
             .Concat(tests)
+            .Concat(claimFiles.SelectMany(static paths => paths))
             .Distinct(StringComparer.Ordinal)
             .ToArray();
         var texts = tree.Load(root, paths).Files.ToDictionary(static file => file.RelativePath, static file => file.Text(), StringComparer.Ordinal);
@@ -115,6 +123,13 @@ public sealed class SpechtModelReader(
     /// <returns>The parsed manifest.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpechtStructure ReadManifest(string root) => ReadManifest(root, parser.Parse);
+
+    /// <summary>Reads and validates the manifest after <paramref name="edit"/> changes its text, with the same failure handling.</summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="edit">Changes the manifest's text before it is parsed.</param>
+    /// <returns>The parsed manifest.</returns>
+    /// <implements epic="0001" feature="F7" claim="B-020" />
+    public SpechtStructure ReadManifest(string root, Func<string, string> edit) => ReadManifest(root, text => parser.Parse(edit(text)));
 
     /// <summary>Reads the check's validated manifest with its owned effective JSON, using the same store and failure handling.</summary>
     /// <param name="root">The repository root.</param>

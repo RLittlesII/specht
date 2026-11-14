@@ -15,13 +15,16 @@ public sealed class SpechtModel
     /// <implements epic="0001" feature="F5" claim="B-069" />
     /// <implements epic="0001" feature="F5" claim="B-079" />
     /// <implements epic="0001" feature="F5" claim="B-086" />
+    /// <implements epic="0001" feature="F16" claim="B-001" />
     public SpechtModel(
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
         IReadOnlyList<EpicFile> epics,
         SpechtSchemas schemas,
-        IReadOnlyList<SpechtTestFile> testFiles)
+        IReadOnlyList<SpechtTestFile> testFiles,
+        IReadOnlyList<SpechtClaims>? claimSets = null)
     {
+        ClaimSets = Array.AsReadOnly((claimSets ?? []).ToArray());
         Features = Array.AsReadOnly(features.ToArray());
         Items = Array.AsReadOnly(items.ToArray());
         Epics = Array.AsReadOnly(epics.ToArray());
@@ -68,6 +71,10 @@ public sealed class SpechtModel
 
     /// <summary>The claims derived once per Feature.</summary>
     public IReadOnlyDictionary<FeatureSpec, SpechtClaims> Claims { get; }
+
+    /// <summary>The claims of each claim file set, in the manifest's order; empty unless <c>claim.source</c> is <c>gherkin</c>.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    public IReadOnlyList<SpechtClaims> ClaimSets { get; }
 
     /// <summary>The configured matrix section of each Feature.</summary>
     public IReadOnlyDictionary<FeatureSpec, SpechtSection?> MatrixSections { get; }

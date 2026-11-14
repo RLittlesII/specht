@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using Specht.Discovery;
+using Specht.Manifest;
 
 namespace Specht.Model;
 
@@ -63,7 +65,57 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         var epics = listing.Epics.Select(path => new EpicFile(path, frontmatter.Parse(texts[path]))).ToList();
         var tests = listing.TestFiles.Select(path => new SpechtTestFile(path, texts[path])).ToList();
 
-        return new SpechtModel(features, items, epics, schemas, tests);
+        return new SpechtModel(features, items, epics, schemas, tests, ClaimSets(structure, listing, texts));
+    }
+
+    /// <summary>
+    /// Reads each claim file set's files with the shared Gherkin claim reader, under the manifest's claim tag form, the
+    /// tree's claim grammar and the manifest's lifecycle tag lists; a file whose tags cannot be read declares nothing.
+    /// </summary>
+    /// <param name="structure">The effective manifest.</param>
+    /// <param name="listing">What discovery listed.</param>
+    /// <param name="texts">The text of every listed file, by root-relative path.</param>
+    /// <returns>The claims of each set, in the manifest's order; empty unless <c>claim.source</c> is <c>gherkin</c>.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-001" />
+    /// <implements epic="0001" feature="F16" claim="B-004" />
+    /// <implements epic="0001" feature="F16" claim="B-005" />
+    /// <implements epic="0001" feature="F16" claim="B-012" />
+    /// <implements epic="0001" feature="F16" claim="B-013" />
+    private static List<SpechtClaims> ClaimSets(SpechtStructure structure, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
+    {
+        if (structure.ClaimInput is not { Source: SpechtClaimSource.Gherkin } input)
+        {
+            return [];
+        }
+
+        var grammar = structure.ClaimGrammar(null);
+        var pattern = grammar.LongerScenarioHead ? "(?!" + Regex.Escape(grammar.ScenarioHead!) + ")(?:" + grammar.Pattern + ")" : grammar.Pattern;
+        var reader = new GherkinClaimTextReader(new GherkinClaimTags(
+            new GherkinClaimTagForm(structure.ClaimTagForm!, "claim", structure.ClaimTagIgnoreCase, pattern),
+            null,
+            null,
+            input.PlannedTags,
+            input.WithdrawnTags,
+            input.SupersededTags));
+        var sets = new List<SpechtClaims>();
+        for (var index = 0; index < input.Files.Count; index++)
+        {
+            var read = new List<GherkinClaimText>();
+            foreach (var path in listing.ClaimFiles[index])
+            {
+                try
+                {
+                    read.Add(reader.Read(path, texts[path]));
+                }
+                catch (GherkinClaimTextException)
+                {
+                }
+            }
+
+            sets.Add(new SpechtClaims(input.Files[index], read, structure));
+        }
+
+        return sets;
     }
 
     /// <summary>

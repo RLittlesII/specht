@@ -2,7 +2,7 @@ id: "0438"
 type: task
 title: Upgrade moves the id settings into ids
 
-status: ready
+status: done
 
 value: 4
 risk: 3
@@ -28,7 +28,7 @@ claims:
 
 created: "2026-11-12"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   As a consumer moving its pin to schema `0.4.0`, I want `specht
@@ -47,9 +47,9 @@ summary: |
 acceptance_criteria:
   - "B-155 — a customised grammar becomes a record's plain text and id, verbatim, with the literal head ending where B-155 says"
   - "B-161 — a member byte-equal to a shipped default below 0.4.0 is dropped, and the 0.4.0 shipped record applies"
-  - "B-156 — a mint entry moves without its prefix"
+  - "B-156 — a mint entry for one of the seven `0001-F19` C-13 types moves without its prefix"
   - "B-157, B-158 — no old id setting is left, and every other setting is kept"
-  - "B-159 — an unsplittable grammar, a prefix that is not the head, an ids record already present for a moved type, and equal claim and scenario heads each write nothing, exit 3 and name the member on standard error (OQ-79 default (a))"
+  - "B-159 — an unsplittable grammar, a prefix that is not the head, an ids record already present for a moved type, equal claim and scenario heads, and a mint entry for a name outside the seven each write nothing, exit 3 and name the member as the consumer wrote it on standard error (OQ-79 default (a))"
   - "B-160 and B-020 as amended — no change without old settings, and none under a pin below 0.4.0"
   - "B-051 as amended — `schema pin` moves a 0.4.0 manifest that still holds the old id settings back down"
   - "AGENTS.md § Configuration says `upgrade` adds only the keys the pinned version defines that are missing, except the 0.4.0 move into `ids`"
@@ -73,6 +73,50 @@ decisions:
     item 0436: B-016 leaves this item. Its `ids` clause, that `upgrade`
     adds no `ids` key, is item 0436's and delivered there; nothing of
     B-016 is left here.
+  - |
+    2026-11-13, spec-author, on the implementer's design pass: a `mint`
+    entry that is not an object moves into its record's `mint` as it
+    is; B-156 amended on C-19 ("every other moved member kept
+    verbatim"), with an `@boundary` scenario. Under `0.3.1` the check
+    reads no `mint` member, so such an entry is reachable and opts
+    nothing in (`0001-F19` B-002). B-159's shared-head refusal names the
+    members the consumer wrote, `identifiers.claim` and
+    `identifiers.scenario`, as its scenario's row states, not the
+    `ids.claim` and `ids.scenario` records the move would write.
+  - |
+    2026-11-13, spec-author, on closing: the implementer's build choices
+    (`src/tool/.spec/README.md` § 7, "The move into ids at schema
+    0.4.0"), recorded as role-level choices, not owner rulings. The mover
+    compares the claim and scenario heads itself, before the parse, and
+    names what the consumer wrote, rather than renaming the parser's
+    `0001-F5` B-094 fault, whose message cannot tell a head the move made
+    from one the consumer wrote; a collision among records the consumer
+    already wrote under `ids` stays the parse's. `Move(byte[])` decodes
+    through the pin editor's `Format` and writes the moved text back in
+    the file's own encoding behind its preamble, so every byte outside
+    the moved spans is the one read (B-158, C-19); the splice is by span,
+    never a `JsonNode` re-serialisation. The move runs first, inside the
+    check's own manifest read (`ReadManifest(root, edit)`), so the moved
+    text is judged by the check's rules before any write (B-020 as
+    amended). The gate is the pin, not the version in use. "The old pin"
+    of B-161 is read as every shipped version below 0.4.0. `schema pin`
+    sets the old settings aside under a 0.4.0 or later pin rather than
+    validating the moved text, since B-051 excepts every setting
+    `0001-F5` B-092 rejects, a refused grammar included.
+  - |
+    2026-11-13, spec-author, on spec-reviewer's round-1 finding 1: a
+    `mint` entry whose name is not one of the seven `0001-F19` C-13
+    types, such as `mint.epic`, valid under `0.3.1` by `0001-F19`
+    B-062, is refused, not moved: B-156 now moves the seven only, as
+    B-155 and B-157 read theirs, and B-159 names the entry
+    `mint.<name>`, writes nothing and exits 3, collected with the other
+    refusals. A role-level reading, not an owner ruling: moving it
+    gives `ids.<name>`, which `0001-F5` B-083 rejects under a name the
+    consumer never wrote; dropping it is the rewrite C-19 rules out; a
+    `$`-prefixed member is an annotation (`0001-F5` B-020), not an
+    entry. The exit code is 3 either way, so no verdict a consumer sees
+    changes but the member named. B-156 and B-159 read `Partial` in § 9
+    until test-writer re-pins them.
 
 out_of_scope:
   - "The ids key and the rejection of the old settings - `0001-F5` item 0436."

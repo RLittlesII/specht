@@ -164,7 +164,9 @@ any shipped version, up or down, and changes nothing else; `specht upgrade`
 then rewrites the schema files, and every template the manifest does not name
 as the consumer's, to match the pin and prints what changed. In the manifest
 `upgrade` adds only the keys the pinned version defines that are missing, so
-consumer settings survive (`0001-F7` decisions 0001, 0005 and 0006).
+consumer settings survive (`0001-F7` decisions 0001, 0005 and 0006), except
+that, under a pin at `0.4.0` or later, it moves `mint` and the seven id types'
+`identifiers` members into `ids` once (`0001-F7` B-155 to B-161).
 
 This repository's own `.specht/` is that live copy
 — the same bytes as the newest embedded version for the tool-owned files (the three

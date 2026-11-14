@@ -1554,6 +1554,13 @@ Feature: Schema versioning
     Then the manifest's claim record opts claim ids in to Nano ID with a size of 9
     And the claim record's opt-in names no prefix
 
+  @B-156 @boundary
+  Scenario: Upgrade moves a mint entry that is not a set of settings as it is
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest's mint entry for claim ids is the text "nanoid" rather than a set of settings
+    When upgrade runs against it
+    Then the manifest's claim record carries the text "nanoid" as its mint entry, as the consumer wrote it
+
   @B-157
   Scenario: Upgrade leaves no old id setting
     Given a root whose manifest pins schema version 0.4.0
@@ -1586,6 +1593,22 @@ Feature: Schema versioning
       | opts decision numbers in to Nano ID with the prefix "D-" and declares no decision grammar | the decision prefix             |
       | declares the claim and scenario grammars "^X-[0-9]+$" under identifiers                   | the claim and scenario grammars |
       | holds a claim record under ids and a claim grammar under identifiers                      | the claim grammar               |
+
+  @B-156 @B-159 @boundary
+  Scenario Outline: Upgrade refuses a mint entry for a type outside the seven
+    Given a root whose manifest pins schema version 0.4.0
+    And its manifest opts <type> ids in to Nano ID under the mint key
+    When upgrade runs against it
+    Then nothing is written
+    And the exit code is 3
+    And the standard error names the <type> mint entry as the consumer wrote it
+    And the standard error names no ids record
+
+    Examples:
+      | type    |
+      | epic    |
+      | Feature |
+      | task    |
 
   @B-160
   Scenario: Upgrade without old id settings leaves the ids key as it is

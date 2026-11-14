@@ -11,7 +11,8 @@ namespace Specht.Tests.Manifest;
 /// Markdown with no set, a set's identity follows the epic grammar, an invalid set is rejected naming
 /// <c>claim.files</c>, and a source outside the two is rejected naming <c>claim.source</c>; below <c>0.4.0</c> the
 /// members go unread. Each test parses with the shipped catalog, whose <c>0.4.0</c> manifest carries the
-/// <c>claim</c> defaults <c>0001-F16</c> § 7 names.
+/// <c>claim</c> defaults <c>0001-F16</c> § 7 names, which a <c>gherkin</c> source leaving out the tag lists and the
+/// lifecycle key is filled with (OQ-9; B-012, B-013; item <c>0390</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtManifestParserClaimMembersUnitTests
@@ -83,6 +84,31 @@ public sealed class SpechtManifestParserClaimMembersUnitTests
 
         // Then
         parse.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("claim.source");
+    }
+
+    [Fact]
+    public void AGherkinClaimSourceLeavingOutTheTagListsAndLifecycleKey_WhenParsedUnderZeroFourZero_ShouldFillThemFromTheShippedDefaults()
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.4.0",
+            ["claim"] = new JsonObject
+            {
+                ["source"] = "gherkin",
+                ["files"] = new JsonArray(new JsonObject { ["glob"] = ".spec/features/arithmetic/*.feature", ["feature"] = "arithmetic" }),
+            },
+        };
+
+        // When
+        var structure = EngineServices.Parser().Parse(manifest.ToJsonString());
+
+        // Then
+        structure.ClaimInput.Should().NotBeNull();
+        structure.ClaimInput!.PlannedTags.Should().Equal("@ignore");
+        structure.ClaimInput.WithdrawnTags.Should().BeEmpty();
+        structure.ClaimInput.SupersededTags.Should().BeEmpty();
+        structure.ClaimInput.LifecycleKey.Should().Be("spec_status");
     }
 
     [Theory]
