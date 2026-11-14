@@ -148,8 +148,10 @@ Feature: The facts command
   @B-019
   Scenario: A directory selects every specification under it
     Given both specifications sit under one directory
+    And a third specification sits outside it, under a directory whose name begins with that directory's name
     When the facts are given for that directory
-    Then they hold both specifications
+    Then they hold the two specifications under it, in the order the check discovers them
+    And they do not hold the third specification
 
   @B-020
   Scenario: A path that selects nothing fails

@@ -24,20 +24,33 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
     /// <implements epic="0132" feature="F2" claim="B-001" />
     /// <implements epic="0132" feature="F2" claim="B-002" />
     /// <implements epic="0132" feature="F2" claim="B-011" />
+    /// <implements epic="0132" feature="F2" claim="B-018" />
+    /// <implements epic="0132" feature="F2" claim="B-019" />
+    /// <implements epic="0132" feature="F2" claim="B-020" />
     /// <implements epic="0132" feature="F2" claim="B-021" />
     /// <implements epic="0132" feature="F2" claim="B-023" />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (!settings.Json)
         {
-            return Fail(ExitCodes.MissingInput, "specht facts [--root <dir>] --json");
+            return Fail(ExitCodes.MissingInput, "specht facts [<path>] [--root <dir>] --json");
         }
 
         try
         {
             var root = Path.GetFullPath(settings.Root);
             var model = reader.Read(root, null);
-            console.Profile.Out.Writer.WriteLine(FactsDocument.From(model, reader.ReadRecords(root, model.Features)).ToJson());
+            var document = FactsDocument.From(model, reader.ReadRecords(root, model.Features));
+            if (settings.Path is { } path)
+            {
+                document = document.Select(path);
+                if (document.Specifications.Count == 0)
+                {
+                    return Fail(ExitCodes.NotFound, $"specht: '{path}' selects no specification.");
+                }
+            }
+
+            console.Profile.Out.Writer.WriteLine(document.ToJson());
             return Task.FromResult(ExitCodes.Success);
         }
         catch (SpechtRootNotFoundException)
@@ -58,6 +71,14 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
     /// <implements epic="0132" feature="F2" claim="B-001" />
     public sealed class Settings : CommandSettings
     {
+        /// <summary>Gets the root-relative path whose specifications are given, as typed, or <see langword="null"/> for every one.</summary>
+        /// <implements epic="0132" feature="F2" claim="B-018" />
+        /// <implements epic="0132" feature="F2" claim="B-019" />
+        /// <implements epic="0132" feature="F2" claim="B-020" />
+        [CommandArgument(0, "[path]")]
+        [Description("A specification's path, or a directory, relative to the root. Defaults to every specification.")]
+        public string? Path { get; init; }
+
         /// <summary>Gets the root whose specification tree is read.</summary>
         [CommandOption("--root <DIR>")]
         [Description("The repository root. Defaults to the working directory.")]
