@@ -332,6 +332,39 @@ decisions:
     below 3 within 60 minutes.
     Whether these pairs answer the flag above is the owner's ruling
     (ADR-0027 § "Enforcement").
+  - |
+    2026-11-13, benchmarker: the guard's pairs and the rebase. The branch
+    was rebased onto `main` `a68ef2f7` after the two entries above, which
+    stand as recorded. Their base `5bad61da` was the branch's merge base
+    when they ran and is not now; their head `beb17bcc`, and `4cdff085`
+    for the rerun, are pre-rebase commits. Between `5bad61da` and
+    `a68ef2f7`, `main` changes engine and tool code on the check's path
+    (items 0336, 0390, 0366, 0368 and 0438): among them
+    `SpechtModelReader`, `SpechtModelBuilder`, `SpechtDiscovery` and a
+    new rule, `MissingScenarioRule`.
+    Benchmarker's judgement, not the owner's: the pairs measure this
+    item's diff on its pre-rebase base. They stand as evidence for that
+    diff on the rebased branch, and not for the rebased branch's
+    absolute cost. The C# this item changes, in `src/` and
+    `.performance/`, is the same change before and after the rebase:
+    `git diff 5bad61da beb17bcc` and `git diff a68ef2f7 HEAD` over those
+    files touch the same 12 files with the same added and removed lines.
+    That change replaces the entry point above the model reader and the
+    evaluator, and `main`'s changes sit below it, in the stages both entry
+    points call. A base and a head on `a68ef2f7` would both pay them.
+    What the pairs do not show is any interaction between this item's
+    entry point and `main`'s new reader and rule work, and their means
+    are not the rebased tree's. A rerun of the guard at 100
+    specifications against `a68ef2f7`, on a quiet host, is the step if
+    anyone wants it confirmed. Whether to run it is the coordinator's
+    call.
+    The flag of the first entry above: the owner selected the option
+    labelled "A: Rerun unloaded". The coordinator relayed the selection
+    with the instruction "If the flag still holds on the quiet machine,
+    bring the ruling back to me rather than proceeding." The wording is
+    the coordinator's and the selection the owner's. On the quiet
+    machine neither pair flags the mean or the allocation (entry
+    above), so the change proceeds on that instruction.
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."
