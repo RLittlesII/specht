@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Specht.Identifiers;
 using Specht.Versioning;
 
 namespace Specht.Manifest;
@@ -19,8 +20,12 @@ public sealed class ManifestPinEditor(SpechtManifestParser parser, SchemaVersion
         return encoding.GetString(bytes.AsSpan(offset));
     }
 
-    /// <summary>Validates settings under the current shipped version, or newest when that pin is unusable.</summary>
+    /// <summary>
+    /// Validates settings under the current shipped version, or newest when that pin is unusable, setting aside from schema
+    /// 0.4.0 the old id settings <c>upgrade</c> moves (0001-F7 B-051).
+    /// </summary>
     /// <implements epic="0001" feature="F7" claim="B-043" />
+    /// <implements epic="0001" feature="F7" claim="B-051" />
     public void Validate(byte[] bytes)
     {
         try
@@ -38,6 +43,18 @@ public sealed class ManifestPinEditor(SpechtManifestParser parser, SchemaVersion
             }
 
             manifest["schemaVersion"] = current.ToString();
+            if (current.CompareTo(SpechtManifestParser.IdsVersion) >= 0)
+            {
+                manifest.Remove("mint");
+                if (manifest["identifiers"] is JsonObject identifiers)
+                {
+                    foreach (var type in IdTypes.RepositoryWide.Concat(IdTypes.PerFeature))
+                    {
+                        identifiers.Remove(type);
+                    }
+                }
+            }
+
             _ = parser.PinnedVersion(parser.Parse(manifest.ToJsonString()));
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException or ArgumentException)
