@@ -3,8 +3,8 @@ using System.IO.Abstractions;
 namespace Specht.Report;
 
 /// <summary>
-/// Writes the report document's text to the path a caller names, and removes it (<c>0001-F3</c> B-002, B-022 to B-024,
-/// B-044, B-045; ADR-0010 § "I/O is confined"; items <c>0167</c> and <c>0036</c>). A relative path resolves from the file
+/// Writes the report document's text to the path a caller names, and removes it (<c>0001-F3</c> B-022 to B-024, B-044,
+/// B-045; ADR-0010 § "I/O is confined"; items <c>0167</c> and <c>0036</c>). A relative path resolves from the file
 /// system's working directory (B-046).
 /// </summary>
 /// <param name="fileSystem">The file system the document is written through.</param>
