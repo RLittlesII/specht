@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 using Specht.Model;
@@ -84,6 +85,26 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
                 || specification.Path.StartsWith(directory, StringComparison.Ordinal))
             .ToList());
     }
+
+    /// <summary>
+    /// Gives one line per claim, constraint, out-of-scope row and open question, specification by specification in this
+    /// document's order and within one in that order of kinds, each five tab-separated fields: path, kind, id, line and
+    /// text (B-024, OQ-5's default). A missing text is an empty field, and a tab, line feed or carriage return inside a
+    /// field is written as one space.
+    /// </summary>
+    /// <returns>The lines, with no line terminator.</returns>
+    /// <implements epic="0132" feature="F2" claim="B-024" />
+    public IReadOnlyList<string> Lines() =>
+        Specifications
+            .SelectMany(static specification => specification.Claims
+                .Select(claim => Line(specification.Path, ClaimKind, claim.Id, claim.Line, claim.Text))
+                .Concat(specification.Constraints
+                    .Select(constraint => Line(specification.Path, ConstraintKind, constraint.Id, constraint.Line, constraint.Text)))
+                .Concat(specification.OutOfScope
+                    .Select(row => Line(specification.Path, OutOfScopeKind, row.Number, row.Line, row.Item)))
+                .Concat(specification.OpenQuestions
+                    .Select(question => Line(specification.Path, OpenQuestionKind, question.Id, question.Line, question.Question))))
+            .ToList();
 
     /// <implements epic="0132" feature="F2" claim="B-005" />
     /// <implements epic="0132" feature="F2" claim="B-012" />
@@ -175,6 +196,14 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
     /// <implements epic="0132" feature="F2" claim="B-008" />
     private static string FirstCell(IReadOnlyList<string> cells) => cells.Count == 0 ? string.Empty : cells[0];
 
+    /// <implements epic="0132" feature="F2" claim="B-024" />
+    private static string Line(string path, string kind, string id, int line, string? text) =>
+        string.Join('\t', Field(path), kind, Field(id), line.ToString(CultureInfo.InvariantCulture), Field(text));
+
+    /// <implements epic="0132" feature="F2" claim="B-024" />
+    private static string Field(string? text) =>
+        (text ?? string.Empty).Replace('\t', ' ').Replace('\n', ' ').Replace('\r', ' ');
+
     /// <implements epic="0132" feature="F2" claim="B-005" />
     /// <implements epic="0132" feature="F2" claim="B-006" />
     /// <implements epic="0132" feature="F2" claim="B-007" />
@@ -195,6 +224,14 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
     private const string OpenMarker = "Open";
 
     private const string AdrKind = "adr";
+
+    private const string ClaimKind = "claim";
+
+    private const string ConstraintKind = "constraint";
+
+    private const string OutOfScopeKind = "outOfScope";
+
+    private const string OpenQuestionKind = "openQuestion";
 
     private static readonly JsonSerializerOptions Options = new()
     {

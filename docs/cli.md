@@ -185,7 +185,7 @@ specht rules set SPEC2001 warning --root .
 ## `specht facts`
 
 ```text
-specht facts [<path>] [--root <DIR>] --json
+specht facts [<path>] [--root <DIR>] [--json]
 ```
 
 Prints what the specification tree holds, read as the check reads it: every
@@ -210,24 +210,34 @@ a directory by whole path segments, in discovery order: `src/tool` selects
 relative to the root, not the working directory, and `/`-separated; a trailing
 `/` is ignored.
 
+Without `--json`, each stdout line is one claim, constraint, out-of-scope row
+or open question: five fields separated by single tabs - the path, the kind
+(`claim`, `constraint`, `outOfScope` or `openQuestion`), the id (an
+out-of-scope row's number), the line and the text (an out-of-scope row's item,
+an open question's question). The lines come in discovery order and, within a
+specification, in that order of kinds. A tab or line break inside a field is
+written as a space, a missing text is an empty field, and records are not
+listed.
+
 | Option         | Value                      | Default               | Does                                                     |
 | -------------- | -------------------------- | --------------------- | -------------------------------------------------------- |
 | `<path>`       | Specification or directory | Every specification   | Selects the specifications given.                        |
 | `--root <DIR>` | `<DIR>`                    | The working directory | Selects the repository whose specification tree is read. |
-| `--json`       | none                       | Off                   | Prints the facts as one JSON document. Required.         |
+| `--json`       | none                       | Off                   | Prints the facts as one JSON document.                   |
 | `-h, --help`   | none                       | Off                   | Prints command help.                                     |
 
-**Stdout.** One document, as [`schema/facts.schema.json`](schema/facts.schema.json)
-describes it. Every member is present, `null` or `[]` when the frontmatter has
+**Stdout.** One line per fact, or with `--json` one document, as
+[`schema/facts.schema.json`](schema/facts.schema.json) describes it. Every member is present, `null` or `[]` when the frontmatter has
 no value, and the shape is the same under every pin. The same tree gives the
 same bytes. The command writes no file and makes no network request.
 
-**Exit codes.** `0` on success, whatever the check would report; `2` without
-`--json`, with the usage on stderr, or for a missing root or manifest; `3` for
-an invalid manifest or pin; `4` for a path selecting no specification.
-Failures go to stderr with empty stdout.
+**Exit codes.** The same with and without `--json`: `0` on success, whatever
+the check would report; `2` for a missing root or manifest; `3` for an invalid
+manifest or pin; `4` for a path selecting no specification. Failures go to
+stderr with empty stdout.
 
 ```sh
+specht facts --root .
 specht facts --root . --json
 specht facts src/tool/Features/Facts --root . --json
 ```

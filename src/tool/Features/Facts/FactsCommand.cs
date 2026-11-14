@@ -12,11 +12,15 @@ using Spectre.Console.Cli;
 
 namespace Specht.Tool.Features.Facts;
 
-/// <summary>Gives the specification tree's facts as one JSON document, read as the check reads the tree.</summary>
+/// <summary>
+/// Gives the specification tree's facts, read as the check reads the tree: one line per fact by default, or one JSON
+/// document with <c>--json</c>.
+/// </summary>
 /// <param name="console">The standard output.</param>
 /// <param name="reader">The check's own read of the tree.</param>
 /// <param name="errors">Standard error, or the injected writer.</param>
 /// <implements epic="0132" feature="F2" claim="B-001" />
+/// <implements epic="0132" feature="F2" claim="B-024" />
 public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader, TextWriter? errors = null)
     : AsyncCommand<FactsCommand.Settings>
 {
@@ -29,13 +33,9 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
     /// <implements epic="0132" feature="F2" claim="B-020" />
     /// <implements epic="0132" feature="F2" claim="B-021" />
     /// <implements epic="0132" feature="F2" claim="B-023" />
+    /// <implements epic="0132" feature="F2" claim="B-024" />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        if (!settings.Json)
-        {
-            return Fail(ExitCodes.MissingInput, "specht facts [<path>] [--root <dir>] --json");
-        }
-
         try
         {
             var root = Path.GetFullPath(settings.Root);
@@ -50,7 +50,18 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
                 }
             }
 
-            console.Profile.Out.Writer.WriteLine(document.ToJson());
+            if (settings.Json)
+            {
+                console.Profile.Out.Writer.WriteLine(document.ToJson());
+            }
+            else
+            {
+                foreach (var line in document.Lines())
+                {
+                    console.Profile.Out.Writer.WriteLine(line);
+                }
+            }
+
             return Task.FromResult(ExitCodes.Success);
         }
         catch (SpechtRootNotFoundException)
@@ -84,9 +95,10 @@ public sealed class FactsCommand(IAnsiConsole console, SpechtModelReader reader,
         [Description("The repository root. Defaults to the working directory.")]
         public string Root { get; init; } = ".";
 
-        /// <summary>Gets whether the facts are written as one JSON document, the only form until the text form lands.</summary>
+        /// <summary>Gets whether the facts are written as one JSON document rather than the default, one line per fact.</summary>
+        /// <implements epic="0132" feature="F2" claim="B-024" />
         [CommandOption("--json")]
-        [Description("Print the facts as one JSON document. Required.")]
+        [Description("Print the facts as one JSON document.")]
         public bool Json { get; init; }
     }
 
