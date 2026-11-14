@@ -17,7 +17,8 @@ namespace Specht.Tool.Features.Upgrade;
 /// pinned version unless a floating pin policy selects a later one (<c>0001-F7</c> B-005, B-146, C-18), or each present
 /// schema and each present template a recorded upstream source hashes to the content its hash names (B-026, B-033, B-130,
 /// B-134, B-136), adds the keys the pinned version defines and the manifest lacks (B-016), leaves a root that already holds
-/// them as it was (B-006) and writes only through the store's replace once every read, comparison and fetch has succeeded
+/// them as it was (B-006), first moves the old id settings into <c>ids</c> under a pin of schema 0.4.0 or later (B-155 to
+/// B-161), and writes only through the store's replace once every read, comparison and fetch has succeeded
 /// (B-007, B-027, B-035, B-132, B-133, C-2). Under the on-disk source it plans no frontmatter schema (B-029, B-031) and,
 /// with no upstream source recorded, lists each one the version in use ships that the root holds as skipped (B-030, B-143).
 /// A template the version in use ships whose bare file name the manifest names, ordinally, in <c>consumerTemplates</c> is
@@ -30,6 +31,7 @@ namespace Specht.Tool.Features.Upgrade;
 /// <param name="shipped">The embedded files.</param>
 /// <param name="store">Reads and replaces the configuration files.</param>
 /// <param name="keys">Adds the pinned version's missing keys to the manifest's bytes.</param>
+/// <param name="ids">Moves the old id settings into <c>ids</c> records under a pin of schema 0.4.0 or later.</param>
 /// <param name="fetcher">Fetches and verifies a recorded upstream schema or template.</param>
 /// <implements epic="0001" feature="F7" claim="B-005" />
 /// <implements epic="0001" feature="F7" claim="B-016" />
@@ -39,12 +41,14 @@ namespace Specht.Tool.Features.Upgrade;
 /// <implements epic="0001" feature="F7" claim="B-060" />
 /// <implements epic="0001" feature="F7" claim="B-061" />
 /// <implements epic="0001" feature="F7" claim="B-146" />
+/// <implements epic="0001" feature="F7" claim="B-155" />
 public sealed class UpgradeWriter(
     SpechtModelReader reader,
     SpechtManifestParser parser,
     ShippedFiles shipped,
     SpechtManifestStore store,
     ManifestKeyEditor keys,
+    ManifestIdMover ids,
     UpstreamSchemaFetcher fetcher)
 {
     /// <summary>
@@ -95,9 +99,12 @@ public sealed class UpgradeWriter(
     /// <implements epic="0001" feature="F7" claim="B-135" />
     /// <implements epic="0001" feature="F7" claim="B-144" />
     /// <implements epic="0001" feature="F7" claim="B-146" />
+    /// <implements epic="0001" feature="F7" claim="B-020" />
+    /// <implements epic="0001" feature="F7" claim="B-155" />
+    /// <implements epic="0001" feature="F7" claim="B-159" />
     public async Task<UpgradeResult> Upgrade(string root, CancellationToken cancellationToken)
     {
-        var structure = reader.ReadManifest(root);
+        var structure = reader.ReadManifest(root, ids.Move);
         var inUse = parser.VersionInUse(structure).Number;
         var pinned = structure.SchemaVersion;
         var frontmatterFromRoot = structure.SchemaSource == SchemaSourceSelection.Disk || structure.SpechtSchema is not null;
@@ -128,7 +135,9 @@ public sealed class UpgradeWriter(
             .Where(static entry => entry.Present is not null)
             .Select(entry => (entry.Present, Planned: new ShippedFile(
                 entry.File.Relative,
-                entry.File.Relative == SpechtManifestStore.RelativePath ? keys.AddMissing(entry.Present!, ShippedManifest(pinned)) : entry.File.Bytes)))
+                entry.File.Relative == SpechtManifestStore.RelativePath
+                    ? keys.AddMissing(ids.Move(entry.Present!), ShippedManifest(pinned))
+                    : entry.File.Bytes)))
             .Where(static entry => !entry.Present.AsSpan().SequenceEqual(entry.Planned.Bytes))
             .Select(static entry => entry.Planned)
             .ToList();

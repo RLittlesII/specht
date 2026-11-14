@@ -43,6 +43,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ManifestPinEditor>();
         services.AddSingleton<ManifestRuleEditor>();
         services.AddSingleton<ManifestKeyEditor>();
+        services.AddSingleton<ManifestIdMover>();
         services.AddSingleton<RuleLevelSetter>();
         services.AddSingleton<SchemaVersionManager>();
         services.AddSingleton<UpstreamSchemaCopy>();

@@ -92,6 +92,13 @@ public sealed class SpechtModelReader(
     /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpechtStructure ReadManifest(string root) => ReadManifest(root, parser.Parse);
 
+    /// <summary>Reads and validates the manifest after <paramref name="edit"/> changes its text, with the same failure handling.</summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="edit">Changes the manifest's text before it is parsed.</param>
+    /// <returns>The parsed manifest.</returns>
+    /// <implements epic="0001" feature="F7" claim="B-020" />
+    public SpechtStructure ReadManifest(string root, Func<string, string> edit) => ReadManifest(root, text => parser.Parse(edit(text)));
+
     /// <summary>Reads the check's validated manifest with its owned effective JSON, using the same store and failure handling.</summary>
     /// <param name="root">The repository root.</param>
     /// <returns>The parsed structure and projected document.</returns>

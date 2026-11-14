@@ -11,6 +11,9 @@ namespace Specht.Manifest;
 /// <implements epic="0001" feature="F5" claim="B-048" />
 public sealed class SpechtManifestParser(SchemaVersions versions)
 {
+    /// <summary>The first schema version that reads <c>ids</c> and rejects the old id settings (0001-F5 B-081, B-092).</summary>
+    internal static readonly SemanticVersion IdsVersion = new(0, 4, 0);
+
     /// <summary>Returns the validated structure with omitted values supplied by the default manifest.</summary>
     /// <param name="text">The manifest JSON to validate.</param>
     /// <returns>The structure and its upstream schema source, if declared.</returns>
@@ -1080,8 +1083,6 @@ public sealed class SpechtManifestParser(SchemaVersions versions)
     private static readonly SemanticVersion MintVersion = new(0, 3, 1);
 
     private static readonly SemanticVersion ClaimPrefixVersion = new(0, 3, 1);
-
-    private static readonly SemanticVersion IdsVersion = new(0, 4, 0);
 
     private static readonly SemanticVersion ClaimMembersVersion = new(0, 4, 0);
 
