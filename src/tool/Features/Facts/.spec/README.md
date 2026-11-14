@@ -20,7 +20,7 @@ depends_on: ["0001/F2", "0001/F5", "0001/F6"]
 blocks: ["F4"]
 spikes: []
 created: "2026-10-30"
-updated: "2026-11-12"
+updated: "2026-11-13"
 github_issue: null
 synced_at: null
 ---
@@ -141,9 +141,8 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-The design for items `0364` and `0365`, as built, and for item `0366`, not yet built (§ "Out-of-scope rows and open
-questions"). Each built type is declared in the file it links; the compiler is the authority on its members and
-signatures.
+The design for items `0364`, `0365` and `0366`, as built. Each built type is declared in the file it links; the
+compiler is the authority on its members and signatures.
 
 ### Reading the tree
 
@@ -197,8 +196,8 @@ the consumer's frontmatter key: from schema `0.3.0` the manifest's `featureKeys`
 member stays `specStatus` (`0001-F5` B-004). Names are camelCase, as in the published report document
 (`docs/schema/report.schema.json`, `0001-F3`).
 
-A Feature's document for this repository's own specification, its `claims` and `constraints` left out (§ "Claims and
-constraints"):
+A Feature's document for this repository's own specification, its `claims`, `constraints`, `outOfScope` and
+`openQuestions` left out (§ "Claims and constraints", § "Out-of-scope rows and open questions"):
 
 ```json
 {
@@ -298,8 +297,8 @@ No existing member, type or constraint of the schema changes (C-3). The `specht 
 
 ### Out-of-scope rows and open questions
 
-Item `0366`'s design. `FeatureFacts` gains two members after `constraints`, added there so every earlier member keeps
-its name, type and place (C-3):
+Item `0366`'s design, as built. `FeatureFacts` has two members after `constraints`, added there so every earlier member
+keeps its name, type and place (C-3):
 
 | Member          | Value                                                                                                                | Claim        |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- | ------------ |
@@ -308,29 +307,31 @@ its name, type and place (C-3):
 
 Two records in `src/specht/Facts/`, each in a file of its own name, carrying values and no logic:
 
-- `OutOfScopeFacts`, written as `number`, `item`, `reason` and `line`.
-- `OpenQuestionFacts`, written as `id`, `question`, `blocks`, `resolution`, `resolved` and `line`.
+- [`OutOfScopeFacts`](../../../../specht/Facts/OutOfScopeFacts.cs), written as `number`, `item`, `reason` and `line`.
+- [`OpenQuestionFacts`](../../../../specht/Facts/OpenQuestionFacts.cs), written as `id`, `question`, `blocks`,
+  `resolution`, `resolved` and `line`.
 
 **The sections.** No role names either section, so `From` finds each as it finds the constraints: under the `sections`
 entries `5. Out of Scope` and `11. Open Questions`, which every shipped manifest lists, `0.1.0` to `0.4.0`, held as
 private constants beside `ConstraintsTitle` and read through `feature.Document.Section` only when
 `model.Schemas.Structure.Sections` lists the title (C-1, C-7). With three sections found this way, the one
-`constraintsListed` test becomes one private method giving the section titled by a constant when `sections` lists it,
-and `null` otherwise, serving all three; the constraints keep their reading. A heading the manifest renames is item
+`constraintsListed` test became one private method, `Listed`, giving the section titled by a constant when `sections`
+lists it, and `null` otherwise, serving all three; the constraints keep their reading. A heading the manifest renames is item
 `0367`'s (B-016).
 
 **The rows.** An out-of-scope row's `number` and an open question's `id` are the row's first cell, as a constraint's
 `id` is and as the check reads an open-question id for `mint` (`HeldIds`, through `SpechtDocumentParser.FirstCells`):
-the string the parse gives, `""` when the row has none, never parsed into a number. `line` is `section.RowLines[row]`.
+the string the parse gives, `""` when the row has none, never parsed into a number; one private `FirstCell` gives it for
+the constraints, out-of-scope rows and open questions alike. `line` is `section.RowLines[row]`.
 The other cells come through `Cell` under the engine's headers (C-7), which every shipped template's tables carry,
 `0.1.0` to `0.4.0`: `Item` and `Exclusion Reason` give `item` and `reason`; `Question`, `Blocks` and `Resolution` give
 `question`, `blocks` and `resolution`. Each is the cell's text as the parse gives it, `null` under a header the table
 lacks; `blocks` is the cell's text, not split into ids. Every body row is given, one whose first cell is no
 open-question id included.
 
-**Whether a question is resolved.** OQ-2's default, `0228-F1` B-009's reading: `resolved` is `false` when the
-`resolution` is `null` or `""`, or its first word is the open marker in exact case, and `true` for any other
-resolution. The first word is the resolution's text up to its first character that is neither a letter nor a digit
+**Whether a question is resolved.** OQ-2's default, `0228-F1` B-009's reading, in one private `Resolved` in
+`FactsDocument`: `resolved` is `false` when the `resolution` is `null` or `""`, or its first word is the open marker in
+exact case, and `true` for any other resolution. The first word is the resolution's text up to its first character that is neither a letter nor a digit
 (`char.IsLetterOrDigit`), compared ordinally. So `Open`, `Open. Proceeds on the default.`, `Open; …` and `Open 2026-11-…`
 read unresolved, and `Resolved 2026-10-30 …`, `RESOLVED, …`, `Superseded …`, `open` and `Opened …` read resolved. The
 text is the parse's, so a cell written `**Open**` reads as `Open`.
@@ -406,7 +407,7 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
 
 - `0365`, built: `claims` and `constraints` on `FeatureFacts`, from `SpechtModel.Claims` and the section the manifest's
   `sections` and `roles` name; § "Claims and constraints".
-- `0366`, designed: `outOfScope` and `openQuestions` on `FeatureFacts`, after `constraints`, from the sections the
+- `0366`, built: `outOfScope` and `openQuestions` on `FeatureFacts`, after `constraints`, from the sections the
   manifest's `sections` lists, an open question's `resolved` on OQ-2's default; § "Out-of-scope rows and open
   questions".
 - `0367`: `deltas` and `signOff` on `FeatureFacts`, after `openQuestions`, each section found through the private method
@@ -423,7 +424,8 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
 ### The published schema
 
 [`docs/schema/facts.schema.json`](../../../../../docs/schema/facts.schema.json), OQ-1's default, draft 2020-12 as the
-report schema is. A root object requiring `specifications`; each item requiring the nine members above, with `id`,
+report schema is. A root object requiring `specifications`; each item requiring the eleven members of § "The
+document", § "Claims and constraints" and § "Out-of-scope rows and open questions", with `id`,
 `specStatus` and `status` typed `["string", "null"]` and the three lists arrays of strings. `path` takes the report schema's `file` pattern: non-empty,
 not starting with `/`, no drive letter, no `\`. `additionalProperties` is `false` at every level, as in the report
 schema, so a violation, a count or a verdict member fails validation (B-014), and each later item that adds a member
