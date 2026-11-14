@@ -35,7 +35,7 @@ public sealed class WaiverAndRetiredRulesIntegrationTests
         tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
 
         // When
-        var report = EngineServices.Runner().Run(tree.Root);
+        var report = EngineServices.Check().Run(tree.Root, null);
 
         // Then
         report.Violations.Should().HaveCount(findings);

@@ -46,7 +46,7 @@ public sealed partial class VersioningSteps
         WriteSample(null, "done");
         _entries = new RuleEntriesReader(EngineServices.Reader(new FileSystem()), EngineServices.Parser(), new SpechtDocumentParser(new FrontmatterReader()))
             .Read(Tree.Root);
-        _report = EngineServices.Runner().Run(Tree.Root);
+        _report = EngineServices.Check().Run(Tree.Root, null);
     }
 
     [When("its feature template is read")]

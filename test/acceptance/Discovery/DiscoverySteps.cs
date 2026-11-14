@@ -345,7 +345,7 @@ public sealed class DiscoverySteps(PackedTool tool)
     public void WhenTheCheckRuns()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        Report = EngineServices.Runner(fileSystem: _fileSystem, childProcess: _childProcess).Run(Tree.Root);
+        Report = EngineServices.Check(fileSystem: _fileSystem, childProcess: _childProcess).Run(Tree.Root, null);
     }
 
     [Then("that specification is discovered")]
@@ -427,7 +427,7 @@ public sealed class DiscoverySteps(PackedTool tool)
     public void ThenTheSummaryAndTheReportNameTheLayouts(string first, string second)
     {
         Summary[0].Should().Be($"specifications: {first} 1, {second} 1");
-        JsonNode.Parse(SpechtReportDocument.From(Report).ToJson())!["layouts"]!.AsArray()
+        JsonNode.Parse(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(Report)))!["layouts"]!.AsArray()
             .Select(static layout => layout!["layout"]!.GetValue<string>())
             .Should().Equal(first, second);
     }
@@ -490,7 +490,7 @@ public sealed class DiscoverySteps(PackedTool tool)
                 File.Copy(file, copy);
             }
 
-            var outsideGit = EngineServices.Runner().Run(twin);
+            var outsideGit = EngineServices.Check().Run(twin, null);
             Report.Violations.Select(Placed).Should().Equal(outsideGit.Violations.Select(Placed));
         }
         finally
@@ -590,7 +590,7 @@ public sealed class DiscoverySteps(PackedTool tool)
 
     private IEnumerable<string> Reported => Report.Violations.Select(static violation => violation.File).Distinct();
 
-    private IReadOnlyList<string> Summary => SpechtReportDocument.From(Report).SummaryLines();
+    private IReadOnlyList<string> Summary => new SpechtReportDocumentMapper().Map(Report).SummaryLines();
 
     private static JsonObject Layout(string name, string glob) => new() { ["name"] = name, ["glob"] = glob };
 

@@ -48,7 +48,8 @@ public sealed class EffectiveManifestReaderIntegrationTests
 
         // Then
         before.Violations.Should().NotBeEmpty();
-        SpechtReportDocument.From(after).ToJson().Should().Be(SpechtReportDocument.From(before).ToJson());
+        new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(after))
+            .Should().Be(new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(before)));
         after.SpecificationCount.Should().Be(before.SpecificationCount);
         effective["identifiers"]!.AsObject().Should().NotContainKey("epic");
         File.ReadAllText(path).Should().Be(manifest.ToJsonString());

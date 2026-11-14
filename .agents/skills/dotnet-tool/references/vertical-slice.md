@@ -34,9 +34,9 @@ for what more than one Feature reads:
 
 ```
 src/specht/
-  SpechtRunner.cs               the runner and the root-not-found exception -
-  SpechtRootNotFoundException.cs the only .cs at the project root, namespace `Specht`
-  .spec/                        the engine Feature's specification (0001-F1)
+  .spec/                        the engine Feature's specification (0001-F1); no .cs at the project root
+  Check/                        `SpechtCheck`, the engine's one check entry point, and
+                                `SpechtFrontmatterCheck` (item 0167). No .spec/ here.
   Model/                        shared - what every rule reads: the spec model and its loader, the Markdig
                                 document, the frontmatter reader, the schema loader, the root-relative path
                                 mapping, the severity
@@ -44,7 +44,7 @@ src/specht/
                                 `SpechtViolation`, `SpechtReportLayout` (ADR-0010 stage 4). No .spec/ here.
   Discovery/                    Feature 0001-F6 - finding specifications, layouts and locations
   Manifest/                     Feature 0001-F5 - the manifest, the structure it declares, its exceptions
-  Report/                       Feature 0001-F3 - the report document
+  Report/                       Feature 0001-F3 - the report document, its mapper, its serializer and its store
   Tree/                         shared - `SpechtTree`, `SpechtTreeFile`, `SpechtTreeStore`,
                                 `SpechtTreeGenerator` (ADR-0010 stage 6, item 0153); its claims are
                                 0109-F1's. No .spec/ here.
@@ -56,7 +56,7 @@ src/specht/
     <Name>/.spec/               a rule Feature's specification
 ```
 
-A command parses, calls `SpechtRunner`, folds the report into an exit code, and
+A command parses, calls `SpechtCheck`, folds the report into an exit code, and
 that is the whole command. `--explain SPEC031` lives in `Check/` until a second
 caller earns it a folder.
 
@@ -71,7 +71,7 @@ where this says:
 
 ```
 src/specht/                     no .cs at the project root
-  Check/                        the engine's check entry point - its shape is item 0167's redesign
+  Check/                        the engine's check entry point, `SpechtCheck` (item 0167)
   Composition/                  `AddSpechtEngine()` - references every folder; nothing references it
   Report/                       the document, its mapper, its serializer, `SpecReportStore`
   Evaluation/                   `SpecEvaluator`, `SpechtReport`, the violation and its order
@@ -110,9 +110,9 @@ Tests are **not** co-located here: they live in `test/tests` and
 - **An engine file goes in a folder, never at the project root.** A file one
   Feature owns goes in that Feature's folder. A type more than one Feature
   reads goes in a named folder — `Model/`, `Evaluation/`, `Versioning/`,
-  `Rules/`, `Composition/`. The root of
-  `src/specht` holds the runner and the root-not-found exception, and nothing
-  joins them; ADR-0010 moves both into folders.
+  `Rules/`, `Composition/`. The root of `src/specht` holds no `.cs` file:
+  item `0166` moved the root-not-found exception to `Tree/` and item `0167`
+  deleted the runner.
 - **Namespaces follow folders.** `Model/` is `Specht.Model`; the root is
   `Specht`. A file that moves folder changes namespace with it.
 - **A folder depends downward only.** A new `using` of an engine namespace

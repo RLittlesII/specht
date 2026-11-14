@@ -9,7 +9,7 @@ namespace Specht.Tests.Engine;
 /// pinned to schema 0.3.0 against its own golden report (B-018), and the six fields every violation carries (B-010).
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerBaselineIntegrationTests
+public sealed class SpechtCheckBaselineIntegrationTests
 {
     /// <summary>Gets each rule, and the root-relative prefix of each layout the baseline tree breaks it in.</summary>
     public static TheoryData<string, string> Breaks
