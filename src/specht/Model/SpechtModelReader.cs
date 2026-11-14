@@ -59,10 +59,7 @@ public sealed class SpechtModelReader(
         var specifications = discovery.FindSpecifications(root, inputs)
             .Where(location => !recordPaths.Contains(location.RelativePath, StringComparer.Ordinal))
             .ToArray();
-        IReadOnlyList<IReadOnlyList<string>> claimFiles = sets.Select(set => discovery.FindTestFiles(root, [set.Glob], inputs.Exclusions)
-                .Where(static path => path.EndsWith(".feature", StringComparison.Ordinal))
-                .ToArray())
-            .ToArray();
+        IReadOnlyList<IReadOnlyList<string>> claimFiles = sets.Select(set => discovery.FindClaimFiles(root, set.Glob, inputs.Exclusions)).ToArray();
         var claimLocations = sets.Select((set, index) => (recordPaths[index] ?? claimFiles[index].FirstOrDefault()) is { } path
                 ? new SpechtLocation(path, new SpechtLayout("claims", set.Glob), SpechtDiscovery.DirectoryOf(path))
                 : null)

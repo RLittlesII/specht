@@ -227,7 +227,9 @@ under `0.3.1`. A type with no settings keeps its own numbering. From `0.4.0`
 the id is the record's head, its `form` with the Feature's claim prefix or else
 its `plain`, then the draw, and the record's `id` must accept the draw; a
 claim or scenario id that would begin with the other type's longer head is
-refused. This record mints claims such as `ACTIVITY-k3x9ab` in a Feature
+refused. Where `claim.source` is `gherkin`, a claim id is also none that a
+claim of the Feature's claim file sets declares, the sets whose `epic` and
+`feature` are the Feature's or whose `record` is its `.spec/README.md`. This record mints claims such as `ACTIVITY-k3x9ab` in a Feature
 declaring `claim_prefix: ACTIVITY`, and `B-k3x9ab` in one declaring none:
 
 ```json
@@ -237,7 +239,8 @@ declaring `claim_prefix: ACTIVITY`, and `B-k3x9ab` in one declaring none:
 ```
 
 Under `0.3.1` the type also needs a grammar in `identifiers` that accepts every
-id the entry can draw. This entry mints eight-character ADR numbers from digits
+id the entry can draw, and an entry for a name that is no id type opts nothing
+in, whatever `identifiers` holds for it. This entry mints eight-character ADR numbers from digits
 and lower-case letters:
 
 ```json

@@ -67,7 +67,7 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         var epics = listing.Epics.Select(path => new EpicFile(path, frontmatter.Parse(texts[path]))).ToList();
         var tests = listing.TestFiles.Select(path => new SpechtTestFile(path, texts[path])).ToList();
 
-        return new SpechtModel(features, items, epics, schemas, tests, ClaimSets(structure, listing, texts));
+        return new SpechtModel(features, items, epics, schemas, tests, ClaimSets(structure, structure.ClaimInput?.Files ?? [], listing.ClaimFiles, texts));
     }
 
     /// <summary>
@@ -84,18 +84,25 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
 
     /// <summary>
     /// Reads each claim file set's files with the shared Gherkin claim reader, under the manifest's claim tag form, the
-    /// tree's claim grammar and the manifest's lifecycle tag lists; a file whose tags cannot be read declares nothing.
+    /// tree's claim grammar and the manifest's lifecycle tag lists; a file whose tags cannot be read declares nothing. The
+    /// check reads every set of the manifest, and the collision guard the sets of one Feature (<c>0001-F19</c> B-078).
     /// </summary>
     /// <param name="structure">The effective manifest.</param>
-    /// <param name="listing">What discovery listed.</param>
+    /// <param name="sets">The claim file sets to read.</param>
+    /// <param name="files">The claim files discovery listed for each of <paramref name="sets"/>, in the same order.</param>
     /// <param name="texts">The text of every listed file, by root-relative path.</param>
-    /// <returns>The claims of each set, in the manifest's order; empty unless <c>claim.source</c> is <c>gherkin</c>.</returns>
+    /// <returns>The claims of each set, in the order given; empty unless <c>claim.source</c> is <c>gherkin</c>.</returns>
     /// <implements epic="0001" feature="F16" claim="B-001" />
     /// <implements epic="0001" feature="F16" claim="B-004" />
     /// <implements epic="0001" feature="F16" claim="B-005" />
     /// <implements epic="0001" feature="F16" claim="B-012" />
     /// <implements epic="0001" feature="F16" claim="B-013" />
-    private static List<SpechtClaims> ClaimSets(SpechtStructure structure, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
+    /// <implements epic="0001" feature="F19" claim="B-078" />
+    internal static List<SpechtClaims> ClaimSets(
+        SpechtStructure structure,
+        IReadOnlyList<SpechtClaimFileSet> sets,
+        IReadOnlyList<IReadOnlyList<string>> files,
+        IReadOnlyDictionary<string, string> texts)
     {
         if (structure.ClaimInput is not { Source: SpechtClaimSource.Gherkin } input)
         {
@@ -111,11 +118,11 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
             input.PlannedTags,
             input.WithdrawnTags,
             input.SupersededTags));
-        var sets = new List<SpechtClaims>();
-        for (var index = 0; index < input.Files.Count; index++)
+        var claims = new List<SpechtClaims>();
+        for (var index = 0; index < sets.Count; index++)
         {
             var read = new List<GherkinClaimText>();
-            foreach (var path in listing.ClaimFiles[index])
+            foreach (var path in files[index])
             {
                 try
                 {
@@ -126,10 +133,10 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
                 }
             }
 
-            sets.Add(new SpechtClaims(input.Files[index], read, structure));
+            claims.Add(new SpechtClaims(sets[index], read, structure));
         }
 
-        return sets;
+        return claims;
     }
 
     /// <summary>

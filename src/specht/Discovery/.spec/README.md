@@ -20,7 +20,7 @@ depends_on: ["F5"]
 blocks: ["F16", "0101/F7", "0101/F8", "0132/F2"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-11-13"
+updated: "2026-11-14"
 github_issue: null
 synced_at: null
 ---
@@ -146,7 +146,7 @@ discovery keys and the existing path-identity checks. Discovery receives the
 same `SpechtDiscoveryInputs` after manifest validation; no glob helper, layout
 identity rule, exclusion semantics or finding order changes in D1.
 
-<!-- last written by: implementer, 2026-11-13 (item 0167: the report document's mapper and serializer; the check resolved in the registration test); implementer, 2026-11-13 (`0132-F2` item 0368: `FindRecords` in the table of finders; `Beside` takes a root-relative directory) -->
+<!-- last written by: implementer, 2026-11-13 (item 0167: the report document's mapper and serializer; the check resolved in the registration test); implementer, 2026-11-13 (`0132-F2` item 0368: `FindRecords` in the table of finders; `Beside` takes a root-relative directory); implementer, 2026-11-14 (`0001-F19` item 0440 review round 1: `FindClaimFiles` in the table of finders) -->
 
 Design for item `0005` (B-001, B-002, B-003, B-009, B-012), item `0006` (B-004) and item `0007` (B-006), as built. brief § 5 "Discovery cost" is the drafted direction for `0007` and `0008`; `0007` is built as "Design for item `0007`" below says, and `0008` is built as "Design for item `0008`" below says.
 
@@ -202,6 +202,7 @@ That value is a new record, `SpechtDiscoveryInputs`, in its own file: `Layouts`,
 | `FindEpics(root, inputs)`                                   | `EpicFiles`, `Exclusions` | The path of every file whose root-relative path matches any one of the globs and is not excluded, once, ordinally by root-relative path. Moves the `epics` and `epic.md` enumeration out of the model load                                                          |
 | `FindCompanions(root, specification, inputs)`               | `CompanionFiles`          | Beside one specification, the root-relative path of every file whose name matches any one of the globs, once, ordinally. Moves the `*.feature` enumeration out of the model load                                                                                    |
 | `FindRecords(root, specification, folder)`                  | Nothing                   | Directly in the child folder named `folder`, compared ordinally and not a link, of one specification's folder, the root-relative path of every file whose name ends `.md`, ordinally; `[]` without that folder. Added for `0132-F2` B-011 (item `0368`)             |
+| `FindClaimFiles(root, glob, exclusions)`                    | Nothing                   | `FindTestFiles(root, [glob], exclusions)` kept to the paths ending `.feature`: one claim file set's files, as `SpechtModelReader.Read` listed them inline. Called by it and `HeldIds.NativeClaimsOf`. Added for `0001-F16` B-001 and `0001-F19` B-078 (item `0440`) |
 
 The signatures are the ones `test-writer` declared (§ 8), less the leading `IFileSystem` argument each carried until item `0107` made it the constructor's. The static members that took no `IFileSystem` - `FindSpecifications(root)`, `FindChildItems(specifications)` and `IsItemFileName` - went with their one caller, the static `SpechtModel.Load`, itself now `SpechtModelLoader.Load`. `Relative(root, path)` moved, unchanged, to `SpecPath` in `Model/` (item `0107`, ADR-0005 (a)), so no rule calls into discovery. Item `0166` gave `FindChildItems` and `FindCompanions` a leading `root`: a location no longer carries an absolute directory, so `Beside` joins the root to the location's relative directory to list the folder, and prefixes each name it keeps with that relative directory.
 

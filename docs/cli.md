@@ -608,7 +608,10 @@ the record's head: its `form` with the Feature's claim prefix, else its
 record type it names, such as `adr` or `lesson`, needs a grammar in
 `identifiers`; [Configuration](configuration.md) describes both. `epic`,
 `feature` and `task` ids are not minted, and below `0.4.0` an entry that opts
-one in refuses every request.
+one in refuses every request. An entry for a name that is no id type opts
+nothing in. A `claim` id is also none that a claim of the Feature's claim file
+sets declares where `claim.source` is `gherkin`: the sets of its identity and
+those whose `record` is its `.spec/README.md`.
 
 | Option            | Value   | Default               | Does                                                                                                                                                                                                           |
 | ----------------- | ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -630,8 +633,8 @@ than `nanoid` or `snowflake`, settings it cannot draw from, a Snowflake clock
 that reads earlier than at the draw before it, a candidate its type's grammar
 or record's `id` rejects, or one that begins with the other type's longer
 claim or scenario head; `4` for a type with no entry or record `mint`, or
-whose entry names no strategy, or a `--feature` folder that holds no
-Feature's `.spec/`.
+whose entry names no strategy, a name that is no id type, or a `--feature`
+folder that holds no Feature's `.spec/`.
 
 ```sh
 specht mint adr --root .

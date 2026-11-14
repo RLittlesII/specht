@@ -20,7 +20,13 @@ namespace Specht.Tests.Identifiers;
 /// holding only its opt-in mints for every type and strategy (B-074). A <c>prefix</c> in any record's <c>mint</c> refuses
 /// every request before anything is drawn (B-075), and a type with no record, or whose record's <c>mint</c> names no strategy,
 /// is not opted in (B-002). A refusal names the setting under the record, <c>ids.&lt;type&gt;.mint</c>
-/// and <c>ids.&lt;type&gt;.id</c>. Each tree is a <see cref="MockFileSystem"/> holding <c>features/one</c>, the draws come
+/// and <c>ids.&lt;type&gt;.id</c>. Where <c>claim.source</c> is <c>gherkin</c> and a claim file set names <c>features/one</c>,
+/// by its identity and by its <c>record</c>, a claim id a scenario, a rule or the Feature of that set's files declares is held,
+/// beside the first cells of the Feature's <c>.spec/README.md</c> (B-078, B-041; item <c>0440</c>), and under an epic grammar
+/// only a set naming the Feature's epic holds one. A set of another identity holds one when its <c>record</c>, read as the
+/// check reads it, is that <c>.spec/README.md</c>, and none when the check reads its <c>record</c> as none (B-078, amended
+/// 2026-11-14); the manifest the minter is handed is also the root's
+/// <c>.specht/manifest.json</c>. Each tree is a <see cref="MockFileSystem"/> holding <c>features/one</c>, the draws come
 /// from a <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -354,6 +360,160 @@ public sealed class MinterIdsUnitTests
 
         // Then
         mint.Should().Throw<IdRefusedException>().WithMessage("*'ids.adr.mint.attempts'*");
+    }
+
+    [Theory]
+    [ClassData(typeof(NativeClaimsHoldingTheFirstCandidate))]
+    public void AClaimTheFeaturesClaimFilesDeclareAsTheFirstCandidate_WhenAClaimIdIsMintedForThatFeature_ShouldMintTheNextCandidate(string claimFile)
+    {
+        // Given
+        const string Manifest = """
+            {
+              "schemaVersion": "0.4.0",
+              "claim": {
+                "source": "gherkin",
+                "files": [ { "glob": "features/one/.spec/*.feature", "feature": "F1", "record": "features/one/.spec/README.md" } ]
+              },
+              "ids": { "claim": { "id": "[ab]+", "mint": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 } } } }
+            }
+            """;
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.specht/manifest.json"] = new(Manifest),
+            ["repo/features/one/.spec/README.md"] = new("---\nid: \"F1\"\n---\n# Specification: F1\n"),
+            ["repo/features/one/.spec/one.feature"] = new(claimFile),
+        });
+        var root = files.Path.GetFullPath("repo");
+        var minter = new Minter(
+            new FixedRandomSource(0, 0, 1, 1),
+            new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var id = minter.Mint(EngineServices.Parser().ParseDocument(Manifest), "claim", root, "features/one");
+
+        // Then
+        id.Should().Be("B-bb");
+    }
+
+    [Fact]
+    public void AFeatureWhoseSpecificationAndClaimFilesEachHoldACandidate_WhenAClaimIdIsMintedUnderAGherkinClaimSource_ShouldMintACandidateNeitherHolds()
+    {
+        // Given
+        const string Manifest = """
+            {
+              "schemaVersion": "0.4.0",
+              "claim": {
+                "source": "gherkin",
+                "files": [ { "glob": "features/one/.spec/*.feature", "feature": "F1", "record": "features/one/.spec/README.md" } ]
+              },
+              "ids": { "claim": { "id": "[ab]+", "mint": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 } } } }
+            }
+            """;
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.specht/manifest.json"] = new(Manifest),
+            ["repo/features/one/.spec/README.md"] = new(
+                "---\nid: \"F1\"\n---\n# Specification: F1\n\n## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-aa | Held. |\n"),
+            ["repo/features/one/.spec/one.feature"] = new("Feature: it\n\n  @B-bb\n  Scenario: It is held\n    Given a thing\n"),
+        });
+        var root = files.Path.GetFullPath("repo");
+        var minter = new Minter(
+            new FixedRandomSource(0, 0, 1, 1, 0, 1),
+            new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var id = minter.Mint(EngineServices.Parser().ParseDocument(Manifest), "claim", root, "features/one");
+
+        // Then
+        id.Should().Be("B-ab");
+    }
+
+    [Fact]
+    public void ClaimFileSetsOfTheFeaturesEpicAndOfAnotherEpic_WhenAClaimIdIsMintedForThatFeature_ShouldMintTheCandidateOnlyTheOtherEpicsSetDeclares()
+    {
+        // Given
+        const string Manifest = """
+            {
+              "schemaVersion": "0.4.0",
+              "identifiers": { "epic": "^[0-9]{4}$" },
+              "claim": {
+                "source": "gherkin",
+                "files": [
+                  { "glob": "features/one/.spec/*.feature", "feature": "F1", "epic": "0001" },
+                  { "glob": "features/two/*.feature", "feature": "F1", "epic": "0002" }
+                ]
+              },
+              "ids": { "claim": { "id": "[ab]+", "mint": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 } } } }
+            }
+            """;
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.specht/manifest.json"] = new(Manifest),
+            ["repo/features/one/.spec/README.md"] = new("---\nid: \"F1\"\nepic: \"0001\"\n---\n# Specification: F1\n"),
+            ["repo/features/one/.spec/one.feature"] = new("Feature: it\n\n  @B-aa\n  Scenario: It is held\n    Given a thing\n"),
+            ["repo/features/two/two.feature"] = new("Feature: another\n\n  @B-bb\n  Scenario: It is another epic's\n    Given a thing\n"),
+        });
+        var root = files.Path.GetFullPath("repo");
+        var minter = new Minter(
+            new FixedRandomSource(0, 0, 1, 1, 0, 1),
+            new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var id = minter.Mint(EngineServices.Parser().ParseDocument(Manifest), "claim", root, "features/one");
+
+        // Then
+        id.Should().Be("B-bb");
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimFileSetsSpellingTheFeaturesSpecification))]
+    public void ASetWhoseRecordSpellsTheFeaturesSpecification_WhenAClaimIdIsMinted_ShouldHoldItsClaimsIfTheCheckReadsTheRecord(string set, string expected)
+    {
+        // Given
+        var manifest = $$"""
+            {
+              "schemaVersion": "0.4.0",
+              "identifiers": { "epic": "^[0-9]{4}$" },
+              "claim": { "source": "gherkin", "files": [ {{set}} ] },
+              "ids": { "claim": { "id": "[ab]+", "mint": { "strategy": "nanoid", "nanoid": { "alphabet": "ab", "size": 2 } } } }
+            }
+            """;
+        var files = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            ["repo/.specht/manifest.json"] = new(manifest),
+            ["repo/features/one/.spec/README.md"] = new("---\nid: \"F1\"\nepic: \"0001\"\n---\n# Specification: F1\n"),
+            ["repo/claims/held.feature"] = new("Feature: it\n\n  @B-aa\n  Scenario: It is held\n    Given a thing\n"),
+        });
+        var root = files.Path.GetFullPath("repo");
+        var minter = new Minter(
+            new FixedRandomSource(0, 0, 1, 1),
+            new HeldIds(
+                new SpechtDiscovery(files, new UnexpectedChildProcess()),
+                new SpechtTreeStore(files),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime));
+
+        // When
+        var id = minter.Mint(EngineServices.Parser().ParseDocument(manifest), "claim", root, "features/one");
+
+        // Then
+        id.Should().Be(expected);
     }
 
     private const string Base32 = "0123456789abcdefghjkmnpqrstvwxyz";

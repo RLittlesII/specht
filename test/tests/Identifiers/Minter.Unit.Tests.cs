@@ -33,7 +33,8 @@ namespace Specht.Tests.Identifiers;
 /// pre-empts B-002's or B-043's; its first candidate, held in the Feature's place for the type, is drawn again (B-010, B-040
 /// to B-042; item <c>0418</c>). A manifest opting in an <c>epic</c>, <c>feature</c> or <c>task</c> type gives no id for any
 /// request, refused as neither a type not opted in nor a Feature named or found, and draws nothing (B-061); a request for one
-/// of the three the manifest does not opt in is refused as not opted in (B-018, B-002; item <c>0421</c>). Each manifest is
+/// of the three the manifest does not opt in is refused as not opted in (B-018, B-002; item <c>0421</c>). A request naming a
+/// <c>mint</c> member that is none of the ten types is refused as not opted in (B-079, B-080; item <c>0440</c>). Each manifest is
 /// written in memory, the draws come from a <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>. Each
 /// is handed to the minter as the effective document beside the structure a manifest pinned to schema <c>0.3.1</c> parses to,
 /// or the structure the tree's own manifest reads to where the test writes one, so the structure's <c>Ids</c> is null and every
@@ -702,6 +703,33 @@ public sealed class MinterUnitTests
 
         // Then
         id.Should().Be(expected);
+    }
+
+    [Fact]
+    public void AMintMemberNamingNoIdType_WhenThatNameIsMinted_ShouldBeRefusedAsNotOptedIn()
+    {
+        // Given
+        var manifest = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": "0.3.1",
+              "mint": { "widget": { "strategy": "nanoid", "nanoid": { "size": 6 } } }
+            }
+            """)!.AsObject();
+
+        // When
+        var mintWidget = () => new Minter(
+            new FixedRandomSource(0),
+            new HeldIds(
+                new SpechtDiscovery(new MockFileSystem(), new UnexpectedChildProcess()),
+                new SpechtTreeStore(new MockFileSystem()),
+                new SpechtDocumentParser(new FrontmatterReader()),
+                new FeatureTagParser()),
+            new FixedClock(FixedClock.CheckTime))
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "widget", ".", null);
+
+        // Then
+        mintWidget.Should().Throw<IdNotOptedInException>();
     }
 
     private const string ManifestBelowIds = """{ "schemaVersion": "0.3.1" }""";
