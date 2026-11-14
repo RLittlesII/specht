@@ -9,8 +9,9 @@ namespace Specht.Tests.Facts;
 
 /// <summary>
 /// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-008, B-011 to
-/// B-015, B-017, B-021 to B-023, B-025, B-026), launched as a shell launches it, its output validated against the published facts schema at
-/// <c>docs/schema/facts.schema.json</c> (OQ-1's default), copied into the output from that one file.
+/// B-015, B-017 to B-023, B-025, B-026), launched as a shell launches it, with or without a root-relative path, its
+/// output validated against the published facts schema at <c>docs/schema/facts.schema.json</c> (OQ-1's default), copied
+/// into the output from that one file.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class FactsCommandIntegrationTests
@@ -689,6 +690,69 @@ public sealed class FactsCommandIntegrationTests
         specification["path"]!.GetValue<string>().Should().Be("src/area/.spec/README.md");
         specification["records"].Should().BeOfType<JsonArray>().Which.Select(static record => record!["path"]!.GetValue<string>()).Should().Equal(
             "src/area/.spec/adr/0001-an-adr.md", "src/area/.spec/decisions/0001-a-decision.md", "src/area/.spec/lessons/0001-a-lesson.md");
+    }
+
+    [Fact]
+    public void ASpecificationsPath_WhenFactsAreGivenForIt_ShouldGiveThatSpecificationOnly()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        tree.WriteCoLocatedFeature("src/tool", "0001", "F1");
+        tree.WriteCoLocatedFeature("src/tool/Features/Facts", "0001", "F2");
+        tree.WriteCoLocatedFeature("src/toolbox", "0001", "F3");
+        EngineServices.Reader().Read(tree.Root, null).Features.Should().HaveCount(3);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "src/tool/.spec/README.md", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Select(static specification => specification!["path"]!.GetValue<string>())
+            .Should().Equal("src/tool/.spec/README.md");
+    }
+
+    [Fact]
+    public void ADirectoryRelativeToTheRoot_WhenFactsAreGivenForIt_ShouldGiveEverySpecificationUnderItByWholePathSegmentsInDiscoveryOrder()
+    {
+        // Given
+        using var tree = new SpechtTree(["repo"]);
+        tree.Pin("0.2.0");
+        tree.WriteCoLocatedFeature("src/tool", "0001", "F1");
+        tree.WriteCoLocatedFeature("src/tool/Features/Facts", "0001", "F2");
+        tree.WriteCoLocatedFeature("src/toolbox", "0001", "F3");
+        var discovered = EngineServices.Reader().Read(tree.Root, null).Features.Select(static feature => feature.RelativePath).ToArray();
+        discovered.Should().HaveCount(3);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(Path.GetDirectoryName(tree.Root)!, "facts", "src/tool", "--root", "repo", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Select(static specification => specification!["path"]!.GetValue<string>())
+            .Should().Equal(discovered.Where(static path => path.StartsWith("src/tool/", StringComparison.Ordinal)))
+            .And.HaveCount(2);
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsUnselectingPaths))]
+    public void APathSelectingNoSpecification_WhenFactsAreGivenForIt_ShouldWriteNothingOnStdoutAndExitNotFound(string path)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        tree.WriteCoLocatedFeature("src/tool", "0001", "F1");
+        tree.WriteCoLocatedFeature("src/tool/Features/Facts", "0001", "F2");
+        tree.WriteCoLocatedFeature("src/toolbox", "0001", "F3");
+        EngineServices.Reader().Read(tree.Root, null).Features.Should().HaveCount(3);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", path, "--json");
+
+        // Then
+        ExitCode.Should().Be(4, Stderr);
+        Stdout.Should().BeEmpty();
+        Stderr.Should().NotBeNullOrWhiteSpace();
     }
 
     private static EvaluationResults Evaluate(JsonElement document)

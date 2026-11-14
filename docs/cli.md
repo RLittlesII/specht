@@ -185,7 +185,7 @@ specht rules set SPEC2001 warning --root .
 ## `specht facts`
 
 ```text
-specht facts [--root <DIR>] --json
+specht facts [<path>] [--root <DIR>] --json
 ```
 
 Prints what the specification tree holds, read as the check reads it: every
@@ -204,11 +204,18 @@ id included, and a claim carries no coverage. A missing section, or one with no
 table, gives no rows of its own and leaves the others. Epic files are not given.
 No rule runs, so the document carries no violation, count or verdict.
 
-| Option         | Value   | Default               | Does                                                     |
-| -------------- | ------- | --------------------- | -------------------------------------------------------- |
-| `--root <DIR>` | `<DIR>` | The working directory | Selects the repository whose specification tree is read. |
-| `--json`       | none    | Off                   | Prints the facts as one JSON document. Required.         |
-| `-h, --help`   | none    | Off                   | Prints command help.                                     |
+A `<path>` gives the specification at that path, or every specification under
+a directory by whole path segments, in discovery order: `src/tool` selects
+`src/tool/.spec/README.md` and not `src/toolbox/.spec/README.md`. The path is
+relative to the root, not the working directory, and `/`-separated; a trailing
+`/` is ignored.
+
+| Option         | Value                      | Default               | Does                                                     |
+| -------------- | -------------------------- | --------------------- | -------------------------------------------------------- |
+| `<path>`       | Specification or directory | Every specification   | Selects the specifications given.                        |
+| `--root <DIR>` | `<DIR>`                    | The working directory | Selects the repository whose specification tree is read. |
+| `--json`       | none                       | Off                   | Prints the facts as one JSON document. Required.         |
+| `-h, --help`   | none                       | Off                   | Prints command help.                                     |
 
 **Stdout.** One document, as [`schema/facts.schema.json`](schema/facts.schema.json)
 describes it. Every member is present, `null` or `[]` when the frontmatter has
@@ -217,10 +224,12 @@ same bytes. The command writes no file and makes no network request.
 
 **Exit codes.** `0` on success, whatever the check would report; `2` without
 `--json`, with the usage on stderr, or for a missing root or manifest; `3` for
-an invalid manifest or pin. Failures go to stderr with empty stdout.
+an invalid manifest or pin; `4` for a path selecting no specification.
+Failures go to stderr with empty stdout.
 
 ```sh
 specht facts --root . --json
+specht facts src/tool/Features/Facts --root . --json
 ```
 
 ## `specht evidence`

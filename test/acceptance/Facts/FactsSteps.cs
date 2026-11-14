@@ -10,7 +10,7 @@ namespace Specht.Acceptance.Facts;
 /// <summary>
 /// Steps for <c>src/tool/Features/Facts/.spec/facts.feature</c> (<c>0132-F2</c>): item 0364 binds B-001 to B-004, B-014,
 /// B-017, B-021 to B-023 and B-026, item 0365 binds B-005, B-006, B-012, B-013 and B-025, item 0366 binds B-007,
-/// B-008 and B-015, and item 0368 binds B-011. Each launches the built
+/// B-008 and B-015, item 0368 binds B-011, and item 0369 binds B-018 to B-020. Each launches the built
 /// tool over a synthetic tree, and a scenario naming no form runs <c>specht facts --json</c>, since the text form is item
 /// 0370's. The root sits one folder below a temporary directory, so a run that writes beside the root is seen. The rest
 /// of the file's scenarios stay pending for their items.
@@ -154,6 +154,22 @@ public sealed class FactsSteps
         EngineServices.Reader().Read(Tree.Root, null).Epics.Select(static epic => epic.RelativePath).Should().Equal(EpicPath);
     }
 
+    [Given("both specifications sit under one directory")]
+    public void GivenBothUnderOneDirectory()
+    {
+        _directory = "src";
+        EngineServices.Reader().Read(Tree.Root, null).Features.Select(static feature => feature.RelativePath)
+            .Should().Equal(FirstPath, SecondPath).And.AllSatisfy(path => path.Should().StartWith(_directory + "/"));
+    }
+
+    [Given("a third specification sits outside it, under a directory whose name begins with that directory's name")]
+    public void GivenThirdOutsideDirectory()
+    {
+        Tree.WriteCoLocatedFeature(ThirdArea, "0001", "F3");
+        ThirdPath.Should().StartWith(_directory).And.NotStartWith(_directory + "/");
+        EngineServices.Reader().Read(Tree.Root, null).Features.Select(static feature => feature.RelativePath).Should().Contain(ThirdPath);
+    }
+
     [When("the facts are given")]
     [When("the facts are given as JSON")]
     public void WhenFactsAreGiven()
@@ -161,6 +177,15 @@ public sealed class FactsSteps
         _before = Snapshot();
         _result = AcceptanceTool.Launch(Tree.Root, "facts", "--root", _rootArgument, "--json");
     }
+
+    [When("the facts are given for the first specification's path")]
+    public void WhenFactsAreGivenForFirstPath() => WhenFactsAreGivenFor(FirstPath);
+
+    [When("the facts are given for that directory")]
+    public void WhenFactsAreGivenForDirectory() => WhenFactsAreGivenFor(_directory);
+
+    [When("the facts are given for a path that holds no specification")]
+    public void WhenFactsAreGivenForEmptyPath() => WhenFactsAreGivenFor(UnselectingPath);
 
     [When("the facts are given as JSON under each pin")]
     public void WhenFactsAreGivenUnderEachPin()
@@ -398,6 +423,27 @@ public sealed class FactsSteps
         Snapshot().Should().BeEquivalentTo(_before);
     }
 
+    [Then("they hold the first specification only")]
+    public void ThenFirstOnly() => Paths.Should().Equal(FirstPath);
+
+    [Then("they hold the two specifications under it, in the order the check discovers them")]
+    public void ThenTwoUnderDirectoryInDiscoveryOrder()
+    {
+        var under = EngineServices.Reader().Read(Tree.Root, null).Features.Select(static feature => feature.RelativePath)
+            .Where(path => path.StartsWith(_directory + "/", StringComparison.Ordinal)).ToArray();
+        under.Should().BeEquivalentTo([FirstPath, SecondPath]);
+        Paths.Should().Equal(under);
+    }
+
+    [Then("they do not hold the third specification")]
+    public void ThenNotThird() => Paths.Should().NotContain(ThirdPath);
+
+    [Then("the command fails with the not-found exit code")]
+    public void ThenNotFound() => _result.ExitCode.Should().Be(4, _result.Stderr);
+
+    [Then("nothing is written to the standard output")]
+    public void ThenNothingOnStdout() => _result.Stdout.Should().BeEmpty();
+
     [Then("they hold the two Feature specifications and not the epic")]
     public void ThenFeaturesNotEpic() => Paths.Should().BeEquivalentTo([FirstPath, SecondPath]).And.NotContain(EpicPath);
 
@@ -450,6 +496,9 @@ public sealed class FactsSteps
         tree.WriteFeatureFile(tree.WriteCoLocatedFeature("src/second", "0001", "F2", _second, Sections), FeatureFile);
     }
 
+    private void WhenFactsAreGivenFor(string path) =>
+        _result = AcceptanceTool.Launch(Tree.Root, "facts", path, "--root", _rootArgument, "--json");
+
     private int LineOf(string path, string prefix) =>
         Array.FindIndex(File.ReadAllLines(Path.Combine(Tree.Root, path)), line => line.StartsWith(prefix, StringComparison.Ordinal)) + 1;
 
@@ -466,6 +515,9 @@ public sealed class FactsSteps
     private const string FirstPath = "src/first/.spec/README.md";
     private const string SecondPath = "src/second/.spec/README.md";
     private const string EpicPath = "epics/0001-epic/epic.md";
+    private const string UnselectingPath = "src/third";
+    private const string ThirdArea = "srcbox/third";
+    private const string ThirdPath = ThirdArea + "/.spec/README.md";
     private const string AdrPath = "src/first/.spec/adr/0001-read-each-record-as-written.md";
     private const string DecisionPath = "src/first/.spec/decisions/0001-the-records-are-given.md";
     private const string LessonPath = "src/first/.spec/lessons/0001-a-record-is-read-as-written.md";
@@ -500,6 +552,7 @@ public sealed class FactsSteps
     private SpechtTree? _tree;
     private SpechtTree? _other;
     private string _rootArgument = ".";
+    private string _directory = string.Empty;
     private JsonArray? _violations;
     private Dictionary<string, byte[]> _before = [];
     private (string Stdout, string Stderr, int ExitCode) _result;
