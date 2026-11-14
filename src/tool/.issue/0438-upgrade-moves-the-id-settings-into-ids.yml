@@ -2,7 +2,7 @@ id: "0438"
 type: task
 title: Upgrade moves the id settings into ids
 
-status: in-progress
+status: done
 
 value: 4
 risk: 3
@@ -28,7 +28,7 @@ claims:
 
 created: "2026-11-12"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   As a consumer moving its pin to schema `0.4.0`, I want `specht
@@ -83,6 +83,26 @@ decisions:
     members the consumer wrote, `identifiers.claim` and
     `identifiers.scenario`, as its scenario's row states, not the
     `ids.claim` and `ids.scenario` records the move would write.
+  - |
+    2026-11-13, spec-author, on closing: the implementer's build choices
+    (`src/tool/.spec/README.md` § 7, "The move into ids at schema
+    0.4.0"), recorded as role-level choices, not owner rulings. The mover
+    compares the claim and scenario heads itself, before the parse, and
+    names what the consumer wrote, rather than renaming the parser's
+    `0001-F5` B-094 fault, whose message cannot tell a head the move made
+    from one the consumer wrote; a collision among records the consumer
+    already wrote under `ids` stays the parse's. `Move(byte[])` decodes
+    through the pin editor's `Format` and writes the moved text back in
+    the file's own encoding behind its preamble, so every byte outside
+    the moved spans is the one read (B-158, C-19); the splice is by span,
+    never a `JsonNode` re-serialisation. The move runs first, inside the
+    check's own manifest read (`ReadManifest(root, edit)`), so the moved
+    text is judged by the check's rules before any write (B-020 as
+    amended). The gate is the pin, not the version in use. "The old pin"
+    of B-161 is read as every shipped version below 0.4.0. `schema pin`
+    sets the old settings aside under a 0.4.0 or later pin rather than
+    validating the moved text, since B-051 excepts every setting
+    `0001-F5` B-092 rejects, a refused grammar included.
 
 out_of_scope:
   - "The ids key and the rejection of the old settings - `0001-F5` item 0436."
