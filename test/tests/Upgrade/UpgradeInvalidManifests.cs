@@ -7,7 +7,8 @@ namespace Specht.Tests.Upgrade;
 /// one pinned to 0.2.0 that records an upstream schema source and explicitly selects the embedded source, and one pinned to
 /// 0.4.0 that sets a rule to such a level beside an id setting the move takes, so the move sets aside only what it moves (B-020
 /// as amended), and one pinned to 0.4.0 whose <c>ids</c> is not an object beside an id setting the move would take, which the move
-/// leaves for the parse (<c>0001-F5</c> B-083), each with the failure the loader throws.
+/// leaves for the parse (<c>0001-F5</c> B-083), and one pinned to 0.4.0 holding a <c>mint</c> entry for <c>epic</c>, a name outside
+/// the seven <c>0001-F19</c> C-13 types, which the move refuses (B-159), each with the failure the loader throws.
 /// </summary>
 public sealed class UpgradeInvalidManifests : TheoryData<string, Type>
 {
@@ -29,5 +30,6 @@ public sealed class UpgradeInvalidManifests : TheoryData<string, Type>
             """, typeof(SpechtManifestException));
         Add("""{"schemaVersion":"0.4.0","identifiers":{"claim":"^B-[0-9]{4}$"},"rules":{"SPEC4004":"invalid"}}""", typeof(SpechtManifestException));
         Add("""{"schemaVersion":"0.4.0","ids":[],"identifiers":{"claim":"^B-[0-9]{4}$"}}""", typeof(SpechtManifestException));
+        Add("""{"schemaVersion":"0.4.0","mint":{"epic":{"strategy":"nanoid"}}}""", typeof(SpechtManifestException));
     }
 }

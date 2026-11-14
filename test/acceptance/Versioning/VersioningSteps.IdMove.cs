@@ -16,7 +16,9 @@ namespace Specht.Acceptance.Versioning;
 /// Feature and epic ones. Each premise writes the id settings it names into that manifest and keeps what it wrote; the built
 /// tool's <c>upgrade</c>, or its <c>schema pin</c>, runs over the root, and each outcome is read from the manifest after the
 /// run, its standard error and its exit code. B-161's accepted claim ids are the claim record the engine's reader takes from
-/// the root after the run, compared with the record schema 0.4.0's shipped manifest holds.
+/// the root after the run, compared with the record schema 0.4.0's shipped manifest holds. A <c>mint</c> entry for epic, Feature
+/// or task ids, names outside the seven <c>0001-F19</c> C-13 types, is written under the lower-case name the manifest's
+/// <c>identifiers</c> uses, and its refusal is read as that entry named <c>mint.&lt;name&gt;</c> and no <c>ids.</c> member named.
 /// </summary>
 public sealed partial class VersioningSteps
 {
@@ -32,6 +34,10 @@ public sealed partial class VersioningSteps
 
     [Given("^its manifest's mint entry for claim ids is the text \"([^\"]*)\" rather than a set of settings$")]
     public void GivenItsManifestsMintEntryForClaimIdsIsText(string text) => OptIn("claim", JsonValue.Create(text));
+
+    [Given("^its manifest opts (epic|Feature|task) ids in to Nano ID under the mint key$")]
+    public void GivenItsManifestOptsATypeOutsideTheSevenInUnderTheMintKey(string type) =>
+        OptIn(type.ToLowerInvariant(), new JsonObject { ["strategy"] = "nanoid" });
 
     [Given("its manifest declares claim, constraint and open question grammars under identifiers")]
     public void GivenItsManifestDeclaresClaimConstraintAndOpenQuestionGrammars()
@@ -174,6 +180,17 @@ public sealed partial class VersioningSteps
             ThenTheStandardErrorNames(named);
         }
     }
+
+    [Then("^the standard error names the (epic|Feature|task) mint entry as the consumer wrote it$")]
+    public void ThenTheStandardErrorNamesTheMintEntryAsWritten(string type)
+    {
+        var name = type.ToLowerInvariant();
+        _consumerMint.Should().ContainKey(name);
+        ThenTheStandardErrorNames($"mint.{name}");
+    }
+
+    [Then("the standard error names no ids record")]
+    public void ThenTheStandardErrorNamesNoIdsRecord() => _stderr.Should().NotMatchRegex(@"(?<![\w.])ids\.\w");
 
     [Then("the claim record is as the consumer set it")]
     public void ThenTheClaimRecordIsAsTheConsumerSetIt() => JsonNode.DeepEquals(MovedRecord("claim"), _consumerClaimRecord).Should().BeTrue();

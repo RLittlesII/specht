@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Specht.Manifest;
 using Specht.Tests.Shared;
@@ -11,8 +12,9 @@ namespace Specht.Tests.Manifest;
 /// ids at schema 0.4.0"): a customised grammar becomes its record's plain text and id, a grammar equal to a shipped default
 /// below <c>0.4.0</c> is dropped so the type reads the shipped <c>0.4.0</c> record, a <c>mint</c> entry becomes its record's
 /// <c>mint</c> less its prefix, or as it is when it is not an object, no old id setting is left, every other member is kept as
-/// written in the file's own encoding, a setting the move cannot make exactly is refused naming each such member, and a
-/// manifest with nothing to move, or pinned below <c>0.4.0</c>, is returned as it is.
+/// written in the file's own encoding, a setting the move cannot make exactly is refused naming each such member as the
+/// consumer wrote it, a <c>mint</c> entry for a name outside the seven types among them, and a manifest with nothing to move,
+/// or pinned below <c>0.4.0</c>, is returned as it is.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class ManifestIdMoverUnitTests
@@ -142,7 +144,10 @@ public sealed class ManifestIdMoverUnitTests
 
     [Theory]
     [ClassData(typeof(UnmovableIdSettings))]
-    public void ASettingTheMoveCannotMakeExactly_WhenMoved_ShouldThrowOneRejectionNamingEachSuchMember(string text, string[] members)
+    public void ASettingTheMoveCannotMakeExactly_WhenMoved_ShouldThrowOneRejectionNamingEachSuchMember(
+        string text,
+        string[] members,
+        string[] unwritten)
     {
         // Given
         var bytes = Encoding.UTF8.GetBytes(text);
@@ -156,7 +161,12 @@ public sealed class ManifestIdMoverUnitTests
         var message = moveText.Should().ThrowExactly<SpechtManifestException>().Which.Message;
         foreach (var member in members)
         {
-            message.Should().Contain(member);
+            message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(member)}(?!\.?\w)", member);
+        }
+
+        foreach (var member in unwritten)
+        {
+            message.Should().NotContain(member);
         }
 
         moveBytes.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Be(message);
