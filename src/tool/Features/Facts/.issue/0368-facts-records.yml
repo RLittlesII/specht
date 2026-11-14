@@ -2,7 +2,7 @@ id: "0368"
 type: task
 title: The records beside a specification in the facts
 
-status: ready
+status: in-progress
 
 value: 3
 risk: 2
@@ -19,7 +19,7 @@ claims:
   - B-011
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-13"
 closed: null
 
 summary: |
