@@ -29,6 +29,18 @@ public sealed class RenamedMarkerMessages : TheoryData<string, string, string, s
             "'Untested'",
             "'Missing'");
         Add(
+            "SPEC033",
+            """{"schemaVersion":"0.4.0","markers":{"covered":"Proven"}}""",
+            Frontmatter("") + Claims("B-001") + Matrix("B-009", "`AlphaTest`").Replace("| Covered |", "| Proven |", StringComparison.Ordinal),
+            "'Proven'",
+            "'Covered'");
+        Add(
+            "SPEC033",
+            """{"schemaVersion":"0.4.0","markers":{"partial":"Halfway"}}""",
+            Frontmatter("") + Claims("B-001") + Matrix("B-009", "`AlphaTest`").Replace("| Covered |", "| Halfway |", StringComparison.Ordinal),
+            "'Halfway'",
+            "'Partial'");
+        Add(
             "SPEC060",
             """{"schemaVersion":"0.3.0","markers":{"missing":"TBD"}}""",
             Frontmatter("status: done\n") + Matrix("B-001", "TBD"),
