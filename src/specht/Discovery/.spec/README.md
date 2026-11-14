@@ -107,7 +107,7 @@ The engine walks every directory under the root and discards `bin`, `obj` and `n
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-10 (item 0009: rows 16 to 18 built; rows 13 and 18 name the bracketed head, row 17 the child items, decision 0011); implementer, 2026-11-14 (item 0441: rows 19 to 21 built, B-013) -->
+<!-- last written by: implementer, 2026-11-14 (item 0441: rows 19 to 21 built, B-013) -->
 
 Item `0005` declares the inputs and item `0006` the path identity; the walk (`0007`) and the git listing (`0008`) extend this table.
 
@@ -149,7 +149,7 @@ discovery keys and the existing path-identity checks. Discovery receives the
 same `SpechtDiscoveryInputs` after manifest validation; no glob helper, layout
 identity rule, exclusion semantics or finding order changes in D1.
 
-<!-- last written by: implementer, 2026-11-13 (item 0167: the report document's mapper and serializer; the check resolved in the registration test); implementer, 2026-11-13 (`0132-F2` item 0368: `FindRecords` in the table of finders; `Beside` takes a root-relative directory); implementer, 2026-11-14 (`0001-F19` item 0440 review round 1: `FindClaimFiles` in the table of finders); implementer, 2026-11-14 (item 0441: "Design for item `0441`", B-013) -->
+<!-- last written by: implementer, 2026-11-14 (item 0441: "Design for item `0441`", B-013) -->
 
 Design for item `0005` (B-001, B-002, B-003, B-009, B-012), item `0006` (B-004) and item `0007` (B-006), as built. brief § 5 "Discovery cost" is the drafted direction for `0007` and `0008`; `0007` is built as "Design for item `0007`" below says, and `0008` is built as "Design for item `0008`" below says.
 
