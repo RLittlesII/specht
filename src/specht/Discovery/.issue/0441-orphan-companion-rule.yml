@@ -34,10 +34,13 @@ summary: |
   it (`0001-F7` C-17, decision 0014).
 
   The companion globs and the layouts are read from the manifest
-  already (B-001, B-003; item 0005, done). This repository's tree,
-  pinned `0.4.0`, holds no `.feature` file in a `.spec/` directory
-  without a `README.md` on 2026-11-14, so the rule reports nothing
-  here when it lands.
+  already (B-001, B-003; item 0005, done). On this repository's tree,
+  pinned `0.4.0`, the check reports two `SPEC2003` warnings on
+  2026-11-14: the `epics` layout's directory part is `epics/**`, and
+  `epics/0201-spec-code-analysis/spikes/0236/reqnroll/alpha.feature`
+  and `epics/0201-spec-code-analysis/spikes/0236/reqnroll-beta/beta.feature`
+  sit there beside no `spec.md`. No `.feature` file sits in a `.spec/`
+  directory without a `README.md`.
 
   Risk 2: discovery already finds the companions and the
   specifications; the rule compares the two sets, and adds one rule id
@@ -74,6 +77,17 @@ decisions:
     session; the options' wording was that session's and the delivering
     session's. B-013 names `SPEC2003`, keyed by its working name `SPEC024`
     (decision 0013). The id criterion names it.
+  - |
+    2026-11-14, spec-author: the check warns twice on this tree, not
+    zero as the summary said, on the two spike `.feature` files under
+    `epics/0201-spec-code-analysis/spikes/0236/`. Asked, the repository
+    owner selected "(a) Accept, fix summary", relayed in session by the
+    coordinating session; the options' wording was the delivering
+    session's. Not chosen: (b) also exclude that spike folder in
+    `.specht/manifest.json`; (c) amend B-013 so `epics/**` companions
+    count only in a Feature directory. No exclusion is added and B-013
+    is unchanged; the spike files' follow-up is not part of this item
+    and has no item. The summary now names the two warnings.
 
 out_of_scope:
   - "`SPEC014`, a required directory with no specification - B-014, B-015; no item."
