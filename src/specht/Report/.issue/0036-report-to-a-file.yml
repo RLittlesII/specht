@@ -21,6 +21,9 @@ claims:
   - B-023
   - B-024
   - B-025
+  - B-044
+  - B-045
+  - B-046
 
 created: "2026-10-08"
 updated: "2026-11-14"
@@ -52,8 +55,12 @@ acceptance_criteria:
   - "B-025 — stdout keeps the lines and summary"
   - "0001-F2 B-012's report exemption, with C-7 — the file `--report` names is the only write under the root (0001-F2 decision 0005)"
   - "§ 9 carries a row naming a test for each id above."
-  - "ADR-0026 and item 0167, as shaped 2026-11-14: `CheckCommand` writes the document through `SpechtReportStore.Save`, the only type on the path that holds an `IFileSystem`; no other code in `src/tool` writes a report."
+  - "ADR-0026 and item 0167, as shaped 2026-11-14: `CheckCommand` writes the document through `SpechtReportStore.Save`, the only type on the path that holds an `IFileSystem`; no other code in `src/tool` writes a report. Amended 2026-11-14: the removal B-044 makes goes through `SpechtReportStore` too."
   - "As shaped 2026-11-14: the bytes B-003 compares come from the one `SpechtReportDocumentMapper` and the one `SpechtReportSerializer` `CheckCommand` takes, shared with `--json`."
+  - "B-044 — a run that exits `2` or `3` leaves no file at the path, removing an earlier run's"
+  - "B-045 — a run that exits `2` or `3` creates no directory above the path"
+  - "B-046 — a relative path resolved from the working directory, not the root"
+  - "§ 9 carries a row naming a test for B-044, B-045 and B-046."
 
 decisions:
   - |
@@ -102,9 +109,30 @@ decisions:
     reading (a), not its proposed default (b). Status `ready`: 0034, 0026
     and 0035 are done; 0167's pull request is open, and this item's branch
     stacks on it.
+  - |
+    2026-11-14, repository owner, recorded by spec-author: asked by the
+    coordinator to resolve `0001-F3` OQ-8, the owner selected the option
+    labelled "A: Remove any old file", which the coordinator presented as
+    "write and create nothing, and delete any file already at the path":
+    OQ-8's reading (b), its proposed default. The label and the description
+    are the coordinator's wording; the selection is the owner's. OQ-8 is
+    resolved in place and claims B-044 and B-045 are added to `0001-F3`;
+    this item takes both. Also by spec-author: criterion 9 is amended in
+    place so the removal goes through `SpechtReportStore`, and criteria 11
+    to 13 are added. The decision above, that a run exiting `2` or `3`
+    leaves a file at the path as it was, no longer holds.
+  - |
+    2026-11-14, spec-author, a role judgement and not the repository
+    owner's: `0001-F3` § 3 did not say where a relative `--report` path is
+    resolved from. B-046 is added: from the working directory, not from the
+    root, as `docs/cli.md` resolves a relative `specht frontmatter` document
+    path, and `0001-F2` B-012 names the file `--report` names as the only
+    write without confining it to the root. This item takes B-046 as
+    criterion 13; the § 9 criterion becomes 14 and names all three new
+    claims.
 
 out_of_scope:
   - "Refusing, appending to or backing up an existing file — § 5 #7."
   - "Any write but this file — C-7; a run with no report path writes nothing, 0001-F2 B-012 (0030)."
   - "`SpechtReportDocumentMapper`, `SpechtReportSerializer` and `SpechtReportStore` themselves - item 0167."
-  - "What `--report` does when a run exits `2` or `3` - `0001-F3` OQ-8, open."
+  - "A document at the path for a run that exits `2` or `3` - `0001-F3` § 5 #13."

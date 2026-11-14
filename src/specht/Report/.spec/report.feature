@@ -57,6 +57,47 @@ Feature: The report contract
     When the check runs with a report path
     Then the exit code is 1
 
+  @B-044
+  Scenario Outline: A run that checks nothing removes an earlier report
+    Given the root <fault>
+    And a file already exists at the report path from an earlier run
+    When the check runs with that report path
+    Then no file exists at the report path
+
+    Examples:
+      | fault                                       |
+      | has no manifest                             |
+      | has a manifest that is not well-formed JSON |
+
+  @B-044
+  Scenario Outline: A run that checks nothing writes no report
+    Given the root <fault>
+    When the check runs with a report path
+    Then no file exists at the report path
+
+    Examples:
+      | fault                                       |
+      | has no manifest                             |
+      | has a manifest that is not well-formed JSON |
+
+  @B-045
+  Scenario Outline: A run that checks nothing creates no report directory
+    Given the root <fault>
+    When the check runs with a report path in a directory that does not yet exist
+    Then that directory does not exist
+
+    Examples:
+      | fault                                       |
+      | has no manifest                             |
+      | has a manifest that is not well-formed JSON |
+
+  @B-046
+  Scenario: A relative report path is resolved from the working directory
+    Given the root holds a specification with one violation
+    And the working directory is outside the root
+    When the check runs with a relative report path
+    Then the file at that path under the working directory is the report document
+
   @B-005
   Scenario: The document carries the counts and the version
     Given the root holds two specifications in the epics layout and one in the features layout
