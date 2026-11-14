@@ -196,7 +196,10 @@ text, status and line, each constraint with its id, text, what it rules out
 and line, each out-of-scope row with its number, item, exclusion reason and
 line, and each open question with its id, question, Blocks cell, resolution,
 line and whether it is resolved: not when the resolution is empty or its first
-word is `Open`. Every row is given, a withdrawn claim and two claims sharing an
+word is `Open`, then each record in the `adr`, `decisions` and `lessons` folders
+beside it with its kind, the first word of its file name, its frontmatter
+`title`, its status - the first word under an ADR's `## Status` heading, none
+for a decision or a lesson - and its path. Every row is given, a withdrawn claim and two claims sharing an
 id included, and a claim carries no coverage. A missing section, or one with no
 table, gives no rows of its own and leaves the others. Epic files are not given.
 No rule runs, so the document carries no violation, count or verdict.

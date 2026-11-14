@@ -9,8 +9,8 @@ namespace Specht.Acceptance.Facts;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Facts/.spec/facts.feature</c> (<c>0132-F2</c>): item 0364 binds B-001 to B-004, B-014,
-/// B-017, B-021 to B-023 and B-026, item 0365 binds B-005, B-006, B-012, B-013 and B-025, and item 0366 binds B-007,
-/// B-008 and B-015. Each launches the built
+/// B-017, B-021 to B-023 and B-026, item 0365 binds B-005, B-006, B-012, B-013 and B-025, item 0366 binds B-007,
+/// B-008 and B-015, and item 0368 binds B-011. Each launches the built
 /// tool over a synthetic tree, and a scenario naming no form runs <c>specht facts --json</c>, since the text form is item
 /// 0370's. The root sits one folder below a temporary directory, so a run that writes beside the root is seen. The rest
 /// of the file's scenarios stay pending for their items.
@@ -115,6 +115,16 @@ public sealed class FactsSteps
             .Document.Section("5. Out of Scope");
         section.Should().NotBeNull();
         section!.Rows.Should().BeEmpty();
+    }
+
+    [Given("the first specification has one decision record, one architecture decision record and one lesson beside it")]
+    public void GivenRecordsBesideFirst()
+    {
+        Tree.WriteRaw(DecisionPath, "---\ntitle: \"Decision 0001: the records are given\"\ntype: decision\n---\n\n# Decision 0001\n");
+        Tree.WriteRaw(
+            AdrPath,
+            "---\ntitle: \"ADR-0001: Read each record as written\"\ntype: adr\n---\n\n# ADR-0001\n\n## Status\n\nAccepted, 2026-10-12, by the owner.\n");
+        Tree.WriteRaw(LessonPath, "---\ntitle: \"Lesson 0001: a record is read as written\"\ntype: lesson\n---\n\n# Lesson 0001\n");
     }
 
     [Given("the same specifications under a manifest pinning schema version {word}")]
@@ -327,6 +337,23 @@ public sealed class FactsSteps
             .Should().Equal(("OQ-1", LineOf(FirstPath, "| OQ-1 |")));
     }
 
+    [Then("the first specification carries three records")]
+    public void ThenThreeRecords() =>
+        Specification(FirstPath)["records"].Should().BeOfType<JsonArray>().Which.Should().HaveCount(3);
+
+    [Then("each record carries its kind, its number, its title, its status and its path relative to the root")]
+    public void ThenEachRecord() =>
+        Specification(FirstPath)["records"].Should().BeOfType<JsonArray>().Which.Select(static record => (
+                record!["kind"]!.GetValue<string>(),
+                record["number"]!.GetValue<string>(),
+                record["title"]!.GetValue<string>(),
+                record["status"]?.GetValue<string>(),
+                record["path"]!.GetValue<string>()))
+            .Should().Equal(
+                ("adr", "0001", "ADR-0001: Read each record as written", "Accepted", AdrPath),
+                ("decision", "0001", "Decision 0001: the records are given", null, DecisionPath),
+                ("lesson", "0001", "Lesson 0001: a record is read as written", null, LessonPath));
+
     [Then("that claim is given with the withdrawn status")]
     public void ThenWithdrawnClaimGiven() =>
         Specification(FirstPath)["claims"].Should().BeOfType<JsonArray>().Which
@@ -439,6 +466,9 @@ public sealed class FactsSteps
     private const string FirstPath = "src/first/.spec/README.md";
     private const string SecondPath = "src/second/.spec/README.md";
     private const string EpicPath = "epics/0001-epic/epic.md";
+    private const string AdrPath = "src/first/.spec/adr/0001-read-each-record-as-written.md";
+    private const string DecisionPath = "src/first/.spec/decisions/0001-the-records-are-given.md";
+    private const string LessonPath = "src/first/.spec/lessons/0001-a-record-is-read-as-written.md";
 
     private const string FirstClaim = "| B-001 | It gives the facts. | brd | Active |";
 

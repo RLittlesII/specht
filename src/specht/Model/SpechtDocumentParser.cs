@@ -34,5 +34,15 @@ public sealed class SpechtDocumentParser(FrontmatterReader frontmatter)
     /// <implements epic="0001" feature="F19" claim="B-041" />
     public IReadOnlyList<string> FirstCells(string text) => new MarkdownTextReader().FirstCells(text, Pipeline);
 
+    /// <summary>
+    /// The first line of the first paragraph under the first level-2 heading titled <paramref name="title"/>, before the
+    /// next level-2 heading, flattened as the check reads a cell.
+    /// </summary>
+    /// <param name="text">The document's complete text.</param>
+    /// <param name="title">The heading's text, compared ordinally.</param>
+    /// <returns>The line, or <c>null</c> with no such heading or no paragraph under it.</returns>
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    public string? FirstLine(string text, string title) => new MarkdownTextReader().FirstLine(text, title, Pipeline);
+
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
 }

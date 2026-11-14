@@ -6,8 +6,9 @@ namespace Specht.Facts;
 
 /// <summary>
 /// The facts document (<c>0132-F2</c>): the shape <c>docs/schema/facts.schema.json</c> publishes, projected from one
-/// <see cref="SpechtModel"/>. No rule runs, so it carries no violation, count or verdict (B-014), and it is a function of
-/// the model alone, so nothing in it reads the clock, the machine or the environment (B-022).
+/// <see cref="SpechtModel"/> and the records beside its Features. No rule runs, so it carries no violation, count or
+/// verdict (B-014), and it is a function of what it is given alone, so nothing in it reads the clock, the machine or the
+/// environment (B-022).
 /// </summary>
 /// <param name="Specifications">Every discovered Feature specification, in discovery order.</param>
 /// <implements epic="0132" feature="F2" claim="B-001" />
@@ -15,11 +16,13 @@ namespace Specht.Facts;
 public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
 {
     /// <summary>
-    /// Makes the document for <paramref name="model"/>: every claim, constraint, out-of-scope and open-question row is
-    /// given, none judged (B-013), each section read alone so a missing one or one with no table empties only its own
-    /// member (B-015), and its epic files, traceability matrices and test files are not read (B-025, B-026).
+    /// Makes the document for <paramref name="model"/> and the <paramref name="records"/> beside its Features: every claim,
+    /// constraint, out-of-scope and open-question row is given, none judged (B-013), each section read alone so a missing
+    /// one or one with no table empties only its own member (B-015), every record is given whatever its file holds
+    /// (B-011), and its epic files, traceability matrices and test files are not read (B-025, B-026).
     /// </summary>
     /// <param name="model">The model the check's own read gives.</param>
+    /// <param name="records">The records beside each Feature; a Feature the map lacks has none.</param>
     /// <returns>The document.</returns>
     /// <implements epic="0132" feature="F2" claim="B-001" />
     /// <implements epic="0132" feature="F2" claim="B-003" />
@@ -28,13 +31,14 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
     /// <implements epic="0132" feature="F2" claim="B-006" />
     /// <implements epic="0132" feature="F2" claim="B-007" />
     /// <implements epic="0132" feature="F2" claim="B-008" />
+    /// <implements epic="0132" feature="F2" claim="B-011" />
     /// <implements epic="0132" feature="F2" claim="B-012" />
     /// <implements epic="0132" feature="F2" claim="B-013" />
     /// <implements epic="0132" feature="F2" claim="B-015" />
     /// <implements epic="0132" feature="F2" claim="B-017" />
     /// <implements epic="0132" feature="F2" claim="B-025" />
     /// <implements epic="0132" feature="F2" claim="B-026" />
-    public static FactsDocument From(SpechtModel model)
+    public static FactsDocument From(SpechtModel model, IReadOnlyDictionary<FeatureSpec, IReadOnlyList<RecordFile>> records)
     {
         var identified = model.FeaturesWithIdentity.ToHashSet();
         var listed = model.Schemas.Structure.Sections;
@@ -50,7 +54,8 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
                 Claims(model.Claims[feature]),
                 Constraints(Listed(listed, feature, ConstraintsTitle)),
                 OutOfScope(Listed(listed, feature, OutOfScopeTitle)),
-                OpenQuestions(Listed(listed, feature, OpenQuestionsTitle))))
+                OpenQuestions(Listed(listed, feature, OpenQuestionsTitle)),
+                records.TryGetValue(feature, out var beside) ? Records(beside) : []))
             .ToList());
     }
 
@@ -114,10 +119,29 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
                 })
                 .ToList();
 
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private static List<RecordFacts> Records(IReadOnlyList<RecordFile> records) =>
+        records
+            .Select(static record => new RecordFacts(
+                record.Kind,
+                FirstWord(record.RelativePath[(record.RelativePath.LastIndexOf('/') + 1)..]),
+                record.Frontmatter.Text("title"),
+                RecordStatus(record),
+                record.RelativePath))
+            .ToList();
+
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private static string? RecordStatus(RecordFile record) =>
+        string.Equals(record.Kind, AdrKind, StringComparison.Ordinal) ? FirstWord(record.StatusLine) : null;
+
     /// <implements epic="0132" feature="F2" claim="B-008" />
     private static bool Resolved(string? resolution) =>
-        !string.IsNullOrEmpty(resolution)
-        && !string.Equals(string.Concat(resolution.TakeWhile(char.IsLetterOrDigit)), OpenMarker, StringComparison.Ordinal);
+        !string.IsNullOrEmpty(resolution) && !string.Equals(FirstWord(resolution), OpenMarker, StringComparison.Ordinal);
+
+    /// <implements epic="0132" feature="F2" claim="B-008" />
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    private static string? FirstWord(string? text) =>
+        string.Concat((text ?? string.Empty).TakeWhile(char.IsLetterOrDigit)) is { Length: > 0 } word ? word : null;
 
     /// <implements epic="0132" feature="F2" claim="B-006" />
     /// <implements epic="0132" feature="F2" claim="B-007" />
@@ -149,6 +173,8 @@ public sealed record FactsDocument(IReadOnlyList<FeatureFacts> Specifications)
     private const string OpenQuestionsTitle = "11. Open Questions";
 
     private const string OpenMarker = "Open";
+
+    private const string AdrKind = "adr";
 
     private static readonly JsonSerializerOptions Options = new()
     {

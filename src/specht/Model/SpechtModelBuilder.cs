@@ -65,4 +65,18 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
 
         return new SpechtModel(features, items, epics, schemas, tests);
     }
+
+    /// <summary>
+    /// Builds the record at <paramref name="relativePath"/> from its text: its frontmatter, read as an item's is, and the
+    /// first line under its <c>## Status</c> heading, whatever its kind (<c>0132-F2</c> B-011).
+    /// </summary>
+    /// <param name="relativePath">The record's root-relative path.</param>
+    /// <param name="kind">The kind its folder gives.</param>
+    /// <param name="text">The record's complete text.</param>
+    /// <returns>The record.</returns>
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    public RecordFile Record(string relativePath, string kind, string text) =>
+        new(relativePath, kind, frontmatter.Parse(text), documents.FirstLine(text, StatusTitle));
+
+    private const string StatusTitle = "Status";
 }

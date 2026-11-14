@@ -9,7 +9,9 @@ namespace Specht.Tests.Model;
 /// <summary>
 /// The model builder over a listing and the text of each listed file, with no file system (item 0166; <c>0001-F1</c>
 /// B-004; ADR-0010 § "I/O is confined"): each specification, companion, item, epic and test file is parsed from its text
-/// and carried in the order the listing gives, and an item's directory is the root-relative directory of its path.
+/// and carried in the order the listing gives, and an item's directory is the root-relative directory of its path. A record
+/// beside a specification is built from its text with its path, its kind, its frontmatter and the first line under its
+/// <c>## Status</c> heading, a frontmatter it cannot read included (<c>0132-F2</c> B-011; item <c>0368</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtModelBuilderUnitTests
@@ -73,6 +75,23 @@ public sealed class SpechtModelBuilderUnitTests
         // Then
         model.Items.Select(static item => (item.FileName, item.ParentDirectory))
             .Should().Equal(("0001-01-top.md", string.Empty), ("0001-02-do.md", "src/area/.spec"));
+    }
+
+    [Fact]
+    public void ARecordWhoseFrontmatterCannotBeRead_WhenBuilt_ShouldCarryItsPathKindNoTitleAndTheFirstLineUnderItsStatusHeading()
+    {
+        // Given
+        const string path = "src/area/.spec/adr/0001-a-broken-frontmatter.md";
+        const string text = "---\ntitle: [unclosed\n---\n\n# ADR-0001\n\n## Status\n\nAccepted, 2026-10-12, by the owner.\n";
+
+        // When
+        var record = Builder().Record(path, "adr", text);
+
+        // Then
+        record.RelativePath.Should().Be(path);
+        record.Kind.Should().Be("adr");
+        record.Frontmatter.Text("title").Should().BeNull();
+        record.StatusLine.Should().Be("Accepted, 2026-10-12, by the owner.");
     }
 
     private static SpechtModelBuilder Builder() =>

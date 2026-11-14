@@ -2,7 +2,7 @@ id: "0368"
 type: task
 title: The records beside a specification in the facts
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -20,7 +20,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-13"
-closed: null
+closed: "2026-11-13"
 
 summary: |
   As a maintainer I want the decision, ADR and lesson records beside each specification in the facts, by kind, number, title and status, so that I find a Feature's decisions without listing its folders.

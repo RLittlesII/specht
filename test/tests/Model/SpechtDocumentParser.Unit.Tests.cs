@@ -7,7 +7,8 @@ namespace Specht.Tests.Model;
 /// A specification parsed from text held in memory by the instance parser (ADR-0001 stage A, item 0104; item 0166): the frontmatter, the sections, the
 /// table each section opens with, and the one-based line of each, with no file behind it. A grid table is read as no table
 /// (<c>0001-F1</c> B-008). The first cell of every table row, under a <c>##</c> section or a subsection, is read for the guard
-/// (<c>0001-F19</c> B-041, item <c>0418</c>).
+/// (<c>0001-F19</c> B-041, item <c>0418</c>). The first line under a record's <c>## Status</c> heading is read for the facts
+/// (<c>0132-F2</c> B-011, OQ-3; item <c>0368</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtDocumentParserUnitTests
@@ -137,6 +138,20 @@ public sealed class SpechtDocumentParserUnitTests
 
         // Then
         cells.Should().Contain(["B-001", "B-002", "C-1", "OQ-1"]);
+    }
+
+    [Theory]
+    [ClassData(typeof(StatusSectionTexts))]
+    public void ARecordsText_WhenTheFirstLineUnderItsStatusHeadingIsRead_ShouldGiveTheFirstParagraphsFirstLineFlattenedOrNone(string text, string? line)
+    {
+        // Given
+        var parser = new SpechtDocumentParser(new FrontmatterReader());
+
+        // When
+        var read = parser.FirstLine(text, "Status");
+
+        // Then
+        read.Should().Be(line);
     }
 
     private const string RelativePath = "src/sample/.spec/README.md";

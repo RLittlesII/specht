@@ -55,6 +55,18 @@ public interface ISpecDiscovery
     IReadOnlyList<string> FindCompanions(string root, SpechtLocation specification, SpechtDiscoveryInputs inputs);
 
     /// <summary>
+    /// Discovers the records in one folder beside <paramref name="specification"/>: every Markdown file directly in the
+    /// child folder named <paramref name="folder"/>, compared ordinally, of the folder holding the specification file
+    /// (<c>0132-F2</c> B-011).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="specification">The specification.</param>
+    /// <param name="folder">The record folder's name, such as <c>adr</c>.</param>
+    /// <returns>The root-relative path of each record, in ordinal order of file name; empty without that folder.</returns>
+    /// <implements epic="0132" feature="F2" claim="B-011" />
+    IReadOnlyList<string> FindRecords(string root, SpechtLocation specification, string folder);
+
+    /// <summary>
     /// Lists each declared test file once, in root-relative ordinal order, outside the manifest's exclusions; with no glob
     /// declared it lists nothing.
     /// </summary>
