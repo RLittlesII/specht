@@ -142,13 +142,15 @@ The check reports what is wrong with a specification tree, and nothing reports w
 | A record's kind, number, title and path, and its status on OQ-3's default, a missing or unreadable part emptying only its own member (B-011, B-013; C-5)      | Business       | `FactsDocument.From`                                                                                                                           |
 | A record's members (B-011; C-3)                                                                                                                               | Both           | `RecordFacts`, held to `docs/schema/facts.schema.json`                                                                                         |
 | Calling the records read beside the model read (C-4)                                                                                                          | Technical      | `FactsCommand`                                                                                                                                 |
+| Which given specifications a path selects: the one at that path, or every one under a directory by whole segments, in order (B-018, B-019; C-2)               | Business       | `FactsDocument.Select`                                                                                                                         |
+| Taking the path as typed, and folding an empty selection into exit `4`, stdout empty and one `specht: ` line on stderr (B-020; C-4)                           | Both           | `FactsCommand`                                                                                                                                 |
 
 ## 7. Technical Design
 
 <!-- last written by: implementer, 2026-11-13 -->
 
-The design for items `0364`, `0365`, `0366` and `0368`, as built. Each built type is declared in the file it links; the compiler is the authority on its members and
-signatures.
+The design for items `0364`, `0365`, `0366` and `0368`, as built, and for item `0369`, not yet built (§ "Selecting by
+path"). Each built type is declared in the file it links; the compiler is the authority on its members and signatures.
 
 ### Reading the tree
 
@@ -537,6 +539,93 @@ and `status` (`["string", "null"]`), and `path`, under the report schema's `file
 is. No existing member, type or constraint of the schema changes (C-3). The `specht facts` paragraph in
 [`docs/cli.md`](../../../../../docs/cli.md) names the records among what is printed.
 
+### Selecting by path
+
+Item `0369`'s design, not yet built. The document gains no member and the schema does not change: a selection only
+narrows `specifications`, so a selected document is a document the published schema already describes (C-3).
+
+**The argument.** `FactsCommand.Settings` gains one optional positional argument, `[CommandArgument(0, "[path]")]`,
+the property `Path`, `string?`, `null` when none is typed, with the help description `A specification's path, or a
+directory, relative to the root. Defaults to every specification.` The name and its lower case follow `frontmatter`'s
+`[path]`. Spectre places a positional argument anywhere among the options, so `specht facts src/tool --json` and
+`specht facts --json src/tool` are one request. Without a path the command gives every specification, as built
+(B-001).
+
+**What a path is.** A root-relative path, spelled as the facts spell a specification's `path` (B-003): `/`-separated,
+relative to the root `--root` names, never to the working directory, as B-018 and B-019 read it. It is compared as
+text with the `path` of each specification the document holds, ordinally, so letter case counts, as discovery and
+`mint --feature` compare (`0001-F19` § 7). It is never joined to the root, made absolute, tested on disk or opened, so a
+selection reads nothing, writes nothing and gives the same answer for the same tree (B-022, B-023; C-2). One form is
+read beyond the literal text: every trailing `/` is removed first, so `src/tool/` names the directory `src/tool`, as
+`mint --feature` removes one (`HeldIds.FeatureAt`).
+
+**What a path selects.** One public method on the document,
+[`FactsDocument`](../../../../specht/Facts/FactsDocument.cs)`.Select(string path)`, gives a document whose
+`Specifications` are those of this one that the path selects, in the order this one holds them: a function of the
+document and the text alone. With every trailing `/` removed, a specification is selected when its `path` is the text
+exactly, or begins with the text followed by `/`:
+
+- **A specification's path (B-018).** The text equals one `path`. A specification's file is a file, so no other
+  discovered path continues it with a `/`, and exactly that specification is given.
+- **A directory (B-019; OQ-4's default).** The text is a prefix of a `path` ending at a `/`, so it selects by whole path
+  segments: `src/tool` selects `src/tool/.spec/README.md` and `src/tool/Features/Facts/.spec/README.md`, and not
+  `src/toolbox/.spec/README.md`. A Feature's own folder and its `.spec` folder each select it, and a legacy
+  `epics/0001/F1` selects `epics/0001/F1/spec.md`. Every specification under it is given, in the order `From` gave
+  them, which is discovery order (B-001), since `Select` filters and never sorts.
+- **Nothing (B-020).** Every other text: a path naming no discovered Feature specification, a directory holding none, a
+  file that is not one, a specification the manifest's exclusions keep out of discovery, and an epic file, which gives
+  no facts (B-026) and so is in no document to select. The empty text, and one of `/` alone, is empty once trimmed;
+  equal to no `path` and, since no root-relative `path` begins with `/`, a prefix of none, it selects nothing with no
+  case of its own.
+
+No claim states any other form of the text, so none is read as anything but itself, and each selects nothing:
+a leading `./`, a `\` separator, a `..` segment, `.` for the root, an absolute path, and letter case that differs from
+discovery's. This is the reading `mint --feature` gives the same forms (`0001-F19` § 7, "Normalising the value"), so
+one root-relative path argument reads one way in every command; a later claim can widen it, in `Select` alone.
+
+**The command.** [`FactsCommand`](../FactsCommand.cs) reads, projects and serializes as built; between the projection
+and the write, when a path was typed, it calls `Select(settings.Path)` and, when the selected document's
+`Specifications` is empty, writes nothing on stdout, writes `specht: '<path>' selects no specification.` on stderr with
+the path as it was typed, and returns `ExitCodes.NotFound`, `4` (B-020). The code is `0001-F2` decision 0003's: an
+argument the user typed names something the tool does not have. Neither B-020 nor decision 0003 states stderr; the line
+is the fold every failure of this command already writes (§ "Reading the tree"), and `0001-F2` B-009 sends the tool's
+messages to stderr. Only a path, echoed as typed, may be absolute in it (`0001-F2` B-013). The command still reads no
+Markdown, YAML or record file and tests no path on disk (C-4); a selected document that holds a specification is
+written as an unselected one is.
+
+The order of the refusals does not change, and the selection comes last:
+
+1. Without `--json`, the usage line on stderr and exit `2` before the tree is read, a path or none. The usage line
+   becomes `specht facts [<path>] [--root <dir>] --json`. Item `0370` removes the refusal and makes its lines from the
+   document, so the lines follow the selection (§ "Where later items attach").
+2. A missing root or manifest exits `2`, a rejected manifest `3`, before any selection (B-021), so a path never turns a
+   broken root into `4`.
+3. A path selecting nothing exits `4`; a tree with no Feature specification and no path still gives
+   `{"specifications": []}` and exits `0` (B-001). Only a typed path maps an empty list to `4`.
+
+Every record beside every Feature is still read, and those of the Features not selected are dropped with them: the
+command calls `ReadRecords(root, model.Features)` as built, and `From` projects the whole model before `Select`
+narrows it. The check's read already reads every specification, so the records beside the others are the one cost the
+selection does not save (§ "Rejected").
+
+**The pages.** [`docs/cli.md`](../../../../../docs/cli.md) § `specht facts`: the synopsis becomes
+`specht facts [<path>] [--root <DIR>] --json`; the option table gains a `<path>` row (a specification's path or a
+directory, relative to the root and `/`-separated; default every specification; selects the specifications given), as
+`specht evidence` lists its `<PATH>...`; the paragraph says a path gives the specification at it, or every one under a
+directory by whole path segments, in discovery order, and that it is relative to the root, not the working directory;
+the exit-code paragraph gains `4` for a path selecting no specification; and an example, `specht facts
+src/tool/Features/Facts --root . --json`, joins the one there. [`docs/exit-codes.md`](../../../../../docs/exit-codes.md)
+row `4` names a `facts` path selecting no specification, and so does the summary of `ExitCodes.NotFound` in
+[`ExitCodes.cs`](../../../ExitCodes.cs). AGENTS.md § CLI's synopsis line becomes
+`specht facts [<path>] [--root <dir>] --json`. The `0002-F1` test reads the options the help lists; a positional
+argument is under the help's `ARGUMENTS:`, so the test does not see it, and the page names it anyway.
+
+```sh
+specht facts src/tool/Features/Facts/.spec/README.md --root . --json   # that specification only (B-018)
+specht facts src/tool --root . --json                                   # every specification under src/tool (B-019)
+specht facts src/toolbox --root . --json                                # none here: exit 4, empty stdout (B-020)
+```
+
 ### Where later items attach
 
 Each later item adds a member, never renames or retypes one (C-3), and adds it to the schema in the same change:
@@ -553,8 +642,8 @@ Each later item adds a member, never renames or retypes one (C-3), and adds it t
 - `0368`, built: `records` at the end of `FeatureFacts`, listed by the finder `ISpecDiscovery.FindRecords` and
   read by `SpechtModelReader.ReadRecords` beside the check's `Read`, which does not change; never a read inside
   `Features/Facts/` (C-4); § "Records beside a specification".
-- `0369`: the path selector narrows `FactsDocument.Specifications` in the engine; the command maps an empty selection to
-  `ExitCodes.NotFound`.
+- `0369`, designed: the path selector, `FactsDocument.Select`, narrows `FactsDocument.Specifications` in the engine; the
+  command maps an empty selection to `ExitCodes.NotFound`; no member is added; § "Selecting by path".
 - `0370`: the text lines, made by the engine from `FactsDocument` as `SpechtReportDocument.SummaryLines` makes the
   check's summary; the command only writes them.
 
@@ -679,6 +768,30 @@ until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` rem
   have no kind.
 - **Every file in the three folders, or the files in folders below them.** A record is a Markdown file written from a
   `.md` template into the folder itself; an image or a `.gitkeep` beside the records is not one.
+- **A directory selected by a plain text prefix, `path.StartsWith(text)`.** `src/tool` would select
+  `src/toolbox/.spec/README.md`; OQ-4's default selects by whole path segments.
+- **Normalising the path: a leading `./` dropped, `\` read as `/`, `..` resolved, `.` or the empty text for the root, an
+  absolute path made relative to the root, or letter case folded.** No claim states any of them; each would be a reading
+  `mint --feature` refuses for the same forms (`0001-F19` § 7), so one argument would read two ways across commands. Each
+  selects nothing until a claim widens `Select`.
+- **The path resolved from the working directory, as `frontmatter` resolves its document path.** B-018 and B-019 name a
+  root-relative path, and a path joined to a directory is the absolute path C-2 keeps out of the facts.
+- **The path tested on disk, as `frontmatter` tests its document with `File.Exists`.** The selection is over what
+  discovery gives; a missing path and an existing directory holding no specification both select nothing (B-020), and a
+  test on disk in the command is a read in `Features/Facts/` (C-4).
+- **The selection inside `From`, as a third parameter.** `From` projects the model, and the selection narrows what it
+  gives; § "Where later items attach" named the selection on `FactsDocument.Specifications`. A `Select` beside it keeps
+  each a function of what it is given and leaves `From`'s callers as they are.
+- **The selected Features handed to `ReadRecords`, so only their records are read.** It needs the selection applied to
+  `model.Features` as well as to the document, or `From` to take it: the same comparison in two places for a cost no
+  claim states, beside a read that already loads every specification. A benchmark finding on the facts would earn it.
+- **An empty selection as `{"specifications": []}` and exit `0`.** B-020 exits `4` with nothing on stdout.
+- **No stderr line for an empty selection.** Every other failure of this command, and every other exit-`4` fold
+  (`frontmatter`, `mint`, `rules set`, `--explain`), writes one `specht: ` line, and a script reading only the code loses
+  nothing by it.
+- **An epic file's path selecting its epic.** An epic gives no facts (B-026), so no document holds it to select;
+  selecting it would need an epic member no claim states (OQ-6).
+- **Selecting by id, such as `0132-F2`.** § 5 row 3 and item `0307`.
 
 ## 8. Testing Strategy
 
