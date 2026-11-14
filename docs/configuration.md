@@ -44,7 +44,7 @@ that the next check rejects; edit those settings after pinning.
 | `identifiers.claim` | Below schema `0.4.0`, the claim id grammar `SPEC4003` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC4002`.                                                                                                                                                                                                                                                                                                                                                      |
 | `ids`               | From schema `0.4.0`, one record per id type that shapes its ids; `ids.claim` is the claim grammar. See [Id records](#id-records).                                                                                                                                                                                                                                                                                                                                                  |
 
-Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `withdrawn` and `superseded`, default `Covered`, `Partial`, `Waived`, `Withdrawn` and `Superseded`. Four more keys are accepted; none is filled from a default, and older pins reject them:
+Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `withdrawn` and `superseded`, default `Covered`, `Partial`, `Waived`, `Withdrawn` and `Superseded`. From schema `0.4.0`, `SPEC4008` reads `missing`, `waived`, `withdrawn` and `superseded`. Four more keys are accepted; none is filled from a default, and older pins reject them:
 
 - `tests`: `{ "files": [<glob>], "declarations": [<form>] }`, `declarations` optional; each form holds `{test}` exactly once. From schema `0.3.0`, `SPEC4009` resolves each § 9 test name against these files.
 - `matrix`: `{ "scenarioTitles": <bool> }`, `false` when left out. From schema `0.3.0`, `true` has `SPEC4007` match each § 9 Scenario cell title to a companion scenario; no rule reads `owners` or `requiredSpecifications` yet.
@@ -191,7 +191,8 @@ Under schema `0.4.0` these exit `3`, each message naming where the setting goes:
   and an `identifiers` entry for any other of the seven types. `task`, `feature`
   and `epic` stay in `identifiers`.
 - The top-level `mint`; its entries go in `ids.<type>.mint`. The check accepts
-  that member and reads nothing from it, and `specht mint` does not read it yet.
+  that member and reads nothing from it; `specht mint` reads it
+  ([Minted ids](#minted-ids)).
 - An `ids` member that is not one of the seven or `$`-led, a record member
   other than the three above, `mint` or a `$`-led one, and a `plain`, `form` or
   `id` the rules above reject.
@@ -221,11 +222,23 @@ neither from the shipped record, so that manifest writes both.
 ## Minted ids
 
 [`specht mint <type>`](cli.md#specht-mint) draws a new id from the type's
-`mint` entry, under schema `0.3.1`. A type with no entry keeps its own
-numbering. The type also needs a grammar in `identifiers`, and that grammar
-must accept every id the entry can draw. This entry mints eight-character ADR
-numbers from digits and lower-case letters, under schema `0.3.1`; schema
-`0.4.0` rejects the top-level `mint` (see [Id records](#id-records)):
+settings: `ids.<type>.mint` from schema `0.4.0`, the top-level `mint` entry
+under `0.3.1`. A type with no settings keeps its own numbering. From `0.4.0`
+the id is the record's head, its `form` with the Feature's claim prefix or else
+its `plain`, then the draw, and the record's `id` must accept the draw; a
+claim or scenario id that would begin with the other type's longer head is
+refused. This record mints claims such as `ACTIVITY-k3x9ab` in a Feature
+declaring `claim_prefix: ACTIVITY`, and `B-k3x9ab` in one declaring none:
+
+```json
+"ids": {
+  "claim": { "form": "{prefix}-{id}", "mint": { "strategy": "nanoid" } }
+}
+```
+
+Under `0.3.1` the type also needs a grammar in `identifiers` that accepts every
+id the entry can draw. This entry mints eight-character ADR numbers from digits
+and lower-case letters:
 
 ```json
 "identifiers": { "adr": "^[0-9a-z]{8}$" },
@@ -243,7 +256,7 @@ numbers from digits and lower-case letters, under schema `0.3.1`; schema
 | `nanoid.alphabet` | `0123456789abcdefghjkmnpqrstvwxyz`                                              | The characters each one is drawn from. A non-empty string.                                                                   |
 | `nanoid.size`     | `8` for `adr` and `lesson`, `6` for per-Feature types                           | How many characters are drawn. A positive whole number.                                                                      |
 | `snowflake`       | Epoch `2026-01-01`, `datacenterBits` `5`, `workerBits` `5`, `sequenceBits` `12` | `epoch` as `yyyy-MM-dd`, the three widths, and `datacenter`, `worker` and `sequenceStart`, each drawn at random when absent. |
-| `prefix`          | `B-`, `C-`, `OQ-`, `S-` for claims, constraints, open questions, scenarios      | Text written before the draw. Empty for any other type.                                                                      |
+| `prefix`          | `B-`, `C-`, `OQ-`, `S-` for claims, constraints, open questions, scenarios      | Below `0.4.0`, text written before the draw; empty for any other type. From `0.4.0` it exits `3`: the record gives the head. |
 | `encoding`        | `base32` for Snowflake, `none` otherwise                                        | `base32` is offered to Snowflake alone.                                                                                      |
 | `attempts`        | `8`                                                                             | Candidates drawn before the request is refused because the tree holds each one.                                              |
 

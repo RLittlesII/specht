@@ -192,9 +192,13 @@ Prints what the specification tree holds, read as the check reads it: every
 Feature specification the check discovers, in discovery order, with its path,
 qualified id, `spec_status`, `status`, and its `depends_on`, `blocks` and
 `children` lists as the frontmatter writes them, then each claim with its id,
-text, status and line, and each constraint with its id, text, what it rules
-out and line. Every row is given, a withdrawn claim and two claims sharing an
-id included, and a claim carries no coverage. Epic files are not given.
+text, status and line, each constraint with its id, text, what it rules out
+and line, each out-of-scope row with its number, item, exclusion reason and
+line, and each open question with its id, question, Blocks cell, resolution,
+line and whether it is resolved: not when the resolution is empty or its first
+word is `Open`. Every row is given, a withdrawn claim and two claims sharing an
+id included, and a claim carries no coverage. A missing section, or one with no
+table, gives no rows of its own and leaves the others. Epic files are not given.
 No rule runs, so the document carries no violation, count or verdict.
 
 | Option         | Value   | Default               | Does                                                     |
@@ -567,13 +571,14 @@ problem on stderr; a source failure names the source's address.
 specht mint <type> [--feature <DIR>] [--root <DIR>]
 ```
 
-Prints one new id for `<type>`, a type the manifest's `mint` key opts in, drawn
-with that type's own strategy settings. Schema `0.3.1` accepts the key, and
-schema `0.4.0` rejects it in favour of `ids.<type>.mint`, which this command
-does not read yet; [Configuration](configuration.md) describes the manifest. Every record type the
-key names, such as `adr` or `lesson`, needs a grammar in `identifiers`.
-`epic`, `feature` and `task` ids are not minted, and an entry that opts one in
-refuses every request.
+Prints one new id for `<type>`, drawn with that type's own strategy settings.
+From schema `0.4.0` a type is opted in by `ids.<type>.mint`, and the id takes
+the record's head: its `form` with the Feature's claim prefix, else its
+`plain`. Below `0.4.0` the manifest's `mint` key opts a type in, and every
+record type it names, such as `adr` or `lesson`, needs a grammar in
+`identifiers`; [Configuration](configuration.md) describes both. `epic`,
+`feature` and `task` ids are not minted, and below `0.4.0` an entry that opts
+one in refuses every request.
 
 | Option            | Value   | Default               | Does                                                                                                                                                                                                           |
 | ----------------- | ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -589,11 +594,14 @@ no network request and never reserves the id.
 `--feature` with `adr` or `lesson`, or a per-Feature type requested without
 `--feature`; `3` for an invalid manifest, a `mint`
 key the pin does not accept, a `mint` key that opts in `epic`, `feature` or
-`task`, or an entry that names a strategy and gives no id:
-a record type with no grammar, a strategy other than `nanoid` or `snowflake`,
-settings it cannot draw from, a Snowflake clock that reads earlier than at
-the draw before it, or a candidate its type's grammar rejects; `4` for a type `mint` holds no entry for, or whose entry names
-no strategy, or a `--feature` folder that holds no Feature's `.spec/`.
+`task`, a `prefix` in any record's `mint` from `0.4.0`, or an entry that names
+a strategy and gives no id: a record type with no grammar, a strategy other
+than `nanoid` or `snowflake`, settings it cannot draw from, a Snowflake clock
+that reads earlier than at the draw before it, a candidate its type's grammar
+or record's `id` rejects, or one that begins with the other type's longer
+claim or scenario head; `4` for a type with no entry or record `mint`, or
+whose entry names no strategy, or a `--feature` folder that holds no
+Feature's `.spec/`.
 
 ```sh
 specht mint adr --root .

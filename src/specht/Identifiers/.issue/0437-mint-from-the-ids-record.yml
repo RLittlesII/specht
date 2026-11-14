@@ -2,7 +2,7 @@ id: "0437"
 type: task
 title: Mint from the ids record
 
-status: ready
+status: done
 
 value: 4
 risk: 3
@@ -16,6 +16,7 @@ spikes: []
 spec: src/specht/Identifiers/.spec/README.md
 
 claims:
+  - B-002
   - B-009
   - B-011
   - B-012
@@ -36,8 +37,8 @@ claims:
   - B-077
 
 created: "2026-11-12"
-updated: "2026-11-12"
-closed: null
+updated: "2026-11-13"
+closed: "2026-11-13"
 
 summary: |
   As a repository whose Features declare `claim_prefix: ACTIVITY`, I
@@ -58,6 +59,7 @@ summary: |
 
 acceptance_criteria:
   - "B-063, B-065, B-066 — the head from the record's form or plain text, and the drawn id after it"
+  - "B-002 from 0.4.0 — a type with no record, or whose record's `mint` names no strategy, gives no id and exits 4"
   - "B-009, B-011, B-012, B-043, B-055 as amended — held below 0.4.0"
   - "B-067, B-068 — validation against the record's id, and the plain text for every type in a Feature whose prefix `0001-F5` B-078 or B-100 reports"
   - "B-070, B-071 — the guard over first cells and scenario tags"
@@ -76,6 +78,18 @@ decisions:
     (decision 0005). spec-author's cut, not an owner ruling: one item
     for mint, after `0001-F5`'s 0436. B-064 and B-069 were withdrawn
     before merge.
+  - |
+    2026-11-13, implementer's design pass, taken by the coordinator:
+    a candidate refused under B-076 or B-077 exits 3 without a redraw,
+    on B-012's precedent (item 0420). The owner may revise it.
+  - |
+    2026-11-13, coordinator, on the implementer's design-pass
+    recommendation: from schema 0.4.0 a refusal message names
+    `ids.<type>.mint.<member>` (option b); below 0.4.0 the messages are
+    unchanged.
+  - |
+    2026-11-13, spec-author: B-067's scenario split into a claim outline
+    and a constraint outline (commit 7263d45b).
 
 out_of_scope:
   - "The ids key, the check's claim grammar and the 0.4.0 cut - `0001-F5` item 0436."

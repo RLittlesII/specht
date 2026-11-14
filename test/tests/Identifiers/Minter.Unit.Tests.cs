@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Discovery;
 using Specht.Identifiers;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Tests.Discovery;
 using Specht.Tests.Mint;
@@ -33,7 +34,10 @@ namespace Specht.Tests.Identifiers;
 /// to B-042; item <c>0418</c>). A manifest opting in an <c>epic</c>, <c>feature</c> or <c>task</c> type gives no id for any
 /// request, refused as neither a type not opted in nor a Feature named or found, and draws nothing (B-061); a request for one
 /// of the three the manifest does not opt in is refused as not opted in (B-018, B-002; item <c>0421</c>). Each manifest is
-/// written in memory, the draws come from a <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>.
+/// written in memory, the draws come from a <see cref="FixedRandomSource"/> and the time from a <see cref="FixedClock"/>. Each
+/// is handed to the minter as the effective document beside the structure a manifest pinned to schema <c>0.3.1</c> parses to,
+/// or the structure the tree's own manifest reads to where the test writes one, so the structure's <c>Ids</c> is null and every
+/// request takes the path below schema <c>0.4.0</c> (item <c>0437</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class MinterUnitTests
@@ -63,8 +67,8 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var adr = minter.Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
-        var lesson = minter.Mint(manifest, "lesson", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var adr = minter.Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
+        var lesson = minter.Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "lesson", ".", null);
 
         // Then
         adr.Should().Be("bb");
@@ -116,7 +120,7 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var id = minter.Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var id = minter.Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         id.Should().Be(expected);
@@ -148,7 +152,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()), new FixedClock(FixedClock.CheckTime))
-            .Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
@@ -181,7 +185,7 @@ public sealed class MinterUnitTests
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()),
             new FixedClock(FixedClock.CheckTime))
-            .Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         mintAdr.Should().Throw<IdNotOptedInException>();
@@ -209,7 +213,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()), new FixedClock(FixedClock.CheckTime))
-            .Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         mintAdr.Should().Throw<IdNotOptedInException>();
@@ -239,7 +243,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()), new FixedClock(FixedClock.CheckTime))
-            .Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
@@ -262,7 +266,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()),
-            new FixedClock(FixedClock.CheckTime)).Mint(document, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            new FixedClock(FixedClock.CheckTime)).Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), document), type, ".", null);
 
         // Then
         mint.Should().Throw<IdRefusedException>().Which.Should().NotBeOfType<IdNotOptedInException>();
@@ -296,7 +300,7 @@ public sealed class MinterUnitTests
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()),
             new FixedClock(FixedClock.CheckTime))
-            .Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         id.Should().Be("zzz");
@@ -319,7 +323,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()),
-            new FixedClock(FixedClock.CheckTime)).Mint(document, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            new FixedClock(FixedClock.CheckTime)).Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), document), type, ".", null);
 
         // Then
         mint.Should().ThrowExactly<IdRefusedException>();
@@ -342,7 +346,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()),
-            new FixedClock(FixedClock.CheckTime)).Mint(document, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            new FixedClock(FixedClock.CheckTime)).Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), document), type, ".", null);
 
         // Then
         mint.Should().Throw<IdNotOptedInException>();
@@ -371,7 +375,7 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var id = minter.Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var id = minter.Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         id.Should().Be("ADR-bb");
@@ -401,7 +405,8 @@ public sealed class MinterUnitTests
                 new FeatureTagParser()), new FixedClock(FixedClock.CheckTime));
 
         // When
-        var id = minter.Mint(manifest, "adr", files.Path.GetFullPath("repo"), new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var id = minter.Mint(
+            new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", files.Path.GetFullPath("repo"), null);
 
         // Then
         id.Should().Be("ADR-y");
@@ -428,7 +433,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()), new FixedClock(FixedClock.CheckTime))
-            .Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
@@ -465,7 +470,7 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var id = minter.Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var id = minter.Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         id.Should().Be("033y1mp000000");
@@ -498,7 +503,8 @@ public sealed class MinterUnitTests
             clock);
 
         // When
-        var mint = () => minter.Mint(manifest, "adr", files.Path.GetFullPath("repo"), new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var mint = () => minter.Mint(
+            new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", files.Path.GetFullPath("repo"), null);
 
         // Then
         mint.Should().Throw<IdRefusedException>();
@@ -525,7 +531,7 @@ public sealed class MinterUnitTests
                 new SpechtTreeStore(new MockFileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()), new FixedClock(FixedClock.CheckTime))
-            .Mint(manifest, "adr", ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+            .Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", ".", null);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
@@ -559,7 +565,8 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var mintAdr = () => minter.Mint(manifest, "adr", files.Path.GetFullPath("repo"), new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var mintAdr = () => minter.Mint(
+            new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), "adr", files.Path.GetFullPath("repo"), null);
 
         // Then
         mintAdr.Should().Throw<IdRefusedException>();
@@ -589,7 +596,7 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var mint = () => minter.Mint(manifest, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), null);
+        var mint = () => minter.Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), manifest), type, ".", null);
 
         // Then
         mint.Should().Throw<IdFeatureNotNamedException>();
@@ -626,7 +633,7 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var mint = () => minter.Mint(manifest, "claim", root, EngineServices.Manifest(files, root).Discovery, folder);
+        var mint = () => minter.Mint(new SpechtManifestDocument(EngineServices.Manifest(files, root), manifest), "claim", root, folder);
 
         // Then
         mint.Should().Throw<IdFeatureNotFoundException>();
@@ -649,7 +656,7 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var mint = () => minter.Mint(document, type, ".", new SpechtDiscoveryInputs([], [], [], [], []), feature);
+        var mint = () => minter.Mint(new SpechtManifestDocument(EngineServices.Parser().Parse(ManifestBelowIds), document), type, ".", feature);
 
         // Then
         mint.Should().Throw<IdRefusedException>()
@@ -691,9 +698,11 @@ public sealed class MinterUnitTests
             new FixedClock(FixedClock.CheckTime));
 
         // When
-        var id = minter.Mint(manifest, type, root, EngineServices.Manifest(files, root).Discovery, "features/one");
+        var id = minter.Mint(new SpechtManifestDocument(EngineServices.Manifest(files, root), manifest), type, root, "features/one");
 
         // Then
         id.Should().Be(expected);
     }
+
+    private const string ManifestBelowIds = """{ "schemaVersion": "0.3.1" }""";
 }

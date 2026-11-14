@@ -624,21 +624,32 @@ Feature: Id generation
       | scenario ids      | a scenario id       | "S-"     |
 
   @B-067 @boundary
-  Scenario Outline: An id for a Feature with an invalid prefix takes its record's plain text
-    Given a manifest pinned to schema 0.4.0 that opts <type> ids in to Nano ID
+  Scenario Outline: A claim id for a Feature with an invalid prefix takes its record's plain text
+    Given a manifest pinned to schema 0.4.0 that opts claim ids in to Nano ID
+    And its records leave their forms and plain texts to the shipped records
+    And a Feature whose claim prefix is <prefix>
+    When a claim id is requested for that Feature
+    Then the minted id begins with "B-"
+    And the check accepts it as a claim id of that Feature
+
+    Examples:
+      | prefix                                              |
+      | white space alone                                   |
+      | "S-", which gives its claims and scenarios one head |
+
+  @B-067 @boundary
+  Scenario Outline: A constraint id for a Feature with an invalid prefix takes its record's plain text
+    Given a manifest pinned to schema 0.4.0 that opts constraint ids in to Nano ID
     And its constraint record has the form "{prefix}-C-{id}"
     And its other records leave their forms and plain texts to the shipped records
     And a Feature whose claim prefix is <prefix>
-    When a <type> id is requested for that Feature
-    Then the minted id begins with "<head>"
-    And the check reads it as an id of that Feature
+    When a constraint id is requested for that Feature
+    Then the minted id begins with "C-"
 
     Examples:
-      | type       | prefix                                              | head |
-      | claim      | white space alone                                   | B-   |
-      | constraint | white space alone                                   | C-   |
-      | claim      | "S-", which gives its claims and scenarios one head | B-   |
-      | constraint | "S-", which gives its claims and scenarios one head | C-   |
+      | prefix                                              |
+      | white space alone                                   |
+      | "S-", which gives its claims and scenarios one head |
 
   @B-068 @boundary
   Scenario: A draw its record's id rejects is not printed

@@ -47,7 +47,7 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
         {
             var root = Path.GetFullPath(settings.Root);
             var manifest = reader.ReadManifestDocument(root);
-            var id = minter.Mint(manifest.Document, settings.Type, root, manifest.Structure.Discovery, settings.Feature);
+            var id = minter.Mint(manifest, settings.Type, root, settings.Feature);
             await console.Profile.Out.Writer.WriteLineAsync(id);
             return ExitCodes.Success;
         }
@@ -77,9 +77,9 @@ public sealed class MintCommand(IAnsiConsole console, SpechtModelReader reader, 
     /// <implements epic="0001" feature="F19" claim="B-003" />
     public sealed class Settings : CommandSettings
     {
-        /// <summary>Gets the id type, a member of the manifest's <c>mint</c> key.</summary>
+        /// <summary>Gets the id type: an <c>ids</c> record from schema 0.4.0, a member of the manifest's <c>mint</c> key below it.</summary>
         [CommandArgument(0, "<type>")]
-        [Description("The id type, as the manifest's mint key names it.")]
+        [Description("The id type, as the manifest's ids record names it, or its mint key below schema 0.4.0.")]
         public string Type { get; init; } = string.Empty;
 
         /// <summary>Gets the folder, relative to the root and spelled with <c>/</c>, that holds the Feature's <c>.spec/</c>, or nothing.</summary>

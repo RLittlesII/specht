@@ -73,6 +73,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, CompanionFileRule>();
         services.AddSingleton<ISpechtRule, ClaimTagRule>();
         services.AddSingleton<ISpechtRule, ScenarioTitleRule>();
+        services.AddSingleton<ISpechtRule, MissingScenarioRule>();
         services.AddSingleton<ISpechtRule, ClaimIdRule>();
         services.AddSingleton<ISpechtRule, ClaimRowRule>();
         services.AddSingleton<ISpechtRule, UnresolvedTestRule>();

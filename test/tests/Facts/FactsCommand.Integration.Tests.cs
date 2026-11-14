@@ -8,8 +8,8 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Facts;
 
 /// <summary>
-/// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-006, B-012 to
-/// B-014, B-017, B-021 to B-023, B-025, B-026), launched as a shell launches it, its output validated against the published facts schema at
+/// The built tool's <c>specht facts --json</c> over synthetic trees on disk (<c>0132-F2</c> B-001 to B-008, B-012 to
+/// B-015, B-017, B-021 to B-023, B-025, B-026), launched as a shell launches it, its output validated against the published facts schema at
 /// <c>docs/schema/facts.schema.json</c> (OQ-1's default), copied into the output from that one file.
 /// </summary>
 [Trait("Tier", "Integration")]
@@ -446,6 +446,128 @@ public sealed class FactsCommandIntegrationTests
 
         // Then
         result.IsValid.Should().BeFalse($"a {member} member on a claim is coverage, not a fact");
+    }
+
+    [Fact]
+    public void AFeatureWithOutOfScopeRows_WhenFactsAreGivenAsJson_ShouldCarryEachRowsNumberItemReasonAndTheLineItIsOn()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "5. Out of Scope",
+            "## 5. Out of Scope\n\n| # | Item | Exclusion Reason |\n| - | ---- | ---------------- |\n"
+                + "| 1 | Any other input | Owned by a sibling Feature |\n"
+                + "| 2 | Any write | Not asked for |\n"));
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!["outOfScope"].Should().BeOfType<JsonArray>().Which
+            .Select(static row => (
+                row!["number"]!.GetValue<string>(),
+                row["item"]!.GetValue<string>(),
+                row["reason"]!.GetValue<string>(),
+                row["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("1", "Any other input", "Owned by a sibling Feature", LineOf(lines, "| 1 | Any other input |")),
+                ("2", "Any write", "Not asked for", LineOf(lines, "| 2 | Any write |")));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsOpenQuestionResolutions))]
+    public void AnOpenQuestionsResolution_WhenFactsAreGivenAsJson_ShouldCarryItsIdQuestionBlocksResolutionLineAndWhetherItIsResolved(
+        string resolution, bool resolved)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: SpechtTree.SectionsWith(
+            "11. Open Questions",
+            "## 11. Open Questions\n\n| ID | Question | Blocks | Resolution |\n| -- | -------- | ------ | ---------- |\n"
+                + "| OQ-1 | Which output comes last? | B-001 | Resolved 2026-10-30 by the owner: the last |\n"
+                + $"| OQ-2 | Which input comes first? | B-001 | {resolution} |\n"));
+        var lines = File.ReadAllLines(path);
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        using (var document = JsonDocument.Parse(Stdout))
+        {
+            var result = Evaluate(document.RootElement);
+            result.IsValid.Should().BeTrue(Errors(result));
+        }
+
+        JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!["openQuestions"].Should().BeOfType<JsonArray>().Which
+            .Select(static question => (
+                question!["id"]!.GetValue<string>(),
+                question["question"]!.GetValue<string>(),
+                question["blocks"]!.GetValue<string>(),
+                question["resolution"]!.GetValue<string>(),
+                question["resolved"]!.GetValue<bool>(),
+                question["line"]!.GetValue<int>()))
+            .Should().Equal(
+                ("OQ-1", "Which output comes last?", "B-001", "Resolved 2026-10-30 by the owner: the last", true, LineOf(lines, "| OQ-1 |")),
+                ("OQ-2", "Which input comes first?", "B-001", resolution, resolved, LineOf(lines, "| OQ-2 |")));
+    }
+
+    [Theory]
+    [ClassData(typeof(FactsOutOfScopeFaults))]
+    public void AnOutOfScopeSectionMissingOrWithATableTheParseCannotRead_WhenFactsAreGivenAsJson_ShouldGiveNoOutOfScopeRowsAndEveryOtherRow(
+        bool sectionPresent)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        tree.Pin("0.2.0");
+        var sections = SpechtTree.SectionsWith(
+                "11. Open Questions",
+                "## 11. Open Questions\n\n| ID | Question | Blocks | Resolution |\n| -- | -------- | ------ | ---------- |\n"
+                    + "| OQ-1 | Which input comes first? | B-001 | Open |\n")
+            .Select(static section => section.StartsWith("## 5. Out of Scope\n", StringComparison.Ordinal)
+                ? "## 5. Out of Scope\n\n| # | Item | Exclusion Reason |\n| 1 | Other things | Owned elsewhere |\n"
+                : section)
+            .Where(section => sectionPresent || !section.StartsWith("## 5. Out of Scope\n", StringComparison.Ordinal))
+            .ToList();
+        var path = tree.WriteCoLocatedFeature("src/area", "0001", "F1", sections: sections);
+        var lines = File.ReadAllLines(path);
+        var read = EngineServices.Reader().Read(tree.Root, null).Features.Should().ContainSingle().Which.Document.Section("5. Out of Scope");
+        if (sectionPresent)
+        {
+            read.Should().NotBeNull();
+            read!.Rows.Should().BeEmpty();
+        }
+        else
+        {
+            read.Should().BeNull();
+        }
+
+        // When
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "facts", "--json");
+
+        // Then
+        ExitCode.Should().Be(0, Stderr);
+        var specification = JsonNode.Parse(Stdout)!["specifications"]!.AsArray().Should().ContainSingle().Which!;
+        specification["outOfScope"].Should().BeOfType<JsonArray>().Which.Should().BeEmpty();
+        specification["claims"].Should().BeOfType<JsonArray>().Which
+            .Select(static claim => (claim!["id"]!.GetValue<string>(), claim["line"]!.GetValue<int>()))
+            .Should().Equal(("B-001", LineOf(lines, "| B-001 | It does the thing. |")));
+        specification["constraints"].Should().BeOfType<JsonArray>().Which
+            .Select(static constraint => (constraint!["id"]!.GetValue<string>(), constraint["line"]!.GetValue<int>()))
+            .Should().Equal(("C-1", LineOf(lines, "| C-1 |")));
+        specification["openQuestions"].Should().BeOfType<JsonArray>().Which
+            .Select(static question => (question!["id"]!.GetValue<string>(), question["line"]!.GetValue<int>()))
+            .Should().Equal(("OQ-1", LineOf(lines, "| OQ-1 |")));
     }
 
     private static EvaluationResults Evaluate(JsonElement document)
