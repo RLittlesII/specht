@@ -2511,7 +2511,7 @@ The accepted B-066 row and its scenario were written after the mark was built at
 
 **C-1, item `0388`.** `SchemaVersionLockIntegrationTests.TheRepositorysShippedVersions_WhenVerifiedAgainstTheCommittedLock_ShouldReportNoFinding` recomputes each locked version's digest from its files, so a byte changed under `0.1.0`, `0.2.0`, `0.2.1` or `0.3.0` fails it. It does not hold the entries themselves: an entry rewritten together with its files still verifies. No test is added for that half, since it would copy the four published digests into a test; C-17 rules out a published entry edited by hand.
 
-**Open, item `0388`.** B-154 compares the whole report, `rulesEvaluated` included, so the first `0001-F16` rule id in `0.3.1` fails its tests on every tree until OQ-75 is answered.
+**Resolved, item `0388`.** B-154 compares the whole report, `rulesEvaluated` included. OQ-75 asked whether that count is set aside once `0.3.1` holds the first `0001-F16` rule id. § 11 resolves it as moot under `0.4.0`, on the owner's selection "(c) Moot under 0.4.0" (2026-11-14, § 10): `0001-F16`'s rules enter `0.4.0`, a `0.minor` step, and B-154 compares patch neighbours alone (OQ-78), so no B-154 test meets them.
 
 ### B-154's optional-field exception, item `0352`
 

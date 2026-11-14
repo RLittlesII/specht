@@ -13,7 +13,9 @@ namespace Specht.Acceptance.NativeClaims;
 /// Steps for <c>src/specht/Rules/NativeClaims/.spec/native-claims.feature</c> (0001-F16), bound for the claim members of
 /// item 0389, B-002, B-027, B-028, B-029 and B-031, and for the native claim reader of item 0390, B-001, B-004 to B-007,
 /// B-011 to B-013, B-025 and B-030, and for a claim file set's record, identity and report of item 0391, B-003, B-017,
-/// B-026, B-032 and B-036 to B-038. The other scenarios bind only the Background and are left out as pending. A root is a
+/// B-026, B-032 and B-036 to B-038, and for a scenario in a claim file with no claim of item 0393, B-010 and the
+/// boundary that no claim is inferred from a title. "The output has a line" binds a warning line alone, because item 0395's
+/// scenarios name error lines with it and their rule is not built. The other scenarios bind only the Background and are left out as pending. A root is a
 /// synthetic tree holding one co-located Markdown specification, <c>F5</c>, so a claim read from a claims table is
 /// observable and no identity a scenario names collides with it. The manifest is edited in memory and written when the
 /// check runs; "the check runs" launches the built tool on the root, the only place an exit code and its streams are
@@ -214,6 +216,43 @@ public sealed class NativeClaimsSteps
         _keywordLines["Rule scenarios"] = [16, 19];
     }
 
+    [Given("{string} has a scenario at line {int} with no claim tag of its own, its Rule or its Feature")]
+    public void GivenHasAScenarioAtLineWithNoClaimTagOfItsOwnItsRuleOrItsFeature(string path, int line)
+    {
+        var lines = new List<string>
+        {
+            "Feature: Arithmetic", string.Empty, "  @B-001", "  Scenario: Adds", "    Given two numbers", string.Empty, "  Rule: Sums",
+        };
+        if (line <= lines.Count)
+        {
+            throw new InvalidOperationException($"A scenario at line {line} leaves no room for the claimed scenario and the untagged Rule above it.");
+        }
+
+        while (lines.Count < line - 1)
+        {
+            lines.Add(string.Empty);
+        }
+
+        lines.AddRange(["    Scenario: Adds three", "      Given three numbers"]);
+        Tree.WriteRaw(path, string.Join('\n', lines) + "\n");
+    }
+
+    [Given("{string} tags its Feature {string} and holds an untagged scenario")]
+    public void GivenTagsItsFeatureAndHoldsAnUntaggedScenario(string path, string tag)
+    {
+        Tree.WriteRaw(path, $"{tag}\nFeature: Arithmetic\n\n  Scenario: Adds\n    Given two numbers\n");
+        _keywordLines["Scenario"] = [4];
+        _claimFile = path;
+    }
+
+    [Given("{string} has an untagged scenario titled {string}")]
+    public void GivenHasAnUntaggedScenarioTitled(string path, string title)
+    {
+        Tree.WriteRaw(path, $"Feature: Arithmetic\n\n  Scenario: {title}\n    Given two numbers\n");
+        _keywordLines["Scenario"] = [3];
+        _claimFile = path;
+    }
+
     [Given("a catalogue built from {string}")]
     public void GivenACatalogueBuiltFrom(string path)
     {
@@ -336,6 +375,13 @@ public sealed class NativeClaimsSteps
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => Run.ExitCode.Should().Be(code, Run.Stderr);
 
+    [Then("the exit code is {int} without {string}")]
+    public void ThenTheExitCodeIsWithout(int code, string argument)
+    {
+        _arguments.Should().NotContain(argument);
+        Run.ExitCode.Should().Be(code, Run.Stderr);
+    }
+
     [Then("stderr names {string}")]
     public void ThenStderrNames(string key) => Run.Stderr.Should().Contain(key);
 
@@ -407,6 +453,24 @@ public sealed class NativeClaimsSteps
         Diagnostics().Should().Contain(line =>
             line.StartsWith($"{record}(", StringComparison.Ordinal) && line.Contains(" SPEC1002:", StringComparison.Ordinal));
     }
+
+    [Then(@"^the output has a line ""([^""]*: warning SPEC[0-9]+:)""$")]
+    public void ThenTheOutputHasAWarningLine(string start) => Diagnostics().Should().Contain(line => line.StartsWith(start, StringComparison.Ordinal));
+
+    [Then("no violation is reported for the scenario")]
+    public void ThenNoViolationIsReportedForTheScenario()
+    {
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        Diagnostics().Should().NotContain(line => line.StartsWith(ScenarioPlace(), StringComparison.Ordinal));
+    }
+
+    [Then("the scenario is reported under {string}")]
+    public void ThenTheScenarioIsReportedUnder(string ruleId) =>
+        Diagnostics().Should().Contain(line =>
+            line.StartsWith(ScenarioPlace(), StringComparison.Ordinal) && line.Contains($" {ruleId}:", StringComparison.Ordinal));
+
+    [Then("Feature {string} has no claim {string}")]
+    public void ThenFeatureHasNoClaim(string feature, string id) => ClaimSet(feature).Rows.Should().NotContain(claim => claim.Id == id);
 
     [Then("the output has a line {string} naming {string}")]
     public void ThenTheOutputHasALineNaming(string start, string ruleId) =>
@@ -600,6 +664,9 @@ public sealed class NativeClaimsSteps
         return Model().ClaimSets.Should().ContainSingle(set => set.FileSet!.Feature == feature).Subject;
     }
 
+    private string ScenarioPlace() =>
+        $"{_claimFile ?? throw new InvalidOperationException("No claim file was written.")}({_keywordLines["Scenario"].Single()}):";
+
     private SpechtClaim Claim(string? id) =>
         Model().ClaimSets.SelectMany(static set => set.Rows).Should().ContainSingle(claim => claim.Id == id).Subject;
 
@@ -614,6 +681,7 @@ public sealed class NativeClaimsSteps
     private (string Stdout, string Stderr, int ExitCode) Launch(params string[] arguments)
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
+        _arguments = arguments;
         return AcceptanceTool.Launch(Tree.Root, ["--root", ".", .. arguments]);
     }
 
@@ -687,6 +755,8 @@ public sealed class NativeClaimsSteps
     private (string Id, string? Epic, string Feature, string State)[]? _catalogue;
 
     private (string Stdout, string Stderr, int ExitCode)? _second;
+
+    private string[] _arguments = [];
 
     private string? _claimFile;
 

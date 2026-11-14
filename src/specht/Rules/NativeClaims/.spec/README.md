@@ -971,7 +971,7 @@ rule and one member.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-14 (item 0391, after the rebase onto main with 0337: SPEC4010 over a native Feature's record matrix); before: test-writer, 2026-11-14 (item 0391 review round 1, finding 1: the matrix rules over a native Feature); before: test-writer, 2026-11-13 (item 0391: a claim file set's record, identity and report; the item 0390 trees renamed to Feature F1); before: test-writer, 2026-11-13 (item 0390 review round 1: finding 2 resolved by OQ-10, the declarations stated as the red state at 1782f082; item 0390: the native claim reader) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0393: SPEC4011, a scenario in a claim file with no claim) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1443,9 +1443,136 @@ before binding (§ 10):
    count scenario is now split into a summary scenario, run without `--json`,
    and a report scenario, run with it; B-036 runs without it.
 
+### A scenario in a claim file with no claim, `SPEC4011` (item `0393`)
+
+**Unit.** `ScenarioWithoutClaimRuleUnitTests`, in
+`test/tests/Rules/NativeClaims/ScenarioWithoutClaimRule.Unit.Tests.cs`, the
+folder of the rule § 7 names, reads a `MockFileSystem` tree through
+`EngineServices.Reader(fileSystem)` and evaluates it with the composed rules
+through `SpechtEvaluator.Evaluate`. So the id the evaluator stamps at the pin,
+the severity, the path and the line are observed together. Its trees pin
+`0.4.0`, replace `exclusions` with `obj`, declare no epic grammar, and set
+`claim.source` `gherkin` with one set, `.spec/features/arithmetic/*.feature`
+for Feature `F1`, unless a test sets its own. A row's manifest members and
+file texts come from `UnclaimedScenarios`, a `[ClassData]` type beside the
+class. No test reads `SpechtClaims.Files`, so test-writer added no declaration
+to `src/`; the member is implementer's, with the rule.
+
+- **B-010** - mechanism: `ScenarioWithoutClaimRule` turns each `SPCT0012`
+  finding of a claim file's read into a finding at the file's root-relative
+  path and the finding's line, once per path. The shared reader's finding
+  already holds inheritance from a Rule and the Feature (A-3, C-1), and the
+  rule's `DefaultLevel` gives the warning. Test:
+  `AScenarioInAClaimFile_WhenEvaluated_ShouldBeReportedAsASpec4011WarningAtItsKeywordLineOnlyWhenItCarriesNoClaimOfItsOwnItsRulesOrItsFeatures`,
+  over `UnclaimedScenarios`. Its rows are § 7's cases:
+  - an untagged `Scenario:`, `Example:`, `Scenario Outline:` and
+    `Scenario Template:` in one file, each at its keyword line;
+  - `@smoke` and `@B-01` on two lines above the keyword, at the keyword's line;
+  - `@ignore`, a planned tag, alone;
+  - a claim on one scenario beside an untagged one, the untagged one alone;
+  - a claimed Rule, then an unclaimed Rule, the later Rule's scenario alone;
+  - a claimed Feature beside an untagged second file, the second file alone;
+  - a claim tag on an Examples block alone, at the outline;
+  - a claim id in a title alone;
+  - a file declaring `# language: fr`, and a file with no `Feature:` line,
+    each beside an untagged second file, the second file alone;
+  - one file two sets match, each scenario once.
+
+  Each row asserts the exact multiset of severity and `path(line)`, so the
+  level, the path, the line and the count are all held. Every row expects at
+  least one place: a file that must give nothing sits beside a file that
+  gives one, so a rule that reports nothing fails every row. Before the rows
+  were handed on, each row's places were checked against the `SPCT0012` lines
+  the shared reader gives its text, and the two unreadable files were checked
+  to throw `GherkinClaimTextException`. Red: every row, on "found an empty
+  collection", since no rule reports `SPEC4011`.
+
+- **B-002, C-3** - mechanism: under `0.4.0` without `claim.source` `gherkin`,
+  `SpechtModel.ClaimSets` holds no set, so the rule has nothing to read.
+  Guard:
+  `AMarkdownTreeUnderZeroFourZero_WhenItsCompanionHoldsAnUntaggedScenario_ShouldReportNoSpec4011`,
+  a co-located specification whose companion holds an untagged scenario.
+  Green when written: nothing reports `SPEC4011` yet. It holds the second
+  gate once the rule does.
+- **B-028, C-3** - mechanism: below `0.4.0` no vocabulary holds the id, so the
+  evaluator neither runs nor counts the rule. Guard:
+  `AGherkinClaimSourceUnderZeroThreeOne_WhenAClaimFileHoldsAnUntaggedScenario_ShouldNeitherReportNorCountSpec4011`.
+  It asserts no `SPEC4011` and `RulesEvaluated` `23`, the count the same tree
+  gives at `59d7fca9`, before this item. Green when written.
+- **`0001-F7` B-014, C-1** - mechanism: `SchemaVersions.Shipped`'s `0.4.0` row
+  maps `SPEC025` to `SPEC4011`, and `AddSpechtEngine` registers the rule. Rows
+  added to existing theories and lists:
+  - `ShippedVocabularies`' `0.4.0` row gains `SPEC4011`.
+    `SchemaVersionsUnitTests.AnEmbeddedVersion_WhenItsVocabularyIsRead_ShouldNameEachRuleByThatVersionsId`
+    fails on that row: 28 ids expected, 27 found. Its `0.1.0` to `0.3.1` rows
+    are unchanged (C-1). The integration theory over the same data,
+    `SpechtCheckVersionsIntegrationTests.TheBaselineTreePinnedToAShippedVersion_WhenChecked_ShouldReportEveryViolationUnderAnIdOfThatVersionsVocabulary`,
+    stays green: it asks only that each reported id belongs.
+  - `ZeroFourZeroRuleNames` gains `SPEC025` to `SPEC4011`.
+    `SchemaVersionsUnitTests.ARuleKeyEnteringVersionZeroFourZero_WhenNamedUnderIt_ShouldTakeTheFourDigitIdTheMapPairsItWith`
+    fails on that row: `RuleId` returns `SPEC025` unmapped.
+  - The composition id list gains `SPEC025`.
+    `SpechtEngineServiceCollectionExtensionsUnitTests.EveryRuleInTheEngine_WhenItsIdIsRead_ShouldNameEachShippedRuleIdExactlyOnce`
+    fails: 28 ids expected, 27 found.
+
+  As § 7 says, the rule-page tests (`0001-F3` B-031),
+  `InitRuleDefaultsUnitTests`, the real-tree numbering test (`0001-F7` B-066)
+  and the lock tests take the page, the manifest line and the relock with no
+  new test.
+
+**Acceptance.** `NativeClaimsSteps` binds the two `@B-010` scenarios and the
+`@boundary` scenario "A claim is never inferred from a title or a step".
+
+- "A scenario at line 9 with no claim tag of its own, its Rule or its Feature"
+  writes an untagged Feature, a scenario tagged `@B-001`, and an untagged Rule
+  whose untagged scenario is at the named line.
+- "The output has a line" binds a warning line alone, matched as the start of
+  a diagnostic line. Item `0395`'s scenarios name error lines in the same
+  words, and its rule is not built: bound to any line, the step made B-016's
+  scenario run, and fail, here. Item `0395` widens it.
+- "The exit code is 0 without "--strict"" asserts that the run was launched
+  without the flag, and its exit code.
+- "No violation is reported for the scenario" asserts that the run did not
+  exit `3` and that no diagnostic line starts at the scenario's path and
+  keyword line.
+- "The scenario is reported under" asserts a diagnostic line at the scenario's
+  path and keyword line naming the id. "Feature "F1" has no claim" reads the
+  model, as item `0390`'s claim steps do.
+
+Red, at this commit: "A scenario with no claim is reported" fails on no
+diagnostic line, and the boundary scenario on its last step, after "has no
+claim" passes. "An inherited claim satisfies the untagged scenario rule"
+passes: a guard that holds once the rule reports.
+
+**Not asserted**, as no claim of this item states it:
+
+- the message and the `null` identifier § 7 fixes. B-010 names the id, the
+  level and the line;
+- a manifest `rules` entry raising or silencing `SPEC4011`, and `--strict`
+  exiting `1` on the warning. § 7's testability list names both. They are the
+  evaluator's and the check command's for every id, pinned by
+  `SpechtEvaluatorUnitTests.ARuleIdSetToError_WhenEvaluated_ShouldReportTheFindingOfARuleWhoseOwnLevelIsWarningAtErrorSeverity`,
+  `SpechtEvaluatorUnitTests.ARuleWhoseIdIsSetOff_WhenEvaluated_ShouldNotRunAndShouldLeaveTheOtherRulesViolationsAndCount`
+  and the warning rows of
+  `CheckCommandIntegrationTests.AReportOfSeverities_WhenChecked_ShouldExitWithTheClaimedCode`.
+  A `SPEC4011` copy of either would assert the same behaviour through another
+  arrangement;
+- that no claim file is parsed twice (C-5). It shows in no output; the two-set
+  row observes only that each scenario is reported once;
+- what else a file two sets match gives, item `0395` (B-018).
+
+**Testability.** Every mechanism is reachable in memory through
+`SpechtModelReader.Read` and `SpechtEvaluator.Evaluate`, and every outcome
+through the built tool. One verdict per claim:
+
+- B-010: the `SPCT0012` mapping, the per-path filter and the default level,
+  pinned by the theory above.
+
+Nothing in this item's scope is hard to test.
+
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-14 (item 0391 review round 1, finding 1: the B-003 row names the matrix rules' test); before: test-writer, 2026-11-13 (item 0391: B-003, B-017, B-026, B-032 and B-036 to B-038 rows); before: spec-author, 2026-11-13 (item 0391: B-032 to B-038 rows added as Missing, for test-writer to fill) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0393: the B-010 row) -->
 
 | Claim ID | Scenario                                                                                                                                                                                                                                                                                                                                                                              | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Status  |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -1458,7 +1585,7 @@ before binding (§ 10):
 | B-007    | A Rule declares once for its scenarios                                                                                                                                                                                                                                                                                                                                                | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimTagOnAnElement_WhenRead_ShouldDeclareOneClaimAsAuthoredAtTheElementsKeywordLine`, its Rule row                                                                                                                                                                                                                                                                                         | Covered |
 | B-008    | One identifier on two elements is reported at both                                                                                                                                                                                                                                                                                                                                    | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Missing |
 | B-009    | A claim tag on an Examples block is reported                                                                                                                                                                                                                                                                                                                                          | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Missing |
-| B-010    | A scenario with no claim is reported                                                                                                                                                                                                                                                                                                                                                  | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Missing |
+| B-010    | A scenario with no claim is reported; An inherited claim satisfies the untagged scenario rule                                                                                                                                                                                                                                                                                         | `NativeClaimsSteps`; `ScenarioWithoutClaimRuleUnitTests.AScenarioInAClaimFile_WhenEvaluated_ShouldBeReportedAsASpec4011WarningAtItsKeywordLineOnlyWhenItCarriesNoClaimOfItsOwnItsRulesOrItsFeatures`                                                                                                                                                                                                                                                      | Covered |
 | B-011    | Reordering and retitling keep every claim                                                                                                                                                                                                                                                                                                                                             | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimFileReorderedAndRetitled_WhenReadAgain_ShouldKeepEveryClaimsIdentifierFeatureIdentityAndStatus`                                                                                                                                                                                                                                                                                        | Covered |
 | B-012    | Lifecycle tags give the claim its status                                                                                                                                                                                                                                                                                                                                              | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.ANativeClaim_WhenRead_ShouldTakeItsStatusFromTheLifecycleTagsTheManifestListsOnItsDeclaringElement`; `SpechtManifestParserClaimMembersUnitTests.AGherkinClaimSourceLeavingOutTheTagListsAndLifecycleKey_WhenParsedUnderZeroFourZero_ShouldFillThemFromTheShippedDefaults`                                                                                                                    | Covered |
 | B-013    | A planned scenario keeps its claim; A planned Examples block keeps its outline's claim                                                                                                                                                                                                                                                                                                | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.APlannedTagTheManifestLists_WhenRead_ShouldKeepTheClaimAndMarkTheCasesItCoversPlanned`; `SpechtManifestParserClaimMembersUnitTests.AGherkinClaimSourceLeavingOutTheTagListsAndLifecycleKey_WhenParsedUnderZeroFourZero_ShouldFillThemFromTheShippedDefaults`                                                                                                                                 | Covered |
