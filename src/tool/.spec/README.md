@@ -316,7 +316,7 @@ A repository's `.spec/schema/` is a copy of the consumer's from one day, and not
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-02 (item `0166`: the model reader); implementer, 2026-11-01 (item `0164`: the evaluator) -->
+<!-- last written by: implementer, 2026-11-13 (item 0167: the check entry point and the report mapper) -->
 
 Item `0042` built the version set and the pin as an integer; item `0120` converts both to `major.minor.patch` (decision 0005). The schema source (`0043`, built 2026-10-14), the frozen-version proof (`0044`), `upgrade` (`0045`-`0048`), the pin and list commands (`0121` to `0123`, `0125`, built 2026-10-14) and the pin policy (`0124`) extend this table. Item `0176` adds the last five rows, on the upstream schema source the manifest records (decision 0008), built 2026-10-11.
 
@@ -334,7 +334,7 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | Each version's rule vocabulary (B-014, brief § 4)                                                                                   | Business       | `SchemaVersions.Shipped`, hand-written per `SemanticVersion`                                                                                                                                 |
 | Only the pinned vocabulary is evaluated, counted and reported (B-014)                                                               | Business       | `SpechtEvaluator.Evaluate(SpechtModel)`, over `model.Schemas.Version.RuleIds` (item `0164`, ADR-0010; the static `SpechtRunner.Evaluate` from item `0105`, ADR-0008; `0001-F1` § 7)          |
 | Version `0.1.0`'s epic `title` and `description` (B-022, B-023, decision 0003)                                                      | Business       | `src/tool/schema/v0.1.0/frontmatter/epic.schema.json`, embedded into the engine; `EpicFrontmatterRule` reports an epic failure as `SPEC004`                                                  |
-| The report names the version and the embedded source (B-002, `0001-F3` B-005)                                                       | Business       | `SpechtReport.SchemaVersion`; `SpechtReportDocument.From` writes its text                                                                                                                    |
+| The report names the version and the embedded source (B-002, `0001-F3` B-005)                                                       | Business       | `SpechtReport.SchemaVersion`; `SpechtReportDocumentMapper.Map` (`SpechtReportDocument.From` until item `0167`) writes its text                                                               |
 | Embedding the shipping copy into the engine without a second copy                                                                   | Technical      | `src/specht/specht.csproj` links `src/tool/schema/v*/frontmatter/*.schema.json` as `EmbeddedResource`                                                                                        |
 | A manifest records an upstream schema source in `spechtSchema`; no key records none (B-068)                                         | Business       | `SpechtManifestParser.Parse`, onto `SpechtStructure.SpechtSchema`: an `UpstreamSchemaSource`, or null                                                                                        |
 | A record that lacks a member, or holds a `location`, a `version` or a hash in another form, is a rejected manifest (B-069 to B-073) | Business       | `SpechtManifestParser.Parse`, its faults joined to the ones `Check` collects, throwing `SpechtManifestException`; `CheckCommand`'s existing catch and exit `3` (`0001-F5` B-022, B-023)      |
@@ -345,16 +345,16 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | One SHA-256 over a version's ordered paths and bytes (B-089)                                                                        | Technical      | `SchemaVersionLock.ComputeDigestAsync`, over the schema, manifest, template and rule-page trees                                                                                              |
 
 | Reading a recorded source's local copy and checking its hashes (B-024, B-077 to B-081) | Both | `SpechtManifestStore.ReadFrontmatterSchema` reads unchanged bytes; `UpstreamSchemaCopy` verifies them without I/O; `SpechtModelReader` sequences them and `SpechtSchemaCompiler` builds the schemas (item `0166`) |
-| Keeping the pinned vocabulary and reporting the source (B-028, B-032) | Business | `SpechtSchemas.Version` keeps the pin and its rule ids; `SpechtSchemas.Source` flows through the runner and report document |
+| Keeping the pinned vocabulary and reporting the source (B-028, B-032) | Business | `SpechtSchemas.Version` keeps the pin and its rule ids; `SpechtSchemas.Source` flows through `SpechtCheck` (the runner until item `0167`) and the report document |
 | The check makes no network call (B-025, C-8) | Technical | The store reads local files only; the verifier takes bytes and the loader uses no network type |
 
-| Concern                                                                         | Kind      | Boundary                                                                                                                                 |
-| ------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Explicit selection and CLI precedence (B-009, B-101 to B-103)                   | Business  | A nullable typed selection carried per run; the manifest parser retains omission and the schema loader resolves it                       |
-| Recorded-source integrity under explicit selection (B-036, B-024, B-080)        | Business  | Manifest contradiction validation and the existing local-copy verifier before schema compilation                                         |
-| Required disk kinds, file names and controlled failures (B-009, B-104 to B-107) | Both      | The parsed declaration selects kinds; `SpechtManifestStore` reads bytes and the loader names relative file failures                      |
-| Report provenance (B-011)                                                       | Technical | The existing `SpechtSchemaSource` value flows through the runner and report mapper; input selection and resolved provenance are distinct |
-| References deferred by the schema library (B-105 to B-107)                      | Both      | The existing frontmatter evaluation boundary catches unresolved local references with their root-relative schema file identity           |
+| Concern                                                                         | Kind      | Boundary                                                                                                                                                                       |
+| ------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Explicit selection and CLI precedence (B-009, B-101 to B-103)                   | Business  | A nullable typed selection carried per run; the manifest parser retains omission and the schema loader resolves it                                                             |
+| Recorded-source integrity under explicit selection (B-036, B-024, B-080)        | Business  | Manifest contradiction validation and the existing local-copy verifier before schema compilation                                                                               |
+| Required disk kinds, file names and controlled failures (B-009, B-104 to B-107) | Both      | The parsed declaration selects kinds; `SpechtManifestStore` reads bytes and the loader names relative file failures                                                            |
+| Report provenance (B-011)                                                       | Technical | The existing `SpechtSchemaSource` value flows through `SpechtCheck` (the runner until item `0167`) and the report mapper; input selection and resolved provenance are distinct |
+| References deferred by the schema library (B-105 to B-107)                      | Both      | The existing frontmatter evaluation boundary catches unresolved local references with their root-relative schema file identity                                                 |
 
 <!-- last written by: implementer, 2026-11-02 (item `0166`: `SpechtModelReader.ReadManifest`); implementer, 2026-10-24 (item `0045`, built) -->
 
@@ -497,7 +497,7 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | `upgrade` prints the version in use (B-017 as amended, C-18); supersedes `0047`'s row "prints the pinned version"                                                                                                        | Business       | `UpgradeResult.InUse`, beside the unchanged `Pinned`; `UpgradeCommand`'s current and rewritten lines                                                                                           |
 | The list marks the pin ` (pinned)`, and the version in use ` (in use)` only when it is not the pin (B-084, B-148, B-149)                                                                                                 | Business       | `SchemaVersionManager.List` returns both; `SchemaListCommand` writes the marks                                                                                                                 |
 | `rules`, `rules set`, `--explain`, `manifest`, `init` and `schema pin` keep the pin (OQ-73; § 5 row 33)                                                                                                                  | Business       | `RuleEntriesReader`, `RuleExplanationReader`, `RuleLevelSetter`, `EffectiveManifestReader`, `InitWriter`, `ManifestPinEditor`, `SchemaVersionManager.Pin` and `SpechtTreeGenerator`, unchanged |
-| `frontmatter` validates with the pinned version's schemas under any `pinPolicy` (decision 0021 call 3 as amended; § 5 row 33)                                                                                            | Business       | `SpechtRunner.CheckFrontmatter` through `SpechtModelReader.ReadPinnedSchemas`, which selects with `PinnedVersion`                                                                              |
+| `frontmatter` validates with the pinned version's schemas under any `pinPolicy` (decision 0021 call 3 as amended; § 5 row 33)                                                                                            | Business       | `SpechtFrontmatterCheck.Run` (`SpechtRunner.CheckFrontmatter` until item `0167`) through `SpechtModelReader.ReadPinnedSchemas`, which selects with `PinnedVersion`                             |
 | `pinPolicy` is in no shipped default manifest, so `upgrade` never adds it and no shipped file or lock entry changes (decision 0021; C-1, C-17)                                                                           | Business       | `src/tool/manifest/v0.3.0/manifest.json` and `src/tool/schema/versions.lock.json`, unchanged                                                                                                   |
 | A policy is one of a closed set of three values                                                                                                                                                                          | Technical      | The `PinPolicy` enum in `src/specht/Versioning/`, one switch in `InUse`; no interface and no type per policy                                                                                   |
 
@@ -533,7 +533,7 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 
 ### Schema command boundary
 
-<!-- last written by: implementer, 2026-10-14 -->
+<!-- last written by: implementer, 2026-11-13 (item 0167: the selection reaches `SpechtCheck.Run`) -->
 
 `SchemaVersionManager` in `src/specht/Manifest/SchemaVersionManager.cs` lists,
 prepares selector choices and pins through the existing manifest store, parser,
@@ -616,9 +616,10 @@ remain Report OQ-6's separate scope.
 [`CheckCommand`](../Features/Check/CheckCommand.cs) lets Spectre parse and validate
 `--schema-source`, maps the two accepted strings to the input enum, and dispatches
 the nullable value through its injected delegate. [`Program.cs`](../Program.cs)
-registers the runner's overload that accepts the selection. The runner and the
-model reader (the model and schema loaders until item `0166`) carry the value
-per invocation; their root-only entry points retain automatic selection. No mutable selection is captured by a
+registers `SpechtCheck.Run`, which accepts the selection (the runner's overload
+until item `0167`). The check and the model reader (the model and schema loaders
+until item `0166`) carry the value per invocation; neither has a root-only entry
+point, and a `null` selection keeps automatic selection. No mutable selection is captured by a
 singleton and the CLI reads no manifest or schema file.
 
 All local schema reads use
@@ -684,7 +685,7 @@ The live-copy default remains the omission source through this refactor.
 Manifest decision 0012 supplies versioned omission defaults afterwards; neither
 a shipped manifest nor a version-lock digest changes here.
 
-<!-- last written by: implementer, 2026-11-02 (item `0166`: the model reader); implementer, 2026-11-01 (item `0164`: the evaluator) -->
+<!-- last written by: implementer, 2026-11-13 (item 0167: the check entry point and the report mapper) -->
 
 **A version number is three integers (item `0120`, decision 0005).** [`SemanticVersion`](../../specht/Versioning/SemanticVersion.cs) is a value of major, minor and patch. It compares by major, then minor, then patch, each as a number, so `0.10.0` follows `0.9.0`; two versions are equal when all three are; it writes itself as `major.minor.patch` in the invariant culture. `TryParse` accepts text that is exactly three parts separated by dots, each part a non-negative decimal integer, and nothing else. The engine declares the type itself. A versioning package would be a dependency outside the five `0001-F1` C-7 names, for one comparison and one parse; `System.Version` reads `0.1` and `0.1.0.0` as versions, which B-039 rejects.
 
@@ -726,9 +727,9 @@ absent and unreadable messages, and compiles it before reading the next; the
 compiler keeps the uncompilable message. The first file that fails, in the order
 Feature, task, epic, names the failure as before.
 
-**The vocabulary decides the run (B-014).** Item `0042` built the filter in [`SpechtRunner.Run(string, SchemaVersions)`](../../specht/SpechtRunner.cs), which selects the pinned version a second time from the loaded structure. From item `0105` ([ADR-0008](../../../.spec/adr/0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md); built 2026-10-09) the filter's home is `SpechtRunner.Evaluate(SpechtModel, IEnumerable<ISpechtRule>)`, and `Run` holds none. `Evaluate` reads the vocabulary from `model.Schemas.Version.RuleIds`, evaluates each rule it is given that reports at least one id in it, drops any violation whose rule id is outside it, and counts as evaluated only the vocabulary's ids among the evaluated rules' `ReportedIds`. The rule is the same and so is every verdict; it now holds for any caller of `Evaluate`, not only for `Run`. `Run(string, SchemaVersions)` loads the model and passes the discovered rules; `Run(string)` is `Run(string, SchemaVersions.Embedded)`, so the host's `Func<string, SpechtReport>` registration in `Program.cs` is unchanged. From item `0164` (ADR-0010 stage 4) the filter's home is the instance [`SpechtEvaluator.Evaluate(SpechtModel)`](../../specht/Evaluation/SpechtEvaluator.cs), which takes the rule set by constructor: it runs and counts only the rules whose one `Id` is in `model.Schemas.Version.RuleIds` and whose level is not off, and stamps each finding with that id, so no violation filter is left; `Run(string, SchemaSourceSelection?)` is `evaluator.Evaluate(loader.Load(root, selection))`. The signatures are in `0001-F1` § 7.
+**The vocabulary decides the run (B-014).** Item `0042` built the filter in `SpechtRunner.Run(string, SchemaVersions)`, which selects the pinned version a second time from the loaded structure. From item `0105` ([ADR-0008](../../../.spec/adr/0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md); built 2026-10-09) the filter's home is `SpechtRunner.Evaluate(SpechtModel, IEnumerable<ISpechtRule>)`, and `Run` holds none. `Evaluate` reads the vocabulary from `model.Schemas.Version.RuleIds`, evaluates each rule it is given that reports at least one id in it, drops any violation whose rule id is outside it, and counts as evaluated only the vocabulary's ids among the evaluated rules' `ReportedIds`. The rule is the same and so is every verdict; it now holds for any caller of `Evaluate`, not only for `Run`. `Run(string, SchemaVersions)` loads the model and passes the discovered rules; `Run(string)` is `Run(string, SchemaVersions.Embedded)`, so the host's `Func<string, SpechtReport>` registration in `Program.cs` is unchanged. From item `0164` (ADR-0010 stage 4) the filter's home is the instance [`SpechtEvaluator.Evaluate(SpechtModel)`](../../specht/Evaluation/SpechtEvaluator.cs), which takes the rule set by constructor: it runs and counts only the rules whose one `Id` is in `model.Schemas.Version.RuleIds` and whose level is not off, and stamps each finding with that id, so no violation filter is left; `Run(string, SchemaSourceSelection?)` is `evaluator.Evaluate(loader.Load(root, selection))`. From item `0167` the runner is deleted and that call is [`SpechtCheck.Run(root, selection)`](../../specht/Check/SpechtCheck.cs), `evaluator.Evaluate(reader.Read(root, selection))`. The signatures are in `0001-F1` § 7.
 
-**The report names the version.** [`SpechtReport`](../../specht/Evaluation/SpechtReport.cs) carries `SchemaVersion`, a `SemanticVersion`, as its first positional member, and [`SpechtReportDocument.From`](../../specht/Report/SpechtReportDocument.cs) writes its `major.minor.patch` text with the source carried by the report (`0001-F3` B-005, § 7 there). Item `0092` adds `SchemaSource`: `embedded` without a recorded source and `upstream` with one. Explicit source selection remains item `0043`'s.
+**The report names the version.** [`SpechtReport`](../../specht/Evaluation/SpechtReport.cs) carries `SchemaVersion`, a `SemanticVersion`, as its first positional member, and [`SpechtReportDocumentMapper.Map`](../../specht/Report/SpechtReportDocumentMapper.cs) (`SpechtReportDocument.From` until item `0167`) writes its `major.minor.patch` text with the source carried by the report (`0001-F3` B-005, § 7 there). Item `0092` adds `SchemaSource`: `embedded` without a recorded source and `upstream` with one. Explicit source selection remains item `0043`'s.
 
 **Version `0.1.0`'s epic schema (B-022, B-023).** Already in the shipping copy (decision 0003, item `0051`): optional `title` and `description` with `minLength: 1`. `0042` only makes the check read it from the embedded set, so an empty value is a `SPEC004` through the existing frontmatter rule.
 
@@ -762,7 +763,7 @@ No fault repeats the value. A `location` that is a folder on the machine is an a
 
 The store reads one file under `.specht/schema/frontmatter/` through the injected `IFileSystem` and returns its bytes or null. It decides no policy. Per the owner's ruling recorded in item `0092`, it is a fifth I/O type until ADR-0010 stage 5 folds it into `SpechtManifestStore`; this change does not amend the ADR. The pure verifier compares SHA-256 over the original bytes, before decoding UTF-8 and removing a UTF-8 byte order mark. It collects every absent or mismatched file into one `SpechtManifestException`, naming each path with `/` separators relative to the root. An absent file's fault names `specht init` (OQ-47); whether to name `--schemas` too remains OQ-57. `CheckCommand`'s existing catch prints the fault on stderr with empty stdout and exit `3`. Neither component fetches or writes.
 
-`AddSpechtEngine()` registers both instances alongside the loader. [`SpechtSchemaSource`](../../specht/Model/SpechtSchemaSource.cs) lives in `Model/`, below the report, so the schemas can carry their source without an upward namespace dependency. `SpechtEvaluator.Evaluate` (`SpechtRunner.Evaluate` until item `0164`) copies `SpechtSchemas.Source` onto `SpechtReport.SchemaSource`, and `SpechtReportDocument.From` copies it into the document. The upstream document says only `upstream`; naming the source address or version is `0001-F3` OQ-6, and B-011's disk provenance is built with item `0043`.
+`AddSpechtEngine()` registers both instances alongside the loader. [`SpechtSchemaSource`](../../specht/Model/SpechtSchemaSource.cs) lives in `Model/`, below the report, so the schemas can carry their source without an upward namespace dependency. `SpechtEvaluator.Evaluate` (`SpechtRunner.Evaluate` until item `0164`) copies `SpechtSchemas.Source` onto `SpechtReport.SchemaSource`, and `SpechtReportDocumentMapper.Map` (`SpechtReportDocument.From` until item `0167`) copies it into the document. The upstream document says only `upstream`; naming the source address or version is `0001-F3` OQ-6, and B-011's disk provenance is built with item `0043`.
 
 **Locking a version (B-092, B-093, C-17; OQ-52's proposed default).** [`SchemaVersionLock`](../../../.build/SchemaVersionLock.cs) lives in the build assembly; the `LockSchemaVersion` target in [`.build/SpechtBuild.SchemaVersioning.cs`](../../../.build/SpechtBuild.SchemaVersioning.cs) only calls it. `./build.sh LockSchemaVersion` discovers the newest version by parsing `src/tool/schema/v*/` with the .NET `System.Version` type, ordered numerically. It requires exactly three components and an ordinal round trip through `ToString(3)`, preserving the existing canonical `major.minor.patch` spelling. The build references no application project; its tooling reads shipping files directly. `BuildBoundaryUnitTests.TheBuildAssembly_WhenInspected_ShouldNotReferenceApplicationAssemblies` guards the compiled boundary. The committed `src/tool/schema/versions.lock.json` is a JSON object mapping each locked `major.minor.patch` to one lowercase SHA-256 string, with no file list. Existing entries survive an addition. If the newest version already has an entry, the method returns before reading its files or writing the lock, preserving even the lock's whitespace. An idle target emits only NUKE's usual target status. This implements the lock part of OQ-52; the cut target and manifest placement remain open. The committed lock records `0.1.0` and `0.2.0`: `0.1.1`'s folders were deleted by hand and the target then added `0.2.0` (item `0219`, decision 0013), so no shipped version is unlocked and `VerifyTag`'s `RequireAllLockedAsync` passes (`0055-F6` B-013).
 
@@ -1488,7 +1489,7 @@ unchanged (C-1).
 
 ### Pin policy (item `0124`)
 
-<!-- last written by: implementer, 2026-11-02 (item `0124`: built) -->
+<!-- last written by: implementer, 2026-11-13 (item 0167: `frontmatter`'s check is `SpechtFrontmatterCheck`) -->
 
 Built. Each type and member named here is declared where its link points, and
 the declaration owns its signature.
@@ -1571,8 +1572,8 @@ which the design proceeds on and the owner may reverse.
 `SpechtTreeGenerator` keep `PinnedVersion` or the pin, unchanged.
 
 `specht frontmatter` keeps the pin too (decision 0021 call 3 as amended).
-`SpechtRunner.CheckFrontmatter` calls
-[`SpechtModelReader.ReadPinnedSchemas`](../../specht/Model/SpechtModelReader.cs),
+`SpechtFrontmatterCheck.Run` (`SpechtRunner.CheckFrontmatter` until item `0167`)
+calls [`SpechtModelReader.ReadPinnedSchemas`](../../specht/Model/SpechtModelReader.cs),
 which reads the manifest's source as `ReadSchemas` does with no command-line
 selection and selects with `PinnedVersion` in place of `VersionInUse`. Both
 public members pass their selector to one private `ReadSchemas`, so the

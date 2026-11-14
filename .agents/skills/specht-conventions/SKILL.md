@@ -64,7 +64,7 @@ src/
 
 test/
   tests/                       specht.tests - unit and integration tests
-    Shared/ Engine/ <Slice>/   fixtures several Features use, the runner's tests, and one
+    Shared/ Engine/ <Slice>/   fixtures several Features use, the check's tests, and one
                                folder per engine folder and per command
   acceptance/                  specht.acceptance - Reqnroll over src/**/.spec/*.feature
 

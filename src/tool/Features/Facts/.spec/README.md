@@ -145,7 +145,7 @@ The check reports what is wrong with a specification tree, and nothing reports w
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-13 -->
+<!-- last written by: implementer, 2026-11-13 (item 0167: the check entry point and the report mapper and serializer) -->
 
 The design for items `0364`, `0365`, `0366` and `0368`, as built. Each built type is declared in the file it links; the compiler is the authority on its members and
 signatures.
@@ -154,7 +154,7 @@ signatures.
 
 The command calls the check's own read,
 [`SpechtModelReader.Read(root, null)`](../../../../specht/Model/SpechtModelReader.cs), the same call
-[`SpechtRunner.Run`](../../../../specht/SpechtRunner.cs) makes, with the manifest's own schema source. That one call
+[`SpechtCheck.Run`](../../../../specht/Check/SpechtCheck.cs) makes (`SpechtRunner.Run` until item `0167`), with the manifest's own schema source. That one call
 checks the root, reads, parses and pins the manifest, compiles the selected frontmatter schemas, discovers through
 [`SpechtDiscovery`](../../../../specht/Discovery/SpechtDiscovery.cs), loads through `SpechtTreeStore` and parses through
 [`SpechtModelBuilder`](../../../../specht/Model/SpechtModelBuilder.cs), so every fact comes from the parse the check
@@ -174,9 +174,10 @@ Two records in the engine folder `src/specht/Facts/`, namespace `Specht.Facts`, 
 and constraints". The folder sits beside `Report/` in ADR-0010's list and reads only `Model/` below it.
 
 - [`FactsDocument`](../../../../specht/Facts/FactsDocument.cs): the document. Its `From` projects a model, as
-  [`SpechtReportDocument.From`](../../../../specht/Report/SpechtReportDocument.cs) makes the report: a function of the
-  model and the records it is handed alone (§ "Records beside a specification"), with no clock, machine or environment
-  in it. Its `ToJson` serializes it.
+  `SpechtReportDocument.From` made the report document until item `0167` moved it to
+  [`SpechtReportDocumentMapper.Map`](../../../../specht/Report/SpechtReportDocumentMapper.cs): a function of the
+  model and the records it is handed alone (§ "Records beside a specification"), with no clock, machine or
+  environment in it. Its `ToJson` serializes it.
 - [`FeatureFacts`](../../../../specht/Facts/FeatureFacts.cs): one discovered Feature specification.
 
 `From` walks `model.Features`, which `SpechtModelBuilder` fills in the listing's order, so the document lists every
@@ -223,7 +224,8 @@ beside a specification"):
 }
 ```
 
-`ToJson` uses `System.Text.Json` with options held in one `static readonly` field, as `SpechtReportDocument` does:
+`ToJson` uses `System.Text.Json` with options held in one `static readonly` field, as `SpechtReportDocument` did until item `0167` moved its options to
+[`SpechtReportSerializer`](../../../../specht/Report/SpechtReportSerializer.cs):
 indented, `\n` line endings whatever the platform, camelCase names, and, unlike the report, nulls written. Members come
 out in declaration order and lists in model order, so the same tree and arguments give the same bytes (B-022).
 
@@ -597,8 +599,9 @@ until it lands, `--json` is required, and `docs/cli.md` says so. Item `0370` rem
 
 - **A `FactsReader` class wrapping the read and the projection.** One call to a type that already exists and one pure
   function; a second type would only forward.
-- **A `Facts` method on `SpechtRunner`.** `SpechtRunner` is the check's runner, and ADR-0010 moves it into a folder; the
-  facts read evaluates nothing.
+- **A `Facts` method on `SpechtRunner`.** `SpechtRunner` was the check's runner, which ADR-0010 would have moved into a
+  folder; item `0167` deleted it for `SpechtCheck`, which reads and evaluates and does nothing else. The facts read evaluates
+  nothing.
 - **Frontmatter key names as members (`spec_status`, `depends_on`).** The key is the consumer's from schema `0.3.0`, so
   the member would change with the manifest or the pin (B-017, C-5).
 - **Omitting a member whose value is absent.** A reader could not tell absent from empty, and the shape would vary with
