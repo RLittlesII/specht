@@ -79,6 +79,13 @@ public sealed class SpechtModel
     /// <implements epic="0001" feature="F16" claim="B-001" />
     public IReadOnlyList<SpechtClaims> ClaimSets { get; }
 
+    /// <summary>
+    /// The root-relative path of each companion file beside no specification of any layout, in ordinal order; none in a
+    /// model a test builds in memory (<c>0001-F6</c> B-013).
+    /// </summary>
+    /// <implements epic="0001" feature="F6" claim="B-013" />
+    public IReadOnlyList<string> OrphanCompanions { get; init; } = [];
+
     /// <summary>The configured matrix section of each Feature.</summary>
     public IReadOnlyDictionary<FeatureSpec, SpechtSection?> MatrixSections { get; }
 

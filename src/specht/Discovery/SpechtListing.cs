@@ -37,4 +37,11 @@ public sealed record SpechtListing(
     /// <implements epic="0001" feature="F16" claim="B-026" />
     /// <implements epic="0001" feature="F16" claim="B-036" />
     public IReadOnlyList<SpechtLocation?> ClaimLocations { get; init; } = [];
+
+    /// <summary>
+    /// The companion files beside no specification of any layout, in ordinal order of relative path
+    /// (<c>0001-F6</c> B-013).
+    /// </summary>
+    /// <implements epic="0001" feature="F6" claim="B-013" />
+    public IReadOnlyList<string> OrphanCompanions { get; init; } = [];
 }
