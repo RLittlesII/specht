@@ -180,7 +180,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -380,6 +380,18 @@ From item `0440` (`0001-F19` B-078) that listing is
 one's listed files, so `0001-F19`'s collision guard reads one Feature's sets
 through the same reader. `Build` hands it every set and
 `SpechtListing.ClaimFiles`, so the check reads as described here.
+
+Which sets the guard reads is matched in `0001-F19`, not through anything this
+Feature builds. `HeldIds.NativeClaimsOf` reads the Feature's `.spec/README.md`
+frontmatter itself, the text under the manifest's `FeatureKeys.Id` and
+`FeatureKeys.Epic`, and keeps a set whose `feature` equals that id and, where
+the set has an `epic`, whose `epic` equals that epic, both compared ordinally.
+The set's `record` takes no part (`0001-F19` § 7, item `0440`). Item `0391`,
+not built, makes a native Feature a `FeatureSpec` from the set's `record` or
+its first claim file and keys `ClaimSets` into `Claims` (the table under "What
+stays"). That is a second match of a set to a Feature, so when item `0391`
+lands the two are to be kept to one reading of which Feature a set belongs to.
+Nothing here decides how.
 
 **The tag forms.** `SpechtModelBuilder.ClaimSets`, a step of `Build`
 declared in [`SpechtModelBuilder.cs`](../../../Model/SpechtModelBuilder.cs),
