@@ -2,7 +2,7 @@ id: "0366"
 type: task
 title: Out-of-scope rows and open questions in the facts
 
-status: ready
+status: done
 
 value: 3
 risk: 2
@@ -21,8 +21,8 @@ claims:
   - B-015
 
 created: "2026-11-06"
-updated: "2026-11-06"
-closed: null
+updated: "2026-11-13"
+closed: "2026-11-13"
 
 summary: |
   As a coding agent I want each Feature's § 5 rows and § 11 open questions in the facts, with whether each question is resolved, so that I know what not to build and what is still undecided.
