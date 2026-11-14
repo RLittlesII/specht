@@ -8,7 +8,7 @@ namespace Specht.Tests.Engine;
 /// says it reports has at least one tree here that makes it fire.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerViolationsIntegrationTests
+public sealed class SpechtCheckViolationsIntegrationTests
 {
     [Fact]
     public void ASpecificationWithNoFrontmatter_WhenChecked_ShouldReportSpec1001()

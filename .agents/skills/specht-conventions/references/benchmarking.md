@@ -31,7 +31,7 @@ decided by the owner on 2026-10-09 (item 0108). The project file is
 
 - The engine through its injected stages (ADR-0005): discovery, the frontmatter
   reader, the manifest and schema load, the Markdig model, each rule, and the
-  runner end to end. Until item 0107 lands the stages are reached through
+  check end to end. Until item 0107 lands the stages are reached through
   today's entry points (`0109-F2` A-1); setup stays in `[GlobalSetup]`, so the
   call measured is the stage's.
 - The packed tool's cold start, which only the default out-of-process toolchain

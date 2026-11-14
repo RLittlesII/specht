@@ -12,7 +12,7 @@ namespace Specht.Tests.Engine;
 /// baseline's schema version, which keeps that axis (<c>0001-F7</c> B-120).
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpechtRunnerRulesIntegrationTests
+public sealed class SpechtCheckRulesIntegrationTests
 {
     [Fact]
     public void ATreeWithOneValidSpecification_WhenChecked_ShouldReportNoViolations()

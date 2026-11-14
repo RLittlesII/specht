@@ -441,7 +441,7 @@ public sealed class CheckCommandIntegrationTests
         // Given
         var expected = string.Join(
             '\n',
-            report.Violations.Select(static violation => violation.ToString()).Concat(SpechtReportDocument.From(report).SummaryLines()));
+            report.Violations.Select(static violation => violation.ToString()).Concat(new SpechtReportDocumentMapper().Map(report).SummaryLines()));
 
         // When
         var result = Check(_ => report);
@@ -513,11 +513,11 @@ public sealed class CheckCommandIntegrationTests
         var violations = report.Violations.Select(static violation => violation.ToString()).ToArray();
 
         // When
-        var result = Check(EngineServices.Runner().Run, "--root", tree.Root);
+        var result = Check(static directory => EngineServices.Check().Run(directory, null), "--root", tree.Root);
 
         // Then
         violations.Should().HaveCountGreaterThan(1);
-        result.Output.Should().Be(string.Join('\n', violations.Concat(SpechtReportDocument.From(report).SummaryLines())));
+        result.Output.Should().Be(string.Join('\n', violations.Concat(new SpechtReportDocumentMapper().Map(report).SummaryLines())));
         result.Output.Should().NotContain(tree.Root).And.NotContain("\\");
         result.ExitCode.Should().Be(1);
     }
@@ -531,11 +531,11 @@ public sealed class CheckCommandIntegrationTests
         var report = tree.Run();
 
         // When
-        var result = Check(EngineServices.Runner().Run, "--root", tree.Root);
+        var result = Check(static directory => EngineServices.Check().Run(directory, null), "--root", tree.Root);
 
         // Then
         report.Violations.Should().BeEmpty();
-        result.Output.Should().Be(string.Join('\n', SpechtReportDocument.From(report).SummaryLines()));
+        result.Output.Should().Be(string.Join('\n', new SpechtReportDocumentMapper().Map(report).SummaryLines()));
         result.ExitCode.Should().Be(0);
     }
 
@@ -544,7 +544,7 @@ public sealed class CheckCommandIntegrationTests
     public void AReport_WhenCheckedWithJson_ShouldPrintOnlyItsDocument(string because, SpechtReport report)
     {
         // Given
-        var expected = SpechtReportDocument.From(report).ToJson();
+        var expected = new SpechtReportSerializer().Serialize(new SpechtReportDocumentMapper().Map(report));
 
         // When
         var result = Check(_ => report, "--json");
@@ -562,14 +562,14 @@ public sealed class CheckCommandIntegrationTests
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
         tree.WriteFeature("0001", "F2", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
         var report = tree.Run();
-        var document = SpechtReportDocument.From(report);
+        var document = new SpechtReportDocumentMapper().Map(report);
 
         // When
-        var result = Check(EngineServices.Runner().Run, "--root", tree.Root, "--json");
+        var result = Check(static directory => EngineServices.Check().Run(directory, null), "--root", tree.Root, "--json");
 
         // Then
         report.Violations.Should().HaveCountGreaterThan(1);
-        result.Output.Should().Be(document.ToJson());
+        result.Output.Should().Be(new SpechtReportSerializer().Serialize(document));
         foreach (var line in report.Violations.Select(static violation => violation.ToString()).Concat(document.SummaryLines()))
         {
             result.Output.Should().NotContain(line);
@@ -589,7 +589,7 @@ public sealed class CheckCommandIntegrationTests
         var root = arrange(tree);
 
         // When
-        var result = Check(EngineServices.Runner().Run, "--root", root);
+        var result = Check(static directory => EngineServices.Check().Run(directory, null), "--root", root);
 
         // Then
         result.Output.Should().BeEmpty(because);
@@ -604,7 +604,7 @@ public sealed class CheckCommandIntegrationTests
         using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         var root = arrange(tree);
-        var rejection = Record.Exception(() => EngineServices.Runner().Run(root));
+        var rejection = Record.Exception(() => EngineServices.Check().Run(root, null));
         var stderr = new StringWriter();
         var original = Console.Error;
 
@@ -612,7 +612,7 @@ public sealed class CheckCommandIntegrationTests
         Console.SetError(stderr);
         try
         {
-            Check(EngineServices.Runner().Run, "--root", root);
+            Check(static directory => EngineServices.Check().Run(directory, null), "--root", root);
         }
         finally
         {
@@ -633,7 +633,7 @@ public sealed class CheckCommandIntegrationTests
         RecordingAnUpstreamSchemaSource(tree, static _ => { });
 
         // When
-        var result = Check(EngineServices.Runner().Run, "--root", tree.Root, "--json");
+        var result = Check(static directory => EngineServices.Check().Run(directory, null), "--root", tree.Root, "--json");
 
         // Then
         result.ExitCode.Should().Be(0);
@@ -689,7 +689,7 @@ public sealed class CheckCommandIntegrationTests
         var data = new PinnedDefaultsData();
 
         // When
-        var result = Check(EngineServices.Runner(data.Versions).Run, "--root", tree.Root);
+        var result = Check(directory => EngineServices.Check(data.Versions).Run(directory, null), "--root", tree.Root);
 
         // Then
         result.ExitCode.Should().Be(expectedExit);
@@ -728,7 +728,7 @@ public sealed class CheckCommandIntegrationTests
         var before = Snapshot();
 
         // When
-        var result = Check(EngineServices.Runner().Run, "--root", tree.Root);
+        var result = Check(static directory => EngineServices.Check().Run(directory, null), "--root", tree.Root);
 
         // Then
         result.ExitCode.Should().Be(expectedExit);

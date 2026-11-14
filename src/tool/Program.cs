@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Specht;
+using Specht.Check;
 using Specht.Composition;
 using Specht.Evaluation;
 using Specht.Manifest;
@@ -19,7 +19,7 @@ using Spectre.Console.Cli;
 
 var services = new ServiceCollection();
 services.AddSpechtEngine();
-services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtRunner>().Run);
+services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtCheck>().Run);
 services.AddInit();
 services.AddUpgrade();
 services.AddMint();

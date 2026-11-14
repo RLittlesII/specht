@@ -471,13 +471,13 @@ public sealed partial class ManifestSteps
             if (_fromRoot)
             {
                 _model = EngineServices.Reader().Read(Tree.Root, SchemaSourceSelection.Disk);
-                _report = EngineServices.Runner().Run(Tree.Root, SchemaSourceSelection.Disk);
+                _report = EngineServices.Check().Run(Tree.Root, SchemaSourceSelection.Disk);
                 string[] frontmatter = [.. new[] { "SPEC001", "SPEC002", "SPEC003", "SPEC004" }.Select(id => RuleIds.Under(Manifest, id))];
                 _frontmatterViolations = _report.Violations.Where(violation => frontmatter.Contains(violation.RuleId)).ToList();
             }
             else
             {
-                _report = EngineServices.Runner().Run(Tree.Root);
+                _report = EngineServices.Check().Run(Tree.Root, null);
             }
         }
         catch (SpechtManifestException rejection)

@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
+using Specht.Check;
 using Specht.Composition;
 using Specht.Discovery;
 using Specht.Manifest;
@@ -71,9 +72,9 @@ public static class EngineServices
     public static SchemaVersionManager Commands(SchemaVersions? versions = null) =>
         (SchemaVersionManager) Resolve(typeof(SchemaVersionManager), versions: versions);
 
-    /// <summary>Resolves a runner with the chosen catalog, over the supplied file system and child process or the real ones.</summary>
-    public static SpechtRunner Runner(SchemaVersions? versions = null, IFileSystem? fileSystem = null, IChildProcess? childProcess = null) =>
-        (SpechtRunner) Resolve(typeof(SpechtRunner), fileSystem, versions, childProcess);
+    /// <summary>Resolves the engine's check with the chosen catalog, over the supplied file system and child process or the real ones.</summary>
+    public static SpechtCheck Check(SchemaVersions? versions = null, IFileSystem? fileSystem = null, IChildProcess? childProcess = null) =>
+        (SpechtCheck) Resolve(typeof(SpechtCheck), fileSystem, versions, childProcess);
 
     /// <summary>Resolves the model reader over the supplied file system and catalog, or the real ones.</summary>
     public static SpechtModelReader Reader(IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
