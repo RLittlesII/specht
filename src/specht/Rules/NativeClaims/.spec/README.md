@@ -201,7 +201,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0395 built as designed; the open points stated as OQ-19 and OQ-20 resolve them); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1195,8 +1195,8 @@ rule and one optional member on the shared finding.
 
 ### An unreadable claim file, set or record, `SPEC4013` (item `0395`)
 
-Designed. One rule for claim input the check cannot take claims from: a claim
-file in another language (B-014) or with no `Feature:` line (B-015), a set
+Built. One rule for claim input the check cannot take claims from: a claim
+file in another language (B-014) or any other text the reader refuses (B-015), a set
 whose glob matches no file (B-016), a file two sets match (B-018), a
 Feature-level tag naming another identity (B-019), and a `record` that cannot
 be read (B-033) or is absolute (B-034). The id is `SPEC4013` (decision 0004),
@@ -1240,8 +1240,7 @@ and 2). The builder's catch, today an empty block, adds one `UnreadableFile`
 fault at the file's path and the exception's line. The file stays out of
 `Files`, so `SPEC4011` and `SPEC4012` see nothing of it, and it declares no
 claim, as today. The reader throws one exception, with one message, for every
-text it does not parse; B-015's file is one of them. See the first open point
-below.
+text it does not parse, and B-015 names each of them (OQ-19).
 
 **A set matching no file (B-016).** A set whose listed files are none gets one
 `EmptySet` fault: `Path` the set's `glob` as the manifest writes it, line `0`,
@@ -1279,9 +1278,11 @@ file uses, which is the cautious answer; no claim of `0001-F19` asks it to
 change.
 
 **A Feature-level tag naming another identity (B-019).** `ClaimSets` builds the
-reader's `FeatureScope` from `ClaimInput.FeatureScopeTag` when it is set:
-`GherkinClaimTagForm(form, "feature", false, null)`, the placeholder, case and
-grammar the analyzer's `GherkinClaimPolicyReader` gives it (A-3). The reader
+reader's `FeatureScope` from `ClaimInput.FeatureScopeTag` when it is set and
+holds exactly one `{feature}`: `GherkinClaimTagForm(form, "feature", false,
+null)`, the placeholder, case and grammar the analyzer's
+`GherkinClaimPolicyReader` gives it (A-3). Any other form is read as no form
+(OQ-20), so the form's constructor never sees one it refuses. The reader
 already reads each Feature-level tag through it into `FeatureTagValues`, with
 no line. `GherkinClaimText` gains a trailing optional member,
 `IReadOnlyList<int>? FeatureTagLines = null`, the line of each value at the same
@@ -1361,26 +1362,19 @@ and this repository's self-check gains the count and no violation.
 **Determinism (B-030).** Faults in set order and ordinal path order, and the
 evaluator's order sorts the report.
 
-**Open points.** Each is behaviour no claim states, so this design does not
-settle it:
+**Resolved points.** The design left two points open, as behaviour no claim
+stated; § 11 resolves both, and the build follows:
 
-1. **Other text the reader refuses.** B-015 names a file with no `Feature:`
-   line. The reader also throws on a ragged table, a malformed tag token, an
-   unterminated doc string, a second `Feature:` line, tags before nothing, and
-   an `Examples:` with no outline above it. It throws them all as one
-   exception with one message. Today each file declares nothing, silently. As
-   designed, every one is reported at line `0`, as B-015's is, because the
-   catch cannot tell them apart. Telling them apart needs a member on the
-   shared exception. Item `0394`'s readings already describe an `Examples:`
-   with no outline as `SPEC4013`'s, which holds only under this design's
-   answer.
-2. **A `featureTag` without exactly one `{feature}`.** Item `0390`'s parser
-   does not check it, and `GherkinClaimTagForm`'s constructor throws on it,
-   with `claim.tag`'s message, outside the per-file catch. As designed, a form
-   the constructor refuses is read as no form: B-019 reports nothing and
-   nothing throws, which is today's behaviour. The other answer is exit `3`,
-   naming the key, as `claim.tag` without `{claim}` exits; that would be a
-   parser fault and a claim.
+1. **Other text the reader refuses** (OQ-19, resolved (a)). Every text the
+   reader refuses but a `# language:` header is reported at line `0`, and B-015
+   names each cause: no `Feature:` line, a second one, a ragged table, a
+   malformed tag token, an unterminated doc string, tags followed by no
+   element, and an `Examples:` with no outline above it. The catch needs no
+   way to tell them apart. Item `0394`'s reading of an `Examples:` with no
+   outline as `SPEC4013`'s holds.
+2. **A `featureTag` without exactly one `{feature}`** (OQ-20, resolved (a)).
+   It is read as no form: B-019 reports nothing and nothing throws. Item
+   `0390`'s parser still accepts the form, and no exit `3` is added.
 
 **Testability.** The mechanisms that prove each claim, for `test-writer`'s § 8
 and § 9:

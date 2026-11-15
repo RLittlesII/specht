@@ -43,23 +43,26 @@ public sealed class SpechtClaims
 
     /// <summary>
     /// Derives a native Feature's claims from its claim file set: each claim its files declare, in file order and then
-    /// document order, located at the keyword line of the element that declares it.
+    /// document order, located at the keyword line of the element that declares it, except the claims of a file in
+    /// <paramref name="unclaimed"/>, which declares none.
     /// </summary>
     /// <param name="set">The claim file set.</param>
     /// <param name="files">What the shared Gherkin reader read from each of the set's files, in listing order.</param>
     /// <param name="structure">The effective manifest.</param>
+    /// <param name="unclaimed">The root-relative paths of the files whose claims are under no set, or null for none.</param>
     /// <implements epic="0001" feature="F16" claim="B-001" />
     /// <implements epic="0001" feature="F16" claim="B-004" />
     /// <implements epic="0001" feature="F16" claim="B-011" />
     /// <implements epic="0001" feature="F16" claim="B-010" />
-    public SpechtClaims(SpechtClaimFileSet set, IReadOnlyList<GherkinClaimText> files, SpechtStructure structure)
+    /// <implements epic="0001" feature="F16" claim="B-018" />
+    public SpechtClaims(SpechtClaimFileSet set, IReadOnlyList<GherkinClaimText> files, SpechtStructure structure, IReadOnlySet<string>? unclaimed = null)
     {
         FileSet = set;
         Files = files;
         var rows = new List<SpechtClaim>();
         var ids = new Dictionary<string, int>(StringComparer.Ordinal);
         var tagIds = new HashSet<string>(structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
-        foreach (var file in files)
+        foreach (var file in files.Where(file => unclaimed?.Contains(file.RelativePath) != true))
         {
             foreach (var declaration in file.Claims)
             {
@@ -85,6 +88,18 @@ public sealed class SpechtClaims
     /// <summary>What the shared Gherkin reader read from each claim file of the set, in listing order; empty for a claims table.</summary>
     /// <implements epic="0001" feature="F16" claim="B-010" />
     public IReadOnlyList<GherkinClaimText> Files { get; } = [];
+
+    /// <summary>
+    /// The claim input of the set the check could not take claims from: each claim file the reader refused, the set's glob
+    /// when it matches no file, each file another set also matches, and each Feature-level tag naming another Feature; empty
+    /// for a claims table.
+    /// </summary>
+    /// <implements epic="0001" feature="F16" claim="B-014" />
+    /// <implements epic="0001" feature="F16" claim="B-015" />
+    /// <implements epic="0001" feature="F16" claim="B-016" />
+    /// <implements epic="0001" feature="F16" claim="B-018" />
+    /// <implements epic="0001" feature="F16" claim="B-019" />
+    public IReadOnlyList<SpechtClaimFault> Faults { get; init; } = [];
 
     /// <summary>The claims section, absent when no section has the configured role.</summary>
     public SpechtSection? Section { get; }

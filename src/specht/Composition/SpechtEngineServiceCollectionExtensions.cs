@@ -83,6 +83,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, OrphanCompanionRule>();
         services.AddSingleton<ISpechtRule, ScenarioWithoutClaimRule>();
         services.AddSingleton<ISpechtRule, ExamplesClaimTagRule>();
+        services.AddSingleton<ISpechtRule, ClaimInputFaultRule>();
         services.AddSingleton<ISpechtRule, ClaimIdRule>();
         services.AddSingleton<ISpechtRule, ClaimRowRule>();
         services.AddSingleton<ISpechtRule, UnresolvedTestRule>();

@@ -1,3 +1,5 @@
+using Specht.Model;
+
 namespace Specht.Discovery;
 
 /// <summary>What discovery listed under one root, each file by its root-relative path, in the order discovery gave it.</summary>
@@ -37,6 +39,14 @@ public sealed record SpechtListing(
     /// <implements epic="0001" feature="F16" claim="B-026" />
     /// <implements epic="0001" feature="F16" claim="B-036" />
     public IReadOnlyList<SpechtLocation?> ClaimLocations { get; init; } = [];
+
+    /// <summary>
+    /// Each claim file set's <c>record</c> the check could not read, in the manifest's order of the sets: at the path as the
+    /// manifest writes it, or at the manifest when it is rooted; empty unless <c>claim.source</c> is <c>gherkin</c>.
+    /// </summary>
+    /// <implements epic="0001" feature="F16" claim="B-033" />
+    /// <implements epic="0001" feature="F16" claim="B-034" />
+    public IReadOnlyList<SpechtClaimFault> ClaimFaults { get; init; } = [];
 
     /// <summary>
     /// The companion files beside no specification of any layout, in ordinal order of relative path
