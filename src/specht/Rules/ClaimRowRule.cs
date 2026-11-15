@@ -25,12 +25,12 @@ public sealed class ClaimRowRule : ISpechtRule
         model.EnsureClaimGrammar();
         var structure = model.Schemas.Structure;
 
-        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
+        foreach (var feature in model.Features)
         {
             var claims = model.Claims[feature];
             var matrix = model.MatrixSections[feature];
 
-            if (claims.Section is null || matrix is null)
+            if (matrix is null || claims.Section is null && feature.ClaimFileSet is null)
             {
                 continue;
             }
@@ -50,6 +50,7 @@ public sealed class ClaimRowRule : ISpechtRule
         SpechtSection matrix,
         SpechtStructure structure)
     {
+        var native = feature.ClaimFileSet is not null;
         var claimsReference = structure.SectionReference("claims");
         var matrixReference = structure.SectionReference("matrix");
         var withdrawn = structure.Markers.GetValueOrDefault("withdrawn", "Withdrawn");
@@ -79,10 +80,13 @@ public sealed class ClaimRowRule : ISpechtRule
             {
                 yield return new SpechtFinding(
                     feature.RelativePath,
-                    line,
+                    native ? matrix.Line : line,
                     id,
-                    $"claim '{id}' has no row in {matrixReference} - every {claimsReference} claim appears there exactly once, "
-                        + $"with '{structure.Markers["missing"]}' as its test until one exists")
+                    native
+                        ? $"claim '{id}' has no row in {matrixReference} - every claim the claim files declare appears there exactly once, "
+                            + $"with '{structure.Markers["missing"]}' as its test until one exists"
+                        : $"claim '{id}' has no row in {matrixReference} - every {claimsReference} claim appears there exactly once, "
+                            + $"with '{structure.Markers["missing"]}' as its test until one exists")
                 {
                     Expected = MatrixExpected(claims, rows),
                 };
@@ -106,7 +110,9 @@ public sealed class ClaimRowRule : ISpechtRule
                 feature.RelativePath,
                 lines[0],
                 id,
-                $"{matrixReference} cites '{id}', which is not a claim in {claimsReference} - a withdrawn claim is marked {withdrawn}, not deleted")
+                native
+                    ? $"{matrixReference} cites '{id}', which no claim file of the set declares"
+                    : $"{matrixReference} cites '{id}', which is not a claim in {claimsReference} - a withdrawn claim is marked {withdrawn}, not deleted")
             {
                 Expected = MatrixExpected(claims, rows),
             };

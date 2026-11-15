@@ -59,10 +59,11 @@ public sealed class SpechtClaims
     {
         FileSet = set;
         Files = files;
+        Claimed = files.Where(file => unclaimed?.Contains(file.RelativePath) != true).ToArray();
         var rows = new List<SpechtClaim>();
         var ids = new Dictionary<string, int>(StringComparer.Ordinal);
         var tagIds = new HashSet<string>(structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
-        foreach (var file in files.Where(file => unclaimed?.Contains(file.RelativePath) != true))
+        foreach (var file in Claimed)
         {
             foreach (var declaration in file.Claims)
             {
@@ -88,6 +89,10 @@ public sealed class SpechtClaims
     /// <summary>What the shared Gherkin reader read from each claim file of the set, in listing order; empty for a claims table.</summary>
     /// <implements epic="0001" feature="F16" claim="B-010" />
     public IReadOnlyList<GherkinClaimText> Files { get; } = [];
+
+    /// <summary>The files of <see cref="Files"/> the set takes claims from, in listing order; empty for a claims table.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-023" />
+    public IReadOnlyList<GherkinClaimText> Claimed { get; } = [];
 
     /// <summary>
     /// The claim input of the set the check could not take claims from: each claim file the reader refused, the set's glob

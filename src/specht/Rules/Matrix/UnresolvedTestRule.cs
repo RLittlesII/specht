@@ -23,7 +23,7 @@ public sealed class UnresolvedTestRule(MatrixResolver resolver) : ISpechtRule
 
         var markers = structure.Markers;
         var matrixReference = structure.SectionReference("matrix");
-        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
+        foreach (var feature in model.Features)
         {
             foreach (var row in resolver.Resolve(feature, structure, model.TestFiles))
             {

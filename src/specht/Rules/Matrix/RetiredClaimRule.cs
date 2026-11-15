@@ -32,7 +32,8 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
                     continue;
                 }
 
-                if (claim.Tags.Count > 0 || claim.Rows.Any(row => !string.Equals(row.Status.Trim(), claim.Status, StringComparison.Ordinal)))
+                var stray = claim.Claim.Declaration is null && claim.Tags.Count > 0;
+                if (stray || claim.Rows.Any(row => !string.Equals(row.Status.Trim(), claim.Status, StringComparison.Ordinal)))
                 {
                     yield return new SpechtFinding(
                         feature.RelativePath, claim.Claim.Line, claim.Claim.Id,

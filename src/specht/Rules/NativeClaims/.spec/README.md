@@ -1646,7 +1646,7 @@ the claims title, chosen per Feature. The rules are declared in
 
 ### Native claims under SPEC2003, the matrix rules and the trace (item `0396`)
 
-Designed. Three readers of the catalogue take native claims, and no rule id is
+Built. Three readers of the catalogue take native claims, and no rule id is
 added (C-3):
 
 - `SPEC2003` does not report a claim file (B-022).
@@ -1795,8 +1795,13 @@ so is every companion's read: `FeatureTagParser` is untouched.
 their scenarios in document order, and their tags in declaration order. Every
 path is discovery's root-relative path, and the evaluator orders the findings.
 
-**Open point.** One rule of `0001-F12` reads its condition from the companion's
-tags, not its rows, and no claim settles it on a native Feature:
+**Open point, taken as the implementer's reading.** One rule of `0001-F12`
+reads its condition from the companion's tags, not its rows, and no claim
+settles it on a native Feature. The implementer took the second reading below;
+it is the implementer's reading, not an owner decision, and the owner may
+rule the first instead. `RetiredClaimRule` holds the condition
+`claim.Claim.Declaration is null && claim.Tags.Count > 0`, so a retired native
+claim is held to its rows alone:
 
 1. **`SPEC4006` on a retired native claim.** `RetiredClaimRule` reports a
    withdrawn or superseded claim when any companion tag carries it, or when a
