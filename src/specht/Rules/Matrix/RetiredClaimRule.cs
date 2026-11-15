@@ -33,10 +33,12 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
                 }
 
                 var stray = claim.Claim.Declaration is null && claim.Tags.Count > 0;
-                if (stray || claim.Rows.Any(row => !string.Equals(row.Status.Trim(), claim.Status, StringComparison.Ordinal)))
+                var off = claim.Rows.FirstOrDefault(row => !string.Equals(row.Status.Trim(), claim.Status, StringComparison.Ordinal));
+                if (stray || off is not null)
                 {
+                    var line = feature.ClaimFileSet is not null && off is not null ? off.Line : claim.Claim.Line;
                     yield return new SpechtFinding(
-                        feature.RelativePath, claim.Claim.Line, claim.Claim.Id,
+                        feature.RelativePath, line, claim.Claim.Id,
                         $"retired claim must have no companion tag and its {matrixReference} status must be '{claim.Status}'");
                 }
             }

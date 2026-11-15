@@ -64,6 +64,9 @@ public sealed class NativeMatrixVerdicts : TheoryData<string, string[], string[]
         var marked = Record(Matrix("| B-001 | Adds | Missing | Withdrawn |\n"));
         Add(WithRetirement, [AddFile, RecordFile], [retired, marked], []);
 
+        var drifted = Record(Matrix("| B-001 | Adds | Missing | Missing |\n"));
+        Add(WithRetirement, [AddFile, RecordFile], [retired, drifted], [$"SPEC4006 {RecordFile}({Line(drifted, "| B-001")}) B-001"]);
+
         Add(WithRetirement, [AddFile, RecordFile], [retired, withoutMatrix], []);
         Add(WithRetirement, [AddFile], [retired], []);
     }

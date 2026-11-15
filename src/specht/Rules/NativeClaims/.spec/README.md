@@ -3051,8 +3051,8 @@ The `@B-024` scenario names no claim file, so a hook writes one before its When;
 native claim with a row off its marker. The implementer's reading (§ 7's open point) is pinned on the rows that need no
 placement: the theory's `NativeMatrixVerdicts` rows over a withdrawn native claim report nothing with a row at the
 marker, with a record that holds no matrix and with no record, which is B-024's silence. Its row off the marker is
-untested: the rule reported the finding at line 4 of the record, the claim file's tag line, where § 7 says the first row
-whose Status is not the marker. That is a finding for `implementer`, not asserted.
+asserted: a withdrawn native claim whose row Status is `Missing` reports `SPEC4006` at the record, at that row's line.
+The rule first reported it at line 4, the claim file's tag line, and `RetiredClaimRule` now reports a native finding at the row.
 
 **Testability.**
 
