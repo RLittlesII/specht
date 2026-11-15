@@ -3046,8 +3046,9 @@ A claim file has a specification beside it by default; the B-022 step makes none
 it, since `.spec/features/arithmetic` matches no default layout's companion glob.
 The `@B-024` scenario names no claim file, so a hook writes one before its When; the scenario should name one itself.
 
-**Not asserted**, as no claim states it: `specht facts` for a native Feature, and where `SPEC4006` reports a retired
-native claim with a row off its marker. The implementer's reading (§ 7's open point) is pinned on the rows that need no
+**Not asserted**, as no claim states it: `specht facts` for a native Feature.
+
+The implementer's reading (§ 7's open point) of where `SPEC4006` reports a retired native claim is pinned on the rows that need no
 placement: the theory's `NativeMatrixVerdicts` rows over a withdrawn native claim report nothing with a row at the
 marker, with a record that holds no matrix and with no record, which is B-024's silence. Its row off the marker is
 asserted: a withdrawn native claim whose row Status is `Missing` reports `SPEC4006` at the record, at that row's line.
