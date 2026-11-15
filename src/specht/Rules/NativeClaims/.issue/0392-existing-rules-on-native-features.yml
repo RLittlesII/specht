@@ -2,7 +2,7 @@ id: "0392"
 type: task
 title: Hold a native Feature to the existing claim and section rules
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -21,7 +21,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-14"
-closed: null
+closed: "2026-11-14"
 
 summary: |
   The rules that exist, run on a native Feature: `SPEC4003` reports
