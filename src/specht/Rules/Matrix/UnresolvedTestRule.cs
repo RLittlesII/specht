@@ -23,12 +23,11 @@ public sealed class UnresolvedTestRule(MatrixResolver resolver) : ISpechtRule
 
         var markers = structure.Markers;
         var matrixReference = structure.SectionReference("matrix");
-        string[] exempt = [markers["waived"], markers["withdrawn"], markers["superseded"]];
         foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
             foreach (var row in resolver.Resolve(feature, structure, model.TestFiles))
             {
-                if (exempt.Contains(row.Status.Trim(), StringComparer.Ordinal)
+                if (row.Skips(markers)
                     || string.Equals(row.Test.Trim(), markers["missing"], StringComparison.Ordinal))
                 {
                     continue;

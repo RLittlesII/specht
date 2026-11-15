@@ -14,6 +14,7 @@ using Specht.Tool.Features.Manifest;
 using Specht.Tool.Features.Mint;
 using Specht.Tool.Features.Rules;
 using Specht.Tool.Features.Schema;
+using Specht.Tool.Features.Trace;
 using Specht.Tool.Features.Upgrade;
 using Spectre.Console.Cli;
 
@@ -31,7 +32,7 @@ app.Configure(static config =>
 {
     config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion)
         .SetHelpProvider(new SpechtHelpProvider(config.Settings));
-    config.AddInit().AddUpgrade().AddSchema().AddFrontmatter().AddRules().AddManifest().AddMint().AddFacts();
+    config.AddInit().AddUpgrade().AddSchema().AddFrontmatter().AddRules().AddManifest().AddMint().AddFacts().AddTrace();
     config.AddCommand<EvidenceCommand>("evidence");
 });
 

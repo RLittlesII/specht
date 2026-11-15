@@ -106,48 +106,347 @@ The check reports only the rows that fail. A reader who wants to see where every
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: implementer, 2026-11-14 (item 0442: the command, its lines and its document, built) -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                                                                        | Classification | Owner                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Which files are Feature specifications, and in what order (B-001, B-007)                                                       | Business       | The check's discovery, through `SpechtModelReader.Read` (C-1)                                                                            |
+| Root, manifest and pin acceptance, and the exceptions that carry their failure (B-006)                                         | Technical      | `SpechtModelReader`, `SpechtManifestStore`, `SpechtManifestParser`                                                                       |
+| A specification's path and qualified id (B-003)                                                                                | Business       | `FeatureSpec` and `SpechtModel.FeaturesWithIdentity`, projected by `TraceDocument.From`                                                  |
+| A claim's id, line and § 3 status, every claims-table row in row order (B-001, B-003, B-007)                                   | Business       | `SpechtClaims`, through `MatrixResolver.ResolveClaims` (C-1)                                                                             |
+| A claim's § 9 row, its cells read by column position (B-003)                                                                   | Business       | `MatrixResolver.Resolve`, through `ResolveClaims` (C-1)                                                                                  |
+| Which row a claim named by several reads: the first in document order (B-001, B-003)                                           | Business       | `TraceDocument.From`; the implementer's reading, § 7 "Readings"                                                                          |
+| Which scenarios carry a claim's tag, their own or inherited, under the tag-case setting (B-001, B-003)                         | Business       | `MatrixResolver.ResolveClaims`, giving `MatrixClaimResolution.Scenarios` (C-1)                                                           |
+| Whether a named test resolves against the declared test files, and its file and line (B-003)                                   | Technical      | `MatrixResolver.Resolve` over `SpechtModel.TestFiles` (C-1)                                                                              |
+| Whether a row's tests are skipped: its Status is the waived, withdrawn or superseded marker (B-019)                            | Business       | `MatrixRowResolution.Skips`, shared with `SPEC4009`'s `UnresolvedTestRule` (C-1)                                                         |
+| A test's resolution as one of A-1's four values, `skipped` before the resolver's three (B-003, B-019)                          | Business       | `TraceDocument.From`                                                                                                                     |
+| The document's members, which are absent rather than `null`, and their fixed shape (B-002, B-003; C-3)                         | Both           | `TraceDocument` and its member records, held to `docs/schema/trace.schema.json`                                                          |
+| Byte-identical serialization (B-007)                                                                                           | Technical      | `TraceDocument.ToJson`                                                                                                                   |
+| Each line's five tab-separated fields, its two counts, `none` and `0/0` (B-001)                                                | Business       | `TraceDocument.Lines`                                                                                                                    |
+| Parsing the options, choosing the form by `--json`, writing stdout and stderr, folding exceptions into exit codes (B-006; C-4) | Both           | `TraceCommand`                                                                                                                           |
+| The check's report holding no trace (B-009)                                                                                    | Business       | `SpechtReportDocument` and `docs/schema/report.schema.json`, unchanged                                                                   |
+| No write, no network, no absolute path (C-2)                                                                                   | Technical      | `TraceCommand`, which calls nothing that writes; the root-relative paths `FeatureSpec`, `FeatureFile` and `SpechtTestFile` already carry |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: implementer, 2026-11-14 (item 0442: the command, its lines and its document, built) -->
 
-Pending: owned by `implementer`, written after agreement.
+The design for item `0442` (B-001 to B-003, B-006, B-007, B-009, B-019), built. Each type links the file that declares
+it, and the compiler is the authority on its members.
+
+### Reading the tree
+
+The command calls the check's own read,
+[`SpechtModelReader.Read(root, null)`](../../../../specht/Model/SpechtModelReader.cs), as
+[`FactsCommand`](../../Facts/FactsCommand.cs) does: it checks the root, reads, parses and pins the manifest, discovers,
+and parses every specification and companion, and it reads the files `tests.files` declares into
+`SpechtModel.TestFiles`, none without the key. Every claim, row, scenario and test comes from the parse the check
+evaluates (C-1). No rule runs: the model is resolved and projected, never evaluated, so the trace judges nothing and
+gives `0` whatever it shows (B-006).
+
+The read throws the check's typed exceptions, and the command folds them as `FactsCommand` does (B-006):
+`SpechtRootNotFoundException` and `SpechtManifestNotFoundException` exit `ExitCodes.MissingInput` (`2`);
+`SpechtManifestUnreadableException` and `SpechtManifestException` exit `ExitCodes.InvalidManifest` (`3`). Each writes
+one `specht: ` line to stderr, in the words `FactsCommand` writes, and nothing to stdout.
+
+### Resolution through the matrix resolver
+
+[`MatrixResolver`](../../../../specht/Rules/Matrix/MatrixResolver.cs), the singleton `AddSpechtEngine` registers, is
+the one resolver (C-1). It gives most of what the trace reads, and three changes in `Rules/Matrix/` give the rest. The
+trace adds no join, tag lookup or marker test of its own.
+
+1. **`ResolveClaims` takes the test files.** A fourth parameter, `IReadOnlyList<SpechtTestFile> files`, is handed to its
+   `Resolve` call, which passed `[]` before item `0442`, so each claim's rows carry resolved tests. The trace passes
+   `model.TestFiles`. [`StatusRule`](../../../../specht/Rules/Matrix/StatusRule.cs),
+   [`MissingScenarioRule`](../../../../specht/Rules/Matrix/MissingScenarioRule.cs) and
+   [`RetiredClaimRule`](../../../../specht/Rules/Matrix/RetiredClaimRule.cs) pass `[]`, as `WaiverRule` and
+   `ScenarioTitleRule` pass it to `Resolve`, so each gets what it got before and no verdict changes.
+2. **[`MatrixClaimResolution`](../../../../specht/Rules/Matrix/MatrixClaimResolution.cs) carries the scenarios carrying
+   its tag.** A last member, `Scenarios`: each companion scenario whose `FeatureScenario.Tags` - its own, its Feature's,
+   its Rule's and, for an outline, its Examples' - hold the claim id under `ClaimTagIgnoreCase`'s comparer, the comparer
+   `ClaimTags` uses. A scenario is listed once however many of its tags match, in companion order and then file order,
+   as a [`MatrixScenarioResolution`](../../../../specht/Rules/Matrix/MatrixScenarioResolution.cs) with status
+   `Resolved`, its file and its keyword line: the evidence record `Resolve` already builds for a Scenario cell's title,
+   and a scenario carrying the claim's tag is what `Resolved` means there. `Tags` stays as it is: the rules read tag
+   lines, and a tag on a Feature line is one even where the file has no scenario.
+3. **[`MatrixRowResolution.Skips(markers)`](../../../../specht/Rules/Matrix/MatrixRowResolution.cs).** True when the
+   row's trimmed Status equals the waived, withdrawn or superseded marker, ordinally. A marker the manifest lacks
+   matches nothing, so under a pin that declares none of the three, schema `0.1.0`, it is false and does not throw.
+   [`UnresolvedTestRule`](../../../../specht/Rules/Matrix/UnresolvedTestRule.cs) reads it in place of the `exempt` array
+   it held: the same three markers and the same comparison, so `SPEC4009`'s verdicts do not change (`0001-F12` B-002,
+   B-006), and the trace and the check cannot disagree about which rows are skipped (C-1). Its own missing-marker test
+   of the Test cell stays in the rule: a Test cell holding the missing marker names no test in inline code, so the trace
+   lists none.
+
+### The document
+
+Engine folder `src/specht/Trace/`, namespace `Specht.Trace`, beside `Report/` and `Facts/` in ADR-0010's list. It reads
+`Rules/` for the resolver, `Model/` and `Manifest/`, each below it. One record per level, as `Facts/` has; the
+resolver's records are not published, since their `Status` and `Tests` members and any later change to them would
+reach the document (C-3).
+
+| Type                                                             | Members, in order                                                                 | Claims            |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----------------- |
+| [`TraceDocument`](../../../../specht/Trace/TraceDocument.cs)     | `specifications`                                                                  | B-002, B-007      |
+| [`FeatureTrace`](../../../../specht/Trace/FeatureTrace.cs)       | `path`, `id`, `claims`                                                            | B-003             |
+| [`ClaimTrace`](../../../../specht/Trace/ClaimTrace.cs)           | `id`, `line`, `status`, `row`, `scenarios`, `tests`                               | B-003             |
+| [`RowTrace`](../../../../specht/Trace/RowTrace.cs)               | `line`, `claim`, `scenario`, `test`, `status`                                     | B-003             |
+| [`ScenarioTrace`](../../../../specht/Trace/ScenarioTrace.cs)     | `title`, `file`, `line`                                                           | B-003             |
+| [`TestTrace`](../../../../specht/Trace/TestTrace.cs)             | `name`, `resolution`, `file`, `line`                                              | B-003, B-019      |
+| [`TraceResolution`](../../../../specht/Trace/TraceResolution.cs) | `Resolved`, `Unresolved`, `Unconfigured`, `Skipped`; written `resolved` and so on | A-1, B-003, B-019 |
+
+`TraceDocument.From(SpechtModel model, MatrixResolver resolver)` walks `model.Features` in discovery order, leaving out
+a Feature with a `ClaimFileSet` (§ "Readings"), and gives each the claims
+`resolver.ResolveClaims(feature, model.Schemas.Structure, model.Claims[feature], model.TestFiles)` returns, in § 3
+order (B-007). It is a function of the model and the resolver alone, which holds no state.
+
+| Member              | Value                                                                                                                                                                    | Claim        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| `path`              | `FeatureSpec.RelativePath`: root-relative, `/`-separated                                                                                                                 | B-003        |
+| `id`                | `FeatureSpec.Identity` when the Feature is in `SpechtModel.FeaturesWithIdentity`, else `null`, as the facts document gives it                                            | B-003        |
+| claim `id`, `line`  | `SpechtClaim.Id`, the trimmed first cell as written, and `SpechtClaim.Line`                                                                                              | B-003        |
+| claim `status`      | `MatrixClaimResolution.Status`: the claims table's fourth cell, trimmed, `""` when the row has none                                                                      | B-003        |
+| `row`               | The first of `MatrixClaimResolution.Rows`: its line and its four cells by position (`0001-F12` B-001) as the parse gives them, trimmed; absent when the claim has no row | B-003        |
+| `scenarios`         | `MatrixClaimResolution.Scenarios`: title, file and line; `[]` when no scenario carries the tag                                                                           | B-003        |
+| `tests`             | The first row's `Tests`, in cell order, a name the cell gives twice listed twice; `[]` without a row                                                                     | B-003        |
+| test `resolution`   | `skipped` when the row `Skips` the manifest's markers; otherwise the `MatrixTestStatus` the resolver gives                                                               | B-003, B-019 |
+| test `file`, `line` | `MatrixTestResolution.File` and `Line`, present only for `resolved`; absent for the other three                                                                          | B-003        |
+
+A claim carrying one resolved and one unresolved test, from a specification whose path is
+`src/a/.spec/README.md`:
+
+```json
+{
+  "specifications": [
+    {
+      "path": "src/a/.spec/README.md",
+      "id": "0001-F1",
+      "claims": [
+        {
+          "id": "B-001",
+          "line": 40,
+          "status": "Active",
+          "row": {
+            "line": 90,
+            "claim": "B-001",
+            "scenario": "One line per claim",
+            "test": "Prints_one_line, Prints_none",
+            "status": "Partial"
+          },
+          "scenarios": [
+            {
+              "title": "One line per claim",
+              "file": "src/a/.spec/a.feature",
+              "line": 7
+            }
+          ],
+          "tests": [
+            {
+              "name": "Prints_one_line",
+              "resolution": "resolved",
+              "file": "test/ATests.cs",
+              "line": 12
+            },
+            { "name": "Prints_none", "resolution": "unresolved" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`ToJson` uses `System.Text.Json` with options in one `static readonly` field, as `FactsDocument` does: indented, `"\n"`
+line endings, camelCase names, and `JsonStringEnumConverter(JsonNamingPolicy.CamelCase)` for `TraceResolution`, as
+[`SpechtReportSerializer`](../../../../specht/Report/SpechtReportSerializer.cs) writes the report's enums. `row`,
+`file` and `line` carry `[property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]`, so B-003's absent
+members are absent, not `null`; every other member is always written, `id` as `null` when the Feature has no identity.
+Nothing in the document reads the clock, the machine or the environment, and every list follows discovery, row, cell or
+file order, never a hash or a dictionary's order, so the same tree gives the same bytes (B-007).
+
+### Readings
+
+The implementer's, not the owner's. None changes what a claim states for a tree the check accepts.
+
+1. **A claim named by several § 9 rows reads the first, in document order.** B-001 and B-003 say "its § 9 row"; the
+   check reports a second row (`SPEC4004`), so the case arises only in a tree that fails. The other rows are not
+   listed; listing them would be a `rows` member, an addition C-3 allows.
+2. **Every claims-table row is a claim**, a row whose id the grammar refuses and two rows sharing an id included, each
+   its own line and element in row order, as `ResolveClaims` gives them and as the facts document gives every row
+   (`0132-F2` B-013). Two rows sharing an id read the same § 9 row.
+3. **A native-claim Feature, one with a `ClaimFileSet`, is left out**, as the facts document and the `0001-F12` rules
+   leave it out, and `ResolveClaims` returns no claim for it. `0001-F16` B-024, item `0396`, adds it, each claim with
+   the status `none`.
+4. **Under a schema `0.1.0` pin, until item `0444`, no row is skipped**: that manifest declares no waived, withdrawn or
+   superseded marker, so `Skips` matches nothing, and its tests are `unconfigured`, since that pin declares no `tests`.
+   B-019's "the waived marker" under `0.1.0` is B-011's `0.2.0` default, which item `0444` supplies. The command runs,
+   and exits `0`, under every shipped pin (A-2).
+
+### The text form
+
+Without `--json`, `TraceDocument.Lines()` gives one line per claim, specification by specification and claim by claim
+in the document's order (B-001, B-007): five fields separated by single tab characters, as the facts lines are. Each is
+made from the document, so the two forms cannot disagree.
+
+| Field     | Value                                                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| path      | the specification's `path`                                                                                               |
+| id        | the claim's `id`                                                                                                         |
+| status    | the `row`'s `status`, or `none` when the claim has no row                                                                |
+| scenarios | the number of `scenarios`, in decimal, invariant culture                                                                 |
+| tests     | `<resolved>/<named>`: the tests whose resolution is `resolved`, out of those that are not `skipped`; `0/0` without a row |
+
+So `src/a/.spec/README.md`, a tab, `B-002`, a tab, `Covered`, a tab, `2`, a tab, `2/3`. An `unconfigured` or
+`unresolved` test counts in the second number only, and a `skipped` one in neither (B-001). In each text field a tab,
+line feed or carriage return is written as one space, as `FactsDocument` writes its fields, so every line has five
+fields. A row whose Status cell is empty gives an empty field, not `none`.
+
+### The published schema
+
+[`docs/schema/trace.schema.json`](../../../../../docs/schema/trace.schema.json), draft 2020-12, as the report and facts
+schemas are, with `additionalProperties` `false` at every level (B-002). Required: `specifications` at the root; `path`,
+`id` and `claims` on a specification; `id`, `line`, `status`, `scenarios` and `tests` on a claim, `row` optional; all
+five members on a row; `title`, `file` and `line` on a scenario; `name` and `resolution` on a test, `resolution` an enum
+of A-1's four values, with an `if`/`then`/`else` requiring `file` and `line` when it is `resolved` and forbidding both
+otherwise (B-003). `path` and every `file` take the facts schema's `path` pattern: non-empty, not starting with `/`, no
+drive letter, no `\` (C-2). `id` is `["string", "null"]`. `test/tests/tests.csproj` and
+`test/acceptance/acceptance.csproj` already copy `docs/schema/*.json` into their output, so no project file changes.
+
+### The command
+
+[`TraceCommand`](../TraceCommand.cs), `specht trace [--root <DIR>] [--json]`, with its nested `Settings`. It injects
+the console, `SpechtModelReader`, `MatrixResolver` and an optional error writer, in that order, as
+`FactsCommand` does. It resolves the root with `Path.GetFullPath`, reads the model, makes `TraceDocument.From`, writes
+`ToJson` or each of `Lines()` through `console.Profile.Out.Writer`, which writes no markup, and returns
+`ExitCodes.Success` (B-006). It reads no Markdown, Gherkin or test file (C-4), and calls nothing that writes, so a run
+creates, modifies and deletes nothing and makes no network call (C-2).
+
+[`TraceRegistration`](../TraceRegistration.cs), beside it, adds `trace` to the configurator with the description
+"Print where every claim stands." as `FactsRegistration` does (ADR-0007), and [`Program.cs`](../../../Program.cs) adds `.AddTrace()` to its
+chain. No service is registered: `AddSpechtEngine` already registers `SpechtModelReader` and `MatrixResolver`.
+
+[`docs/cli.md`](../../../../../docs/cli.md) gains a `specht trace` section, its options and its exit codes, and its
+opening paragraph names `trace`; the `0002-F1` test holds the page to the help. The `AGENTS.md` CLI block gains
+`specht trace [--root <dir>] [--json]`. The command adds no rule id and is not schema-versioned (A-2).
+
+### The check's report
+
+Nothing in `Report/` changes (B-009). `SpechtReportDocument` has no trace member, and the report schema's
+`additionalProperties` `false` refuses one; a test holds it.
+
+### Where later items attach
+
+Each later item adds; none renames or retypes a member (C-3).
+
+- `0443` (B-004, B-005, B-020): `Resolve` gives `unconfigured` when the manifest has no `tests` key, `From` reads
+  `Skips` before the resolver's status, and no rule runs, so a rule set `off` hides nothing. This design gives all three; the item adds their
+  tests, and a production change only where one fails.
+- `0444` (B-010 to B-012): `Resolve` already reads the § 9 columns by position under every pin, and a `0.1.0` manifest
+  carries no `tests`. What it adds is the waived, withdrawn and superseded markers at their `0.2.0` defaults for `Skips`
+  under a `0.1.0` pin; where the defaults are read from is its design. `Skips` takes the markers, so its signature
+  stays.
+- `0445` (B-008, B-013 to B-018): a `--report <PATH>` option and its write; the text written is `ToJson`'s, so the
+  document on stdout and the file are one string written twice (B-017). The write itself is its design.
+- `0396` (`0001-F16` B-024): the native-claim Features, each claim `none`.
+
+### Rejected
+
+- **`skipped` as a fourth `MatrixTestStatus`, set by the resolver.** `MatrixTestStatus` is the text resolution of a
+  name (`0001-F12` B-001); whether a row's tests are resolved at all is a reading of its Status, which the rules make
+  per row. `SPEC4009` and `SPEC4010` would each have to learn a value they never act on.
+- **Joining `Resolve`'s rows to the claims in the trace, or reading scenario tags there.** A second join and a second
+  tag lookup beside `ResolveClaims`, free to disagree with it (C-1).
+- **A marker test of its own in `TraceDocument`.** The same three markers `UnresolvedTestRule` tests, in a second place
+  (C-1).
+- **`row`, `file` and `line` written as `null`.** B-003 says absent; the schema can then require them exactly when a
+  test resolves.
+- **A `TraceReader` service wrapping the read and the projection.** One existing call and one pure function; a third
+  type would only forward.
+- **`--schema-source` or a path selector.** No claim states either.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: test-writer, 2026-11-14 (item 0442: B-001 to B-003, B-006, B-007, B-009, B-019, red then green observed) -->
 
-Pending: owned by `test-writer`, written after agreement.
+Item `0442`'s claims are proved on three tiers, and the mechanism § 7 puts in `Rules/Matrix/` on the unit tier where
+it lives. `TraceDocumentUnitTests` hands `TraceDocument.From` a `SpechtModel` built in memory with `SpechtModelFixture`,
+`FeatureSpecFixture` and `SpechtTestFileFixture`, and a `MatrixResolver`, and reads the members from `ToJson()` by the
+names § 7's table gives, so no test names a `FeatureTrace`, `ClaimTrace`, `RowTrace`, `ScenarioTrace` or `TestTrace`
+property; the lines come from `Lines()`. `MatrixResolverUnitTests` calls `ResolveClaims` with its fourth argument, the
+test files, and reads `MatrixClaimResolution.Scenarios`; `MatrixRowResolutionUnitTests` calls
+`MatrixRowResolution.Skips` over the markers a parsed manifest gives. `TraceCommandUnitTests` constructs `TraceCommand`
+over a `MockFileSystem`, as `FactsCommandUnitTests` does. `TraceCommandIntegrationTests` launches the built tool over
+`SpechtTree`s on disk, and `TraceSteps` binds the `@B-001`, `@B-002`, `@B-003`, `@B-006`, `@B-007`, `@B-009` and
+`@B-019` scenarios the same way over the Background's specification, three claims beside one companion, with test files
+declared. The schema is read from `docs/schema/trace.schema.json` as both test projects copy every file in
+`docs/schema/`, so its absence fails the test that reads it. Theory rows come from `TraceLineCases`,
+`TraceSkippingMarkers`, `TraceBrokenRoots`, `TraceForms`, `MatrixRowSkipStatuses` and `ClaimScenarioCompanions`. Every
+tree is synthetic and pinned in the test; nothing reaches the network or reads a clock. A line number is the one-based
+line of the text the test wrote, found by its leading text. The other scenarios of `trace.feature`, B-004, B-005, B-008
+and B-010 to B-018 and B-020, keep an unbound step and are skipped (`missingOrPendingStepsOutcome: Ignore`) until items
+`0443` to `0445` bind them.
+
+| Claim | Mechanism                                                                                                                                                                                                                                                                                                            | Unit test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | `TraceDocument.Lines()` gives one line per `ClaimTrace`, the path, the id, the row's status or `none`, the count of `scenarios`, and the resolved tests out of those not `skipped`                                                                                                                                   | `TraceDocumentUnitTests.AClaim_WhenItsLineIsMade_ShouldHoldThePathIdStatusScenarioCountAndResolvedOutOfNamedTests`, `TraceDocumentUnitTests.TwoSpecificationsWithClaims_WhenTheLinesAreMade_ShouldGiveOneLinePerClaimInTheDocumentsOrder`                                                                                                                                                                                                                                                                                                                 |
+| B-002 | `TraceDocument.ToJson()` writes one document; the published schema describes it                                                                                                                                                                                                                                      | None at the unit tier: the schema is a published file the output copies, so validation is Integration                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| B-003 | `From` takes each claim's row, tests and scenarios from `ResolveClaims` with `model.TestFiles`; `MatrixClaimResolution.Scenarios` lists each companion scenario whose tags, its own, its Feature's, its Rule's and its Examples', hold the claim id under the claim-tag comparer, once, in companion then file order | `TraceDocumentUnitTests.AClaimWithARowAScenarioAndTwoTests_WhenTheTraceIsMade_ShouldCarryItsPathIdLineStatusRowScenarioAndEachTestsResolution`, `TraceDocumentUnitTests.AClaimWithNoTraceabilityRow_WhenTheTraceIsMade_ShouldLeaveItsRowOutAndCarryNoTest`, `MatrixResolverUnitTests.AClaimWhoseRowNamesATestADeclaredFileHolds_WhenClaimsAreResolvedWithTheFiles_ShouldCarryEachTestsResolutionFileAndLine`, `MatrixResolverUnitTests.ACompanionScenarioCarryingAClaimsTag_WhenClaimsAreResolved_ShouldListEachSuchScenarioOnceInCompanionThenFileOrder` |
+| B-006 | `TraceCommand` folds the read's typed exceptions into `2` and `3` and runs no rule, so a gap never changes the exit                                                                                                                                                                                                  | `TraceCommandUnitTests.ABrokenRoot_WhenExecuted_ShouldExitWithTheChecksCode`, `TraceCommandUnitTests.ACoveredRowWhoseTestsDoNotResolve_WhenExecuted_ShouldExitSuccess`                                                                                                                                                                                                                                                                                                                                                                                    |
+| B-007 | `From` walks `model.Features` in discovery order and each Feature's claims in `SpechtClaims` order; the output is a function of the model alone                                                                                                                                                                      | `TraceDocumentUnitTests.FeaturesInTheModelsOrder_WhenTheTraceIsMade_ShouldListEachSpecificationInThatOrderWithItsClaimsInClaimsTableOrder`, `TraceDocumentUnitTests.TheSameModel_WhenTheTraceIsMadeTwice_ShouldGiveTheSameDocumentAndTheSameLines`                                                                                                                                                                                                                                                                                                        |
+| B-009 | `SpechtReportDocumentMapper` and `SpechtReportSerializer` are unchanged and map no claim, row, scenario or test                                                                                                                                                                                                      | `SpechtReportSerializerUnitTests.AReport_WhenItsDocumentIsSerialized_ShouldCarryNoTraceOfTheClaims`                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| B-019 | `MatrixRowResolution.Skips(markers)`: the trimmed Status equals the waived, withdrawn or superseded marker, ordinally, and a marker the manifest lacks matches nothing; `From` writes each test of such a row `skipped`                                                                                              | `MatrixRowResolutionUnitTests.ARowStatus_WhenItsSkipIsRead_ShouldSkipOnlyTheTrimmedWaivedWithdrawnOrSupersededMarkerOrdinally`, `TraceDocumentUnitTests.ARowWhoseStatusIsAMarkerThatSkips_WhenTheTraceIsMade_ShouldGiveEachTestItNamesSkippedWithNoFileOrLine`                                                                                                                                                                                                                                                                                            |
+
+**For `implementer`, item `0442`.** The tests need the compile surface § 7 names: `Specht.Trace.TraceDocument` with
+`From(SpechtModel, MatrixResolver)`, `ToJson()` and `Lines()`; `Specht.Tool.Features.Trace.TraceCommand`, constructed
+as `(IAnsiConsole, SpechtModelReader, MatrixResolver, TextWriter)` with `Settings.Root` and `Settings.Json`;
+`MatrixResolver.ResolveClaims` with a fourth parameter, the test files; `MatrixClaimResolution.Scenarios`; and
+`MatrixRowResolution.Skips(IReadOnlyDictionary<string, string>)` over `SpechtStructure.Markers`. The command's
+constructor order is the tests' reading of § 7, which names the parts and not their order; change the tests, not the
+design, if it differs. `docs/schema/trace.schema.json` must exist for the B-002 tests, and `trace` must be registered
+in the host for every Integration test and step. A claim whose test is unresolved because no file declares it, and
+one whose row names no test, are held by B-003's tests only through the member list; `unconfigured` is item `0443`'s
+(B-004, B-020). Nothing else in the design is hard to test.
+
+**Red, item `0442`, 2026-11-14, `net11.0`.** `test/tests` does not compile until the surface above exists: the errors
+are the missing `Specht.Trace` and `Specht.Tool.Features.Trace` namespaces, `ResolveClaims` taking four arguments,
+`MatrixClaimResolution.Scenarios` and `MatrixRowResolution.Skips`, and no other. With those four files set aside, the
+three `TraceCommandIntegrationTests` fail on exit `255` where `0` is expected, the tool knowing no `trace` command, and
+the B-009 serializer test passes, as § 7 builds nothing for it and the test holds that. In `test/acceptance`, which
+compiles, the bound `@B-001`, `@B-002`, `@B-003`, `@B-006`, `@B-007` and `@B-019` scenarios fail on exit `255`; the
+`@B-009` scenario passes for the same reason as its unit test; the rest are skipped.
+
+**Green, item `0442`, 2026-11-14, `net11.0`, at `9c83bbf`.** The feature "The trace command" runs 33 scenarios: the 15
+bound to `@B-001`, `@B-002`, `@B-003`, `@B-006`, `@B-007`, `@B-009` and `@B-019` pass, and the 18 of B-004, B-005,
+B-008, B-010 to B-018 and B-020 are skipped. Every test the seven rows of § 9 name passes: `TraceDocumentUnitTests`,
+`TraceCommandUnitTests`, `TraceCommandIntegrationTests`, `MatrixResolverUnitTests`, `MatrixRowResolutionUnitTests` and
+`SpechtReportSerializerUnitTests` run 94 cases with none failed or skipped.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-15 (B-019 and B-020 rows added, B-011 title, round 3) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0442: B-001 to B-003, B-006, B-007, B-009, B-019 Covered); spec-author, 2026-10-15 (B-019 and B-020 rows added, B-011 title, round 3) -->
 
-| Claim ID | Scenario                                                                     | Test    | Status  |
-| -------- | ---------------------------------------------------------------------------- | ------- | ------- |
-| B-001    | The trace prints one line per claim                                          | Missing | Missing |
-| B-002    | The JSON trace validates against its schema                                  | Missing | Missing |
-| B-003    | The JSON trace carries each claim's row, scenarios and tests                 | Missing | Missing |
-| B-004    | With no test files declared every test is unconfigured                       | Missing | Missing |
-| B-005    | A rule switched off does not hide a resolution                               | Missing | Missing |
-| B-006    | The trace succeeds whatever gaps it shows                                    | Missing | Missing |
-| B-007    | The same tree gives the same trace                                           | Missing | Missing |
-| B-008    | The trace writes nothing without a report path                               | Missing | Missing |
-| B-009    | The check's report carries no trace                                          | Missing | Missing |
-| B-010    | Under schema 0.1.0 the traceability columns are read by their position       | Missing | Missing |
-| B-011    | Under schema 0.1.0 a waived, withdrawn or superseded row's tests are skipped | Missing | Missing |
-| B-012    | Under schema 0.1.0 every test is unconfigured                                | Missing | Missing |
-| B-013    | A report path receives the trace document                                    | Missing | Missing |
-| B-014    | A report path in a new directory is created                                  | Missing | Missing |
-| B-015    | A report path that exists is replaced                                        | Missing | Missing |
-| B-016    | A report path keeps the trace lines on the output                            | Missing | Missing |
-| B-017    | The JSON trace and the report file are the same document                     | Missing | Missing |
-| B-018    | A report path does not change the exit code                                  | Missing | Missing |
-| B-019    | A waived, withdrawn or superseded row's tests are skipped                    | Missing | Missing |
-| B-020    | With no test files declared a skipped test stays skipped                     | Missing | Missing |
+| Claim ID | Scenario                                                                     | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Status  |
+| -------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | The trace prints one line per claim                                          | `TraceSteps.ThenThreeLines`; `TraceSteps.ThenTheLineHolds`; `TraceSteps.ThenTheLineShowsStatusAndTests`; `TraceSteps.ThenTheLineShowsTests`; `TraceDocumentUnitTests.AClaim_WhenItsLineIsMade_ShouldHoldThePathIdStatusScenarioCountAndResolvedOutOfNamedTests`; `TraceDocumentUnitTests.TwoSpecificationsWithClaims_WhenTheLinesAreMade_ShouldGiveOneLinePerClaimInTheDocumentsOrder`; `TraceCommandIntegrationTests.TwoSpecifications_WhenTracedTwiceAsLines_ShouldPrintTheSameLinesInDiscoveryOrderThenClaimsTableOrder`                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Covered |
+| B-002    | The JSON trace validates against its schema                                  | `TraceSteps.ThenOneDocument`; `TraceSteps.ThenValidatesAgainstTheTraceSchema`; `TraceCommandIntegrationTests.ATreeWithResolvedUnresolvedSkippedAndRowlessClaims_WhenTracedAsJson_ShouldWriteOneDocumentValidAgainstThePublishedTraceSchema`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Covered |
+| B-003    | The JSON trace carries each claim's row, scenarios and tests                 | `TraceSteps.ThenThatTestCarriesNoFileOrLine`; `TraceSteps.ThenTheSpecificationCarriesItsPathIdAndClaims`; `TraceSteps.ThenB001CarriesItsRowAndScenarios`; `TraceSteps.ThenTheResolvingTestCarriesItsFileAndLine`; `TraceSteps.ThenTheUnresolvedTestCarriesNoFileOrLine`; `TraceDocumentUnitTests.AClaimWithARowAScenarioAndTwoTests_WhenTheTraceIsMade_ShouldCarryItsPathIdLineStatusRowScenarioAndEachTestsResolution`; `TraceDocumentUnitTests.AClaimWithNoTraceabilityRow_WhenTheTraceIsMade_ShouldLeaveItsRowOutAndCarryNoTest`; `MatrixResolverUnitTests.AClaimWhoseRowNamesATestADeclaredFileHolds_WhenClaimsAreResolvedWithTheFiles_ShouldCarryEachTestsResolutionFileAndLine`; `MatrixResolverUnitTests.ACompanionScenarioCarryingAClaimsTag_WhenClaimsAreResolved_ShouldListEachSuchScenarioOnceInCompanionThenFileOrder`; `TraceCommandIntegrationTests.ATestAFileInANestedFolderHolds_WhenTracedAsJson_ShouldCarryThatFilesPathRelativeToTheRootAndTheTestsLine` | Covered |
+| B-004    | With no test files declared every test is unconfigured                       | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-005    | A rule switched off does not hide a resolution                               | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-006    | The trace succeeds whatever gaps it shows                                    | `TraceSteps.ThenTheExitCodeIs`; `TraceCommandUnitTests.ABrokenRoot_WhenExecuted_ShouldExitWithTheChecksCode`; `TraceCommandUnitTests.ACoveredRowWhoseTestsDoNotResolve_WhenExecuted_ShouldExitSuccess`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Covered |
+| B-007    | The same tree gives the same trace                                           | `TraceSteps.ThenTheTwoOutputsAreTheSame`; `TraceSteps.ThenTheSpecificationsAndClaimsAreInOrder`; `TraceDocumentUnitTests.FeaturesInTheModelsOrder_WhenTheTraceIsMade_ShouldListEachSpecificationInThatOrderWithItsClaimsInClaimsTableOrder`; `TraceDocumentUnitTests.TheSameModel_WhenTheTraceIsMadeTwice_ShouldGiveTheSameDocumentAndTheSameLines`; `TraceCommandIntegrationTests.TwoSpecifications_WhenTracedTwiceAsLines_ShouldPrintTheSameLinesInDiscoveryOrderThenClaimsTableOrder`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Covered |
+| B-008    | The trace writes nothing without a report path                               | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-009    | The check's report carries no trace                                          | `TraceSteps.ThenTheReportHoldsNoTrace`; `SpechtReportSerializerUnitTests.AReport_WhenItsDocumentIsSerialized_ShouldCarryNoTraceOfTheClaims`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Covered |
+| B-010    | Under schema 0.1.0 the traceability columns are read by their position       | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-011    | Under schema 0.1.0 a waived, withdrawn or superseded row's tests are skipped | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-012    | Under schema 0.1.0 every test is unconfigured                                | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-013    | A report path receives the trace document                                    | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-014    | A report path in a new directory is created                                  | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-015    | A report path that exists is replaced                                        | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-016    | A report path keeps the trace lines on the output                            | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-017    | The JSON trace and the report file are the same document                     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-018    | A report path does not change the exit code                                  | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-019    | A waived, withdrawn or superseded row's tests are skipped                    | `TraceSteps.ThenBothTestsResolveAs`; `MatrixRowResolutionUnitTests.ARowStatus_WhenItsSkipIsRead_ShouldSkipOnlyTheTrimmedWaivedWithdrawnOrSupersededMarkerOrdinally`; `TraceDocumentUnitTests.ARowWhoseStatusIsAMarkerThatSkips_WhenTheTraceIsMade_ShouldGiveEachTestItNamesSkippedWithNoFileOrLine`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Covered |
+| B-020    | With no test files declared a skipped test stays skipped                     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -169,13 +468,14 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-reviewer, 2026-11-14 (pull request #897: items `0442` to `0445` cut, approved) -->
+<!-- last written by: spec-reviewer, 2026-11-14 (item `0442`: 6-9 approved); spec-reviewer, 2026-11-14 (pull request #897: items `0442` to `0445` cut, approved) -->
 
 | Section                            | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ---------------------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1-5, 10, 11                        | 🟢     | spec-reviewer | Round 2 (2026-10-15) - approved, reviewing the uncommitted working tree on `b9dfb84` after spec-author's round-1 revision; this row clears the round-1 row above. All four round-1 findings are closed. B-009, a new id, states decision 0001 call 4, and the boundary scenario now carries `@B-009`; § 5 row 3 cites it and § 9 lists it once. OQ-2 names the markers and `tests`; B-001 and B-003 say what a claim with no § 9 row shows, labelled as spec-author's reading, with a scenario; decision 0001's Affects reads B-001 to B-009 and OQ-1, OQ-2. `spec_status` stays `draft` while OQ-1 and OQ-2 are open.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 1-5, 9-11                          | 🟢     | spec-reviewer | Round 4 (2026-10-15) - approved, reviewing the uncommitted working tree on `8e19c7a` after spec-author's round-3 revision and the owner's answers recorded as decision 0002 calls 4 and 5; this row clears the round-1 and round-3 rows under Review history. Both blocking findings are closed. (1) B-011 now states what the marker reading decides: a test in a `Waived`, `Withdrawn` or `Superseded` row is `skipped`; a raw-cell implementation gives `unconfigured` there (B-012), so its Outline fails against the rejected alternative. B-019 states it under every pin, as `0001-F12` B-002 skips those rows; A-1, B-001 and B-003 carry the fourth value, the count and the absent file and line, each with a scenario; § 5 row 8 names the alternatives the owner rejected. (2) C-2 names the directories B-014 creates. Call 6 is a fair reading, not an open question: call 4's "under every pin" can hold under `0.1.0` only if `skipped` comes before `unconfigured`, since that pin cannot declare `tests` (`0001-F5` B-055), and A-2 then requires a `0.2.0` manifest with no `tests` key to read the same; decision 0002 labels it spec-author's reading. B-019 and B-020 are new ids, no open pull request holds them, § 9 lists all 20 claims once and every `@B-0nn` tag resolves; OQ-2 is amended in place and no open question remains. Non-blocking (spec-author): (a) the Sources of B-004, B-012 and B-020 cite the owner for call 6, which decision 0002 labels spec-author's reading; say so in each, as the round-1 readings did. (b) Decision 0002's Why still reads "`unconfigured` is the only honest resolution" under `0.1.0`, which calls 4 to 6 now qualify. (c) Round 3's finding 3 stands, routed to `0001-F3`: neither Feature says whether `--report` writes, creates directories or leaves an earlier file at exit 2 or 3; B-018 claims only the exit code. Non-blocking (a) and (b) are since fixed: the Sources of B-004, B-012 and B-020 label call 6 spec-author's reading, and decision 0002's Why qualifies `unconfigured` with the `skipped` rows. `spec_status` set to `approved` (owner, 2026-10-15): the round-1 and round-3 rows move under Review history, every row above is 🟢, no open question is open, and the § 9 `Missing` rows block the items, not the agreement. |
 | Tasks, 10 (items `0442` to `0445`) | 🟢     | spec-reviewer | Item cut (2026-11-14) - approved, reviewing `origin/main` (`dd31cf81`)...`3eecac42`, pull request #897. Each of the 20 § 3 claims is in exactly one item: `0442` B-001 to B-003, B-006, B-007, B-009 and B-019; `0443` B-004, B-005 and B-020; `0444` B-010 to B-012; `0445` B-008 and B-013 to B-018. Each item follows `.spec/templates/item.yml`, carries no `priority`, `rank` or `blocks`, cites its claims by id and a few words, and ends on the § 9 gate; every `depends_on` points back to `0442`, and `0444`'s also to `0443` for B-012, so the queue holds no cycle. `status` `ready` holds: `0001-F12`'s resolver item `0225` and items `0336` and `0337` are done, and `0442` waits on nothing. `0001-F16` item `0396` now waits on `0441` and `0442`, the two whose behaviour its B-022 and B-024 read, and is `ready`, the queue holding it until both are done; `0001-F16`'s Tasks line agrees. No claim, constraint or scenario changed; the self-check and the queue script are clean.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 6-9 (item `0442`)                  | 🟢     | spec-reviewer | Item `0442`, round 1 (2026-11-14): Approved, reviewing `d760c454`...`ec14982e` (`5543f316`, `55dcce26`, `9c83bbfb`, `d846318e`, `ec14982e`); each commit body opens `Delivers 0442`, with no trailer and no vendor name. B-001 to B-003, B-006, B-007, B-009 and B-019 are built in `TraceDocument.From`, `ToJson` and `Lines` and `TraceCommand`, and proved on the unit, integration and acceptance tiers § 8 names; `test/tests` passes on `net11.0`, and in `test/acceptance` the 18 scenarios of B-004, B-005, B-008, B-010 to B-018 and B-020 are skipped on unbound steps and no trace scenario fails. The two failing packed-tool commit scenarios are not this diff: the cached pack was built at `d846318e`, one commit behind `HEAD`, whose change is this README alone. C-1: resolution is `MatrixResolver.ResolveClaims`, which gains the test files, `MatrixClaimResolution.Scenarios` and `MatrixRowResolution.Skips`; `UnresolvedTestRule` reads `Skips` over the same three markers and ordinal comparison, and `StatusRule`, `MissingScenarioRule` and `RetiredClaimRule` pass `[]`, as `ResolveClaims` passed it before, so no `0001-F12` verdict changes, and `0001-F12` §§ 6-7 record it. C-3: `docs/schema/trace.schema.json` holds the members § 7 lists, absent rather than `null`. C-4: `TraceCommand` reads the model, projects it and folds the exceptions, as `FactsCommand` does. No `--report` option exists; § 7 "Readings" records the first row, every claims-table row, the native-claim Features left to `0396` and no skip under `0.1.0` until `0444` as the implementer's, not the owner's. Non-blocking: (1) `implementer`: item `0442` is still `in-progress` with `closed: null`; it moves to `done` with its `closed:` date before the pull request opens. (2) `test-writer`: `MatrixRowSkipStatuses` has no row for a manifest without the three markers, so the `TryGetValue` branch § 7 relies on under `0.1.0` is unpinned; add one here or with `0444` (B-011). (3) `implementer`: `docs/cli.md`'s `specht trace` section says every Feature the check discovers is listed, but native-claim Features are left out until `0396`.                                                                                                                                                  |
 
 ### Review history
 

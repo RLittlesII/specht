@@ -30,7 +30,7 @@ public sealed class StatusRule(MatrixResolver resolver) : ISpechtRule
         string[] known = ["covered", "partial", "missing", "waived", "withdrawn", "superseded"];
         foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
         {
-            var claims = resolver.ResolveClaims(feature, structure, model.Claims[feature])
+            var claims = resolver.ResolveClaims(feature, structure, model.Claims[feature], [])
                 .ToLookup(static claim => claim.Claim.Id, StringComparer.Ordinal);
             var tags = resolver.ClaimTags(feature, structure);
             foreach (var row in resolver.Resolve(feature, structure, model.TestFiles))

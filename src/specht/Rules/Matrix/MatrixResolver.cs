@@ -13,21 +13,26 @@ public sealed class MatrixResolver
     /// <param name="feature">The specification and its parsed companion snapshot.</param>
     /// <param name="structure">The selected roles and tag-case setting.</param>
     /// <param name="claims">The model's already-derived claim rows.</param>
+    /// <param name="files">The declared test files the rows' test names resolve against; empty, none resolves.</param>
     /// <returns>Claim resolutions in declaration order.</returns>
     /// <implements epic="0001" feature="F12" claim="B-001" />
     /// <implements epic="0001" feature="F16" claim="B-003" />
-    public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpechtStructure structure, SpechtClaims claims)
+    /// <implements epic="0001" feature="F13" claim="B-001" />
+    /// <implements epic="0001" feature="F13" claim="B-003" />
+    public IReadOnlyList<MatrixClaimResolution> ResolveClaims(
+        FeatureSpec feature, SpechtStructure structure, SpechtClaims claims, IReadOnlyList<SpechtTestFile> files)
     {
         if (feature.ClaimFileSet is not null)
         {
             return [];
         }
 
-        var rows = Resolve(feature, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
+        var rows = Resolve(feature, structure, files).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
         var tags = ClaimTags(feature, structure);
+        var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         return claims.Rows.Select((claim, index) => new MatrixClaimResolution(
             claim, claims.Section!.Rows[index].ElementAtOrDefault(3)?.Trim() ?? string.Empty,
-            rows[claim.Id].ToArray(), tags[claim.Id].ToArray())).ToArray();
+            rows[claim.Id].ToArray(), tags[claim.Id].ToArray(), Scenarios(feature, claim.Id, comparer))).ToArray();
     }
 
     /// <summary>Groups every claim tag on a tag line of the companions by claim id, under the configured tag-case setting.</summary>
@@ -93,6 +98,16 @@ public sealed class MatrixResolver
 
         return rows.ToArray();
     }
+
+    /// <implements epic="0001" feature="F13" claim="B-001" />
+    /// <implements epic="0001" feature="F13" claim="B-003" />
+    private static MatrixScenarioResolution[] Scenarios(FeatureSpec feature, string claim, StringComparer comparer) =>
+        feature.FeatureFiles
+            .SelectMany(static file => file.Scenarios, static (file, scenario) => (file, scenario))
+            .Where(entry => entry.scenario.Tags.Any(tag => comparer.Equals(tag.Id, claim)))
+            .Select(static entry => new MatrixScenarioResolution(
+                entry.scenario.Title, MatrixScenarioStatus.Resolved, entry.file.RelativePath, entry.scenario.Line))
+            .ToArray();
 
     /// <implements epic="0001" feature="F12" claim="B-009" />
     private static MatrixScenarioResolution ResolveTitle(

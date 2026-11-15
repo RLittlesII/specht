@@ -12,6 +12,7 @@ type: reference
 `manifest` prints the effective configuration or the newest shipped default.
 `mint` prints a new id for a record type the manifest opts in.
 `facts` prints what the specification tree holds.
+`trace` prints where every claim stands.
 Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
@@ -251,6 +252,51 @@ stderr with empty stdout.
 specht facts --root .
 specht facts --root . --json
 specht facts src/tool/Features/Facts --root . --json
+```
+
+## `specht trace`
+
+```text
+specht trace [--root <DIR>] [--json]
+```
+
+Prints where every claim stands, read as the check reads the tree and resolved
+as the check resolves it: every Feature specification the check discovers with a
+claims table, in discovery order, with its path, qualified id and claims, and
+each claim, in claims-table order, with its id, line, status, its traceability
+row - the first naming it, its line and its four cells - the scenarios carrying
+its tag, its own or inherited, with their title, file and line, and each test
+the row names with its resolution: `resolved`, `unresolved`, `unconfigured` or
+`skipped`, with its file and line only when it resolves. Every test of a row
+whose Status is the waived, withdrawn or superseded marker is `skipped`. No rule
+runs, so the trace judges nothing.
+
+Without `--json`, each stdout line is one claim: five fields separated by
+single tabs - the path, the claim id, the row's Status, the number of
+scenarios carrying its tag, and the tests that resolve out of those named,
+such as `2/3`. A `skipped` test counts in neither number. A claim with no row
+shows `none` and `0/0`. A tab or line break inside a field is written as a
+space.
+
+| Option         | Value   | Default               | Does                                                     |
+| -------------- | ------- | --------------------- | -------------------------------------------------------- |
+| `--root <DIR>` | `<DIR>` | The working directory | Selects the repository whose specification tree is read. |
+| `--json`       | none    | Off                   | Prints the trace as one JSON document.                   |
+| `-h, --help`   | none    | Off                   | Prints command help.                                     |
+
+**Stdout.** One line per claim, or with `--json` one document, as
+[`schema/trace.schema.json`](schema/trace.schema.json) describes it. A claim
+with no row has no `row` member, and a test that does not resolve no `file` or
+`line`. The same tree gives the same bytes. The command writes no file and
+makes no network request.
+
+**Exit codes.** The same with and without `--json`: `0` on success, whatever
+the trace shows; `2` for a missing root or manifest; `3` for an invalid
+manifest or pin. Failures go to stderr with empty stdout.
+
+```sh
+specht trace --root .
+specht trace --root . --json
 ```
 
 ## `specht evidence`

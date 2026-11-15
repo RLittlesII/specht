@@ -21,7 +21,7 @@ public sealed class MissingScenarioRule(MatrixResolver resolver) : ISpechtRule
         var matrixReference = structure.SectionReference("matrix");
         foreach (var feature in model.Features)
         {
-            foreach (var claim in resolver.ResolveClaims(feature, structure, model.Claims[feature]))
+            foreach (var claim in resolver.ResolveClaims(feature, structure, model.Claims[feature], []))
             {
                 foreach (var row in claim.Rows.Where(row => claim.MissesScenarioAt(row, markers)))
                 {
