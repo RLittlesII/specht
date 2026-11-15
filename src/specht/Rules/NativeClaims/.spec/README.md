@@ -1185,7 +1185,7 @@ rule and one optional member on the shared finding.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-14 (item 0394: SPEC4012, a claim tag on an Examples block) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0394 review round 1, test-writer findings 1 and 2: `ClaimId` as of `a311b77d` and as built, passing from `013adb9f`) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1803,8 +1803,9 @@ alone, no epic grammar, and `claim.source` `gherkin` with one set,
 its own. A row's manifest members and file texts come from
 `ExamplesClaimTags`, a `[ClassData]` type beside the class. Test-writer
 declared one member in `src/`, for the reader test to compile: the optional
-`string? ClaimId = null` on `GherkinClaimTextFinding`, as § 7 designs it. The
-reader does not set it yet.
+`string? ClaimId = null` on `GherkinClaimTextFinding`, as § 7 designs it. At
+`a311b77d` the reader did not set it; from `013adb9f`, as implementer built
+it, the reader sets it on each `SPCT0011` finding.
 
 - **B-009** - mechanism: `ExamplesClaimTagRule` turns each `SPCT0011`
   finding of a claim file's read into a finding at the file's root-relative
@@ -1884,7 +1885,7 @@ and "Feature "F1" has no claim" are item `0391`'s and item `0393`'s steps,
 unchanged: the first asserts a diagnostic line that starts with the place
 and severity, names the id, and ends `[B-005]`.
 
-**Red at `a311b77d`**, on `net11.0`:
+**Red at `a311b77d`**, on `net11.0`, and passing from `013adb9f`:
 
 - every row of the theory, on "found an empty collection", but the outline
   row, which finds its `SPEC4011` line alone: no rule reports `SPEC4012`;
@@ -1893,7 +1894,8 @@ and severity, names the id, and ends `[B-005]`.
 - the `@B-009` scenario, on its "naming" step: no line names `SPEC4012`.
 
 The guards pass, and so does item `0393`'s class with the new member on the
-shared finding.
+shared finding. From `013adb9f` every test above passes, and so does the
+`@B-009` scenario.
 
 **Not asserted**, as no claim of this item states it:
 
