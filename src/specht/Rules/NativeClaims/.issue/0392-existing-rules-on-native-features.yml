@@ -37,7 +37,7 @@ summary: |
   Waits on 0391, for the record.
 
 acceptance_criteria:
-  - "B-008 — one identifier on two elements of one Feature: SPEC4003 at each"
+  - "B-008 — one identifier on two elements of one claim file set: SPEC4003 at each"
   - "B-020 — a record needs every contracted section and table but the claims table, SPEC2001 and SPEC2002"
   - "B-021 — SPEC4001 and SPEC4002 silent for a Feature a set names"
   - "No shipped rule id changes meaning (C-3); one catalogue (C-5)"
@@ -55,6 +55,11 @@ decisions:
     packages, and on the repository owner's selection "Fold into 0.4.0"
     the Feature's members and rules enter schema 0.4.0 (decision 0001).
     The report criterion is restated for 0.4.0.
+  - |
+    2026-11-14, spec-author: on the repository owner's selection
+    "(a) Each set alone (Recommended)" (OQ-21), B-008 is amended to one
+    claim file set, and its criterion says so. Was "two elements of one
+    Feature".
 
 out_of_scope:
   - "The matrix of a record, B-023 - 0396."
