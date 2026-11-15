@@ -2,7 +2,7 @@ id: "0396"
 type: task
 title: Hold native claims to SPEC2003, the matrix rules and the trace
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -20,8 +20,8 @@ claims:
   - B-024
 
 created: "2026-11-06"
-updated: "2026-11-14"
-closed: null
+updated: "2026-11-15"
+closed: "2026-11-15"
 
 summary: |
   Native claims under the rules and the command still to be built: a
