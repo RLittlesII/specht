@@ -971,7 +971,7 @@ rule and one member.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-14 (item 0393: SPEC4011, a scenario in a claim file with no claim) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0393 review round 1, findings 3 to 5: the red counts after the rebase onto `a57f4bae`, the `0.3.1` count's base, red at `f81d195c` and passing from `719148ae`) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1484,8 +1484,9 @@ to `src/`; the member is implementer's, with the rule.
   gives one, so a rule that reports nothing fails every row. Before the rows
   were handed on, each row's places were checked against the `SPCT0012` lines
   the shared reader gives its text, and the two unreadable files were checked
-  to throw `GherkinClaimTextException`. Red: every row, on "found an empty
-  collection", since no rule reports `SPEC4011`.
+  to throw `GherkinClaimTextException`. Red at `f81d195c`: every row, on
+  "found an empty collection", since no rule reports `SPEC4011`. Every row
+  passes from `719148ae`.
 
 - **B-002, C-3** - mechanism: under `0.4.0` without `claim.source` `gherkin`,
   `SpechtModel.ClaimSets` holds no set, so the rule has nothing to read.
@@ -1498,22 +1499,25 @@ to `src/`; the member is implementer's, with the rule.
   evaluator neither runs nor counts the rule. Guard:
   `AGherkinClaimSourceUnderZeroThreeOne_WhenAClaimFileHoldsAnUntaggedScenario_ShouldNeitherReportNorCountSpec4011`.
   It asserts no `SPEC4011` and `RulesEvaluated` `23`, the count the same tree
-  gives at `59d7fca9`, before this item. Green when written.
+  gives at `a57f4bae`, the base before this item. Green when written.
 - **`0001-F7` B-014, C-1** - mechanism: `SchemaVersions.Shipped`'s `0.4.0` row
   maps `SPEC025` to `SPEC4011`, and `AddSpechtEngine` registers the rule. Rows
   added to existing theories and lists:
   - `ShippedVocabularies`' `0.4.0` row gains `SPEC4011`.
     `SchemaVersionsUnitTests.AnEmbeddedVersion_WhenItsVocabularyIsRead_ShouldNameEachRuleByThatVersionsId`
-    fails on that row: 28 ids expected, 27 found. Its `0.1.0` to `0.3.1` rows
+    fails on that row at `f81d195c`: 29 ids expected, 28 found, the row
+    holding `SPEC2003` from `a57f4bae`. Its `0.1.0` to `0.3.1` rows
     are unchanged (C-1). The integration theory over the same data,
     `SpechtCheckVersionsIntegrationTests.TheBaselineTreePinnedToAShippedVersion_WhenChecked_ShouldReportEveryViolationUnderAnIdOfThatVersionsVocabulary`,
     stays green: it asks only that each reported id belongs.
   - `ZeroFourZeroRuleNames` gains `SPEC025` to `SPEC4011`.
     `SchemaVersionsUnitTests.ARuleKeyEnteringVersionZeroFourZero_WhenNamedUnderIt_ShouldTakeTheFourDigitIdTheMapPairsItWith`
-    fails on that row: `RuleId` returns `SPEC025` unmapped.
+    fails on that row at `f81d195c`: `RuleId` returns `SPEC025` unmapped.
   - The composition id list gains `SPEC025`.
     `SpechtEngineServiceCollectionExtensionsUnitTests.EveryRuleInTheEngine_WhenItsIdIsRead_ShouldNameEachShippedRuleIdExactlyOnce`
-    fails: 28 ids expected, 27 found.
+    fails at `f81d195c`: 29 ids expected, 28 found.
+
+  All three pass from `719148ae`.
 
   As § 7 says, the rule-page tests (`0001-F3` B-031),
   `InitRuleDefaultsUnitTests`, the real-tree numbering test (`0001-F7` B-066)
@@ -1539,10 +1543,11 @@ to `src/`; the member is implementer's, with the rule.
   path and keyword line naming the id. "Feature "F1" has no claim" reads the
   model, as item `0390`'s claim steps do.
 
-Red, at this commit: "A scenario with no claim is reported" fails on no
+Red at `f81d195c`: "A scenario with no claim is reported" fails on no
 diagnostic line, and the boundary scenario on its last step, after "has no
 claim" passes. "An inherited claim satisfies the untagged scenario rule"
-passes: a guard that holds once the rule reports.
+passes: a guard that holds once the rule reports. All three pass from
+`719148ae`.
 
 **Not asserted**, as no claim of this item states it:
 
