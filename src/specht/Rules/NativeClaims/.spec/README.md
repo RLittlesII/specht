@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0395 designed: SPEC4013, an unreadable claim file, set or record); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -189,10 +189,19 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | Error by default, lowered or silenced by the manifest's `rules` (B-009; OQ-5)                                                                                       | Business       | Item `0394`: `ISpechtRule.DefaultLevel`; the shipped `0.4.0` manifest's `rules`; the evaluator's stamp                                                                                                                             |
 | The id joins `0.4.0` alone, with its page and a relock; `0.1.0` to `0.3.1` are unchanged (B-028, C-3; `0001-F7` B-014, C-1, C-17; `0001-F3` B-031)                  | Technical      | Item `0394`: `SchemaVersions.Shipped`, `docs/rules/v0.4.0/SPEC4012.md`, `./build.sh LockSchemaVersion`                                                                                                                             |
 | Nothing reported without `claim.source` `gherkin`, nor below `0.4.0` (B-002, B-028, C-3)                                                                            | Business       | Item `0394`: `SpechtModel.ClaimSets` is empty unless the source is `gherkin`; below `0.4.0` no vocabulary holds the id                                                                                                             |
+| What the check could not take from claim input is recorded once, where it is dropped, as one list the rule reads (B-014 to B-016, B-018, B-019, B-033, B-034)       | Technical      | Item `0395`: `SpechtClaimFault` and `SpechtClaimFaultKind`; `SpechtListing.ClaimFaults` from the model reader, each set's `SpechtClaims.Faults` from the builder, joined as `SpechtModel.ClaimFaults`                              |
+| A claim file the reader cannot read declares nothing and is reported at its `# language:` line, or line `0` (B-014, B-015; A-3)                                     | Business       | Item `0395`: `GherkinClaimTextException.Line`, the header's line for a language other than `en`; `SpechtModelBuilder.ClaimSets`' per-file catch                                                                                    |
+| A set whose glob matches no file is reported at the glob as written, line `0` (B-016, C-2)                                                                          | Business       | Item `0395`: `SpechtModelBuilder.ClaimSets`, over the set's listed files                                                                                                                                                           |
+| A file two sets match is reported once, line `0`, its claims under neither; its read stays for `SPEC4011` and `SPEC4012` (B-018)                                    | Business       | Item `0395`: `SpechtModelBuilder.ClaimSets` finds the path in two sets' listings; `SpechtClaims`' set constructor skips its declarations                                                                                           |
+| Under `claim.scopes.featureTag`, a Feature-level tag capturing another identity is reported at the tag's line, naming what it captured (B-019; A-3)                 | Business       | Item `0395`: the reader's scope form from `FeatureScopeTag`; `GherkinClaimText.FeatureTagLines`; `SpechtModelBuilder.ClaimSets` compares each value with the set's `feature`                                                       |
+| A record that cannot be read is reported at its path as written, an absolute one at the manifest, line `0`, never as an absolute path (B-033, B-034, B-035; C-2)    | Both           | Item `0395`: `SpechtTreeStore.IsRooted`, which `TryLoad` also calls; `SpechtModelReader.Read` beside its `TryLoad`                                                                                                                 |
+| `SPEC4013` reports each fault once, error by default (B-014 to B-016, B-018, B-019, B-033, B-034; OQ-5)                                                             | Business       | Item `0395`: `ClaimInputFaultRule`, keyed `SPEC027`, over `SpechtModel.ClaimFaults`; `ISpechtRule.DefaultLevel`; the shipped `0.4.0` manifest's `rules`                                                                            |
+| The id joins `0.4.0` alone, with its page and a relock; `0.1.0` to `0.3.1` are unchanged (B-028, C-3; `0001-F7` B-014, C-1, C-17; `0001-F3` B-031)                  | Technical      | Item `0395`: `SchemaVersions.Shipped`, `docs/rules/v0.4.0/SPEC4013.md`, `./build.sh LockSchemaVersion`                                                                                                                             |
+| Nothing reported without `claim.source` `gherkin`, nor below `0.4.0` (B-002, B-028, C-3)                                                                            | Business       | Item `0395`: no set is read and no fault recorded unless the source is `gherkin`; below `0.4.0` no vocabulary holds the id                                                                                                         |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1183,6 +1192,260 @@ rule and one optional member on the shared finding.
   `0.4.0` are keyed by their working names.
 - A `DefaultLevel` override returning `Error`: it restates the interface's
   default.
+
+### An unreadable claim file, set or record, `SPEC4013` (item `0395`)
+
+Designed. One rule for claim input the check cannot take claims from: a claim
+file in another language (B-014) or with no `Feature:` line (B-015), a set
+whose glob matches no file (B-016), a file two sets match (B-018), a
+Feature-level tag naming another identity (B-019), and a `record` that cannot
+be read (B-033) or is absolute (B-034). The id is `SPEC4013` (decision 0004),
+at error by default. B-035's reading, the set read as record-less, is item
+`0391`'s and stays as built; this item reports it.
+
+**Where each fault is found.** Four of the seven conditions already change
+what the model holds: an unreadable file declares nothing, a record that
+cannot be read is dropped, and B-018 drops a shared file's claims. The place
+that drops each one records why, once, and the rule reads that record. The
+two that change nothing, B-016 and B-019, are found where their data is
+already in hand, so no verdict is split between a store and a rule.
+
+| Claim | Found in                       | From                                                                            |
+| ----- | ------------------------------ | ------------------------------------------------------------------------------- |
+| B-014 | `SpechtModelBuilder.ClaimSets` | the per-file catch of `GherkinClaimTextException`, at the header's line         |
+| B-015 | `SpechtModelBuilder.ClaimSets` | the same catch, at line `0`                                                     |
+| B-016 | `SpechtModelBuilder.ClaimSets` | a set whose listed files are none                                               |
+| B-018 | `SpechtModelBuilder.ClaimSets` | a path in the listings of two or more of the sets it is given                   |
+| B-019 | `SpechtModelBuilder.ClaimSets` | each Feature-level scope value the reader captured, against the set's `feature` |
+| B-033 | `SpechtModelReader.Read`       | a `record` `TryLoad` returns `null` for, not rooted                             |
+| B-034 | `SpechtModelReader.Read`       | a `record` `TryLoad` returns `null` for, rooted                                 |
+
+**The fault.** One record, `SpechtClaimFault(string Path, int Line,
+SpechtClaimFaultKind Kind, string? Identifier)`, in `src/specht/Model/`, and
+its kind, an enum with one value per row of the message table below. It holds
+no message: the wording is the rule's. `SpechtListing.ClaimFaults` carries the
+model reader's faults, `SpechtClaims.Faults` each set's from the builder, and
+`SpechtModelBuilder.Build` joins them, listing first, as
+`SpechtModel.ClaimFaults`, distinct under record equality, so a file two sets
+both read and fail on is one fault. Both lists are empty unless `claim.source`
+is `gherkin`.
+
+**An unreadable claim file (B-014, B-015).** `GherkinClaimTextException`
+gains `int Line`, an optional constructor argument, default `0`. The reader's
+`CheckLanguage` passes the one-based line of the `# language:` header it
+refuses; every other throw leaves `0`. The analyzer links the exception as
+source, and `GherkinClaimFileReader` copies only `RelativePath` and `Message`
+into its `GherkinInputException`, so its failures are unchanged (§ 5 rows 1
+and 2). The builder's catch, today an empty block, adds one `UnreadableFile`
+fault at the file's path and the exception's line. The file stays out of
+`Files`, so `SPEC4011` and `SPEC4012` see nothing of it, and it declares no
+claim, as today. The reader throws one exception, with one message, for every
+text it does not parse; B-015's file is one of them. See the first open point
+below.
+
+**A set matching no file (B-016).** A set whose listed files are none gets one
+`EmptySet` fault: `Path` the set's `glob` as the manifest writes it, line `0`,
+`Identifier` the set's `feature`, which tells two such sets apart. The glob
+is relative by B-001, so the path is root-relative as written (C-2). A set
+with a `record` and no file is still a Feature (B-036 is for a record-less
+set), and it is reported the same way.
+
+**A file two sets match (B-018).** `ClaimSets` counts each path across the
+listings of the sets it is given, ordinally. A path in two or more is
+`shared`:
+
+- each set reading it gets a `SharedFile` fault at that path, line `0`, one
+  after the join;
+- `SpechtClaims`' set constructor takes an optional `unclaimed` path set and
+  skips the declarations of those files, so the claims are under neither set
+  (B-018), and no rule of `0001-F12` or `0001-F13` sees them;
+- the read stays in `Files`. `SPEC4011` and `SPEC4012` report what the reader
+  found in the file's text, which does not depend on which set owns it, so the
+  first-read-per-path filter of items `0393` and `0394` keeps reporting each
+  scenario and each Examples tag once. The test that pins the once-report
+  holds.
+
+B-018 does not touch identity. Two sets naming one identity are `SPEC3002`'s
+at each set (B-017), whether or not they share a file. A set whose only files
+are shared is still a Feature, at its first claim file (B-026), with no
+claim; a § 9 row in its record naming a dropped claim is what `SPEC4004` and
+`0001-F12` say of a row with no claim (B-023). `MatrixResolver.ResolveClaims`
+reads `model.Claims[feature]`, so it sees the set without them.
+
+`0001-F19`'s collision guard calls `ClaimSets` with one Feature's sets alone,
+so a file it shares with another Feature's set is not shared among the sets it
+passes, and its claims stay held. The guard then refuses to mint an id the
+file uses, which is the cautious answer; no claim of `0001-F19` asks it to
+change.
+
+**A Feature-level tag naming another identity (B-019).** `ClaimSets` builds the
+reader's `FeatureScope` from `ClaimInput.FeatureScopeTag` when it is set:
+`GherkinClaimTagForm(form, "feature", false, null)`, the placeholder, case and
+grammar the analyzer's `GherkinClaimPolicyReader` gives it (A-3). The reader
+already reads each Feature-level tag through it into `FeatureTagValues`, with
+no line. `GherkinClaimText` gains a trailing optional member,
+`IReadOnlyList<int>? FeatureTagLines = null`, the line of each value at the same
+index, filled by the reader beside the values. The analyzer reads only the
+values, so its findings are unchanged. Each value that differs ordinally from
+the set's `feature` gives one `FeatureTag` fault at the file's path and that
+tag's line, `Identifier` the value captured. A file with no Feature-level tag,
+or one that agrees, gives none. B-019, unlike B-014, B-015 and B-018, says
+nothing of the file's claims, so they are kept. `claim.scopes.epicTag` stays
+unread: no claim of this Feature reads it, so the reader's `EpicScope` stays
+`null`.
+
+**A record that cannot be read (B-033, B-034).** `SpechtTreeStore` gains
+`IsRooted(path)`, the call `TryLoad`'s first guard makes, which `TryLoad` now
+makes through it, so the two never disagree. For each set with a `record`
+that `TryLoad` returns `null` for, `SpechtModelReader.Read` adds one fault to
+the listing:
+
+| Case     | Fault                                                                                                                       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| rooted   | `AbsoluteRecord` at `SpechtManifestStore.RelativePath`, `.specht/manifest.json`, line `0`, `Identifier` the set's `feature` |
+| any else | `UnreadableRecord` at the `record` as the manifest writes it, line `0`, no identifier                                       |
+
+A rooted path never reaches a violation (C-2; OQ-17). "Any else" is
+`TryLoad`'s other three `null` cases: a path that leaves the root, names no
+file, or cannot be read. Its path as written is relative, `..` segments
+included. The set is read as record-less, as item `0391` built (B-035), so a
+record-less set with no claim file is no Feature (B-036) and is reported
+twice, once for its record and once for its glob.
+
+**The rule.** `ClaimInputFaultRule`, in
+`src/specht/Rules/NativeClaims/ClaimInputFaultRule.cs`, key `SPEC027`. Its
+`Evaluate` maps each of `model.ClaimFaults` to one `SpechtFinding`, with
+`File` from `Path`, `Line` and `Identifier` as they stand, and `Message` from
+the kind:
+
+| Kind               | Message                                                                    |
+| ------------------ | -------------------------------------------------------------------------- |
+| `UnreadableFile`   | `claim file cannot be read as English Gherkin, so it declares no claim`    |
+| `EmptySet`         | `claim file set matches no claim file`                                     |
+| `SharedFile`       | `claim file matches more than one claim file set, so it declares no claim` |
+| `FeatureTag`       | `Feature-level tag names a Feature other than its claim file set's`        |
+| `UnreadableRecord` | `claim file set's Feature document cannot be read under the root`          |
+| `AbsoluteRecord`   | `claim file set's Feature document is an absolute path`                    |
+
+No message names a manifest key, so `0001-F5` B-009's message theories do not
+take them (C-4). A line-`0` violation prints with no position, as
+`SpechtViolation.ToString` prints one today.
+
+**The id, the level, the page and the relock.** As for `SPEC4011` and
+`SPEC4012`:
+
+- `SchemaVersions.Shipped`'s `0.4.0` row gains `["SPEC027"] = "SPEC4013"`, and
+  no lower row holds `SPEC027` (`0001-F7` B-014, C-1).
+- `AddSpechtEngine` registers it after `ExamplesClaimTagRule` (`SPEC026`) and
+  before `ClaimIdRule` (`SPEC030`).
+- Error by default: `ISpechtRule.DefaultLevel`, no override, and
+  `"SPEC4013": "error"` after `SPEC4012` in the shipped `0.4.0` manifest.
+- `docs/rules/v0.4.0/SPEC4013.md`, Family `Feature file`, Default severity
+  `Error`, Schema version `0.4.0`, the message table above, an example and the
+  fixes. `0001-F3` B-031 holds it to the vocabulary row.
+- The relock: `0.4.0`'s lock entry removed by hand, then
+  `./build.sh LockSchemaVersion`; `0.1.0` to `0.3.1` byte-identical
+  (`0001-F7` decision 0014, C-1, C-17).
+- `docs/what-it-checks.md` gains a `SPEC4013` row; `docs/configuration.md`'s
+  sentence naming `SPEC4011` and `SPEC4012` gains it.
+- `0001-F7` B-066 holds with no `opt_in` mark, `0.4.0` being a minor above
+  `0.3.1` (`0001-F7` OQ-78).
+
+**Silent without `gherkin` (B-002, B-028, C-3).** Below `0.4.0` no vocabulary
+holds the id, so the rule is neither run nor counted. Under `0.4.0` without
+`claim.source` `gherkin`, `SpechtModelReader.Read` lists no set and
+`ClaimSets` returns none, so `ClaimFaults` is empty. The reader gains a scope
+form only under `gherkin`. Every `0.4.0` tree counts one more rule evaluated,
+and this repository's self-check gains the count and no violation.
+
+**Determinism (B-030).** Faults in set order and ordinal path order, and the
+evaluator's order sorts the report.
+
+**Open points.** Each is behaviour no claim states, so this design does not
+settle it:
+
+1. **Other text the reader refuses.** B-015 names a file with no `Feature:`
+   line. The reader also throws on a ragged table, a malformed tag token, an
+   unterminated doc string, a second `Feature:` line, tags before nothing, and
+   an `Examples:` with no outline above it. It throws them all as one
+   exception with one message. Today each file declares nothing, silently. As
+   designed, every one is reported at line `0`, as B-015's is, because the
+   catch cannot tell them apart. Telling them apart needs a member on the
+   shared exception. Item `0394`'s readings already describe an `Examples:`
+   with no outline as `SPEC4013`'s, which holds only under this design's
+   answer.
+2. **A `featureTag` without exactly one `{feature}`.** Item `0390`'s parser
+   does not check it, and `GherkinClaimTagForm`'s constructor throws on it,
+   with `claim.tag`'s message, outside the per-file catch. As designed, a form
+   the constructor refuses is read as no form: B-019 reports nothing and
+   nothing throws, which is today's behaviour. The other answer is exit `3`,
+   naming the key, as `claim.tag` without `{claim}` exits; that would be a
+   parser fault and a claim.
+
+**Testability.** The mechanisms that prove each claim, for `test-writer`'s § 8
+and § 9:
+
+- The rule from the composed rule set, through `SpechtEvaluator`, over a model
+  `SpechtModelReader.Read` builds from a `MockFileSystem` tree, as
+  `ExamplesClaimTagRule.Unit.Tests` does:
+
+  | Case                                                              | Expected                                                              |
+  | ----------------------------------------------------------------- | --------------------------------------------------------------------- |
+  | `# language: fr` on line 2                                        | one `SPEC4013` at the file, line 2; no claim from it                  |
+  | `# language: en`, or no header                                    | none                                                                  |
+  | no `Feature:` line, or an empty file                              | one at the file, line `0`; no claim from it                           |
+  | a set's glob matching no file, with and without a `record`        | one at the glob as written, line `0`, the set's `feature`             |
+  | one file two sets match                                           | one at the file, line `0`; neither set's claims hold its ids          |
+  | that file's untagged scenario and Examples claim tag              | `SPEC4011` and `SPEC4012` once each, as before                        |
+  | `featureTag` set and a Feature tag capturing another id           | one at the tag's line, the captured id; the file's claims kept        |
+  | the Feature tag agreeing, or absent, or `featureTag` unset        | none                                                                  |
+  | a `record` naming no file, a directory, or `../outside/README.md` | one at the path as written, line `0`; the set record-less             |
+  | a `record` that is rooted                                         | one at `.specht/manifest.json`, line `0`; no rooted path in any field |
+
+- `SpechtTreeStore.TryLoad`'s four `null` cases, rooted, leaving the root, no
+  file and a read that throws, and `IsRooted` agreeing with the first; item
+  `0391`'s review left them to this item.
+- The reader: a refused `# language:` header's exception carries its line,
+  every other carries `0`; `FeatureTagLines` holds each Feature-level scope
+  value's line; the analyzer's tests stand unchanged.
+- The level: the rule's level is `Error`; a manifest `rules` entry lowers or
+  silences it.
+- Silence: a `0.4.0` Markdown tree, and a `0.3.1` pin with `claim.source`
+  `gherkin`, with each condition above, give no `SPEC4013`, and the `0.3.1`
+  rule count is unchanged (B-002, B-028, C-3).
+- The vocabulary: `ShippedVocabularies`' `0.4.0` row gains `SPEC4013`,
+  `ZeroFourZeroRuleNames` gains `SPEC027` to `SPEC4013`, and the composition id
+  list gains `SPEC027`.
+- Acceptance: the `@B-014` to `@B-016`, `@B-018`, `@B-019` and `@B-033` to
+  `@B-035` scenarios. Their lines are error lines, and the step "the output has
+  a line" is bound to a warning line alone since item `0393`, so the step is
+  widened to any line starting with the text given.
+
+**Reuse.** `SpechtModelBuilder.ClaimSets`' per-file catch,
+`SpechtListing.ClaimFiles`, `SpechtTreeStore.TryLoad`, the reader's scope
+form and `FeatureTagValues`, `SpechtClaims`, the evaluator's selection and
+stamp, `SchemaVersions.Shipped` and `LockSchemaVersion` carry the work. Added:
+one rule, one fault record and its kind, one store method, one optional member
+each on the shared exception and the shared read.
+
+**Rejected.**
+
+- Each condition found in the rule. B-018's shared paths and B-035's dropped
+  record are found where the model drops them; finding them again in the rule
+  would be the same verdict in two places, and the rule has no file system to
+  tell a rooted path from another.
+- A message in the fault. The wording is a rule's, as every other rule's is.
+- The exception's `Message` as the violation's message: the analyzer's
+  sentence, capitalised and ending with a period, and the same text for every
+  refused parse.
+- Dropping a shared file's read from `Files` as well as its claims. It would
+  silence `SPEC4011` and `SPEC4012` on the file, which B-018 does not ask, and
+  reverse the once-report item `0393` pins.
+- `TryLoad` returning why it gave `null`. It changes a signature `0001-F19`'s
+  guard also calls, for the one case, rooted, the caller needs.
+- A list of `(value, line)` pairs in place of `FeatureTagValues`. The analyzer
+  reads the values; a second list beside them leaves its reading as it is.
+- Reading `claim.scopes.epicTag`: no claim of this Feature reads it.
 
 ## 8. Testing Strategy
 
