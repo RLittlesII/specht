@@ -1188,7 +1188,7 @@ rule and one optional member on the shared finding.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-14 (item 0393 review round 1, findings 3 to 5: the red counts after the rebase onto `a57f4bae`, the `0.3.1` count's base, red at `f81d195c` and passing from `719148ae`) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0394: SPEC4012, a claim tag on an Examples block) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1792,9 +1792,140 @@ through the built tool. One verdict per claim:
 
 Nothing in this item's scope is hard to test.
 
+### A claim tag on an Examples block, `SPEC4012` (item `0394`)
+
+**Unit.** `ExamplesClaimTagRuleUnitTests`, in
+`test/tests/Rules/NativeClaims/ExamplesClaimTagRule.Unit.Tests.cs`, beside
+item `0393`'s class, reads a `MockFileSystem` tree through
+`EngineServices.Reader(fileSystem)` and evaluates it with the composed rules
+through `SpechtEvaluator.Evaluate`. So the id the evaluator stamps at the
+pin, the severity, the path, the line and the identifier are observed
+together. Its trees take item `0393`'s defaults: `0.4.0`, `exclusions` `obj`
+alone, no epic grammar, and `claim.source` `gherkin` with one set,
+`.spec/features/arithmetic/*.feature` for Feature `F1`, unless a test sets
+its own. A row's manifest members and file texts come from
+`ExamplesClaimTags`, a `[ClassData]` type beside the class. Test-writer
+declared one member in `src/`, for the reader test to compile: the optional
+`string? ClaimId = null` on `GherkinClaimTextFinding`, as § 7 designs it. The
+reader does not set it yet.
+
+- **B-009** - mechanism: `ExamplesClaimTagRule` turns each `SPCT0011`
+  finding of a claim file's read into a finding at the file's root-relative
+  path and the finding's line, the tag's, with the finding's `ClaimId` as its
+  identifier, once per path, at the interface's default level, error. Test:
+  `AClaimTagOnAnExamplesBlock_WhenEvaluated_ShouldBeReportedAsASpec4012ErrorAtTheTagsLineNamingTheClaimIdItWouldDeclare`,
+  over `ExamplesClaimTags`. Its rows are § 7's cases:
+  - a claim tag on an `Examples:` block, and on a `Scenarios:` block;
+  - the tag above the keyword, and between two ordinary tags above it, at the
+    tag's own line;
+  - two claim tags on one block, and one on each of two blocks, one each;
+  - `@smoke`, `@B-05` and `@ignore`, ordinary, mistyped and planned, on one
+    block, none;
+  - `@b-005` under `claim.tagIgnoreCase`, reported with the id as written;
+  - the outline's only claim tag on its block: the tag at error, and the
+    outline under `SPEC4011` at its keyword line;
+  - the outline claimed by its Rule, and by its Feature: the tag, and no
+    `SPEC4011`;
+  - the block naming the outline's own claim, `@B-001`: the tag, and no
+    `SPEC4003`, since the tag declares nothing;
+  - one file two sets match, each tag once;
+  - a file the reader cannot read, a claim tag above an `Examples:` line with
+    no outline, beside a claimed block: the second file alone.
+
+  Each row asserts the exact multiset of `SPEC4012`, `SPEC4011` and
+  `SPEC4003` violations as id, severity, `path(line)` and identifier, so the
+  level, the line, the identifier, the count and the two neighbouring rules'
+  verdicts are held at once. Every row expects at least one `SPEC4012`, so a
+  rule that reports nothing fails every row. Before the rows were handed on,
+  each row's places and ids were checked against the `SPCT0011` and
+  `SPCT0012` findings the shared reader gives its text, and the unreadable
+  file was checked to throw `GherkinClaimTextException`.
+
+- **B-009, the claim id** - mechanism: `GherkinClaimTextReader` passes the
+  claim id the claim form read to the `SPCT0011` finding and none to
+  `SPCT0012`'s. Test:
+  `GherkinClaimTextReaderUnitTests.AClaimTagOnAnExamplesBlock_WhenRead_ShouldGiveAPlacementFindingCarryingTheClaimIdAndAMissingClaimFindingCarryingNone`,
+  an untagged outline whose block carries `@smoke @B-005`. The analyzer's
+  findings stay under their existing tests, as § 7 says.
+- **B-009, no claim** - mechanism: only an `Element`'s tags declare a claim.
+  Guard:
+  `AClaimTagOnAnExamplesBlockAlone_WhenRead_ShouldDeclareNoClaimForItsId`:
+  the set holds the outline's `B-001` and no `B-005`. Green when written: § 7
+  adds no code for it.
+- **B-002, C-3** - mechanism: under `0.4.0` without `claim.source` `gherkin`,
+  `SpechtModel.ClaimSets` holds no set. Guard:
+  `AMarkdownTreeUnderZeroFourZero_WhenItsCompanionHasAClaimTagOnAnExamplesBlock_ShouldReportNoSpec4012`.
+  Green when written.
+- **B-028, C-3** - mechanism: below `0.4.0` no vocabulary holds the id. Guard:
+  `AGherkinClaimSourceUnderZeroThreeOne_WhenAClaimFileHasAClaimTagOnAnExamplesBlock_ShouldNeitherReportNorCountSpec4012`.
+  It asserts no `SPEC4012` and `RulesEvaluated` `23`, the count the same tree
+  gives at `a311b77d`, where no rule reports `SPEC4012`. Green when written.
+- **`0001-F7` B-014, C-1** - mechanism: `SchemaVersions.Shipped`'s `0.4.0` row
+  maps `SPEC026` to `SPEC4012`, and `AddSpechtEngine` registers the rule.
+  Rows added to existing theories and lists:
+  - `ShippedVocabularies`' `0.4.0` row gains `SPEC4012`.
+    `SchemaVersionsUnitTests.AnEmbeddedVersion_WhenItsVocabularyIsRead_ShouldNameEachRuleByThatVersionsId`
+    fails on that row: 30 ids expected, 29 found. Its `0.1.0` to `0.3.1` rows
+    are unchanged (C-1).
+  - `ZeroFourZeroRuleNames` gains `SPEC026` to `SPEC4012`.
+    `SchemaVersionsUnitTests.ARuleKeyEnteringVersionZeroFourZero_WhenNamedUnderIt_ShouldTakeTheFourDigitIdTheMapPairsItWith`
+    fails on that row: `RuleId` returns `SPEC026` unmapped.
+  - The composition id list gains `SPEC026`.
+    `SpechtEngineServiceCollectionExtensionsUnitTests.EveryRuleInTheEngine_WhenItsIdIsRead_ShouldNameEachShippedRuleIdExactlyOnce`
+    fails: 30 ids expected, 29 found.
+
+  As § 7 says, the rule-page tests (`0001-F3` B-031),
+  `InitRuleDefaultsUnitTests`, the real-tree numbering test (`0001-F7` B-066)
+  and the lock tests take the page, the manifest line and the relock with no
+  new test.
+
+**Acceptance.** `NativeClaimsSteps` binds the `@B-009` scenario. "An Examples
+block tagged "@B-005" at line 14" writes an outline claimed by `@B-001`, so
+the line the scenario names is the only violation, and puts the block's tag
+at the named line. "The output has a line … naming … with the identifier"
+and "Feature "F1" has no claim" are item `0391`'s and item `0393`'s steps,
+unchanged: the first asserts a diagnostic line that starts with the place
+and severity, names the id, and ends `[B-005]`.
+
+**Red at `a311b77d`**, on `net11.0`:
+
+- every row of the theory, on "found an empty collection", but the outline
+  row, which finds its `SPEC4011` line alone: no rule reports `SPEC4012`;
+- the reader test, on "to be "B-005", but found <null>";
+- the three vocabulary tests, on the counts and the unmapped key above;
+- the `@B-009` scenario, on its "naming" step: no line names `SPEC4012`.
+
+The guards pass, and so does item `0393`'s class with the new member on the
+shared finding.
+
+**Not asserted**, as no claim of this item states it:
+
+- the message § 7 fixes. B-009 names the id, the line and the identifier;
+- a manifest `rules` entry lowering or silencing `SPEC4012`, and the exit
+  code. § 7's testability list names the level. They are the evaluator's and
+  the check command's for every id, pinned by
+  `SpechtEvaluatorUnitTests.ARuleWhoseIdIsSetOff_WhenEvaluated_ShouldNotRunAndShouldLeaveTheOtherRulesViolationsAndCount`,
+  the `OwnLevelSeverityData` rows of `SpechtEvaluatorUnitTests` and
+  `CheckCommandIntegrationTests.AReportOfSeverities_WhenChecked_ShouldExitWithTheClaimedCode`.
+  A `SPEC4012` copy would assert the same behaviour through another
+  arrangement;
+- that no claim file is parsed twice (C-5), and what else a file two sets
+  match gives, item `0395` (B-018).
+
+**Testability.** Every mechanism is reachable in memory through
+`GherkinClaimTextReader.Read`, `SpechtModelReader.Read` and
+`SpechtEvaluator.Evaluate`, and every outcome through the built tool. One
+verdict per claim:
+
+- B-009: the `SPCT0011` mapping, the claim id on the finding, the per-path
+  filter and the default level, pinned by the theory and the reader test
+  above; no claim recorded, held by the guard.
+
+Nothing in this item's scope is hard to test.
+
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-11-14 (item 0393: the B-010 row) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0394: the B-009 row) -->
 
 | Claim ID | Scenario                                                                                                                                                                                                                                                                                                                                                                              | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Status  |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -1806,7 +1937,7 @@ Nothing in this item's scope is hard to test.
 | B-006    | An outline declares one claim                                                                                                                                                                                                                                                                                                                                                         | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimTagOnAnElement_WhenRead_ShouldDeclareOneClaimAsAuthoredAtTheElementsKeywordLine`, its Scenario Outline row                                                                                                                                                                                                                                                                             | Covered |
 | B-007    | A Rule declares once for its scenarios                                                                                                                                                                                                                                                                                                                                                | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimTagOnAnElement_WhenRead_ShouldDeclareOneClaimAsAuthoredAtTheElementsKeywordLine`, its Rule row                                                                                                                                                                                                                                                                                         | Covered |
 | B-008    | One identifier on two elements is reported at both                                                                                                                                                                                                                                                                                                                                    | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Missing |
-| B-009    | A claim tag on an Examples block is reported                                                                                                                                                                                                                                                                                                                                          | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Missing |
+| B-009    | A claim tag on an Examples block is reported                                                                                                                                                                                                                                                                                                                                          | `NativeClaimsSteps`; `ExamplesClaimTagRuleUnitTests.AClaimTagOnAnExamplesBlock_WhenEvaluated_ShouldBeReportedAsASpec4012ErrorAtTheTagsLineNamingTheClaimIdItWouldDeclare`; `GherkinClaimTextReaderUnitTests.AClaimTagOnAnExamplesBlock_WhenRead_ShouldGiveAPlacementFindingCarryingTheClaimIdAndAMissingClaimFindingCarryingNone`                                                                                                                         | Covered |
 | B-010    | A scenario with no claim is reported; An inherited claim satisfies the untagged scenario rule                                                                                                                                                                                                                                                                                         | `NativeClaimsSteps`; `ScenarioWithoutClaimRuleUnitTests.AScenarioInAClaimFile_WhenEvaluated_ShouldBeReportedAsASpec4011WarningAtItsKeywordLineOnlyWhenItCarriesNoClaimOfItsOwnItsRulesOrItsFeatures`                                                                                                                                                                                                                                                      | Covered |
 | B-011    | Reordering and retitling keep every claim                                                                                                                                                                                                                                                                                                                                             | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.AClaimFileReorderedAndRetitled_WhenReadAgain_ShouldKeepEveryClaimsIdentifierFeatureIdentityAndStatus`                                                                                                                                                                                                                                                                                        | Covered |
 | B-012    | Lifecycle tags give the claim its status                                                                                                                                                                                                                                                                                                                                              | `NativeClaimsSteps`; `SpechtModelReaderNativeClaimsUnitTests.ANativeClaim_WhenRead_ShouldTakeItsStatusFromTheLifecycleTagsTheManifestListsOnItsDeclaringElement`; `SpechtManifestParserClaimMembersUnitTests.AGherkinClaimSourceLeavingOutTheTagListsAndLifecycleKey_WhenParsedUnderZeroFourZero_ShouldFillThemFromTheShippedDefaults`                                                                                                                    | Covered |
