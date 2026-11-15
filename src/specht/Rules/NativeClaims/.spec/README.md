@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0395 designed: SPEC4013, an unreadable claim file, set or record); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013, an unreadable claim file, set or record); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -189,7 +189,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | Error by default, lowered or silenced by the manifest's `rules` (B-009; OQ-5)                                                                                       | Business       | Item `0394`: `ISpechtRule.DefaultLevel`; the shipped `0.4.0` manifest's `rules`; the evaluator's stamp                                                                                                                             |
 | The id joins `0.4.0` alone, with its page and a relock; `0.1.0` to `0.3.1` are unchanged (B-028, C-3; `0001-F7` B-014, C-1, C-17; `0001-F3` B-031)                  | Technical      | Item `0394`: `SchemaVersions.Shipped`, `docs/rules/v0.4.0/SPEC4012.md`, `./build.sh LockSchemaVersion`                                                                                                                             |
 | Nothing reported without `claim.source` `gherkin`, nor below `0.4.0` (B-002, B-028, C-3)                                                                            | Business       | Item `0394`: `SpechtModel.ClaimSets` is empty unless the source is `gherkin`; below `0.4.0` no vocabulary holds the id                                                                                                             |
-| What the check could not take from claim input is recorded once, where it is dropped, as one list the rule reads (B-014 to B-016, B-018, B-019, B-033, B-034)       | Technical      | Item `0395`: `SpechtClaimFault` and `SpechtClaimFaultKind`; `SpechtListing.ClaimFaults` from the model reader, each set's `SpechtClaims.Faults` from the builder, joined as `SpechtModel.ClaimFaults`                              |
+| What the check could not take from claim input is recorded once, where it is dropped, as one list the rule reads (B-014 to B-016, B-018, B-019, B-033, B-034)       | Technical      | Item `0395`: `SpechtClaimFault` and `SpechtClaimFaultKind`; the model reader's record faults as `Build`'s `recordFaults`, each set's `SpechtClaims.Faults` from the builder, joined as `SpechtModel.ClaimFaults`                   |
 | A claim file the reader cannot read declares nothing and is reported at its `# language:` line, or line `0` (B-014, B-015; A-3)                                     | Business       | Item `0395`: `GherkinClaimTextException.Line`, the header's line for a language other than `en`; `SpechtModelBuilder.ClaimSets`' per-file catch                                                                                    |
 | A set whose glob matches no file is reported at the glob as written, line `0` (B-016, C-2)                                                                          | Business       | Item `0395`: `SpechtModelBuilder.ClaimSets`, over the set's listed files                                                                                                                                                           |
 | A file two sets match is reported once, line `0`, its claims under neither; its read stays for `SPEC4011` and `SPEC4012` (B-018)                                    | Business       | Item `0395`: `SpechtModelBuilder.ClaimSets` finds the path in two sets' listings; `SpechtClaims`' set constructor skips its declarations                                                                                           |
@@ -201,7 +201,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0395 built as designed; the open points stated as OQ-19 and OQ-20 resolve them); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument, not on `SpechtListing`); before: implementer, 2026-11-14 (item 0395 built as designed; the open points stated as OQ-19 and OQ-20 resolve them); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -1223,9 +1223,9 @@ already in hand, so no verdict is split between a store and a rule.
 **The fault.** One record, `SpechtClaimFault(string Path, int Line,
 SpechtClaimFaultKind Kind, string? Identifier)`, in `src/specht/Model/`, and
 its kind, an enum with one value per row of the message table below. It holds
-no message: the wording is the rule's. `SpechtListing.ClaimFaults` carries the
-model reader's faults, `SpechtClaims.Faults` each set's from the builder, and
-`SpechtModelBuilder.Build` joins them, listing first, as
+no message: the wording is the rule's. `SpechtModelBuilder.Build`'s optional
+`recordFaults` argument carries the model reader's faults, `SpechtClaims.Faults`
+each set's from the builder, and `Build` joins them, the reader's first, as
 `SpechtModel.ClaimFaults`, distinct under record equality, so a file two sets
 both read and fail on is one fault. Both lists are empty unless `claim.source`
 is `gherkin`.
@@ -1298,8 +1298,8 @@ unread: no claim of this Feature reads it, so the reader's `EpicScope` stays
 **A record that cannot be read (B-033, B-034).** `SpechtTreeStore` gains
 `IsRooted(path)`, the call `TryLoad`'s first guard makes, which `TryLoad` now
 makes through it, so the two never disagree. For each set with a `record`
-that `TryLoad` returns `null` for, `SpechtModelReader.Read` adds one fault to
-the listing:
+that `TryLoad` returns `null` for, `SpechtModelReader.Read` passes one fault to
+`Build`:
 
 | Case     | Fault                                                                                                                       |
 | -------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -1440,6 +1440,12 @@ each on the shared exception and the shared read.
 - A list of `(value, line)` pairs in place of `FeatureTagValues`. The analyzer
   reads the values; a second list beside them leaves its reading as it is.
 - Reading `claim.scopes.epicTag`: no claim of this Feature reads it.
+- The record faults on `SpechtListing`, as first built. `Specht.Discovery`
+  sits below `Specht.Model` in ADR-0010's layout, so the listing cannot hold a
+  model type without the two depending on each other (review round 1). Moving
+  the fault into `Specht.Discovery` would put the builder's and the rule's
+  type below them for one caller. The reader finds the record faults and hands
+  them to `Build` directly.
 
 ## 8. Testing Strategy
 

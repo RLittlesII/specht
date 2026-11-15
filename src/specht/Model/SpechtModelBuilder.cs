@@ -18,6 +18,10 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <param name="schemas">The compiled schemas and the manifest they were selected by.</param>
     /// <param name="listing">What discovery listed.</param>
     /// <param name="texts">The text of every listed file, by root-relative path.</param>
+    /// <param name="recordFaults">
+    /// Each claim file set's <c>record</c> the model reader could not load, in the manifest's order of the sets, or null for
+    /// none (<c>0001-F16</c> B-033, B-034).
+    /// </param>
     /// <returns>The model.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
@@ -26,7 +30,13 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <implements epic="0001" feature="F5" claim="B-080" />
     /// <implements epic="0001" feature="F6" claim="B-013" />
     /// <implements epic="0001" feature="F16" claim="B-018" />
-    public SpechtModel Build(SpechtSchemas schemas, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
+    /// <implements epic="0001" feature="F16" claim="B-033" />
+    /// <implements epic="0001" feature="F16" claim="B-034" />
+    public SpechtModel Build(
+        SpechtSchemas schemas,
+        SpechtListing listing,
+        IReadOnlyDictionary<string, string> texts,
+        IReadOnlyList<SpechtClaimFault>? recordFaults = null)
     {
         var structure = schemas.Structure;
         var features = new List<FeatureSpec>();
@@ -73,7 +83,7 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         return new SpechtModel(features, items, epics, schemas, tests, claimSets)
         {
             OrphanCompanions = listing.OrphanCompanions,
-            ClaimFaults = listing.ClaimFaults.Concat(claimSets.SelectMany(static claims => claims.Faults)).Distinct().ToArray(),
+            ClaimFaults = (recordFaults ?? []).Concat(claimSets.SelectMany(static claims => claims.Faults)).Distinct().ToArray(),
         };
     }
 

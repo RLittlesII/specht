@@ -80,12 +80,6 @@ public sealed class SpechtModelReader(
             ClaimFiles = claimFiles,
             ClaimRecords = recordPaths,
             ClaimLocations = claimLocations,
-            ClaimFaults = sets.Select((set, index) => (set, Loaded: records[index]))
-                .Where(static entry => entry.set.Record is not null && entry.Loaded is null)
-                .Select(entry => tree.IsRooted(entry.set.Record!)
-                    ? new SpechtClaimFault(SpechtManifestStore.RelativePath, 0, SpechtClaimFaultKind.AbsoluteRecord, entry.set.Feature)
-                    : new SpechtClaimFault(entry.set.Record!, 0, SpechtClaimFaultKind.UnreadableRecord, null))
-                .ToArray(),
             OrphanCompanions = discovery.FindOrphanCompanions(root, specifications, inputs),
         };
         var paths = specifications.Select(static location => location.RelativePath)
@@ -102,7 +96,14 @@ public sealed class SpechtModelReader(
             texts[record.RelativePath] = record.Text();
         }
 
-        return builder.Build(schemas, listing, texts);
+        var recordFaults = sets.Select((set, index) => (set, Loaded: records[index]))
+            .Where(static entry => entry.set.Record is not null && entry.Loaded is null)
+            .Select(entry => tree.IsRooted(entry.set.Record!)
+                ? new SpechtClaimFault(SpechtManifestStore.RelativePath, 0, SpechtClaimFaultKind.AbsoluteRecord, entry.set.Feature)
+                : new SpechtClaimFault(entry.set.Record!, 0, SpechtClaimFaultKind.UnreadableRecord, null))
+            .ToArray();
+
+        return builder.Build(schemas, listing, texts, recordFaults);
     }
 
     /// <summary>
