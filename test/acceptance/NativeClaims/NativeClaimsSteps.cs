@@ -16,7 +16,10 @@ namespace Specht.Acceptance.NativeClaims;
 /// B-026, B-032 and B-036 to B-038, and for a scenario in a claim file with no claim of item 0393, B-010 and the
 /// boundary that no claim is inferred from a title, and for a claim tag on an Examples block of item 0394, B-009, and
 /// for an unreadable claim file, set or record of item 0395, B-014 to B-016, B-018, B-019, with its boundary that a
-/// Feature-level tag that agrees, or none, is not reported, and B-033 to B-035. "The output
+/// Feature-level tag that agrees, or none, is not reported, and B-033 to B-035, and for the existing rules on a native
+/// Feature of item 0392, B-008, B-020, with its boundary that a Feature with no record is held to no section, and B-021.
+/// "The output has the line" binds a stdout line equal to the text given. A record that holds or lacks a section is the
+/// canonical sections with that one left out. "The output
 /// has a line" binds any line that starts with the text given, a line-<c>0</c> line printing its path with no position.
 /// A file that cannot be read is held open with no sharing until the scenario ends. A record at an absolute path is the
 /// root's own record file named by its full path, so a check that read it would find it. The other scenarios bind only
@@ -417,6 +420,30 @@ public sealed class NativeClaimsSteps
         }
     }
 
+    [Given("{string} tags a scenario {string} at line {int}")]
+    public void GivenTagsAScenarioAtLine(string path, string tag, int line) => GivenCarriesOnAnElementAtLine(path, tag, "Scenario", line);
+
+    [Given("the record holds every manifest section except {string}")]
+    [Given("the record lacks the section {string}")]
+    public void GivenTheRecordHoldsEveryManifestSectionExcept(string title)
+    {
+        _recordSections = [.. SpechtTree.Sections.Where(section => !section.StartsWith($"## {title}\n", StringComparison.Ordinal))];
+        _recordSections.Should().HaveCount(SpechtTree.Sections.Count - 1);
+        WriteRecord();
+    }
+
+    [Given("three claim files sit beside the record")]
+    public void GivenThreeClaimFilesSitBesideTheRecord()
+    {
+        var folder = Path.GetDirectoryName(_record ?? throw new InvalidOperationException("No record was named."))!.Replace('\\', '/');
+        foreach (var (name, id) in new[] { ("add", "B-001"), ("subtract", "B-002"), ("total", "B-003") })
+        {
+            var path = $"{folder}/{name}.feature";
+            Tree.WriteRaw(path, $"Feature: Arithmetic\n\n  @{id}\n  Scenario: {name}\n    Given numbers\n");
+            _claimFiles.Add(path);
+        }
+    }
+
     [Given("the record's frontmatter sets {string} to {string}")]
     public void GivenTheRecordsFrontmatterSetsTo(string key, string value)
     {
@@ -570,6 +597,41 @@ public sealed class NativeClaimsSteps
 
     [Then(@"^the output has a line ""([^""]*)""$")]
     public void ThenTheOutputHasALine(string start) => Diagnostics().Should().Contain(line => line.StartsWith(start, StringComparison.Ordinal));
+
+    [Then("the output has the line {string}")]
+    public void ThenTheOutputHasTheLine(string line) =>
+        Run.Stdout.Split('\n').Select(static output => output.TrimEnd('\r')).Should().Contain(line, Run.Stderr);
+
+    [Then("no {string} is reported for the record")]
+    public void ThenNoIsReportedForTheRecord(string ruleId)
+    {
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        Diagnostics().Should().NotContain(line => line.StartsWith(Record, StringComparison.Ordinal) && line.Contains($" {ruleId}:", StringComparison.Ordinal));
+    }
+
+    [Then("no {string} is reported for the record's claims section")]
+    public void ThenNoIsReportedForTheRecordsClaimsSection(string ruleId)
+    {
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        var claims = Node("roles.claims")?.GetValue<string>() ?? "3. Acceptance Criteria";
+        Diagnostics().Should().NotContain(line => line.StartsWith(Record, StringComparison.Ordinal)
+            && line.Contains($" {ruleId}:", StringComparison.Ordinal)
+            && line.EndsWith($"[{claims}]", StringComparison.Ordinal));
+    }
+
+    [Then("the output has a line for the record naming {string}")]
+    public void ThenTheOutputHasALineForTheRecordNaming(string ruleId) =>
+        Diagnostics().Should().Contain(line => line.StartsWith(Record, StringComparison.Ordinal) && line.Contains($" {ruleId}:", StringComparison.Ordinal));
+
+    [Then("no {string} is reported for Feature {string}")]
+    public void ThenNoIsReportedForFeature(string ruleId, string feature)
+    {
+        ClaimFileSet["feature"]!.GetValue<string>().Should().Be(feature);
+        _claimFiles.Should().HaveCount(3);
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        Diagnostics().Should().NotContain(line => line.Contains($" {ruleId}:", StringComparison.Ordinal)
+            && _claimFiles.Append(Record).Any(path => line.StartsWith(path, StringComparison.Ordinal)));
+    }
 
     [Then("Feature {string} has no claim from that file")]
     public void ThenFeatureHasNoClaimFromThatFile(string feature) => ClaimSet(feature).Rows.Should().NotContain(claim => claim.Path == ClaimFile);
@@ -761,6 +823,8 @@ public sealed class NativeClaimsSteps
 
     private string ClaimFile => _claimFile ?? throw new InvalidOperationException("No claim file was written.");
 
+    private string Record => _record ?? throw new InvalidOperationException("No record was named.");
+
     private JsonObject ClaimFileSet => (JsonObject) ((JsonArray) Node("claim.files")!)[0]!;
 
     private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
@@ -801,8 +865,7 @@ public sealed class NativeClaimsSteps
         entries[^1].Should().StartWith($"{layout} ");
     }
 
-    private void WriteRecord() =>
-        Tree.WriteSpecification(_record ?? throw new InvalidOperationException("No record was named."), "0001", "F1", _recordFrontmatter);
+    private void WriteRecord() => Tree.WriteSpecification(Record, "0001", "F1", _recordFrontmatter, _recordSections);
 
     private SpechtClaims ClaimSet(string feature)
     {
@@ -919,6 +982,8 @@ public sealed class NativeClaimsSteps
     private string? _claimId;
 
     private string? _record;
+
+    private string[]? _recordSections;
 
     private string? _absoluteRecord;
 
