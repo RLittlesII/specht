@@ -19,9 +19,8 @@ namespace Specht.Acceptance.NativeClaims;
 /// for an unreadable claim file, set or record of item 0395, B-014 to B-016, B-018, B-019, with its boundary that a
 /// Feature-level tag that agrees, or none, is not reported, and B-033 to B-035, and for the existing rules on a native
 /// Feature of item 0392, B-008, B-020, with its boundary that a Feature with no record is held to no section, and B-021,
-/// and for a claim file, a record's matrix and the trace of item 0396, B-022 to B-024. A claim file with no specification
-/// beside it is made one by a layout whose directory holds it. The B-024 scenario writes no claim file of its own, so a hook
-/// writes one, declaring B-001 and B-002, before its When when none matches; "specht trace" runs the built tool's trace
+/// and for a claim file, a record's matrix and the trace of item 0396, B-022 to B-024. The B-022 scenario's claim file stays an orphan companion
+/// until the build excludes it: "companionFiles" lists "*.feature" and no layout's glob matches a file. "specht trace" runs the built tool's trace
 /// command on the root.
 /// "The output has the line" binds a stdout line equal to the text given. A record that holds or lacks a section is the
 /// canonical sections with that one left out. "The output
@@ -40,25 +39,28 @@ namespace Specht.Acceptance.NativeClaims;
 /// </summary>
 [Binding]
 [Scope(Feature = "Native Gherkin claims")]
-public sealed class NativeClaimsSteps(ScenarioContext context)
+public sealed class NativeClaimsSteps
 {
-    [BeforeScenarioBlock]
-    public void WriteTheClaimFilesTheNoRecordScenarioNames()
+    [Given("the manifest's {string} lists {string}")]
+    public void GivenTheManifestsLists(string path, string entry)
     {
-        if (context.ScenarioInfo.Tags.Contains("B-024") && context.CurrentScenarioBlock == ScenarioBlock.When && _claimFiles.Count == 0
-            && !File.Exists(Path.Combine(Tree.Root, ".spec", "features", "arithmetic", "add.feature")))
+        var list = Node(path) as JsonArray;
+        if (list is null)
         {
-            GivenDeclaresScenariosTaggedAnd(AddFile, "@B-001", "@B-002");
+            list = [];
+            Set(path, list);
         }
+
+        list.Add(JsonValue.Create(entry));
     }
 
-    [Given("{string} has no specification beside it")]
-    public void GivenHasNoSpecificationBesideIt(string path)
-    {
-        Tree.WriteRaw(path, Adds);
-        var directory = Path.GetDirectoryName(path)!.Replace('\\', '/');
-        ((JsonArray) Manifest["layouts"]!).Add(new JsonObject { ["name"] = "beside", ["glob"] = $"{directory}/README.md" });
-    }
+    [Given("a layout's glob {string} matches no file")]
+    public void GivenALayoutsGlobMatchesNoFile(string glob) =>
+        ((JsonArray) Manifest["layouts"]!).Add(new JsonObject { ["name"] = "beside", ["glob"] = glob });
+
+    [Given("the glob matches {string} with scenarios tagged {string} and {string}")]
+    public void GivenTheGlobMatchesWithScenariosTaggedAnd(string path, string first, string second) =>
+        GivenDeclaresScenariosTaggedAnd(path, first, second);
 
     [Given("the record's {string} has one row per claim in the claim files")]
     public void GivenTheRecordsHasOneRowPerClaimInTheClaimFiles(string title)
