@@ -16,6 +16,7 @@ public sealed class ClaimTagRule : ISpechtRule
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
     /// <implements epic="0001" feature="F5" claim="B-009" />
+    /// <implements epic="0001" feature="F16" claim="B-021" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();

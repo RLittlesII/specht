@@ -17,6 +17,7 @@ public sealed class ClaimIdRule : ISpechtRule
     /// <implements epic="0001" feature="F5" claim="B-087" />
     /// <implements epic="0001" feature="F5" claim="B-100" />
     /// <implements epic="0001" feature="F5" claim="B-101" />
+    /// <implements epic="0001" feature="F16" claim="B-008" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
@@ -24,9 +25,23 @@ public sealed class ClaimIdRule : ISpechtRule
         var manifestGrammar = structure.ClaimGrammar(null);
         var claimsReference = structure.SectionReference("claims");
 
-        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
+        foreach (var feature in model.Features)
         {
             var claims = model.Claims[feature];
+
+            if (feature.ClaimFileSet is not null)
+            {
+                foreach (var declarations in claims.Rows.GroupBy(static claim => claim.Id, StringComparer.Ordinal).Where(static group => group.Count() > 1))
+                {
+                    foreach (var claim in declarations)
+                    {
+                        yield return new SpechtFinding(claim.Path!, claim.Line, claim.Id, "duplicate claim id");
+                    }
+                }
+
+                continue;
+            }
+
             var claimGrammar = feature.ClaimGrammar ?? manifestGrammar;
             var (grammar, prefix) = claimGrammar;
             var form = prefix is null ? grammar

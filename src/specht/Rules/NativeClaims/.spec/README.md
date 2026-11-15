@@ -206,7 +206,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0392 designed: the existing rules on a native Feature; item 0391's skip table replaced for SPEC2001 to SPEC4003); before: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument, not on `SpechtListing`); before: implementer, 2026-11-14 (item 0395 built as designed; the open points stated as OQ-19 and OQ-20 resolve them); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0392 built as designed; OQ-21 (a) and the § 10 record-less reading settle its open points); before: implementer, 2026-11-14 (item 0392 designed: the existing rules on a native Feature; item 0391's skip table replaced for SPEC2001 to SPEC4003); before: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument, not on `SpechtListing`); before: implementer, 2026-11-14 (item 0395 built as designed; the open points stated as OQ-19 and OQ-20 resolve them); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -730,10 +730,10 @@ that item replaces the skip. The two rules that read claims only through
 | `SPEC4005`, `SPEC4007`, `SPEC4009`, `SPEC4010` | the `0001-F12` rules                                                              | a record's § 9 rows resolved against no companion, through `MatrixResolver.Resolve`, which the claim guard does not cover | `0396`, B-023, B-024 |
 | `SPEC4006` (`SPEC035`), `SPEC4008`             | `RetiredClaimRule`, `MissingScenarioRule`, through `MatrixResolver.ResolveClaims` | a crash: the resolver reads `claims.Section!`, and a set's claims have no section                                         | `0396`, B-023, B-024 |
 
-Item `0392` replaces this table's first five rows, as designed in its own
-subsection. It lifts the skips for `SPEC2001`, `SPEC2002` and `SPEC4003`,
-keeping `SPEC2001`'s for a record-less Feature. It keeps the skips for
-`SPEC4001` and `SPEC4002`, which become B-021's and permanent. A native
+Item `0392` has replaced this table's first five rows, as built in its own
+subsection. It lifted the skips for `SPEC2001`, `SPEC2002` and `SPEC4003`,
+keeping `SPEC2001`'s for a record-less Feature. It kept the skips for
+`SPEC4001` and `SPEC4002`, which are now B-021's and permanent. A native
 Feature's grammar has no prefix, so the shared-head finding named in the
 `SPEC4003` row cannot fire on one. The last three rows stay for item `0396`.
 
@@ -1461,7 +1461,7 @@ each on the shared exception and the shared read.
 
 ### The existing rules on a native Feature (item `0392`)
 
-Designed. Five existing rules run on a native Feature, and no rule id is added
+Built. Five existing rules run on a native Feature, and no rule id is added
 (C-3):
 
 - `SPEC4003` reports one identifier on two elements (B-008).
@@ -1561,22 +1561,20 @@ patch neighbours (`0001-F7` OQ-78).
 **Determinism and paths (B-030, C-2).** A native row's `Path` is discovery's
 root-relative path, and the evaluator's order sorts the findings.
 
-**Open points.** No claim settles either of these, so this design does not
-settle them either:
+**Settled points.** The design raised two; § 11 and § 10 now settle them:
 
-1. **One identifier in two sets of one identity.** B-008 says "within one
-   Feature identity". Two sets that name one identity are two native Features,
-   and `SPEC3002` reports them at each (B-017). A set beside a layout
-   specification of the same identity is a third case. As designed, `SPEC4003`
-   compares the rows of one set alone. An id that both sets declare is not
-   reported, because the shared identity is already a fault. The other reading
-   groups the native Features, or all Features, by `Identity` and reports
-   across them, which reports one fault a second time.
-2. **A native Feature with no record under `SPEC2001`.** B-020's Given is a
-   set with a `record`. As designed, a record-less Feature is skipped, as B-003
-   already skips it for its frontmatter, because nothing is authored to hold.
-   No claim says so. The other reading reports every section missing from a
-   document nobody writes.
+1. **One identifier in two sets of one identity.** OQ-21 resolved on (a), and
+   B-008 now says "within one claim file set". `SPEC4003` compares the rows of
+   one set alone, since each set is its own native Feature. Two sets that name
+   one identity are `SPEC3002`'s, at each (B-017), and an id both declare is
+   not `SPEC4003`'s. A set beside a layout specification of the same identity
+   is read the same way.
+2. **A native Feature with no record under `SPEC2001`.** § 10 reads B-020's
+   Given as a set with a `record`, so `SPEC2001` and `SPEC2002` hold nothing
+   for a set with none, or one whose record cannot be read (B-035). The
+   `@B-020 @boundary` scenario states it. `SectionContractRule` skips such a
+   Feature with the frontmatter rules' filter; `TableHeaderRule` finds no table
+   in its empty document.
 
 **Readings.** These fall within the claims; they are stated so review can
 check them:
@@ -1615,8 +1613,11 @@ check them:
 **Reuse.** These carry the work: `ClaimIdRule`, `SectionContractRule`,
 `TableHeaderRule`, `CompanionFileRule`, `ClaimTagRule`, item `0391`'s
 catalogue and `MatrixSections`, and the frontmatter rules' record-less filter.
-The only code added is one branch in `ClaimIdRule` and one `Where` in
-`SectionContractRule`.
+The only code added is one branch in `ClaimIdRule`, and in
+`SectionContractRule` the frontmatter rules' filter and a section list without
+the claims title, chosen per Feature. The rules are declared in
+`src/specht/Rules/ClaimIdRule.cs`, `SectionContractRule.cs`,
+`TableHeaderRule.cs`, `CompanionFileRule.cs` and `ClaimTagRule.cs`.
 
 **Rejected.**
 
