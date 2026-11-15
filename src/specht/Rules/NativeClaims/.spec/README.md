@@ -1635,7 +1635,7 @@ the claims title, chosen per Feature. The rules are declared in
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-14 (item 0392: the existing rules' tests on a native Feature, red at `1168d005`) -->
+<!-- last written by: test-writer, 2026-11-14 (item 0392: an item 0394 row given its own outline claim after the build at `ba4dad54`); before: test-writer, 2026-11-14 (item 0392: the existing rules' tests on a native Feature, red at `63556181`) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -2268,7 +2268,10 @@ it, the reader sets it on each `SPCT0011` finding.
     tag's own line;
   - two claim tags on one block, and one on each of two blocks, one each;
   - `@smoke`, `@B-05` and `@ignore`, ordinary, mistyped and planned, on one
-    block, none;
+    block, none, beside a second file whose outline claims `@B-002` and whose
+    block carries `@B-005`, reported. The second outline claimed `@B-001` until
+    item `0392`; under B-008 one id in two files of one set is `SPEC4003` at
+    each, so the outlines now declare different ids;
   - `@b-005` under `claim.tagIgnoreCase`, reported with the id as written;
   - the outline's only claim tag on its block: the tag at error, and the
     outline under `SPEC4011` at its keyword line;
@@ -2698,7 +2701,7 @@ section", and `@B-021`.
 The Background writes no claim file, so the two record scenarios also report
 `SPEC4013` for the empty set. No step reads it.
 
-**Red at `1168d005`**, on `net11.0`:
+**Red at `63556181`**, on `net11.0`:
 
 - seven rows of the rule theory: the four `SPEC4003` rows and the three
   positive record rows. Each fails on "a collection with 1 item(s)", or
@@ -2711,6 +2714,15 @@ The Background writes no claim file, so the two record scenarios also report
 Only those seven unit tests fail. These pass: the rule theory's other five
 rows, the B-002 guard, the first `@B-020` scenario, the boundary, `@B-021` and
 the rest of the class.
+
+After the build at `ba4dad54`, one row of item `0394`'s `ExamplesClaimTags`
+failed. The row is the ordinary, mistyped and planned tags beside a claimed
+block. Its two files' outlines both claimed `@B-001` in one set, and its test
+reads `SPEC4003`. Under B-008 that duplicate is now reported at each outline.
+The row was meant to test the block's tag, not a duplicate, so its second
+outline now claims `@B-002`. No other fixture of items `0393`, `0394` and
+`0395` declares one id twice in one set: with `SPEC4003` read in beside
+`SPEC4011` and `SPEC4013`, their rule theories report no `SPEC4003`.
 
 **Not asserted**, as no claim of this item states it:
 

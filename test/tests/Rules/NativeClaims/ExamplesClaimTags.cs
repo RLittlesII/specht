@@ -23,7 +23,10 @@ public sealed class ExamplesClaimTags : TheoryData<string, string[], string[]>
             "{}",
             [Outline + "    @B-005\n" + Rows + "\n    @B-006\n" + Rows],
             [$"SPEC4012 Error {AddFile}(7) B-005", $"SPEC4012 Error {AddFile}(12) B-006"]);
-        Add("{}", [Outline + "    @smoke @B-05 @ignore\n" + Rows, Outline + "    @B-005\n" + Rows], [$"SPEC4012 Error {SubtractFile}(7) B-005"]);
+        Add(
+            "{}",
+            [Outline + "    @smoke @B-05 @ignore\n" + Rows, Outline.Replace("@B-001", "@B-002", StringComparison.Ordinal) + "    @B-005\n" + Rows],
+            [$"SPEC4012 Error {SubtractFile}(7) B-005"]);
         Add("""{ "claim": { "tagIgnoreCase": true } }""", [Outline + "    @b-005\n" + Rows], [$"SPEC4012 Error {AddFile}(7) b-005"]);
         Add(
             "{}",
