@@ -9,10 +9,10 @@ namespace Specht.Acceptance.Trace;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Trace/.spec/trace.feature</c> (<c>0001-F13</c>): item 0442 binds B-001 to B-003, B-006,
-/// B-007, B-009 and B-019. Each launches the built tool over a synthetic tree: one Feature specification with claims
-/// B-001 to B-003, a traceability row and a tagged scenario for each until a step changes them, and one test file under
-/// <c>test/</c> holding the test methods a step names as held. The scenarios of B-004, B-005, B-008, B-010 to B-018 and
-/// B-020 stay pending for items 0443 to 0445: each keeps a step no binding here matches.
+/// B-007, B-009 and B-019, and item 0443 B-004, B-005 and B-020. Each launches the built tool over a synthetic tree: one
+/// Feature specification with claims B-001 to B-003, a traceability row and a tagged scenario for each until a step
+/// changes them, and one test file under <c>test/</c> holding the test methods a step names as held. The scenarios of
+/// B-008 and B-010 to B-018 stay pending for items 0444 and 0445: each keeps a step no binding here matches.
 /// </summary>
 [Binding]
 [Scope(Feature = "The trace command")]
@@ -28,19 +28,39 @@ public sealed class TraceSteps
     [Given("a Feature specification with three claims beside one companion scenario file")]
     public void GivenFeatureWithThreeClaims()
     {
-        _rows["B-001"] = "| B-001 | Tracing one | Missing | Missing |";
-        _rows["B-002"] = "| B-002 | Tracing another | Missing | Missing |";
-        _rows["B-003"] = "| B-003 | Tracing a third | Missing | Missing |";
-        _scenarios.AddRange([("B-001", "Tracing one"), ("B-002", "Tracing another"), ("B-003", "Tracing a third")]);
+        foreach (var claim in ClaimIds)
+        {
+            _rows[claim] = $"| {claim} | {Titles[claim]} | Missing | Missing |";
+            _scenarios.Add((claim, Titles[claim]));
+        }
     }
 
     [Given("the manifest declares the test files {string}")]
-    public void GivenTestFiles(string glob)
+    public void GivenTestFiles(string glob) => EditManifest(manifest => manifest["tests"] = new JsonObject { ["files"] = new JsonArray(glob) });
+
+    [Given("the manifest declares no tests")]
+    public void GivenNoTests() => EditManifest(static manifest => manifest.Remove("tests"));
+
+    [Given("the manifest pins schema version {word}, the first that holds the unresolved-test rule")]
+    public void GivenRepinnedForTheUnresolvedTestRule(string pin) => Tree.Pin(pin);
+
+    [Given("the manifest sets the unresolved-test rule to off")]
+    public void GivenUnresolvedTestRuleOff() =>
+        EditManifest(static manifest => manifest["rules"] = new JsonObject { [RuleIds.Under(manifest, "SPEC032")] = "off" });
+
+    [Given("claim B-001 names a test no file holds")]
+    public void GivenB001NamesATestNoFileHolds()
     {
-        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
-        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
-        manifest["tests"] = new JsonObject { ["files"] = new JsonArray(glob) };
-        File.WriteAllText(path, manifest.ToJsonString());
+        _rows["B-001"] = "| B-001 | Tracing one | `TracesNowhere` | Partial |";
+        _that = ("B-001", "TracesNowhere");
+    }
+
+    [Given("claim {word}'s row is {string} and names one test")]
+    public void GivenARowNamingOneTest(string claim, string status)
+    {
+        var name = "Traces" + claim.Replace("-", string.Empty, StringComparison.Ordinal);
+        _rows[claim] = $"| {claim} | {Titles[claim]} | `{name}` | {status} |";
+        _that = (claim, name);
     }
 
     [Given("claim B-002's row is {string}, two scenarios carry its tag, and it names three tests of which two resolve")]
@@ -263,6 +283,22 @@ public sealed class TraceSteps
             .Select(static test => (test!["name"]!.GetValue<string>(), test["resolution"]!.GetValue<string>()))
             .Should().Equal(("TracesAnother", resolution), ("TracesNowhere", resolution));
 
+    [Then("every test's resolution is {string}")]
+    public void ThenEveryTestResolvesAs(string resolution) =>
+        Tests.Should().NotBeEmpty().And.AllSatisfy(test => test["resolution"]!.GetValue<string>().Should().Be(resolution));
+
+    [Then("no test's resolution is {string}")]
+    public void ThenNoTestResolvesAs(string resolution) =>
+        Tests.Select(static test => test["resolution"]!.GetValue<string>()).Should().NotContain(resolution);
+
+    [Then("that test's resolution is {string}")]
+    public void ThenThatTestResolvesAs(string resolution) =>
+        Test(_that.Claim, _that.Name)["resolution"]!.GetValue<string>().Should().Be(resolution);
+
+    [Then("the test of {word} is {string}")]
+    public void ThenTheTestOfIs(string claim, string resolution) =>
+        Claim(claim)["tests"]!.AsArray().Should().ContainSingle().Which!["resolution"]!.GetValue<string>().Should().Be(resolution);
+
     [AfterScenario]
     public void DisposeTree() => _tree?.Dispose();
 
@@ -285,6 +321,12 @@ public sealed class TraceSteps
             return JsonNode.Parse(_result.Stdout)!["specifications"]!.AsArray().Select(static specification => specification!.AsObject()).ToArray();
         }
     }
+
+    private JsonObject[] Tests =>
+        Specification(FirstPath)["claims"]!.AsArray()
+            .SelectMany(static claim => claim!["tests"]!.AsArray())
+            .Select(static test => test!.AsObject())
+            .ToArray();
 
     private static IEnumerable<string> MemberNames(JsonNode? node) => node switch
     {
@@ -309,6 +351,14 @@ public sealed class TraceSteps
     private string LineOf(string claim) =>
         Lines.Should().ContainSingle(line => line.StartsWith(FirstPath + "\t", StringComparison.Ordinal)
             && line.Split('\t').ElementAtOrDefault(1) == claim).Which;
+
+    private void EditManifest(Action<JsonObject> edit)
+    {
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        edit(manifest);
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
 
     private int FileLine(string path, string prefix) =>
         Array.FindIndex(File.ReadAllLines(Path.Combine(Tree.Root, path)), line => line.StartsWith(prefix, StringComparison.Ordinal)) + 1;
@@ -349,12 +399,20 @@ public sealed class TraceSteps
 
     private static readonly string[] ClaimIds = ["B-001", "B-002", "B-003"];
 
+    private static readonly Dictionary<string, string> Titles = new(StringComparer.Ordinal)
+    {
+        ["B-001"] = "Tracing one",
+        ["B-002"] = "Tracing another",
+        ["B-003"] = "Tracing a third",
+    };
+
     private readonly Dictionary<string, string?> _rows = new(StringComparer.Ordinal);
     private readonly List<(string Tag, string Title)> _scenarios = [];
     private readonly List<string> _held = [];
     private SpechtTree? _tree;
     private bool _second;
     private string _rootArgument = ".";
+    private (string Claim, string Name) _that;
     private (string Stdout, string Stderr, int ExitCode) _result;
     private (string Stdout, string Stderr, int ExitCode) _again;
 }
