@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0392 designed: SPEC4003, SPEC2001, SPEC2002, SPEC4001 and SPEC4002 on a native Feature); before: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013, an unreadable claim file, set or record); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-15 (item 0396 designed: SPEC2003, SPEC4004, the 0001-F12 rules and the trace on a native Feature); before: implementer, 2026-11-14 (item 0392 designed: SPEC4003, SPEC2001, SPEC2002, SPEC4001 and SPEC4002 on a native Feature); before: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013, an unreadable claim file, set or record); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -203,10 +203,17 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | A native Feature with no record has no sections to hold (B-003, B-020)                                                                                              | Business       | Item `0392`: `SectionContractRule` takes the frontmatter rules' filter; `TableHeaderRule` finds no table in an empty document                                                                                                      |
 | The companion rules leave a native Feature alone: its claim files are its companions, and every tag in them declares (B-021)                                        | Business       | Item `0392`: the `ClaimFileSet is null` filter on `CompanionFileRule` and `ClaimTagRule`, now permanent                                                                                                                            |
 | No rule id is added and none changes meaning; a tree without `claim.source` `gherkin` keeps every verdict (B-002, C-3)                                              | Business       | Item `0392`: each change reads only a Feature whose `ClaimFileSet` is set, which the model makes only under `gherkin`                                                                                                              |
+| A file a set's glob matches is no stray companion; one beside a record that no glob matches still is (B-022; OQ-22; `0001-F6` B-013)                                | Business       | Item `0396`: `SpechtModelReader.Read` removes every set's listing from `FindOrphanCompanions`' result; `OrphanCompanionRule` unchanged                                                                                             |
+| A native Feature's companions are its claim files, read once, with their scenarios' titles and B-025's tags (B-021, B-023, B-025; C-1, C-5)                         | Technical      | Item `0396`: `GherkinClaimText.Scenarios`; `SpechtClaims.Claimed`; `SpechtModelBuilder.NativeFeatures` builds `FeatureFiles` from both                                                                                             |
+| A record's matrix holds one row per native claim; a missing row is reported at the record (B-023, B-026)                                                            | Business       | Item `0396`: `ClaimRowRule` without its `Where`, over `claims.Ids`; the missing row at the matrix heading's line                                                                                                                   |
+| The `0001-F12` rules resolve a record's rows against the claim files; a native claim's Status is its state (B-012, B-023; `0001-F12` A-1, C-3, C-4)                 | Business       | Item `0396`: the `Where` skips dropped from four rules; `MatrixResolver.ResolveClaims` without its guard, Status from `Declaration.State` and the markers                                                                          |
+| Without a record or a matrix no `SPEC4004` to `SPEC4010` reports, and the trace lists each claim as `none` (B-024; `0001-F13` B-001)                                | Business       | Item `0396`: a `null` `MatrixSections` entry; `TraceDocument.From` without its `Where`, its scenario count through `FeatureFiles`                                                                                                  |
+| `specht facts` keeps leaving a native Feature out: no claim says what its facts are                                                                                 | Technical      | Item `0396`: `FactsDocument.From` and `FactsCommand` unchanged                                                                                                                                                                     |
+| A tree without `claim.source` `gherkin` keeps every verdict, message, count and trace line (B-002, C-3)                                                             | Business       | Item `0396`: each change reads only a native Feature, a declared claim or a set's listing, which the model makes only under `gherkin`                                                                                              |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0392 built as designed; OQ-21 (a) and the § 10 record-less reading settle its open points); before: implementer, 2026-11-14 (item 0392 designed: the existing rules on a native Feature; item 0391's skip table replaced for SPEC2001 to SPEC4003); before: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument, not on `SpechtListing`); before: implementer, 2026-11-14 (item 0395 built as designed; the open points stated as OQ-19 and OQ-20 resolve them); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-15 (item 0396 designed: claim files as a native Feature's companions; item 0391's last three skip rows and the trace skip lifted; SPEC4006 left open); before: implementer, 2026-11-14 (item 0392 built as designed; OQ-21 (a) and the § 10 record-less reading settle its open points); before: implementer, 2026-11-14 (item 0392 designed: the existing rules on a native Feature; item 0391's skip table replaced for SPEC2001 to SPEC4003); before: implementer, 2026-11-14 (item 0395 review round 1: the record faults reach `Build` as an argument, not on `SpechtListing`); before: implementer, 2026-11-14 (item 0395 built as designed; the open points stated as OQ-19 and OQ-20 resolve them); before: implementer, 2026-11-14 (item 0395 designed: SPEC4013 over one list of claim input faults the model reader and the builder record where they drop what they cannot take); before: implementer, 2026-11-14 (item 0394 review round 1: the claim id paragraph cites where the reader lives, not an uncited escalation); before: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -735,7 +742,10 @@ subsection. It lifted the skips for `SPEC2001`, `SPEC2002` and `SPEC4003`,
 keeping `SPEC2001`'s for a record-less Feature. It kept the skips for
 `SPEC4001` and `SPEC4002`, which are now B-021's and permanent. A native
 Feature's grammar has no prefix, so the shared-head finding named in the
-`SPEC4003` row cannot fire on one. The last three rows stay for item `0396`.
+`SPEC4003` row cannot fire on one. Item `0396` replaces the last three rows,
+as designed in its own subsection: it lifts the `SPEC4004` skip, the matrix
+rules' skips and the resolver's guard, and gives a native Feature its claim
+files as `FeatureFiles`.
 
 `SPEC3001` needs no skip. The `claims` layout has no path identity, and B-027
 makes a set's `epic` present wherever the epic grammar is declared, so
@@ -747,7 +757,8 @@ Feature, so `FactsDocument.From` skips one too, and its output is unchanged.
 `FactsCommand` passes only the layouts' Features to
 `SpechtModelReader.ReadRecords` (item `0368`), so an unreadable file beside a
 native Feature's location cannot fail `specht facts` for a Feature whose facts
-are dropped.
+are dropped. Item `0396` keeps both: no claim says what a native Feature's
+facts are.
 
 Each rule skip is a `Where` on `ClaimFileSet` over the rule's loop.
 `MatrixResolver.ResolveClaims` returns no claim for a Feature whose
@@ -1632,6 +1643,248 @@ the claims title, chosen per Feature. The rules are declared in
   reads.
 - Holding a record-less Feature to an empty document. It would report every
   section of a record nobody writes.
+
+### Native claims under SPEC2003, the matrix rules and the trace (item `0396`)
+
+Designed. Three readers of the catalogue take native claims, and no rule id is
+added (C-3):
+
+- `SPEC2003` does not report a claim file (B-022).
+- `SPEC4004` and the rules of `0001-F12` hold a record's matrix to the native
+  claims and resolve its rows against the claim files (B-023).
+- Without a record or a matrix nothing of either reports, and `specht trace`
+  lists each claim as `none` (B-024).
+
+This item lifts the last three rows of item `0391`'s skip table: `ClaimRowRule`,
+the skips of four `0001-F12` rules and `MatrixResolver.ResolveClaims`' guard,
+which silenced the other two. It
+also lifts `TraceDocument.From`'s skip, which item `0442` added for the same
+reason.
+
+**A claim file is no stray companion (B-022; OQ-22).**
+`SpechtModelReader.Read` already holds `claimFiles`, every set's listing, when
+it calls `discovery.FindOrphanCompanions`. It removes each listed claim file
+from that result, compared ordinally, and sets the rest on
+`SpechtListing.OrphanCompanions`. `OrphanCompanionRule` is unchanged.
+
+- Each set's listing is removed, whether or not the set makes a Feature and
+  whether or not its file is read. A file two sets match (B-018) and one the
+  reader refuses (B-014, B-015) are still matched by a set's glob, which is all
+  B-022 asks.
+- A `companionFiles` file beside a record that no set's glob matches is not in
+  any listing, so it stays `SPEC2003`'s under `0001-F6` B-013 as written: the
+  owner's selection "(a) Record is no spec" (OQ-22). The reader already drops
+  a layout's specification at a record's path before it lists orphans
+  (item `0391`), so the record's directory is unoccupied, as OQ-22's reading
+  says.
+- Under any source but `gherkin` the listings are empty and nothing is removed
+  (B-002).
+
+**The claim files as companions (B-021, B-023, B-025; C-1, C-5).**
+`MatrixResolver` reads a Feature's companions through `FeatureSpec.FeatureFiles`
+in three places: `ClaimTags`, the scenario titles `Resolve` matches, and the
+scenarios `ResolveClaims` gives each claim. A native Feature has none today.
+This item gives it one `FeatureFile` per claim file, built from the read the
+catalogue already holds, so the resolver takes claim files as it takes a
+companion and no claim file is parsed twice:
+
+1. `GherkinClaimText` gains one optional positional member, `Scenarios`: every
+   Scenario and Scenario Outline the reader opens, as `(int Line, string Title)`,
+   in document order. Each entry is the keyword line and the text after the
+   keyword, trimmed, which the reader already holds as `Case.Title`. The
+   reader's one constructor call passes it. It is a member of a linked file,
+   not a new type, as `GherkinClaimDeclaration.Scenarios` (item `0390`) and
+   `FeatureTagLines` (item `0395`) were, so the analyzer's link list is
+   unchanged and the analyzer reads nothing of it (§ 5 row 1).
+2. `SpechtClaims` gains `Claimed`: the files of `Files` it takes claims from, so
+   every file but those in `unclaimed` (B-018), in listing order. The set
+   constructor already filters that list, and `Claimed` keeps it. It is empty
+   for a claims table.
+3. `SpechtModelBuilder.Build` computes `claimSets` before `NativeFeatures` and
+   passes it in. Each native `FeatureSpec` takes, in place of `[]`, one
+   `FeatureFile` per entry of its set's `Claimed`:
+
+| `FeatureFile` member | A companion                                           | A claim file                                                                                                                 |
+| -------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `RelativePath`       | its path                                              | its path                                                                                                                     |
+| `Tags`               | each claim tag on a tag line, at its line             | one `FeatureTag(Id, Line)` per `GherkinClaimDeclaration`, at the declaring element's keyword line (B-004), in document order |
+| `Scenarios`          | each `Scenario:` and `Scenario Outline:`, by its tags | each `Scenarios` entry, its `Tags` one `FeatureTag` per declaration whose `Scenarios` holds its line (B-025)                 |
+
+A scenario's tags are therefore B-025's set: its own declaration, its Rule's and
+its Feature's. An Examples tag declares nothing (B-009), so it carries nothing.
+`0001-F12` A-1 and `0001-F13` B-001 count that set, as B-025 says. A claim the
+Feature or a Rule declares with no scenario under it is still on a tag, as
+`0001-F12` B-028 counts a tag above a `Feature:` or `Rule:` with no scenario.
+
+`CompanionFileRule` and `ClaimTagRule` keep B-021's filter, so neither reads the
+new list. They are the only readers of `FeatureFiles` besides the resolver.
+
+**A native claim's Status.** `ResolveClaims` drops its guard. For each claim it
+reads the Status cell of the claims table, `claims.Section!.Rows[index][3]`,
+which a native claim does not have. For a row whose `Declaration` is set it
+reads the claim's state (B-012) instead, as the manifest's markers spell it:
+
+- `Withdrawn` gives `markers["withdrawn"]`;
+- `Superseded` gives `markers["superseded"]`;
+- `Active` stays `Active`, the reader's word, since no marker names a live
+  claim and the rules test only the two retired markers.
+
+Liveness is then read from the declaring element's tags, as `0001-F12` reads it
+from § 3 (A-3 there), and a consumer's renamed marker still matches (C-4).
+
+**One row per native claim (B-023, B-024).** `ClaimRowRule` drops its `Where`.
+It skips a Feature whose `MatrixSections` entry is `null`, which covers a set
+with no record, one whose record cannot be read and a record without the
+matrix (B-024). It still skips a layout Feature with no claims section. For a
+native Feature, `CheckMatrix` reads `claims.Ids`, every id the claim files
+declare, as it reads a table's:
+
+| Finding                       | A layout Feature                              | A native Feature                                                                                                                                                                                            |
+| ----------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| a claim with no row           | the claim's § 3 line, naming the claims table | the record's path (B-026), the matrix heading's line; `claim '<id>' has no row in <matrix> - every claim the claim files declare appears there exactly once, with '<missing>' as its test until one exists` |
+| a claim with two or more rows | the second row's line                         | the same, unchanged                                                                                                                                                                                         |
+| a row naming no claim         | its line, naming the claims table             | its line; `<matrix> cites '<id>', which no claim file of the set declares`                                                                                                                                  |
+
+`Expected` is unchanged. Neither message names the claims table, which a native
+claim does not have (item `0392`).
+
+**The `0001-F12` rules (B-023, B-024).** `ScenarioTitleRule`, `StatusRule`,
+`UnresolvedTestRule` and `WaiverRule` drop their `Where`. `MissingScenarioRule`
+and `RetiredClaimRule` have none: the resolver's guard silenced them. Each
+rule now reads a record's matrix through `MatrixSections`, and the claim files
+through `FeatureFiles`, so each holds a row as it holds a companion's (B-023).
+Without a matrix, `Resolve` returns no row and every claim has none, so
+`SPEC4005`, `SPEC4007`, `SPEC4008`, `SPEC4009` and `SPEC4010` report nothing
+(B-024). `SPEC4006` is the open point below.
+
+| Rule             | On a native Feature                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `SPEC4005`       | a waived row's approver against the record's sign-off, unchanged                                                         |
+| `SPEC4007`       | each title against the claim files' scenario titles and B-025's tags                                                     |
+| `SPEC4008`       | silent: a native claim is on a tag by construction, which `0001-F12` B-028 counts as carried                             |
+| `SPEC4009`       | each named test against the declared test files, unchanged                                                               |
+| `SPEC4010`       | the row's scenario resolves when a claim file tags the claim and, under title matching, every title resolves (A-1 there) |
+| `SPEC4006` (off) | the open point below                                                                                                     |
+
+**The trace (B-024; C-5; `0001-F13` B-001, C-3).** `TraceDocument.From` drops
+its `Where`. A native Feature's claims come through `ResolveClaims`, as every
+other Feature's do:
+
+- Without a matrix, each claim has no row, so its line reads `none`.
+- Its scenario count is B-025's set, through `FeatureFiles`.
+- With a record's matrix, its line reads the row's Status, as a layout
+  Feature's does.
+
+The trace reads the catalogue and the claim files' one read, so no claim file
+is parsed again (C-5). The line's path is the Feature's, the record or the
+first claim file (B-026).
+
+**`specht facts` stays as it is.** No claim of this item, nor any other claim
+of this Feature, says what `specht facts` carries for a native Feature. C-5
+names the claim rules, `0001-F12` and `0001-F13`, and not `0132-F2`. So
+`FactsDocument.From` keeps item `0391`'s skip, and `FactsCommand` keeps passing
+only the layouts' Features to `ReadRecords`. Lifting them needs a claim first.
+
+**Silent without `gherkin` (B-002, C-3).** Each change reads only a Feature
+whose `ClaimFileSet` is set, a claim whose `Declaration` is set, or a set's
+listing. The model makes none of these without `claim.source` `gherkin`. A
+layout Feature's verdicts, messages, counts and trace lines are unchanged, and
+so is every companion's read: `FeatureTagParser` is untouched.
+
+**Determinism and paths (B-030, C-2).** Claim files are in listing order,
+their scenarios in document order, and their tags in declaration order. Every
+path is discovery's root-relative path, and the evaluator orders the findings.
+
+**Open point.** One rule of `0001-F12` reads its condition from the companion's
+tags, not its rows, and no claim settles it on a native Feature:
+
+1. **`SPEC4006` on a retired native claim.** `RetiredClaimRule` reports a
+   withdrawn or superseded claim when any companion tag carries it, or when a
+   row's Status is not its marker. A native claim is withdrawn or superseded
+   only by a tag on its declaring element (B-012), so it always carries a tag.
+   Read as written, `SPEC4006` reports every retired native claim whenever the
+   rule is on, a record without a matrix included, against B-024. The other
+   reading holds a retired native claim to its rows alone, since the tag that
+   declares and retires it is not a companion's stray tag. Without a matrix
+   there is then no row and nothing reports, so B-024 holds with no skip. The
+   design holds each reading behind one condition in `RetiredClaimRule`:
+   `claim.Claim.Declaration is null && claim.Tags.Count > 0` for the second,
+   `claim.Tags.Count > 0` with a skip on a native Feature without a matrix for
+   the first. A native finding sits at the record (B-026), at the first row
+   whose Status is not the marker, or at the matrix heading when there is no
+   such row. The rule is off by default.
+
+**Readings.** These fall within the claims; they are stated so review can
+check them:
+
+- A claim file's scenarios are the reader's, so an `Example:` and a
+  `Scenario Template:` are scenarios with titles (A-3, C-1). A companion's
+  parse records only `Scenario:` and `Scenario Outline:` (`0001-F12` B-008).
+  The difference follows from item `0390`'s rejection of `FeatureTagParser` for
+  claim files.
+- A native `FeatureTag`'s `Line` is the declaring element's keyword line, not
+  its tag line, which the reader does not keep. Only `ClaimTagRule` reads a
+  tag's line, and B-021 keeps it off a native Feature.
+- A missing row's finding sits at the record and the matrix heading. B-026
+  puts every violation on a native Feature at its record. B-008 is the only
+  claim that names a claim file's path, for `SPEC4003`.
+- In `specht trace --json`, a native claim's `line` is its declaration's
+  keyword line, which is in a claim file, not in the specification the
+  document's `path` names. The schema has no member for the claim's file, and
+  what the trace prints beyond `none` and the scenario count is `0001-F13`'s
+  (§ 5 row 11).
+
+**Testability.** The mechanisms for `test-writer`'s § 8 and § 9:
+
+- `GherkinClaimTextReader.Read` gives `Scenarios` from text.
+- `SpechtModelReader.Read`, over a `MockFileSystem` tree through
+  `EngineServices`, gives `OrphanCompanions` and a native Feature's
+  `FeatureFiles`.
+- `SpechtEvaluator` runs the composed rule set over that model.
+- `TraceDocument.From` over the same model gives the lines.
+
+  | Case                                                                                | Expected                                                     |
+  | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+  | a claim file in a layout glob's directory part, no specification beside it          | no `SPEC2003`                                                |
+  | a `companionFiles` file beside a record, matched by no set's glob                   | `SPEC2003` at that file (OQ-22)                              |
+  | a record whose matrix has one row per declared claim                                | no `SPEC4004`                                                |
+  | claims `B-001` and `B-002`, a matrix listing `B-001` alone                          | `SPEC4004` at the record, the matrix heading's line, `B-002` |
+  | a matrix row for an id no claim file declares; two rows for one claim               | `SPEC4004` at the row; at the second row                     |
+  | title matching, a cell naming a claim-file scenario that carries the tag            | no `SPEC4007`                                                |
+  | a cell naming a scenario without the tag, or a title no claim file has              | `SPEC4007` at the row                                        |
+  | a covered row of a claim the Feature declares with no scenario, every test resolved | no `SPEC4010` (`0001-F12` B-028)                             |
+  | a covered row whose test does not resolve                                           | `SPEC4009` and `SPEC4010` at the row                         |
+  | a set with no record; a record without the matrix                                   | none of `SPEC4004` to `SPEC4010`                             |
+  | `specht trace` over a set with no record                                            | each claim `none`, with B-025's scenario count               |
+  | `specht trace` over a record with a matrix                                          | each claim with its row's Status                             |
+
+- Silence: a `0.4.0` Markdown tree gives the verdicts and trace it gave before
+  (B-002).
+- `AMatrixRuleOverANativeFeatureWithAClaim_WhenEvaluated_ShouldReportNothingAndNotFail`
+  pins item `0391`'s silence, which this item ends.
+- Acceptance: the `@B-022`, both `@B-023` and the `@B-024` scenarios.
+
+**Reuse.** These carry the work: `MatrixResolver` as it is but for one status
+branch, the `0001-F12` rules, `ClaimRowRule.CheckMatrix`, `OrphanCompanionRule`,
+`TraceDocument`, `FeatureFile`, `FeatureScenario` and `FeatureTag`, and the
+reader's `Case.Title`. No type is added.
+
+**Rejected.**
+
+- A native branch in each of the resolver's three companion reads. `Resolve`
+  would need the Feature's `SpechtClaims`, so its signature would change for
+  every rule and test that calls it. `FeatureFiles` is the one place it
+  already reads, and B-021 makes the claim files a native Feature's companions.
+- Reading claim files with `FeatureTagParser` for their titles. That is a
+  second Gherkin reading (item `0390`; A-3, C-1).
+- A scenario record type. It would be a new linked file, which `0201-F7`
+  decision 0004 does not cover; a tuple member needs none.
+- Filtering inside `ISpecDiscovery.FindOrphanCompanions`. Its signature would
+  change for one caller, and the reader already holds both lists.
+- Lifting `FactsDocument.From`'s skip. No claim says what a native Feature's
+  facts are.
+- Reporting `SPEC4004`'s missing row at the claim's declaration in its claim
+  file. B-026 puts it at the record.
 
 ## 8. Testing Strategy
 
