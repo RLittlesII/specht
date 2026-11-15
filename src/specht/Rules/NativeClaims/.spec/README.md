@@ -1815,9 +1815,8 @@ claim is held to its rows alone:
    design holds each reading behind one condition in `RetiredClaimRule`:
    `claim.Claim.Declaration is null && claim.Tags.Count > 0` for the second,
    `claim.Tags.Count > 0` with a skip on a native Feature without a matrix for
-   the first. A native finding sits at the record (B-026), at the first row
-   whose Status is not the marker, or at the matrix heading when there is no
-   such row. The rule is off by default.
+   the first. A native finding sits at the record (B-026) or at the first row
+   whose Status is not the marker. The rule is off by default.
 
 **Readings.** These fall within the claims; they are stated so review can
 check them:

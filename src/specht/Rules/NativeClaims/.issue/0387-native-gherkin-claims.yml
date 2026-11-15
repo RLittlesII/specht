@@ -46,6 +46,14 @@ claims:
   - B-028
   - B-029
   - B-030
+  - B-031
+  - B-032
+  - B-033
+  - B-034
+  - B-035
+  - B-036
+  - B-037
+  - B-038
 
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -104,6 +112,7 @@ acceptance_criteria:
   - "B-028 — a pin of 0.3.0 or earlier is untouched (0389)"
   - "B-029 — an invalid claim file set exits 3 before any rule (0389)"
   - "B-030 — the same tree gives the same output (0390)"
+  - "B-031 to B-038 — the claims of children 0389 (B-031), 0391 (B-032, B-036 to B-038) and 0395 (B-033 to B-035)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
