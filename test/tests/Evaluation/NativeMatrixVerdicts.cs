@@ -35,8 +35,9 @@ public sealed class NativeMatrixVerdicts : TheoryData<string, string[], string[]
         var titled = Record(Matrix("| B-001 | Adds | Missing | Missing |\n"));
         Add(WithTitles, [AddFile, RecordFile], [Adds, titled], []);
 
-        var untagged = Record(Matrix("| B-001 | Subtracts | Missing | Missing |\n"));
-        Add(WithTitles, [AddFile, SubtractFile, RecordFile], [Adds, Subtracts, untagged], [$"SPEC4007 {RecordFile}({Line(untagged, "| B-001")}) B-001"]);
+        var untagged = Record(Matrix("| B-001 | Subtracts | Missing | Missing |\n| B-002 | Subtracts | Missing | Missing |\n"));
+        var untaggedLine = Line(untagged, "| B-001 | Subtracts");
+        Add(WithTitles, [AddFile, SubtractFile, RecordFile], [Adds, Subtracts, untagged], [$"SPEC4007 {RecordFile}({untaggedLine}) B-001"]);
 
         var nameless = Record(Matrix("| B-001 | Nowhere | Missing | Missing |\n"));
         Add(WithTitles, [AddFile, RecordFile], [Adds, nameless], [$"SPEC4007 {RecordFile}({Line(nameless, "| B-001")}) B-001"]);
@@ -64,7 +65,7 @@ public sealed class NativeMatrixVerdicts : TheoryData<string, string[], string[]
     private static string Record(string matrix) =>
         Front + string.Join('\n', SpechtTree.SectionsWith("9. Traceability Matrix", matrix));
 
-    private static int Line(string text, string fragment) => text[..text.IndexOf(fragment, StringComparison.Ordinal)].Count(static c => c == '\n') + 1;
+    private static int Line(string text, string fragment) => text[..text.LastIndexOf(fragment, StringComparison.Ordinal)].Count(static c => c == '\n') + 1;
 
     private const string AddFile = ".spec/features/arithmetic/add.feature";
 

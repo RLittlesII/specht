@@ -119,10 +119,15 @@ public sealed class NativeClaimsSteps
     [Then("each claim of Feature {string} has the status {string}")]
     public void ThenEachClaimOfFeatureHasTheStatus(string feature, string status)
     {
-        var ids = ClaimSet(feature).Rows.Select(static claim => claim.Id).ToArray();
+        var rows = ClaimSet(feature).Rows;
+        var ids = rows.Select(static claim => claim.Id).ToArray();
         ids.Should().NotBeEmpty();
         Run.ExitCode.Should().Be(0, Run.Stderr);
-        var lines = Run.Stdout.Split('\n').Select(static line => line.TrimEnd('\r').Split('\t')).Where(static fields => fields.Length == 5).ToArray();
+        var path = rows[0].Path;
+        var lines = Run.Stdout.Split('\n')
+            .Select(static line => line.TrimEnd('\r').Split('\t'))
+            .Where(fields => fields.Length == 5 && fields[0] == path)
+            .ToArray();
         lines.Select(static fields => (fields[1], fields[2])).Should().BeEquivalentTo(ids.Select(id => (id, status)));
     }
 
