@@ -238,7 +238,9 @@ Feature: Native Gherkin claims
 
   @B-022
   Scenario: A claim file is not a stray companion
-    Given ".spec/features/arithmetic/add.feature" has no specification beside it
+    Given the manifest's "companionFiles" lists "*.feature"
+    And a layout's glob ".spec/features/arithmetic/README.md" matches no file
+    And the glob matches ".spec/features/arithmetic/add.feature"
     When the check runs
     Then no "SPEC2003" is reported for ".spec/features/arithmetic/add.feature"
 
@@ -260,6 +262,7 @@ Feature: Native Gherkin claims
   @B-024
   Scenario: Without a matrix the trace says none
     Given the claim file set names no record
+    And the glob matches ".spec/features/arithmetic/add.feature" with scenarios tagged "@B-001" and "@B-002"
     When the check runs
     Then no "SPEC4004" and no rule of Feature "0001-F12" is reported for Feature "F1"
     When "specht trace" runs
