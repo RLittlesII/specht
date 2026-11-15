@@ -5,6 +5,7 @@ using AwesomeAssertions;
 using Reqnroll;
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Rules.Matrix;
 using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.NativeClaims;
@@ -17,7 +18,11 @@ namespace Specht.Acceptance.NativeClaims;
 /// boundary that no claim is inferred from a title, and for a claim tag on an Examples block of item 0394, B-009, and
 /// for an unreadable claim file, set or record of item 0395, B-014 to B-016, B-018, B-019, with its boundary that a
 /// Feature-level tag that agrees, or none, is not reported, and B-033 to B-035, and for the existing rules on a native
-/// Feature of item 0392, B-008, B-020, with its boundary that a Feature with no record is held to no section, and B-021.
+/// Feature of item 0392, B-008, B-020, with its boundary that a Feature with no record is held to no section, and B-021,
+/// and for a claim file, a record's matrix and the trace of item 0396, B-022 to B-024. A claim file with no specification
+/// beside it is made one by a layout whose directory holds it. The B-024 scenario writes no claim file of its own, so a hook
+/// writes one, declaring B-001 and B-002, before its When when none matches; "specht trace" runs the built tool's trace
+/// command on the root.
 /// "The output has the line" binds a stdout line equal to the text given. A record that holds or lacks a section is the
 /// canonical sections with that one left out. "The output
 /// has a line" binds any line that starts with the text given, a line-<c>0</c> line printing its path with no position.
@@ -35,8 +40,90 @@ namespace Specht.Acceptance.NativeClaims;
 /// </summary>
 [Binding]
 [Scope(Feature = "Native Gherkin claims")]
-public sealed class NativeClaimsSteps
+public sealed class NativeClaimsSteps(ScenarioContext context)
 {
+    [BeforeScenarioBlock]
+    public void WriteTheClaimFilesTheNoRecordScenarioNames()
+    {
+        if (context.ScenarioInfo.Tags.Contains("B-024") && context.CurrentScenarioBlock == ScenarioBlock.When && _claimFiles.Count == 0
+            && !File.Exists(Path.Combine(Tree.Root, ".spec", "features", "arithmetic", "add.feature")))
+        {
+            GivenDeclaresScenariosTaggedAnd(AddFile, "@B-001", "@B-002");
+        }
+    }
+
+    [Given("{string} has no specification beside it")]
+    public void GivenHasNoSpecificationBesideIt(string path)
+    {
+        Tree.WriteRaw(path, Adds);
+        var directory = Path.GetDirectoryName(path)!.Replace('\\', '/');
+        ((JsonArray) Manifest["layouts"]!).Add(new JsonObject { ["name"] = "beside", ["glob"] = $"{directory}/README.md" });
+    }
+
+    [Given("the record's {string} has one row per claim in the claim files")]
+    public void GivenTheRecordsHasOneRowPerClaimInTheClaimFiles(string title)
+    {
+        Tree.WriteRaw(AddFile, Adds);
+        Set("matrix.scenarioTitles", JsonValue.Create(true));
+        WriteMatrix(title, "| B-001 | Adds | Missing | Missing |\n");
+    }
+
+    [Given("the claim files declare {string} and {string} and the record's matrix lists only {string}")]
+    public void GivenTheClaimFilesDeclareAndAndTheRecordsMatrixListsOnly(string first, string second, string listed)
+    {
+        GivenDeclaresScenariosTaggedAnd(AddFile, $"@{first}", $"@{second}");
+        WriteMatrix("9. Traceability Matrix", $"| {listed} | Adds | Missing | Missing |\n");
+    }
+
+    [When("\"specht trace\" runs")]
+    public void WhenSpechtTraceRuns()
+    {
+        File.WriteAllText(ManifestPath, Manifest.ToJsonString());
+        _run = AcceptanceTool.Launch(Tree.Root, ["trace", "--root", "."]);
+    }
+
+    [Then("each row's scenario resolves against the set's claim files")]
+    public void ThenEachRowsScenarioResolvesAgainstTheSetsClaimFiles()
+    {
+        var model = Model();
+        var rows = new MatrixResolver().Resolve(NativeFeature("F1"), model.Schemas.Structure, []);
+        rows.Should().NotBeEmpty().And.OnlyContain(static row =>
+            row.Scenarios.Count > 0 && row.Scenarios.All(static title => title.Status == MatrixScenarioStatus.Resolved));
+    }
+
+    [Then("the output has a line for the record naming {string} with the identifier {string}")]
+    public void ThenTheOutputHasALineForTheRecordNamingWithTheIdentifier(string ruleId, string identifier) =>
+        Diagnostics().Should().Contain(line => line.StartsWith(Record, StringComparison.Ordinal)
+            && line.Contains($" {ruleId}:", StringComparison.Ordinal)
+            && line.EndsWith($"[{identifier}]", StringComparison.Ordinal));
+
+    [Then("no {string} is reported for {string}")]
+    public void ThenNoIsReportedForPath(string ruleId, string path)
+    {
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        Diagnostics().Should().NotContain(line => line.StartsWith(path, StringComparison.Ordinal) && line.Contains($" {ruleId}:", StringComparison.Ordinal));
+    }
+
+    [Then("no {string} and no rule of Feature {string} is reported for Feature {string}")]
+    public void ThenNoAndNoRuleOfFeatureIsReportedForFeature(string ruleId, string ruleFeature, string feature)
+    {
+        ruleFeature.Should().Be("0001-F12");
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        ClaimSet(feature).Rows.Should().NotBeEmpty();
+        string[] ids = [ruleId, "SPEC4005", "SPEC4006", "SPEC4007", "SPEC4008", "SPEC4009", "SPEC4010"];
+        Diagnostics().Should().NotContain(line => ids.Any(id => line.Contains($" {id}:", StringComparison.Ordinal)));
+    }
+
+    [Then("each claim of Feature {string} has the status {string}")]
+    public void ThenEachClaimOfFeatureHasTheStatus(string feature, string status)
+    {
+        var ids = ClaimSet(feature).Rows.Select(static claim => claim.Id).ToArray();
+        ids.Should().NotBeEmpty();
+        Run.ExitCode.Should().Be(0, Run.Stderr);
+        var lines = Run.Stdout.Split('\n').Select(static line => line.TrimEnd('\r').Split('\t')).Where(static fields => fields.Length == 5).ToArray();
+        lines.Select(static fields => (fields[1], fields[2])).Should().BeEquivalentTo(ids.Select(id => (id, status)));
+    }
+
     [Given("a root with a manifest pinned to schema {string}")]
     public void GivenARootWithAManifestPinnedToSchema(string pin)
     {
@@ -865,6 +952,17 @@ public sealed class NativeClaimsSteps
         entries[^1].Should().StartWith($"{layout} ");
     }
 
+    private void WriteMatrix(string title, string rows)
+    {
+        _recordSections =
+        [
+            .. SpechtTree.SectionsWith(
+                title,
+                $"## {title}\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n{rows}"),
+        ];
+        WriteRecord();
+    }
+
     private void WriteRecord() => Tree.WriteSpecification(Record, "0001", "F1", _recordFrontmatter, _recordSections);
 
     private SpechtClaims ClaimSet(string feature)
@@ -928,6 +1026,8 @@ public sealed class NativeClaimsSteps
     }
 
     private const string SummaryStart = "specifications: ";
+
+    private const string AddFile = ".spec/features/arithmetic/add.feature";
 
     private const string Adds = "Feature: Arithmetic\n\n  @B-001\n  Scenario: Adds\n    Given two numbers\n";
 
