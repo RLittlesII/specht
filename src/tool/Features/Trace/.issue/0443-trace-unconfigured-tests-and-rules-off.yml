@@ -2,7 +2,7 @@ id: "0443"
 type: task
 title: Trace tests as unconfigured without declared test files, and past a rule switched off
 
-status: ready
+status: done
 
 value: 4
 risk: 2
@@ -21,8 +21,8 @@ claims:
   - B-020
 
 created: "2026-11-14"
-updated: "2026-11-14"
-closed: null
+updated: "2026-11-15"
+closed: "2026-11-15"
 
 summary: |
   The trace's resolution beside the manifest's settings: with no

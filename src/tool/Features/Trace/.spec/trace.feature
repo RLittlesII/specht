@@ -58,7 +58,8 @@ Feature: The trace command
 
   @B-005
   Scenario: A rule switched off does not hide a resolution
-    Given the manifest sets the unresolved-test rule to off
+    Given the manifest pins schema version 0.3.0, the first that holds the unresolved-test rule
+    And the manifest sets the unresolved-test rule to off
     And claim B-001 names a test no file holds
     When specht trace --json runs
     Then that test's resolution is "unresolved"
