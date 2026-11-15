@@ -75,11 +75,18 @@ decisions:
     the item until 0441 and 0442 are done. 0336, 0337 and 0391 are done.
   - |
     2026-11-14, spec-author: on the repository owner's selection "Fix in
-    0396", relayed by the coordinating session and confirmed to it by the
-    owner as the owner's, B-022 and `0001-F3` B-038 name `SPEC2003`, the
+    0396", relayed by the coordinating session and confirmed by the owner
+    as the owner's directly to the delivering session, B-022 and `0001-F3` B-038 name `SPEC2003`, the
     id `0001-F6` decision 0013 gives `SPEC024`. The title, summary and
     B-022 criterion say so; was `SPEC024`. OQ-22 is raised on a companion
     beside a record that the set's glob does not match.
+  - |
+    2026-11-14, spec-author: on the repository owner's selection
+    "(a) Record is no spec (Recommended)" (OQ-22), a companion file
+    beside a record that the set's glob does not match is held to
+    `0001-F6` B-013 as written. No criterion changes. The decision above
+    is corrected: the owner confirmed "Fix in 0396" directly to the
+    delivering session; was "confirmed to it", the coordinating session.
 
 out_of_scope:
   - "How a § 9 row's scenario and test names resolve - § 5 row 10."
