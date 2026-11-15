@@ -31,13 +31,14 @@ public sealed record TraceDocument(IReadOnlyList<FeatureTrace> Specifications)
     {
         var identified = model.FeaturesWithIdentity.ToHashSet();
         var structure = model.Schemas.Structure;
+        var markers = SkippingMarkers(structure.Markers);
         return new(model.Features
             .Where(static feature => feature.ClaimFileSet is null)
             .Select(feature => new FeatureTrace(
                 feature.RelativePath,
                 identified.Contains(feature) ? feature.Identity : null,
                 resolver.ResolveClaims(feature, structure, model.Claims[feature], model.TestFiles)
-                    .Select(claim => Claim(claim, structure.Markers))
+                    .Select(claim => Claim(claim, markers))
                     .ToList()))
             .ToList());
     }
@@ -66,6 +67,22 @@ public sealed record TraceDocument(IReadOnlyList<FeatureTrace> Specifications)
                 claim.Scenarios.Count.ToString(CultureInfo.InvariantCulture),
                 Tests(claim.Tests))))
             .ToList();
+
+    /// <summary>
+    /// The pin's markers, with the waived, withdrawn and superseded markers the pin lacks, as schema <c>0.1.0</c> does,
+    /// at their <c>0.2.0</c> defaults.
+    /// </summary>
+    /// <implements epic="0001" feature="F13" claim="B-011" />
+    private static IReadOnlyDictionary<string, string> SkippingMarkers(IReadOnlyDictionary<string, string> markers)
+    {
+        var result = markers.ToDictionary(static marker => marker.Key, static marker => marker.Value, StringComparer.Ordinal);
+        foreach (var (name, text) in SkippingDefaults)
+        {
+            result.TryAdd(name, text);
+        }
+
+        return result;
+    }
 
     /// <implements epic="0001" feature="F13" claim="B-003" />
     /// <implements epic="0001" feature="F13" claim="B-019" />
@@ -112,6 +129,13 @@ public sealed record TraceDocument(IReadOnlyList<FeatureTrace> Specifications)
     private static string Field(string text) => text.Replace('\t', ' ').Replace('\n', ' ').Replace('\r', ' ');
 
     private const string NoRow = "none";
+
+    private static readonly KeyValuePair<string, string>[] SkippingDefaults =
+    [
+        new("waived", "Waived"),
+        new("withdrawn", "Withdrawn"),
+        new("superseded", "Superseded"),
+    ];
 
     private static readonly JsonSerializerOptions Options = new()
     {

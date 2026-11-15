@@ -11,7 +11,7 @@ namespace Specht.Tests.Trace;
 
 /// <summary>
 /// The trace projected from a model built in memory through the matrix resolver (<c>0001-F13</c> B-001, B-003 to B-005,
-/// B-007, B-019, B-020): every specification in the model's order and every claim in its claims table's order, the same text for the
+/// B-007, B-010 to B-012, B-019, B-020): every specification in the model's order and every claim in its claims table's order, the same text for the
 /// same model, each specification's path and id, each claim's line, status, row, scenarios and tests, a test's file and
 /// line only when it resolves, no row and no test for a claim with no traceability row, every test of a waived, withdrawn
 /// or superseded row <c>skipped</c>, and one tab-separated line per claim holding the path, the id, the row's Status or
@@ -341,6 +341,114 @@ public sealed class TraceDocumentUnitTests
                 claim!["id"]!.GetValue<string>(),
                 string.Join(',', claim["tests"]!.AsArray().Select(static test => test!["resolution"]!.GetValue<string>()))))
             .Should().Equal(("B-001", "unconfigured"), ("B-002", "skipped"));
+    }
+
+    [Fact]
+    public void AManifestPinningSchema010WithRenamedMatrixHeaders_WhenTheTraceIsMade_ShouldReadTheColumnsByPosition()
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.1.0",
+            ["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim", "Case", "Check", "State") },
+        };
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(manifest)
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/trace/.spec/README.md"))
+                .WithDocument(DocumentParser.Parse("""
+                    ## 3. Acceptance Criteria
+
+                    | ID | Claim | Source | Status |
+                    | -- | ----- | ------ | ------ |
+                    | B-002 | It traces another. | brd | Active |
+
+                    ## 9. Traceability Matrix
+
+                    | Claim | Case | Check | State |
+                    | ----- | ---- | ----- | ----- |
+                    | B-002 | Tracing another | `TracesA`, `TracesB`, `TracesC` | Covered |
+                    """, "src/trace/.spec/README.md")));
+
+        // When
+        var document = TraceDocument.From(model, new MatrixResolver());
+        var row = JsonNode.Parse(document.ToJson())!["specifications"]![0]!["claims"]![0]!["row"]!;
+
+        // Then
+        (row["claim"]!.GetValue<string>(), row["scenario"]!.GetValue<string>(), row["test"]!.GetValue<string>(), row["status"]!.GetValue<string>())
+            .Should().Be(("B-002", "Tracing another", "TracesA, TracesB, TracesC", "Covered"));
+        document.Lines().Should().ContainSingle().Which.Split('\t')[2..].Should().Equal("Covered", "0", "0/3");
+    }
+
+    [Theory]
+    [ClassData(typeof(TraceSkippingMarkers))]
+    public void AManifestPinningSchema010AndARowWhoseStatusIsAMarkerThatSkips_WhenTheTraceIsMade_ShouldGiveEachTestItNamesSkipped(string marker)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(new JsonObject { ["schemaVersion"] = "0.1.0" })
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/trace/.spec/README.md"))
+                .WithDocument(DocumentParser.Parse($$"""
+                    ## 3. Acceptance Criteria
+
+                    | ID | Claim | Source | Status |
+                    | -- | ----- | ------ | ------ |
+                    | B-001 | It traces one claim. | brd | Active |
+                    | B-002 | It traces another. | brd | Active |
+
+                    ## 9. Traceability Matrix
+
+                    | Claim ID | Scenario | Test | Status |
+                    | -------- | -------- | ---- | ------ |
+                    | B-001 | Tracing one | `TracesOne` | Covered |
+                    | B-002 | Tracing another | `TracesAnother`, `TracesNowhere` | {{marker}} |
+                    """, "src/trace/.spec/README.md")));
+
+        // When
+        var claims = JsonNode.Parse(TraceDocument.From(model, new MatrixResolver()).ToJson())!["specifications"]![0]!["claims"]!.AsArray();
+
+        // Then
+        claims.Select(static claim => (
+                claim!["id"]!.GetValue<string>(),
+                string.Join(',', claim["tests"]!.AsArray().Select(static test => test!["resolution"]!.GetValue<string>()))))
+            .Should().Equal(("B-001", "unconfigured"), ("B-002", "skipped,skipped"));
+    }
+
+    [Fact]
+    public void AManifestPinningSchema010_WhenTheTraceIsMade_ShouldGiveEveryTestOutsideASkippingRowUnconfiguredEvenOneAFileHolds()
+    {
+        // Given
+        SpechtTestFile file = new SpechtTestFileFixture().WithRelativePath("test/TraceTests.cs").WithText("public void TracesOne() { }");
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(new JsonObject { ["schemaVersion"] = "0.1.0" })
+            .WithList([file])
+            .WithFeatures(new FeatureSpecFixture()
+                .WithLocation(new SpechtLocationFixture().WithRelativePath("src/trace/.spec/README.md"))
+                .WithDocument(DocumentParser.Parse("""
+                    ## 3. Acceptance Criteria
+
+                    | ID | Claim | Source | Status |
+                    | -- | ----- | ------ | ------ |
+                    | B-001 | It traces one claim. | brd | Active |
+
+                    ## 9. Traceability Matrix
+
+                    | Claim ID | Scenario | Test | Status |
+                    | -------- | -------- | ---- | ------ |
+                    | B-001 | Tracing one | `TracesOne`, `TracesNone` | Partial |
+                    """, "src/trace/.spec/README.md")));
+
+        // When
+        var document = TraceDocument.From(model, new MatrixResolver());
+        var tests = JsonNode.Parse(document.ToJson())!["specifications"]![0]!["claims"]![0]!["tests"]!.AsArray()
+            .Select(static test => test!.AsObject()).ToArray();
+
+        // Then
+        tests.Select(static test => (test["name"]!.GetValue<string>(), test["resolution"]!.GetValue<string>()))
+            .Should().Equal(("TracesOne", "unconfigured"), ("TracesNone", "unconfigured"));
+        tests.Should().AllSatisfy(static test => test.Select(static member => member.Key).Should().Equal("name", "resolution"));
+        document.Lines().Should().ContainSingle().Which.Split('\t')[4].Should().Be("0/2");
     }
 
     [Theory]
