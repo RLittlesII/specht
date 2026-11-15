@@ -16,7 +16,8 @@ namespace Specht.Tests.Model;
 /// <see cref="SpechtModel.ClaimSets"/>; and each set is one native Feature in <see cref="SpechtModel.Features"/>, whose
 /// lifecycle and edges its <c>record</c> gives, whose identity is the set's and whose claim grammar no record chooses,
 /// located at its record or else its first claim file, and none for a set with neither (B-003, B-017, B-026, B-032,
-/// B-036, B-037; § 7, item <c>0391</c>). Unless a test says otherwise, the manifest holds one set, glob
+/// B-036, B-037; § 7, item <c>0391</c>); a set whose <c>record</c> names no file, names one that cannot be read, is rooted
+/// or leads outside the root is read as a set with none (B-035; § 7, item <c>0395</c>). Unless a test says otherwise, the manifest holds one set, glob
 /// <c>.spec/features/arithmetic/*.feature</c> and feature <c>F1</c>, and excludes <c>obj</c> alone.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -302,6 +303,38 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
             .Which.ClaimFileSet.Should().NotBeNull();
     }
 
+    [Theory]
+    [ClassData(typeof(UnreadableRecords))]
+    public void AClaimFileSetWhoseRecordTheCheckCannotRead_WhenRead_ShouldMakeTheNativeFeatureItMakesWithNoRecordAndThrowNothing(string record)
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.4.0",
+            ["exclusions"] = new JsonArray("obj"),
+            ["claim"] = new JsonObject
+            {
+                ["source"] = "gherkin",
+                ["files"] = new JsonArray(new JsonObject { ["glob"] = ".spec/features/arithmetic/*.feature", ["feature"] = "F1", ["record"] = record }),
+            },
+        };
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            [Path.Combine(["repo", .. SpechtTree.ManifestPath.Split('/')])] = new(manifest.ToJsonString()),
+            [Path.Combine(["repo", .. Add.Split('/')])] = new(AddsTwoNumbers),
+            [Path.Combine(["repo", .. Record.Split('/')])] = new(ApprovedRecord) { AllowedFileShare = FileShare.None },
+            [Path.Combine("outside", "README.md")] = new(ApprovedRecord),
+        });
+
+        // When
+        var model = EngineServices.Reader(fileSystem).Read(fileSystem.Path.GetFullPath("repo"), null);
+
+        // Then
+        var feature = model.Features.Should().ContainSingle(static feature => feature.ClaimFileSet != null).Subject;
+        (feature.Record, feature.RelativePath, feature.Lifecycle).Should().Be(((string?) null, Add, "current"));
+        feature.Strings(feature.Keys.DependsOn).Should().BeEmpty();
+    }
+
     private static SpechtModel Read(string members, params (string Path, string Text)[] files)
     {
         var manifest = JsonNode.Parse(members)!.AsObject();
@@ -331,4 +364,6 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
     private const string Record = ".spec/features/arithmetic/README.md";
 
     private const string Subtract = ".spec/features/arithmetic/subtract.feature";
+
+    private const string ApprovedRecord = "---\nid: F1\nspec_status: approved\ndepends_on: [F2]\n---\n\n# Arithmetic\n";
 }

@@ -7,8 +7,15 @@ namespace Specht.Model;
 public sealed class GherkinClaimTextException : Exception
 {
     /// <implements epic="0201" feature="F7" claim="B-014" />
-    public GherkinClaimTextException(string? relativePath, string message)
-        : base(message) => RelativePath = relativePath;
+    public GherkinClaimTextException(string? relativePath, string message, int line = 0)
+        : base(message)
+    {
+        RelativePath = relativePath;
+        Line = line;
+    }
 
     public string? RelativePath { get; }
+
+    /// <summary>The one-based line of the text refused, or <c>0</c> for a refusal of the whole file (<c>0001-F16</c> B-014, B-015).</summary>
+    public int Line { get; }
 }

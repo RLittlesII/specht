@@ -12,7 +12,9 @@ namespace Specht.Tests.Tree;
 /// <c>0166</c>): saving a tree under a root writes each of the tree's files at its relative path under that root, holding
 /// the tree's bytes, and writes no other file; loading reads exactly the root-relative paths it is given, in that order,
 /// and a file's text is decoded as <see cref="File.ReadAllText(string)"/> decodes it, whether its bytes are backed by an
-/// array or by memory that is not one (<c>0001-F1</c> B-004).
+/// array or by memory that is not one (<c>0001-F1</c> B-004); trying to load one path gives nothing, and throws nothing,
+/// when the path is rooted, leaves the root, names no file or names one that cannot be read, and whether a path is rooted
+/// is the same answer that load's first guard gives (<c>0001-F16</c> B-033 to B-035; item <c>0395</c>).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtTreeStoreUnitTests
@@ -97,6 +99,40 @@ public sealed class SpechtTreeStoreUnitTests
 
         // Then
         text.Should().Be(expected, because);
+    }
+
+    [Theory]
+    [ClassData(typeof(UnloadableRelativePaths))]
+    public void APathTheStoreCannotLoadUnderTheRoot_WhenTriedToLoad_ShouldGiveNothingAndThrowNothing(string because, string relativePath)
+    {
+        // Given
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            [Path.Combine(Root, "README.md")] = new("---\nid: F1\n---\n"),
+            [Path.Combine(Root, "locked.md")] = new("---\nid: F1\n---\n") { AllowedFileShare = FileShare.None },
+            [Path.Combine("outside", "README.md")] = new("---\nid: F1\n---\n"),
+        });
+        var store = EngineServices.Store(fileSystem);
+
+        // When
+        var file = store.TryLoad(fileSystem.Path.GetFullPath(Root), relativePath);
+
+        // Then
+        file.Should().BeNull(because);
+    }
+
+    [Theory]
+    [ClassData(typeof(RootedAndRelativePaths))]
+    public void APathAManifestWrites_WhenAskedWhetherItIsRooted_ShouldGiveTheAnswerOfTheGuardTryLoadRefusesFirst(string relativePath, bool rooted)
+    {
+        // Given
+        var store = EngineServices.Store(new MockFileSystem());
+
+        // When
+        var isRooted = store.IsRooted(relativePath);
+
+        // Then
+        isRooted.Should().Be(rooted);
     }
 
     private sealed class MemoryWithoutAnArray(byte[] bytes) : MemoryManager<byte>

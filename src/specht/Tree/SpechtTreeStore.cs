@@ -91,6 +91,12 @@ public sealed class SpechtTreeStore(IFileSystem fileSystem)
         }
     }
 
+    /// <summary>Whether <paramref name="path"/> is rooted, the test <see cref="TryLoad"/> refuses first (<c>0001-F16</c> B-034, item <c>0395</c>).</summary>
+    /// <param name="path">The path as a manifest writes it.</param>
+    /// <returns>True when the path is rooted.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-034" />
+    public bool IsRooted(string path) => false;
+
     /// <implements epic="0109" feature="F1" claim="B-016" />
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F16" claim="B-035" />
