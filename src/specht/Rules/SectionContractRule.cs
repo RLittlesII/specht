@@ -13,12 +13,15 @@ public sealed class SectionContractRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F16" claim="B-020" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
-        var expected = model.Schemas.Structure.Sections;
+        var structure = model.Schemas.Structure;
+        var recordSections = structure.Sections.Where(title => !string.Equals(title, structure.Roles["claims"], StringComparison.Ordinal)).ToList();
 
-        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null))
+        foreach (var feature in model.Features.Where(static feature => feature.ClaimFileSet is null || feature.Record is not null))
         {
+            var expected = feature.ClaimFileSet is null ? structure.Sections : recordSections;
             var titles = feature.Document.Sections.Select(section => section.Title).ToList();
 
             foreach (var title in expected)

@@ -14,7 +14,10 @@ namespace Specht.Tests.Evaluation;
 /// at each, a set at its native Feature's path, line <c>0</c>; the report's <c>layouts</c> count native Features under
 /// <c>claims</c>, after the manifest's layouts; a set that makes no Feature is counted and compared with none; and a rule
 /// that resolves claims through the matrix neither reports nor fails over a native Feature, whose verdicts § 7's skip
-/// table leaves to item <c>0396</c>. Unless
+/// table leaves to item <c>0396</c>. Over a native Feature the claim id rule reports each declaration of an id two
+/// elements of one set declare, the section and table rules hold a record to every contracted section and table but the
+/// claims one, and the companion and tag rules stay silent, while a Markdown tree keeps every verdict of those rules
+/// (B-002, B-008, B-020, B-021; § 7, item <c>0392</c>). Unless
 /// a test says otherwise, the manifest holds one set, glob <c>.spec/features/arithmetic/*.feature</c> and feature
 /// <c>F1</c>, with no epic grammar, and excludes <c>obj</c> alone. A finding is read under the id the evaluator reports at
 /// the pin.
@@ -111,6 +114,54 @@ public sealed class SpechtEvaluatorNativeFeaturesUnitTests
 
         // Then
         violations.Where(violation => violation.RuleId == ruleId).Select(static violation => violation.ToString()).Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(NativeFeatureRuleVerdicts))]
+    public void TheClaimSectionAndCompanionRulesOverANativeFeature_WhenEvaluated_ShouldReportEachDuplicateDeclarationAndTheRecordsSectionsButTheClaimsOne(
+        string members, string[] paths, string[] texts, string[] violations)
+    {
+        // Given
+        var tree = paths.Zip(texts, static (path, text) => (Path: path, Text: text)).ToArray();
+
+        // When
+        var report = Evaluate(members, tree);
+
+        // Then
+        report.Violations.Where(static violation => violation.RuleId is "SPEC2001" or "SPEC2002" or "SPEC4001" or "SPEC4002" or "SPEC4003")
+            .Select(static violation => $"{violation.RuleId} {violation.File}({violation.Line}) {violation.Identifier}".TrimEnd())
+            .Should()
+            .BeEquivalentTo(violations);
+    }
+
+    [Fact]
+    public void AMarkdownTreeUnderZeroFourZero_WhenEvaluated_ShouldGetTheClaimSectionAndCompanionVerdictsItGotBeforeNativeFeatures()
+    {
+        // Given
+        const string Claim = "| B-001 | It does the thing. | brd | Active |\n";
+        var arithmetic = string.Join('\n', SpechtTree.Sections.Where(static section => !section.StartsWith("## 11.", StringComparison.Ordinal)))
+            .Replace(Claim, Claim + "| B-001 | Again. | brd | Active |\n", StringComparison.Ordinal)
+            .Replace("| Section | Status | Reviewer | Note |", "| Section | Status | Reviewer | Notes |", StringComparison.Ordinal);
+        (string Path, string Text)[] tree =
+        [
+            ("src/arithmetic/.spec/README.md", "---\nid: F1\n---\n\n# Arithmetic\n\n" + arithmetic),
+            ("src/sums/.spec/README.md", "---\nid: F2\n---\n\n# Sums\n\n" + string.Join('\n', SpechtTree.Sections)),
+            ("src/sums/.spec/sums.feature", "Feature: Sums\n\n  @B-001\n  Scenario: Totals\n    Given numbers\n\n  @B-009\n  Scenario: Strays\n"),
+        ];
+
+        // When
+        var violations = Evaluate("""{ "claim": { "source": "markdown" } }""", tree).Violations;
+
+        // Then
+        violations.Where(static violation => violation.RuleId is "SPEC2001" or "SPEC2002" or "SPEC4001" or "SPEC4002" or "SPEC4003")
+            .Select(static violation => $"{violation.RuleId} {violation.File}({violation.Line}) {violation.Identifier}".TrimEnd())
+            .Should()
+            .BeEquivalentTo(
+                "SPEC2001 src/arithmetic/.spec/README.md(0) 11. Open Questions",
+                "SPEC2002 src/arithmetic/.spec/README.md(58) 12. Sign-off",
+                "SPEC4001 src/arithmetic/.spec/README.md(0) F1",
+                "SPEC4002 src/sums/.spec/sums.feature(7) B-009",
+                "SPEC4003 src/arithmetic/.spec/README.md(22) B-001");
     }
 
     private static SpechtReport Evaluate(string members, (string Path, string Text)[] files)

@@ -221,6 +221,13 @@ Feature: Native Gherkin claims
     When the check runs
     Then the output has a line for the record naming "SPEC2001"
 
+  @B-020 @boundary
+  Scenario: A Feature with no record is held to no section
+    Given ".spec/features/arithmetic/add.feature" declares scenarios tagged "@B-001" and "@B-002"
+    When the check runs
+    Then no "SPEC2001" is reported
+    And no "SPEC2002" is reported
+
   @B-021
   Scenario: The companion rules leave a native Feature alone
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
