@@ -92,7 +92,7 @@ Feature: Native Gherkin claims
   Scenario: A claim tag on an Examples block is reported
     Given ".spec/features/arithmetic/add.feature" has an Examples block tagged "@B-005" at line 14
     When the check runs
-    Then the output has a line ".spec/features/arithmetic/add.feature(14): error SPEC4012:" naming "B-005"
+    Then the output has a line ".spec/features/arithmetic/add.feature(14): error" naming "SPEC4012" with the identifier "B-005"
     And Feature "F1" has no claim "B-005"
 
   @B-010

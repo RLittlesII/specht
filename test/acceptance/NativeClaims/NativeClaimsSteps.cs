@@ -14,8 +14,9 @@ namespace Specht.Acceptance.NativeClaims;
 /// item 0389, B-002, B-027, B-028, B-029 and B-031, and for the native claim reader of item 0390, B-001, B-004 to B-007,
 /// B-011 to B-013, B-025 and B-030, and for a claim file set's record, identity and report of item 0391, B-003, B-017,
 /// B-026, B-032 and B-036 to B-038, and for a scenario in a claim file with no claim of item 0393, B-010 and the
-/// boundary that no claim is inferred from a title. "The output has a line" binds a warning line alone, because item 0395's
-/// scenarios name error lines with it and their rule is not built. The other scenarios bind only the Background and are left out as pending. A root is a
+/// boundary that no claim is inferred from a title, and for a claim tag on an Examples block of item 0394, B-009. "The
+/// output has a line" binds a warning line alone, because item 0395's scenarios name error lines with it and their rule is
+/// not built. The other scenarios bind only the Background and are left out as pending. A root is a
 /// synthetic tree holding one co-located Markdown specification, <c>F5</c>, so a claim read from a claims table is
 /// observable and no identity a scenario names collides with it. The manifest is edited in memory and written when the
 /// check runs; "the check runs" launches the built tool on the root, the only place an exit code and its streams are
@@ -234,6 +235,24 @@ public sealed class NativeClaimsSteps
         }
 
         lines.AddRange(["    Scenario: Adds three", "      Given three numbers"]);
+        Tree.WriteRaw(path, string.Join('\n', lines) + "\n");
+    }
+
+    [Given("{string} has an Examples block tagged {string} at line {int}")]
+    public void GivenHasAnExamplesBlockTaggedAtLine(string path, string tag, int line)
+    {
+        var lines = new List<string> { "Feature: Arithmetic", string.Empty, "  @B-001", "  Scenario Outline: Adds <a>", "    Given <a>", string.Empty };
+        if (line <= lines.Count)
+        {
+            throw new InvalidOperationException($"A tag at line {line} leaves no room for the claimed outline above its Examples block.");
+        }
+
+        while (lines.Count < line - 1)
+        {
+            lines.Add(string.Empty);
+        }
+
+        lines.AddRange([$"    {tag}", "    Examples:", "      | a |", "      | 1 |"]);
         Tree.WriteRaw(path, string.Join('\n', lines) + "\n");
     }
 
