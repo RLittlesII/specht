@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -183,10 +183,16 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 | Warning by default, raised or silenced by the manifest's `rules` (B-010; OQ-5)                                                                                      | Business       | Item `0393`: the rule's `DefaultLevel`; the shipped `0.4.0` manifest's `rules`; the evaluator's stamp                                                                                                                              |
 | The id joins `0.4.0` alone, with its page and a relock; `0.1.0` to `0.3.1` are unchanged (C-3; `0001-F7` B-014, C-1, C-17; `0001-F3` B-031)                         | Technical      | Item `0393`: `SchemaVersions.Shipped`, `docs/rules/v0.4.0/SPEC4011.md`, `./build.sh LockSchemaVersion`                                                                                                                             |
 | Nothing reported without `claim.source` `gherkin` (B-002, C-3)                                                                                                      | Business       | Item `0393`: `SpechtModel.ClaimSets` is empty unless the source is `gherkin`; below `0.4.0` no vocabulary holds the id                                                                                                             |
+| A claim tag on an Examples block, found once by the shared reader at the tag's line, its claim id kept (B-009; A-3, C-1)                                            | Business       | Item `0394`: `GherkinClaimTextReader`'s `SPCT0011` finding, which gains the optional `ClaimId` the reader already reads; the analyzer does not read it                                                                             |
+| The tag records no claim (B-009)                                                                                                                                    | Business       | Item `0394`: by construction; an Examples block's tags are on no `Element`, so no `GherkinClaimDeclaration` holds them                                                                                                             |
+| `SPEC4012` reports that tag at its claim file's path and line, naming the claim id, once per file (B-009, C-2)                                                      | Business       | Item `0394`: `ExamplesClaimTagRule`, keyed `SPEC026`, over `SpechtClaims.Files`                                                                                                                                                    |
+| Error by default, lowered or silenced by the manifest's `rules` (B-009; OQ-5)                                                                                       | Business       | Item `0394`: `ISpechtRule.DefaultLevel`; the shipped `0.4.0` manifest's `rules`; the evaluator's stamp                                                                                                                             |
+| The id joins `0.4.0` alone, with its page and a relock; `0.1.0` to `0.3.1` are unchanged (B-028, C-3; `0001-F7` B-014, C-1, C-17; `0001-F3` B-031)                  | Technical      | Item `0394`: `SchemaVersions.Shipped`, `docs/rules/v0.4.0/SPEC4012.md`, `./build.sh LockSchemaVersion`                                                                                                                             |
+| Nothing reported without `claim.source` `gherkin`, nor below `0.4.0` (B-002, B-028, C-3)                                                                            | Business       | Item `0394`: `SpechtModel.ClaimSets` is empty unless the source is `gherkin`; below `0.4.0` no vocabulary holds the id                                                                                                             |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -968,6 +974,217 @@ rule and one member.
   `0.4.0` are keyed by their working names.
 - A constant for `SPCT0012` in the shared reader: an edit to code the analyzer
   compiles, for one engine caller.
+
+### A claim tag on an Examples block, `SPEC4012` (item `0394`)
+
+Designed. B-009: a tag on an Examples block that the claim tag form and the
+claim grammar read is reported at its claim file's path and the tag's line,
+at error by default, and declares no claim. The id is `SPEC4012` (decision
+0004). The shared reader already finds such a tag and already records no
+claim for it; this item reports what it found, as item `0393` reports
+`SPCT0012`.
+
+**What the reader finds.** On an `Examples:` or `Scenarios:` line,
+`GherkinClaimTextReader`'s `Keyword` gives the tags pending above it to the
+block, not to an `Element`, and adds one `SPCT0011` finding for each of
+those tags the composed claim form reads (`0201-F7` B-028). The finding's
+line is the tag's line. The claim form is the one B-004 to B-007 use, with
+`claim.tagIgnoreCase`, so what counts as a claim tag is the reading every
+other native rule has (A-3, C-1). Two claim tags on one block are two
+findings, in tag order. A file the reader cannot read throws, so it has no
+finding; reporting that file is `SPEC4013`'s (B-014, B-015, item `0395`).
+
+**No claim recorded, by construction.** Only an `Element`'s tags declare a
+claim, and an Examples block's tags are on no `Element`. The tag is in no
+`GherkinClaimDeclaration`, so `SpechtClaims` holds no claim for it and no
+claims rule sees it: it is no duplicate of a scenario's claim (`SPEC4003`),
+and the § 9 rules have no claim to match a row to. B-009's "records no
+claim" holds before this item, and this item adds no code for it.
+
+**The claim id the finding carries.** B-009's scenario names `B-005` on the
+reported line. The finding's `Text` holds the tag inside the analyzer's
+sentence, and the finding has no member holding it. The reader already reads
+the claim id, in the `Where` that selects the tag, and drops it.
+`GherkinClaimTextFinding` gains a trailing optional member,
+`string? ClaimId = null`, and the reader passes the id it read to the
+`SPCT0011` finding; `SPCT0012`'s leaves it null. The analyzer compiles the
+record and the reader and reads neither the member nor anything new:
+`GherkinClaimFileReader` copies `DiagnosticId`, the path, `Line` and `Text`
+into its `BindingFinding`. The analyzer's findings, lines, texts and export
+are unchanged (§ 5 row 1), and the two readers stay one reader (§ 5 row 2).
+Item `0393` rejected a title member on the same record because no claim asks
+for a title; B-009's scenario asks for the claim id. This is an edit to a
+shared file, so it is raised to the owning role before it is built.
+
+**The rule.** `ExamplesClaimTagRule`, in
+`src/specht/Rules/NativeClaims/ExamplesClaimTagRule.cs`, namespace
+`Specht.Rules.NativeClaims`, beside `ScenarioWithoutClaimRule`. `Evaluate`
+walks `model.ClaimSets`, then each set's `SpechtClaims.Files`, keeping the
+first read of each `RelativePath` under ordinal comparison, as item `0393`'s
+rule does. Each finding whose `DiagnosticId` is `SPCT0011` becomes one
+`SpechtFinding`:
+
+| Member       | Value                                                                                        |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| `File`       | the claim file's root-relative path, from discovery (C-2): B-009's `add.feature(14)`         |
+| `Line`       | the finding's line, the tag's line, never the `Examples:` keyword line below it              |
+| `Identifier` | the finding's `ClaimId`, the claim id the tag would declare, so the line ends with `[B-005]` |
+| `Message`    | `claim tag on an Examples block declares no claim`                                           |
+
+The bracketed identifier is how `SPEC4003` names `[B-001]`. The message
+names no section, marker or manifest key, so `0001-F5` B-009's message
+theories do not take it. `SPCT0011` is the shared reader's finding id, not a
+manifest literal (C-4).
+
+**A file two sets match.** Until item `0395`, such a file is listed under
+both sets and read by the one reader, so both reads carry the same findings.
+The first-read-per-path filter reports each tag once, as for `SPEC4011`.
+Item `0395` keeps the file's read where this rule finds it, or moves this
+filter with it. The filter is then written in two rules, a few lines each; a
+shared helper waits for a third caller.
+
+**Readings B-009 does not spell out.** Each follows from the reader as built,
+and the analyzer reports the same (A-3):
+
+- A tag the claim form does not read, an ordinary tag, a mistyped claim tag
+  or a `claim.plannedTags` tag, is not reported. A planned tag on an Examples
+  block marks its rows planned (B-013), which is item `0390`'s.
+- A claim tag on each of several Examples blocks of one outline is reported
+  once per tag, each at its own line.
+- An outline whose only claim tag is on an Examples block is also reported by
+  `SPEC4011`: the tag declares nothing, so the outline has no claim. An
+  outline that carries its own claim, its Rule's or its Feature's is not, and
+  `SPEC4012` still reports the tag.
+- A claim tag above an `Examples:` line with no outline above it is no
+  finding: the reader throws, and the file is `SPEC4013`'s.
+
+**The id and the vocabulary.** The rule's key is `SPEC026`, its working name,
+as `ScenarioWithoutClaimRule`'s is `SPEC025` (decision 0004's table).
+`SchemaVersions.Shipped`'s `0.4.0` row gains `["SPEC026"] = "SPEC4012"`. No
+lower row holds `SPEC026`, so the evaluator neither runs nor counts the rule
+below `0.4.0` (`0001-F7` B-014, C-1). `AddSpechtEngine` registers it in the
+ordinal order of its key, after `ScenarioWithoutClaimRule` (`SPEC025`) and
+before `ClaimIdRule` (`SPEC030`). `FaultIsolatedRule` wraps it as it wraps
+every rule. `0001-F7` B-066 holds with no `opt_in` mark, `0.4.0` being a
+minor above `0.3.1` (`0001-F7` OQ-78).
+
+**The level.** Error by default, OQ-5's level. `ISpechtRule.DefaultLevel` is
+already `Error`, so the rule declares none. The shipped `0.4.0` manifest's
+`rules` gains `"SPEC4012": "error"` after `SPEC4011`, for `init` and
+`InitRuleDefaultsUnitTests`. The check exits `1` on it; `rules` or
+`specht rules set SPEC4012 warning` lowers it, and `off` stops it running.
+
+**The rule page.** `docs/rules/v0.4.0/SPEC4012.md`, in the shape of
+`SPEC4011.md`:
+
+- Frontmatter: a `title`, a `description` and `type: rule`.
+- Metadata: Rule ID `SPEC4012`, Family `Feature file`, Default severity
+  `Error`, Schema version `0.4.0`.
+- Cause: the message above in its table.
+- Rule description: it reads only under `claim.source` `gherkin`, and only
+  the `.feature` files a set's glob matches, and it covers the readings
+  above.
+- An example violation, the corrected file with the tag moved to the outline,
+  and how to fix.
+
+`0001-F3` B-031 holds the page and the vocabulary row to one commit.
+`specht --explain SPEC4012` prints it under a `0.4.0` pin.
+
+**The relock.** As for `SPEC4011`: `0.4.0`'s entry in
+`src/tool/schema/versions.lock.json` is removed by hand, then
+`./build.sh LockSchemaVersion` records it again (`0001-F7` decision 0014,
+C-17, B-092). The page and the manifest line change the digest. The `0.1.0`
+to `0.3.1` entries and their files stay byte-identical (`0001-F7` C-1).
+
+**The docs.** `docs/what-it-checks.md` gains a `SPEC4012` row after
+`SPEC4011`'s. `docs/configuration.md`'s sentence naming `SPEC4011` gains
+`SPEC4012`, at error, for a claim tag on an Examples block.
+
+**Silent without `gherkin` (B-002, B-028, C-3).** The two gates of
+`SPEC4011`, either one enough:
+
+1. Below `0.4.0` no vocabulary holds the id, so the rule is neither run nor
+   counted, and a `0.3.1` pin with `claim.source` `gherkin` keeps its rule
+   count (B-028).
+2. Under `0.4.0`, without `claim.source` `gherkin`, `ClaimSets` returns no
+   set, so the rule runs and finds nothing. A companion `.feature` beside a
+   Markdown specification is no claim file: a claim tag on its Examples block
+   is not reported.
+
+Under `0.4.0` every tree counts one more rule evaluated: the vocabulary
+growing, not a verdict, and `0001-F7` B-154 compares patch neighbours only
+(`0001-F7` OQ-75, OQ-78). No golden report pins `0.4.0`. This repository's
+tree is Markdown, so its self-check gains the count and no violation.
+
+**Determinism (B-030).** Sets in manifest order, files in ordinal path order,
+findings in line order, and the evaluator's order sorts the report.
+
+**Testability.** The mechanisms that prove B-009, for `test-writer`'s § 8 and
+§ 9:
+
+- The rule from the composed rule set, through `SpechtEvaluator`, over a
+  model `SpechtModelReader.Read` builds from a `MockFileSystem` tree through
+  `EngineServices`, as `ScenarioWithoutClaimRule.Unit.Tests` does:
+
+  | Case                                                        | Expected                                                              |
+  | ----------------------------------------------------------- | --------------------------------------------------------------------- |
+  | a claim tag on an `Examples:` or `Scenarios:` block         | one `SPEC4012` error at the tag's line, the file's path, the claim id |
+  | the tag on a line above other tags, or above the keyword    | the tag's own line                                                    |
+  | two claim tags on one block, or one on each of two blocks   | one each                                                              |
+  | an ordinary, mistyped or planned tag on the block           | none                                                                  |
+  | a claim tag in another case under `claim.tagIgnoreCase`     | reported, with the id as written                                      |
+  | the outline's only claim tag on its block                   | the tag reported, the outline under `SPEC4011`, and no claim          |
+  | the outline claimed by its own tag, its Rule or its Feature | the tag reported, no `SPEC4011`                                       |
+  | the block's claim id declared nowhere else                  | the Feature has no such claim, and no `SPEC4003`                      |
+  | one file two sets match                                     | each tag once                                                         |
+  | a file the reader cannot read                               | none                                                                  |
+
+- The reader: the `SPCT0011` finding carries the claim id, and `SPCT0012`'s
+  carries none; the analyzer's findings are unchanged, under its existing
+  tests.
+- The level: the rule's level is `Error`; a manifest `rules` entry of
+  `warning` stamps a warning and `off` does not run it.
+- Silence: a `0.4.0` Markdown tree with a claim tag on a companion's Examples
+  block gives no `SPEC4012` (B-002); a `0.3.1` pin with `claim.source`
+  `gherkin` does not evaluate the id, and its rule count is unchanged (B-028,
+  C-3).
+- The vocabulary: `ShippedVocabularies`' `0.4.0` row gains `SPEC4012`;
+  `ZeroFourZeroRuleNames` gains `SPEC026` to `SPEC4012`; the composition id
+  list gains `SPEC026`. The rule-page tests (`0001-F3` B-031),
+  `InitRuleDefaultsUnitTests`, the real-tree numbering test (`0001-F7`
+  B-066) and the lock tests take the page, the manifest line and the relock
+  without a new test.
+- Acceptance: the `@B-009` scenario, in `NativeClaimsSteps`. Its line names
+  the claim id as the identifier, `[B-005]` at the line's end. The step
+  `naming {string}` binds its second argument as a rule id and looks for
+  ` B-005:`, which no reported line holds; the step that pins this line is
+  `test-writer`'s.
+
+**Reuse.** The reader's `SPCT0011` finding, `SpechtClaims.Files`,
+`SpechtModel.ClaimSets`, the evaluator's selection and stamp,
+`SchemaVersions.Shipped` and `LockSchemaVersion` carry the work. Added: one
+rule and one optional member on the shared finding.
+
+**Rejected.**
+
+- The tag taken back out of the finding's `Text`, between `Tag ` and
+  ` declares`, and read again by the claim form. It ties an engine rule to
+  the analyzer's sentence, so a rewording there breaks a check here, and it
+  is a second reading of a tag the reader has already read (A-3).
+- A null identifier and a message naming no claim. It needs no shared edit,
+  but B-009's line names `B-005`, and the output could not say which of
+  several tags on one line is meant.
+- The tag, `@B-005`, as the identifier. Every other claims rule names the
+  claim id, and the tag form is the consumer's.
+- Reading the claim files again in the rule: C-5's second parse.
+- A list of Examples tags on `GherkinClaimText`. The finding is already the
+  reader's account of the tag; a second list says it twice.
+- Recording the tag's claim and marking it misplaced. B-009 records no claim,
+  and the reader declares only from an `Element`.
+- The key `SPEC4012` with a map entry to itself: the rules that entered
+  `0.4.0` are keyed by their working names.
+- A `DefaultLevel` override returning `Error`: it restates the interface's
+  default.
 
 ## 8. Testing Strategy
 
