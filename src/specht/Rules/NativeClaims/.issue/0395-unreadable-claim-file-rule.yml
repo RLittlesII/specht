@@ -30,7 +30,8 @@ closed: null
 
 summary: |
   One rule for a claim file or set the reader cannot take claims from:
-  a `# language:` other than `en` (B-014), no `Feature:` line (B-015),
+  a `# language:` other than `en` (B-014), any other text the reader
+  refuses, such as no `Feature:` line (B-015),
   a glob matching no file (B-016), a file two sets match (B-018), and a
   Feature-level tag naming another identity under
   `claim.scopes.featureTag` (B-019). Each records no claim from what it
@@ -46,7 +47,7 @@ summary: |
 
 acceptance_criteria:
   - "B-014 — `# language:` other than `en`: reported at that line, no claim from the file"
-  - "B-015 — no `Feature:` line: reported at line 0, no claim from the file"
+  - "B-015 — any text the reader refuses but a `# language:` header, no `Feature:` line among them: reported at line 0, no claim from the file"
   - "B-016 — a set's glob matches no file: reported at line 0, path the glob as written"
   - "B-018 — one file matched by two sets: reported at that file, line 0, its claims under neither"
   - "B-019 — under `claim.scopes.featureTag`, a Feature-level tag naming another identity: reported at that tag's line"
@@ -98,6 +99,14 @@ decisions:
     free one in its ADR-0029 group, on the owner's approval in this
     item's pull request". The working name `SPEC027` stays in the
     entries above as written.
+  - |
+    2026-11-14, spec-author: on the repository owner's selections "(a)
+    All as SPEC4013 (Recommended)" for OQ-19 and "(a) Read as no form
+    (Recommended)" for OQ-20, the options in the coordinating session's
+    wording, B-015 is widened to every text the reader refuses but a
+    `# language:` header, and its criterion and the summary follow.
+    The claims list is unchanged. OQ-20 changes no criterion: a
+    `featureTag` without exactly one `{feature}` adds no verdict.
 
 out_of_scope:
   - "Claim files in a Gherkin language other than English - § 5 row 8."
