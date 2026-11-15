@@ -2,7 +2,7 @@ id: "0393"
 type: task
 title: Report a scenario in a claim file with no claim, SPEC4011, in schema 0.4.0
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -19,7 +19,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-14"
-closed: null
+closed: "2026-11-14"
 
 summary: |
   A Scenario or Scenario Outline in a claim file that carries no claim
