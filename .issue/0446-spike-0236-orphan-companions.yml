@@ -1,0 +1,100 @@
+id: "0446"
+type: chore
+title: Clear the two SPEC2003 warnings on spike 0236's feature files
+
+status: ready
+
+value: 2
+risk: 2
+
+parent: null
+children: []
+
+depends_on: ["0441"] # SPEC2003 and the two warnings it reports on this tree land with 0441
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-11-14"
+updated: "2026-11-14"
+closed: null
+
+summary: |
+  Rule `SPEC2003` (`0001-F6` B-013, working name `SPEC024`, schema
+  `0.4.0`, item 0441) reports a companion file in a layout's directory
+  part beside no specification. On this repository's tree `./build.sh
+  Specht` reports it twice, at warning: the `epics` layout's directory
+  part is `epics/**`, and
+  `epics/0201-spec-code-analysis/spikes/0236/reqnroll/alpha.feature` and
+  `epics/0201-spec-code-analysis/spikes/0236/reqnroll-beta/beta.feature`
+  sit there beside no `spec.md`. Both are synthetic Reqnroll inputs of
+  spike 0236 (`.issue/0236-compare-xml-binding-approaches.yml`, done
+  2026-10-17), whose tree was last changed at commit `06753445`. This
+  item clears both warnings by retiring or moving those files, not by
+  hiding them.
+
+  The realistic options, with what each touches. This item makes no
+  choice among them.
+
+  1. Retire the executable experiment and keep its findings: delete the
+     spike's projects and driver (`reqnroll/`, `reqnroll-beta/`,
+     `frameworks/`, `prototype/`, `run-spike.py`, `Directory.Build.props`)
+     and keep `spikes/0236/README.md`, whose reproduction section then
+     cites the driver at commit `06753445`. `epic.md`'s three links to the
+     README stay live.
+  2. Retire the whole spike tree, README included: as option 1, and
+     `epics/0201-spec-code-analysis/epic.md`'s three links (lines 47, 280
+     and 444 on 2026-11-14) and item 0236's decision naming the README
+     are pinned to commit `06753445`. The durable findings item 0236's
+     acceptance criteria kept with the epic then live only at that commit
+     and in what `0201`'s Features and decisions absorbed.
+  3. Delete only the two Reqnroll projects, `reqnroll/` and
+     `reqnroll-beta/`: `run-spike.py`'s default leg and the README's
+     scenario-bridge findings no longer reproduce from the tree, so the
+     driver keeps only its `--without-reqnroll` path or cites the deleted
+     projects at `06753445`. Deleting the two `.feature` files alone
+     leaves two projects that generate no scenario, and the bridge leg
+     fails.
+  4. Move the spike tree out of every layout's directory part, outside
+     `epics/**` and every `.spec/` directory: touches
+     `prototype/prototype.csproj`'s relative reference to
+     `src/specht/specht.csproj`, the README's reproduction command,
+     `epic.md`'s three links and item 0236's decision. It keeps the
+     experiment live, which lesson 0001 weighs against for a record the
+     specifications have absorbed.
+
+  It touches epic `0201`'s records and the repository's package versions,
+  and no Feature owns the spike, so it sits at the repository root with
+  `spec: null`.
+
+acceptance_criteria:
+  - "1. Before any file is removed or moved: the delivering design pass records in this item's decisions which option, of the summary's or another, it takes, and why. This item records no choice between them."
+  - "2. Before a file is deleted: each finding it carries that a specification, decision or ADR of epic `0201` relies on is confirmed held there, as item 0003 did for `REQUIREMENTS.md` (lesson 0001)."
+  - "3. `./build.sh Specht` on the delivered tree reports no `SPEC2003` warning, and none on `epics/0201-spec-code-analysis/spikes/0236/reqnroll/alpha.feature` or `epics/0201-spec-code-analysis/spikes/0236/reqnroll-beta/beta.feature`."
+  - "4. Nothing is added to hide them: `.specht/manifest.json` gains no exclusion, layout or rule level, B-013 and `SPEC2003` are unchanged, and no verdict, rule or exemption changes."
+  - "5. Every tracked citation of a removed path is pinned to a commit, as `` `<path>` at commit `<sha>` ``, and every citation of a moved path names its new path. On 2026-11-14 the citers are `epics/0201-spec-code-analysis/epic.md` lines 47, 280 and 444, item 0236's decisions, item 0441's summary and decisions, and the `This repository's tree: two warnings, not none` paragraph of `0001-F6` § 7."
+  - "6. That `0001-F6` § 7 paragraph, which states the two warnings, is brought true to the delivered tree by its owning role, `implementer` (`specht-conventions` § Section ownership)."
+  - "7. `Microsoft.Playwright.Xunit.v3` keeps its central version, since `test/testevidence.mtp.tests/testevidence.mtp.tests.csproj` references it; where the spike's projects are removed, its item group's `Spike 0236 only` label stops naming the spike."
+  - "No .feature change needed: chore - spike files outside the shipped solution are retired or moved and citations pinned; no claim, scenario, verdict, report, output or exit code changes."
+  - "Constraints preserved: 0001-F6 C-5, 0001-F7 C-1"
+
+decisions:
+  - |
+    2026-11-14, spec-author: cut on the repository owner's selection of
+    "Cut a chore item" on 2026-11-14, relayed in session by the
+    coordinating session, when asked how to handle the two warnings; the
+    options' wording was that session's. Earlier the same day, for item
+    0441, the owner selected "(a) Accept, fix summary", recorded in that
+    item's decisions with the options' wording the delivering session's:
+    the warnings are accepted there, no exclusion is added and B-013 is
+    unchanged. The four options in the summary, the criteria, value 2
+    and risk 2 are spec-author's, not the owner's. Status `ready`: it
+    waits on item 0441 alone, which is done. Not added to `.issue/.goal`:
+    no milestone names it, and adding one is the owner's call.
+
+out_of_scope:
+  - "An exclusion of the spike folder in `.specht/manifest.json`, or an amended B-013 that counts `epics/**` companions only in a Feature directory - not chosen for item 0441, recorded in its decisions."
+  - "Any change to `SPEC2003`, its rule page or schema `0.4.0` - item 0441; `0001-F7` C-1."
+  - "The content of epic `0201`'s Features, decisions and ADRs beyond pinning a citation."
