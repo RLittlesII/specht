@@ -212,6 +212,7 @@ public sealed class GherkinClaimTextReader
         }
 
         /// <implements epic="0201" feature="F7" claim="B-008" />
+        /// <implements epic="0001" feature="F16" claim="B-009" />
         private bool Keyword(string line, int number)
         {
             if (Match(line, "Feature:") is not null)
@@ -271,10 +272,13 @@ public sealed class GherkinClaimTextReader
                 _examples = new Examples(Take());
                 _case.Blocks.Add(_examples);
                 _case.Self.Kind = GherkinClaimElement.ScenarioOutline;
-                foreach (var tag in _examples.Tags.Where(tag => owner.Tags.Claim.Read(tag.Text) is not null))
+                foreach (var tag in _examples.Tags)
                 {
-                    _findings.Add(new GherkinClaimTextFinding("SPCT0011", tag.Line,
-                        "Tag " + tag.Text + " declares a claim where no claim can be declared."));
+                    if (owner.Tags.Claim.Read(tag.Text) is { } claimId)
+                    {
+                        _findings.Add(new GherkinClaimTextFinding("SPCT0011", tag.Line,
+                            "Tag " + tag.Text + " declares a claim where no claim can be declared.", claimId));
+                    }
                 }
             }
             else

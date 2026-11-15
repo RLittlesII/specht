@@ -137,7 +137,7 @@ A repository whose claims are authored only as tagged scenarios cannot be checke
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012, a claim tag on an Examples block); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011, a scenario in a claim file with no claim); before: implementer, 2026-11-14 (item 0440: a set's claim files listed by `FindClaimFiles`); before: implementer, 2026-11-14 (item 0391 review round 2: SPEC4010 skipped; ten rules); before: implementer, 2026-11-14 (item 0391 review round 1: the matrix resolver's guard and the facts record skip); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report rows); before: implementer, 2026-11-13 (item 0391 designed, round 2: OQ-11 to OQ-18, B-035's reading, B-036 to B-038) -->
 
 Item `0389` designs the `claim` members and their validation. Items `0390` to `0396` each add their rows below.
 
@@ -192,7 +192,7 @@ Item `0389` designs the `claim` members and their validation. Items `0390` to `0
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
+<!-- last written by: implementer, 2026-11-14 (item 0394 built as designed); before: implementer, 2026-11-14 (item 0394 designed: SPEC4012 over the reader's SPCT0011 finding, which gains the claim id); before: implementer, 2026-11-14 (item 0393 built as designed); before: implementer, 2026-11-14 (item 0393 designed: SPEC4011 over the reader's SPCT0012 finding; the working names SPEC025 to SPEC027 renamed SPEC4011 to SPEC4013, decision 0004); before: implementer, 2026-11-14 (item 0440, B-078 amended: the guard keeps a set by identity or by a `record` `TryLoad` resolves to the README, as the check reads it; item `0391` is built); before: implementer, 2026-11-14 (item 0440 review round 1: the guard's own match of a set to a Feature, and item `0391`'s dependency on it); before: implementer, 2026-11-14 (item 0440: the set listing named `FindClaimFiles`, `ClaimSets` internal and shared with `0001-F19`'s collision guard); before: implementer, 2026-11-14 (item 0391 review round 2: StatusRule (SPEC4010) skips a native Feature, its matrix read through MatrixResolver.Resolve; the resolver guard cites B-003); before: implementer, 2026-11-14 (item 0391 review round 1: SPEC4008 and SPEC4006 silenced by one guard in MatrixResolver.ResolveClaims; the facts command reads no record for a native Feature); before: implementer, 2026-11-14 (item 0391 built: the record, identity and report as designed, with the listing's ClaimRecords, discovery's DirectoryOf and the record-directory filter); before: implementer, 2026-11-13 (item 0391 designed, round 2: the questions answered as OQ-11 to OQ-18; B-035's reading, B-036 to B-038) -->
 
 Items `0390` to `0396` each add their subsection after this one.
 
@@ -977,7 +977,7 @@ rule and one member.
 
 ### A claim tag on an Examples block, `SPEC4012` (item `0394`)
 
-Designed. B-009: a tag on an Examples block that the claim tag form and the
+Built. B-009: a tag on an Examples block that the claim tag form and the
 claim grammar read is reported at its claim file's path and the tag's line,
 at error by default, and declares no claim. The id is `SPEC4012` (decision
 0004). The shared reader already finds such a tag and already records no
@@ -1004,17 +1004,17 @@ claim" holds before this item, and this item adds no code for it.
 **The claim id the finding carries.** B-009's scenario names `B-005` on the
 reported line. The finding's `Text` holds the tag inside the analyzer's
 sentence, and the finding has no member holding it. The reader already reads
-the claim id, in the `Where` that selects the tag, and drops it.
-`GherkinClaimTextFinding` gains a trailing optional member,
-`string? ClaimId = null`, and the reader passes the id it read to the
-`SPCT0011` finding; `SPCT0012`'s leaves it null. The analyzer compiles the
+the claim id, in the test that selects the tag, and dropped it.
+`GherkinClaimTextFinding` has a trailing optional member,
+`string? ClaimId = null`, and the reader's `Keyword` passes the id it read to
+the `SPCT0011` finding; `SPCT0012`'s leaves it null. The analyzer compiles the
 record and the reader and reads neither the member nor anything new:
 `GherkinClaimFileReader` copies `DiagnosticId`, the path, `Line` and `Text`
 into its `BindingFinding`. The analyzer's findings, lines, texts and export
 are unchanged (§ 5 row 1), and the two readers stay one reader (§ 5 row 2).
 Item `0393` rejected a title member on the same record because no claim asks
-for a title; B-009's scenario asks for the claim id. This is an edit to a
-shared file, so it is raised to the owning role before it is built.
+for a title; B-009's scenario asks for the claim id. This edit to a shared
+file was raised to the owning role before it was built.
 
 **The rule.** `ExamplesClaimTagRule`, in
 `src/specht/Rules/NativeClaims/ExamplesClaimTagRule.cs`, namespace
@@ -1155,10 +1155,7 @@ findings in line order, and the evaluator's order sorts the report.
   B-066) and the lock tests take the page, the manifest line and the relock
   without a new test.
 - Acceptance: the `@B-009` scenario, in `NativeClaimsSteps`. Its line names
-  the claim id as the identifier, `[B-005]` at the line's end. The step
-  `naming {string}` binds its second argument as a rule id and looks for
-  ` B-005:`, which no reported line holds; the step that pins this line is
-  `test-writer`'s.
+  `SPEC4012` and the claim id as the identifier, `[B-005]` at the line's end.
 
 **Reuse.** The reader's `SPCT0011` finding, `SpechtClaims.Files`,
 `SpechtModel.ClaimSets`, the evaluator's selection and stamp,
