@@ -2,7 +2,7 @@ id: "0394"
 type: task
 title: Report a claim tag on an Examples block, SPEC4012, in schema 0.4.0
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -19,7 +19,7 @@ claims:
 
 created: "2026-11-06"
 updated: "2026-11-14"
-closed: null
+closed: "2026-11-14"
 
 summary: |
   A tag on an Examples block that matches the claim tag form and the
