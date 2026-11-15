@@ -9,10 +9,11 @@ namespace Specht.Acceptance.Trace;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Trace/.spec/trace.feature</c> (<c>0001-F13</c>): item 0442 binds B-001 to B-003, B-006,
-/// B-007, B-009 and B-019, and item 0443 B-004, B-005 and B-020. Each launches the built tool over a synthetic tree: one
+/// B-007, B-009 and B-019, item 0443 B-004, B-005 and B-020, and item 0444 B-010 to B-012. Each launches the built tool
+/// over a synthetic tree: one
 /// Feature specification with claims B-001 to B-003, a traceability row and a tagged scenario for each until a step
 /// changes them, and one test file under <c>test/</c> holding the test methods a step names as held. The scenarios of
-/// B-008 and B-010 to B-018 stay pending for items 0444 and 0445: each keeps a step no binding here matches.
+/// B-008 and B-013 to B-018 stay pending for item 0445: each keeps a step no binding here matches.
 /// </summary>
 [Binding]
 [Scope(Feature = "The trace command")]
@@ -40,6 +41,37 @@ public sealed class TraceSteps
 
     [Given("the manifest declares no tests")]
     public void GivenNoTests() => EditManifest(static manifest => manifest.Remove("tests"));
+
+    [Given("the manifest pins schema version {word} and declares no tests")]
+    public void GivenPinnedWithNoTests(string pin)
+    {
+        Tree.Pin(pin);
+        GivenNoTests();
+    }
+
+    [Given("the manifest renames the traceability table's headers, and the specification uses the new names")]
+    public void GivenRenamedMatrixHeaders()
+    {
+        _matrixHeaders = ["Claim", "Case", "Check", "State"];
+        EditManifest(manifest => manifest["tables"] = new JsonObject
+        {
+            ["matrix"] = new JsonArray(_matrixHeaders.Select(static header => (JsonNode?) header).ToArray()),
+        });
+    }
+
+    [Given("claim B-002's row is {string} and names three tests")]
+    public void GivenB002RowNamingThreeTests(string status)
+    {
+        _rows["B-002"] = $"| B-002 | Tracing another | `TracesA`, `TracesB`, `TracesC` | {status} |";
+        _held.Add("TracesA");
+    }
+
+    [Given("claim B-001 names one test a file holds and one no file holds")]
+    public void GivenB001NamesAHeldAndAMissingTest()
+    {
+        _rows["B-001"] = "| B-001 | Tracing one | `TracesOne`, `TracesNowhere` | Partial |";
+        _held.Add("TracesOne");
+    }
 
     [Given("the manifest pins schema version {word}, the first that holds the unresolved-test rule")]
     public void GivenRepinnedForTheUnresolvedTestRule(string pin) => Tree.Pin(pin);
@@ -174,6 +206,14 @@ public sealed class TraceSteps
         var fields = LineOf(claim).Split('\t');
         fields.Should().HaveCount(5);
         fields[4].Should().Be($"{resolved}/{named}");
+    }
+
+    [Then("the line for {word} holds {string} and {int} of {int} tests resolved")]
+    public void ThenTheLineHoldsStatusAndTests(string claim, string status, int resolved, int named)
+    {
+        var fields = LineOf(claim).Split('\t');
+        fields.Should().HaveCount(5);
+        (fields[2], fields[4]).Should().Be((status, $"{resolved}/{named}"));
     }
 
     [Then("stdout is one JSON document")]
@@ -368,7 +408,7 @@ public sealed class TraceSteps
         var claims = "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
             + "| B-001 | It traces one claim. | brd | Active |\n| B-002 | It traces another. | brd | Active |\n"
             + "| B-003 | It traces a third. | brd | Active |\n";
-        var matrix = "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
+        var matrix = "## 9. Traceability Matrix\n\n| " + string.Join(" | ", _matrixHeaders) + " |\n| -------- | -------- | ---- | ------ |\n"
             + string.Concat(ClaimIds.Select(id => _rows[id]).OfType<string>().Select(static row => row + "\n"));
         var sections = SpechtTree.SectionsWith("3. Acceptance Criteria", claims).ToList();
         sections[sections.FindIndex(static section => section.StartsWith("## 9. Traceability Matrix\n", StringComparison.Ordinal))] = matrix;
@@ -409,6 +449,7 @@ public sealed class TraceSteps
     private readonly Dictionary<string, string?> _rows = new(StringComparer.Ordinal);
     private readonly List<(string Tag, string Title)> _scenarios = [];
     private readonly List<string> _held = [];
+    private string[] _matrixHeaders = ["Claim ID", "Scenario", "Test", "Status"];
     private SpechtTree? _tree;
     private bool _second;
     private string _rootArgument = ".";

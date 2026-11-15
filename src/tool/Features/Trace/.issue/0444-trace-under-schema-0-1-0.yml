@@ -2,7 +2,7 @@ id: "0444"
 type: task
 title: Trace a tree pinned to schema 0.1.0 with the 0.2.0 defaults
 
-status: ready
+status: done
 
 value: 4
 risk: 2
@@ -21,8 +21,8 @@ claims:
   - B-012
 
 created: "2026-11-14"
-updated: "2026-11-14"
-closed: null
+updated: "2026-11-15"
+closed: "2026-11-15"
 
 summary: |
   Under a manifest pinned to schema `0.1.0` the trace reads § 9 by the
