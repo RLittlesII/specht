@@ -51,9 +51,11 @@ public sealed class SpechtClaims
     /// <implements epic="0001" feature="F16" claim="B-001" />
     /// <implements epic="0001" feature="F16" claim="B-004" />
     /// <implements epic="0001" feature="F16" claim="B-011" />
+    /// <implements epic="0001" feature="F16" claim="B-010" />
     public SpechtClaims(SpechtClaimFileSet set, IReadOnlyList<GherkinClaimText> files, SpechtStructure structure)
     {
         FileSet = set;
+        Files = files;
         var rows = new List<SpechtClaim>();
         var ids = new Dictionary<string, int>(StringComparer.Ordinal);
         var tagIds = new HashSet<string>(structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
@@ -79,6 +81,10 @@ public sealed class SpechtClaims
     /// <summary>The claim file set a native Feature's claims are read from; null for a claims table.</summary>
     /// <implements epic="0001" feature="F16" claim="B-001" />
     public SpechtClaimFileSet? FileSet { get; }
+
+    /// <summary>What the shared Gherkin reader read from each claim file of the set, in listing order; empty for a claims table.</summary>
+    /// <implements epic="0001" feature="F16" claim="B-010" />
+    public IReadOnlyList<GherkinClaimText> Files { get; } = [];
 
     /// <summary>The claims section, absent when no section has the configured role.</summary>
     public SpechtSection? Section { get; }

@@ -177,6 +177,7 @@
     "SPEC4008": "error",
     "SPEC4009": "error",
     "SPEC4010": "error",
+    "SPEC4011": "warning",
     "SPEC5001": "error",
     "SPEC5002": "error",
     "SPEC5003": "error",
