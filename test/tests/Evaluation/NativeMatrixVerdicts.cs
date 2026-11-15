@@ -10,7 +10,8 @@ namespace Specht.Tests.Evaluation;
 /// claim, one citing an id no claim file declares and one holding a claim twice; under title matching a cell naming a
 /// scenario that carries the tag, one naming a scenario that does not and one naming no scenario; a covered row of a claim
 /// the Feature declares with no scenario, and a covered row whose test no test file holds; and a set with no record and a
-/// record without the matrix. A record is a Feature frontmatter and the canonical sections with the matrix replaced.
+/// record without the matrix; and a retired native claim under <c>SPEC4006</c>, held to its rows alone: a row at the marker
+/// and no matrix or no record report nothing. A record is a Feature frontmatter and the canonical sections with the matrix replaced.
 /// </summary>
 public sealed class NativeMatrixVerdicts : TheoryData<string, string[], string[], string[]>
 {
@@ -58,6 +59,13 @@ public sealed class NativeMatrixVerdicts : TheoryData<string, string[], string[]
         Add(WithoutRecord, [AddFile], [Adds], []);
         var withoutMatrix = Front + string.Join('\n', SpechtTree.Sections.Where(static section => !section.StartsWith("## 9.", StringComparison.Ordinal)));
         Add(WithRecord, [AddFile, RecordFile], [Adds, withoutMatrix], []);
+
+        var retired = Adds.Replace("@B-001", "@withdrawn @B-001", StringComparison.Ordinal);
+        var marked = Record(Matrix("| B-001 | Adds | Missing | Withdrawn |\n"));
+        Add(WithRetirement, [AddFile, RecordFile], [retired, marked], []);
+
+        Add(WithRetirement, [AddFile, RecordFile], [retired, withoutMatrix], []);
+        Add(WithRetirement, [AddFile], [retired], []);
     }
 
     private static string Matrix(string rows) => Heading + Header + rows;
@@ -113,6 +121,11 @@ public sealed class NativeMatrixVerdicts : TheoryData<string, string[], string[]
 
     private const string WithTitles = """
         { "matrix": { "scenarioTitles": true }, "claim": { "files": [
+          { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1", "record": ".spec/features/arithmetic/README.md" } ] } }
+        """;
+
+    private const string WithRetirement = """
+        { "rules": { "SPEC4006": "error" }, "claim": { "withdrawnTags": [ "@withdrawn" ], "files": [
           { "glob": ".spec/features/arithmetic/*.feature", "feature": "F1", "record": ".spec/features/arithmetic/README.md" } ] } }
         """;
 

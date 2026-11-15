@@ -31,6 +31,22 @@ public sealed class GherkinClaimTextReaderUnitTests
         read.Claims.Should().ContainSingle().Which.Scenarios.Should().Equal(scenarios);
     }
 
+    [Theory]
+    [ClassData(typeof(ClaimScenarioTitleSets))]
+    public void AClaimFileText_WhenRead_ShouldListEveryScenarioWithItsKeywordLineAndTrimmedTitleInDocumentOrder(
+        string text, int[] lines, string[] titles)
+    {
+        // Given
+        var reader = new GherkinClaimTextReader(new GherkinClaimTags(
+            new GherkinClaimTagForm("@{claim}", "claim", false, "B-[0-9]{3}"), null, null, ["@ignore"], [], []));
+
+        // When
+        var read = reader.Read(".spec/features/arithmetic/add.feature", text);
+
+        // Then
+        read.Scenarios.Should().NotBeNull().And.Equal(lines.Zip(titles, static (line, title) => (line, title)));
+    }
+
     [Fact]
     public void AClaimTagOnAnExamplesBlock_WhenRead_ShouldGiveAPlacementFindingCarryingTheClaimIdAndAMissingClaimFindingCarryingNone()
     {
