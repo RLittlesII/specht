@@ -80,6 +80,19 @@ public sealed class SpechtModel
     public IReadOnlyList<SpechtClaims> ClaimSets { get; }
 
     /// <summary>
+    /// The claim input the check could not take claims from, the model reader's first and then each set's, once each;
+    /// empty unless <c>claim.source</c> is <c>gherkin</c>.
+    /// </summary>
+    /// <implements epic="0001" feature="F16" claim="B-014" />
+    /// <implements epic="0001" feature="F16" claim="B-015" />
+    /// <implements epic="0001" feature="F16" claim="B-016" />
+    /// <implements epic="0001" feature="F16" claim="B-018" />
+    /// <implements epic="0001" feature="F16" claim="B-019" />
+    /// <implements epic="0001" feature="F16" claim="B-033" />
+    /// <implements epic="0001" feature="F16" claim="B-034" />
+    public IReadOnlyList<SpechtClaimFault> ClaimFaults { get; init; } = [];
+
+    /// <summary>
     /// The root-relative path of each companion file beside no specification of any layout, in ordinal order; none in a
     /// model a test builds in memory (<c>0001-F6</c> B-013).
     /// </summary>

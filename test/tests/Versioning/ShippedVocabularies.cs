@@ -5,7 +5,8 @@ namespace Specht.Tests.Versioning;
 /// and 0.2.1 keep the three-digit ids, 0.3.0 and 0.3.1 take the four-digit ids of ADR-0029's map in their place, and 0.4.0,
 /// which item <c>0436</c> cut from 0.3.1 with no rule id of its own (<c>0001-F5</c> A-8), adds <c>SPEC4008</c> and <c>SPEC4010</c>
 /// (<c>0001-F12</c> B-011, B-012 to B-017, decision 0005, reading 1) and <c>SPEC2003</c> (<c>0001-F6</c> B-013, decisions
-/// 0012 and 0013), and <c>SPEC4011</c> and <c>SPEC4012</c> (<c>0001-F16</c> B-010, B-009, decision 0004). The rules
+/// 0012 and 0013), and <c>SPEC4011</c>, <c>SPEC4012</c> and <c>SPEC4013</c> (<c>0001-F16</c> B-010, B-009, B-014 to B-016, B-018,
+/// B-019, B-033, B-034, decision 0004). The rules
 /// that enter 0.4.0 later add their ids to its row.
 /// </summary>
 public sealed class ShippedVocabularies : TheoryData<string, string[]>
@@ -29,6 +30,6 @@ public sealed class ShippedVocabularies : TheoryData<string, string[]>
         ];
         Add("0.3.0", fourDigit);
         Add("0.3.1", fourDigit);
-        Add("0.4.0", [.. fourDigit, "SPEC2003", "SPEC4008", "SPEC4010", "SPEC4011", "SPEC4012"]);
+        Add("0.4.0", [.. fourDigit, "SPEC2003", "SPEC4008", "SPEC4010", "SPEC4011", "SPEC4012", "SPEC4013"]);
     }
 }

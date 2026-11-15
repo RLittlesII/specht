@@ -47,6 +47,8 @@ public sealed class SpechtModelReader(
     /// <implements epic="0001" feature="F16" claim="B-004" />
     /// <implements epic="0001" feature="F16" claim="B-003" />
     /// <implements epic="0001" feature="F16" claim="B-026" />
+    /// <implements epic="0001" feature="F16" claim="B-033" />
+    /// <implements epic="0001" feature="F16" claim="B-034" />
     /// <implements epic="0001" feature="F16" claim="B-035" />
     /// <implements epic="0001" feature="F16" claim="B-036" />
     public SpechtModel Read(string root, SchemaSourceSelection? selection)
@@ -94,7 +96,14 @@ public sealed class SpechtModelReader(
             texts[record.RelativePath] = record.Text();
         }
 
-        return builder.Build(schemas, listing, texts);
+        var recordFaults = sets.Select((set, index) => (set, Loaded: records[index]))
+            .Where(static entry => entry.set.Record is not null && entry.Loaded is null)
+            .Select(entry => tree.IsRooted(entry.set.Record!)
+                ? new SpechtClaimFault(SpechtManifestStore.RelativePath, 0, SpechtClaimFaultKind.AbsoluteRecord, entry.set.Feature)
+                : new SpechtClaimFault(entry.set.Record!, 0, SpechtClaimFaultKind.UnreadableRecord, null))
+            .ToArray();
+
+        return builder.Build(schemas, listing, texts, recordFaults);
     }
 
     /// <summary>

@@ -37,10 +37,12 @@ public sealed class GherkinClaimTextReader
     }
 
     /// <implements epic="0201" feature="F7" claim="B-029" />
+    /// <implements epic="0001" feature="F16" claim="B-014" />
     private static void CheckLanguage(string relativePath, IReadOnlyList<string> lines)
     {
-        foreach (var line in lines)
+        for (var index = 0; index < lines.Count; index++)
         {
+            var line = lines[index];
             if (line.Length == 0 || line[0] == '@')
             {
                 continue;
@@ -57,7 +59,7 @@ public sealed class GherkinClaimTextReader
                 var rest = comment.Substring("language".Length).TrimStart();
                 if (rest.StartsWith(":", StringComparison.Ordinal) && rest.Substring(1).Trim() != "en")
                 {
-                    throw new GherkinClaimTextException(relativePath, "Claim file declares a Gherkin language other than English.");
+                    throw new GherkinClaimTextException(relativePath, "Claim file declares a Gherkin language other than English.", index + 1);
                 }
             }
         }
@@ -176,7 +178,7 @@ public sealed class GherkinClaimTextReader
             return new GherkinClaimText(path, Array.AsReadOnly(claims.ToArray()),
                 Array.AsReadOnly(_findings.OrderBy(static finding => finding.Line)
                     .ThenBy(static finding => finding.DiagnosticId, StringComparer.Ordinal).ToArray()),
-                Array.AsReadOnly(_featureValues.ToArray()), Array.AsReadOnly(_epicValues.ToArray()));
+                Array.AsReadOnly(_featureValues.ToArray()), Array.AsReadOnly(_epicValues.ToArray()), Array.AsReadOnly(_featureLines.ToArray()));
         }
 
         /// <implements epic="0201" feature="F7" claim="B-008" />
@@ -203,11 +205,13 @@ public sealed class GherkinClaimTextReader
         }
 
         /// <implements epic="0201" feature="F7" claim="B-023" />
-        private static void AddScope(GherkinClaimTagForm? form, Tag tag, List<string> values)
+        /// <implements epic="0001" feature="F16" claim="B-019" />
+        private static void AddScope(GherkinClaimTagForm? form, Tag tag, List<string> values, List<int>? lines = null)
         {
             if (form?.Read(tag.Text) is { } value)
             {
                 values.Add(value);
+                lines?.Add(tag.Line);
             }
         }
 
@@ -225,7 +229,7 @@ public sealed class GherkinClaimTextReader
                 _feature = Open(GherkinClaimElement.Feature, number);
                 foreach (var tag in _feature.Tags)
                 {
-                    AddScope(owner.Tags.FeatureScope, tag, _featureValues);
+                    AddScope(owner.Tags.FeatureScope, tag, _featureValues, _featureLines);
                     AddScope(owner.Tags.EpicScope, tag, _epicValues);
                 }
 
@@ -392,6 +396,7 @@ public sealed class GherkinClaimTextReader
         private readonly List<Case> _cases = [];
         private readonly List<GherkinClaimTextFinding> _findings = [];
         private readonly List<string> _featureValues = [];
+        private readonly List<int> _featureLines = [];
         private readonly List<string> _epicValues = [];
         private Element? _feature;
         private Element? _rule;

@@ -14,9 +14,13 @@ namespace Specht.Acceptance.NativeClaims;
 /// item 0389, B-002, B-027, B-028, B-029 and B-031, and for the native claim reader of item 0390, B-001, B-004 to B-007,
 /// B-011 to B-013, B-025 and B-030, and for a claim file set's record, identity and report of item 0391, B-003, B-017,
 /// B-026, B-032 and B-036 to B-038, and for a scenario in a claim file with no claim of item 0393, B-010 and the
-/// boundary that no claim is inferred from a title, and for a claim tag on an Examples block of item 0394, B-009. "The
-/// output has a line" binds a warning line alone, because item 0395's scenarios name error lines with it and their rule is
-/// not built. The other scenarios bind only the Background and are left out as pending. A root is a
+/// boundary that no claim is inferred from a title, and for a claim tag on an Examples block of item 0394, B-009, and
+/// for an unreadable claim file, set or record of item 0395, B-014 to B-016, B-018, B-019, with its boundary that a
+/// Feature-level tag that agrees, or none, is not reported, and B-033 to B-035. "The output
+/// has a line" binds any line that starts with the text given, a line-<c>0</c> line printing its path with no position.
+/// A file that cannot be read is held open with no sharing until the scenario ends. A record at an absolute path is the
+/// root's own record file named by its full path, so a check that read it would find it. The other scenarios bind only
+/// the Background and are left out as pending. A root is a
 /// synthetic tree holding one co-located Markdown specification, <c>F5</c>, so a claim read from a claims table is
 /// observable and no identity a scenario names collides with it. The manifest is edited in memory and written when the
 /// check runs; "the check runs" launches the built tool on the root, the only place an exit code and its streams are
@@ -264,6 +268,97 @@ public sealed class NativeClaimsSteps
         _claimFile = path;
     }
 
+    [Given("{string} opens with {string} at line {int}")]
+    public void GivenOpensWithAtLine(string path, string header, int line)
+    {
+        Tree.WriteRaw(path, string.Concat(Enumerable.Repeat("# A comment\n", line - 1)) + header + "\n" + Adds);
+        _claimFile = path;
+    }
+
+    [Given("{string} has no {string} line")]
+    public void GivenHasNoLine(string path, string keyword)
+    {
+        const string Text = "  @B-001\n  Scenario: Adds\n    Given two numbers\n";
+        Text.Should().NotContain(keyword);
+        Tree.WriteRaw(path, Text);
+        _claimFile = path;
+    }
+
+    [Given("{string} exists")]
+    public void GivenExists(string path)
+    {
+        Tree.WriteRaw(path, Adds);
+        _claimFile = path;
+    }
+
+    [Given("{string} tags its Feature {string} at line {int}")]
+    public void GivenTagsItsFeatureAtLine(string path, string tag, int line)
+    {
+        Tree.WriteRaw(path, string.Concat(Enumerable.Repeat("# A comment\n", line - 1)) + tag + "\n" + Adds);
+        _claimFile = path;
+    }
+
+    [Given("{string} tags its Feature {string}")]
+    public void GivenTagsItsFeature(string path, string tag)
+    {
+        Tree.WriteRaw(path, tag + "\n" + Adds);
+        _claimFiles.Add(path);
+    }
+
+    [Given("{string} has no Feature-level tag")]
+    public void GivenHasNoFeatureLevelTag(string path)
+    {
+        Tree.WriteRaw(path, Adds);
+        _claimFiles.Add(path);
+    }
+
+    [Given("no file is at that path")]
+    public void GivenNoFileIsAtThatPath() => File.Delete(RecordPath());
+
+    [Given("the file at that path cannot be read")]
+    public void GivenTheFileAtThatPathCannotBeRead() => _lock = new FileStream(RecordPath(), FileMode.Open, FileAccess.Read, FileShare.None);
+
+    [Given("the path leads outside the root")]
+    public void GivenThePathLeadsOutsideTheRoot() =>
+        Path.GetRelativePath(Tree.Root, RecordPath()).Split(Path.DirectorySeparatorChar)[0].Should().Be("..");
+
+    [Given("the claim file set names a record at an absolute path")]
+    public void GivenTheClaimFileSetNamesARecordAtAnAbsolutePath()
+    {
+        GivenTheClaimFileSetNamesTheRecord(".spec/features/arithmetic/README.md");
+        _absoluteRecord = RecordPath();
+        ClaimFileSet["record"] = _absoluteRecord;
+    }
+
+    [Given(@"^the claim file set names a record that (names no file|names a file that cannot be read|is an absolute path|leads outside the root)$")]
+    public void GivenTheClaimFileSetNamesARecordThat(string condition)
+    {
+        GivenTheClaimFileSetNamesTheRecord(condition == "leads outside the root" ? "../outside/README.md" : ".spec/features/arithmetic/README.md");
+        _recordFrontmatter["spec_status"] = "\"approved\"";
+        _recordFrontmatter["depends_on"] = "[\"F2\"]";
+        if (condition != "leads outside the root")
+        {
+            WriteRecord();
+        }
+
+        switch (condition)
+        {
+            case "names no file":
+                GivenNoFileIsAtThatPath();
+                break;
+            case "names a file that cannot be read":
+                GivenTheFileAtThatPathCannotBeRead();
+                break;
+            case "is an absolute path":
+                _absoluteRecord = RecordPath();
+                ClaimFileSet["record"] = _absoluteRecord;
+                break;
+            default:
+                GivenThePathLeadsOutsideTheRoot();
+                break;
+        }
+    }
+
     [Given("{string} has an untagged scenario titled {string}")]
     public void GivenHasAnUntaggedScenarioTitled(string path, string title)
     {
@@ -473,8 +568,34 @@ public sealed class NativeClaimsSteps
             line.StartsWith($"{record}(", StringComparison.Ordinal) && line.Contains(" SPEC1002:", StringComparison.Ordinal));
     }
 
-    [Then(@"^the output has a line ""([^""]*: warning SPEC[0-9]+:)""$")]
-    public void ThenTheOutputHasAWarningLine(string start) => Diagnostics().Should().Contain(line => line.StartsWith(start, StringComparison.Ordinal));
+    [Then(@"^the output has a line ""([^""]*)""$")]
+    public void ThenTheOutputHasALine(string start) => Diagnostics().Should().Contain(line => line.StartsWith(start, StringComparison.Ordinal));
+
+    [Then("Feature {string} has no claim from that file")]
+    public void ThenFeatureHasNoClaimFromThatFile(string feature) => ClaimSet(feature).Rows.Should().NotContain(claim => claim.Path == ClaimFile);
+
+    [Then("neither Feature {string} nor Feature {string} has a claim from that file")]
+    public void ThenNeitherFeatureNorFeatureHasAClaimFromThatFile(string first, string second)
+    {
+        ThenFeatureHasNoClaimFromThatFile(first);
+        ThenFeatureHasNoClaimFromThatFile(second);
+    }
+
+    [Then("no {string} is reported for either file")]
+    public void ThenNoIsReportedForEitherFile(string ruleId)
+    {
+        _claimFiles.Should().HaveCount(2);
+        Run.ExitCode.Should().NotBe(3, Run.Stderr);
+        Diagnostics().Should().NotContain(line => line.Contains($" {ruleId}:", StringComparison.Ordinal)
+            && _claimFiles.Any(path => line.StartsWith(path, StringComparison.Ordinal)));
+    }
+
+    [Then("no output line holds an absolute path")]
+    public void ThenNoOutputLineHoldsAnAbsolutePath()
+    {
+        var absolute = _absoluteRecord ?? throw new InvalidOperationException("No absolute record was named.");
+        (Run.Stdout + Run.Stderr).Should().NotContain(Tree.Root).And.NotContain(absolute);
+    }
 
     [Then("no violation is reported for the scenario")]
     public void ThenNoViolationIsReportedForTheScenario()
@@ -628,11 +749,17 @@ public sealed class NativeClaimsSteps
     }
 
     [AfterScenario]
-    public void DeleteTree() => _tree?.Dispose();
+    public void DeleteTree()
+    {
+        _lock?.Dispose();
+        _tree?.Dispose();
+    }
 
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No root was prepared.");
 
     private (string Stdout, string Stderr, int ExitCode) Run => _run ?? throw new InvalidOperationException("The check was not run.");
+
+    private string ClaimFile => _claimFile ?? throw new InvalidOperationException("No claim file was written.");
 
     private JsonObject ClaimFileSet => (JsonObject) ((JsonArray) Node("claim.files")!)[0]!;
 
@@ -681,6 +808,12 @@ public sealed class NativeClaimsSteps
     {
         Run.ExitCode.Should().NotBe(3, Run.Stderr);
         return Model().ClaimSets.Should().ContainSingle(set => set.FileSet!.Feature == feature).Subject;
+    }
+
+    private string RecordPath()
+    {
+        var record = _record ?? throw new InvalidOperationException("No record was named.");
+        return Path.GetFullPath(Path.Combine(Tree.Root, record.Replace('/', Path.DirectorySeparatorChar)));
     }
 
     private string ScenarioPlace() =>
@@ -733,6 +866,8 @@ public sealed class NativeClaimsSteps
 
     private const string SummaryStart = "specifications: ";
 
+    private const string Adds = "Feature: Arithmetic\n\n  @B-001\n  Scenario: Adds\n    Given two numbers\n";
+
     private static readonly string OutputBeforeThisFeature = string.Join(
         Environment.NewLine,
         "specifications: epics 0, features 1",
@@ -767,6 +902,8 @@ public sealed class NativeClaimsSteps
         "      Given four numbers",
     ];
 
+    private readonly List<string> _claimFiles = [];
+
     private readonly Dictionary<string, int[]> _keywordLines = new(StringComparer.Ordinal);
 
     private readonly Dictionary<string, string> _recordFrontmatter = new(StringComparer.Ordinal);
@@ -782,6 +919,10 @@ public sealed class NativeClaimsSteps
     private string? _claimId;
 
     private string? _record;
+
+    private string? _absoluteRecord;
+
+    private FileStream? _lock;
 
     private SpechtTree? _tree;
 

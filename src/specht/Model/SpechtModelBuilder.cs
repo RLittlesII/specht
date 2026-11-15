@@ -18,6 +18,10 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <param name="schemas">The compiled schemas and the manifest they were selected by.</param>
     /// <param name="listing">What discovery listed.</param>
     /// <param name="texts">The text of every listed file, by root-relative path.</param>
+    /// <param name="recordFaults">
+    /// Each claim file set's <c>record</c> the model reader could not load, in the manifest's order of the sets, or null for
+    /// none (<c>0001-F16</c> B-033, B-034).
+    /// </param>
     /// <returns>The model.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     /// <implements epic="0001" feature="F5" claim="B-004" />
@@ -25,7 +29,14 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <implements epic="0001" feature="F5" claim="B-079" />
     /// <implements epic="0001" feature="F5" claim="B-080" />
     /// <implements epic="0001" feature="F6" claim="B-013" />
-    public SpechtModel Build(SpechtSchemas schemas, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
+    /// <implements epic="0001" feature="F16" claim="B-018" />
+    /// <implements epic="0001" feature="F16" claim="B-033" />
+    /// <implements epic="0001" feature="F16" claim="B-034" />
+    public SpechtModel Build(
+        SpechtSchemas schemas,
+        SpechtListing listing,
+        IReadOnlyDictionary<string, string> texts,
+        IReadOnlyList<SpechtClaimFault>? recordFaults = null)
     {
         var structure = schemas.Structure;
         var features = new List<FeatureSpec>();
@@ -68,9 +79,11 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         var epics = listing.Epics.Select(path => new EpicFile(path, frontmatter.Parse(texts[path]))).ToList();
         var tests = listing.TestFiles.Select(path => new SpechtTestFile(path, texts[path])).ToList();
 
-        return new SpechtModel(features, items, epics, schemas, tests, ClaimSets(structure, structure.ClaimInput?.Files ?? [], listing.ClaimFiles, texts))
+        var claimSets = ClaimSets(structure, structure.ClaimInput?.Files ?? [], listing.ClaimFiles, texts);
+        return new SpechtModel(features, items, epics, schemas, tests, claimSets)
         {
             OrphanCompanions = listing.OrphanCompanions,
+            ClaimFaults = (recordFaults ?? []).Concat(claimSets.SelectMany(static claims => claims.Faults)).Distinct().ToArray(),
         };
     }
 
@@ -88,8 +101,11 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
 
     /// <summary>
     /// Reads each claim file set's files with the shared Gherkin claim reader, under the manifest's claim tag form, the
-    /// tree's claim grammar and the manifest's lifecycle tag lists; a file whose tags cannot be read declares nothing. The
-    /// check reads every set of the manifest, and the collision guard the sets of one Feature (<c>0001-F19</c> B-078).
+    /// tree's claim grammar, the manifest's lifecycle tag lists and its Feature-level scope form; a file whose tags cannot be
+    /// read declares nothing, and neither does a file two of <paramref name="sets"/> list. Each set records, as a fault, each
+    /// file the reader refused, its glob when it lists no file, each file another set lists, and each Feature-level tag
+    /// naming another Feature than its own. The check reads every set of the manifest, and the collision guard the sets of
+    /// one Feature (<c>0001-F19</c> B-078).
     /// </summary>
     /// <param name="structure">The effective manifest.</param>
     /// <param name="sets">The claim file sets to read.</param>
@@ -101,6 +117,11 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <implements epic="0001" feature="F16" claim="B-005" />
     /// <implements epic="0001" feature="F16" claim="B-012" />
     /// <implements epic="0001" feature="F16" claim="B-013" />
+    /// <implements epic="0001" feature="F16" claim="B-014" />
+    /// <implements epic="0001" feature="F16" claim="B-015" />
+    /// <implements epic="0001" feature="F16" claim="B-016" />
+    /// <implements epic="0001" feature="F16" claim="B-018" />
+    /// <implements epic="0001" feature="F16" claim="B-019" />
     /// <implements epic="0001" feature="F19" claim="B-078" />
     internal static List<SpechtClaims> ClaimSets(
         SpechtStructure structure,
@@ -117,31 +138,63 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
         var pattern = grammar.LongerScenarioHead ? "(?!" + Regex.Escape(grammar.ScenarioHead!) + ")(?:" + grammar.Pattern + ")" : grammar.Pattern;
         var reader = new GherkinClaimTextReader(new GherkinClaimTags(
             new GherkinClaimTagForm(structure.ClaimTagForm!, "claim", structure.ClaimTagIgnoreCase, pattern),
-            null,
+            FeatureScope(input.FeatureScopeTag),
             null,
             input.PlannedTags,
             input.WithdrawnTags,
             input.SupersededTags));
+        var shared = files.SelectMany(static paths => paths.Distinct(StringComparer.Ordinal))
+            .GroupBy(static path => path, StringComparer.Ordinal)
+            .Where(static group => group.Skip(1).Any())
+            .Select(static group => group.Key)
+            .ToHashSet(StringComparer.Ordinal);
         var claims = new List<SpechtClaims>();
         for (var index = 0; index < sets.Count; index++)
         {
+            var set = sets[index];
             var read = new List<GherkinClaimText>();
+            var faults = new List<SpechtClaimFault>();
+            if (files[index].Count == 0)
+            {
+                faults.Add(new SpechtClaimFault(set.Glob, 0, SpechtClaimFaultKind.EmptySet, set.Feature));
+            }
+
             foreach (var path in files[index])
             {
                 try
                 {
-                    read.Add(reader.Read(path, texts[path]));
+                    var text = reader.Read(path, texts[path]);
+                    read.Add(text);
+                    faults.AddRange(text.FeatureTagValues.Zip(text.FeatureTagLines ?? [])
+                        .Where(tag => !string.Equals(tag.First, set.Feature, StringComparison.Ordinal))
+                        .Select(tag => new SpechtClaimFault(path, tag.Second, SpechtClaimFaultKind.FeatureTag, tag.First)));
                 }
-                catch (GherkinClaimTextException)
+                catch (GherkinClaimTextException exception)
                 {
+                    faults.Add(new SpechtClaimFault(path, exception.Line, SpechtClaimFaultKind.UnreadableFile, null));
+                }
+
+                if (shared.Contains(path))
+                {
+                    faults.Add(new SpechtClaimFault(path, 0, SpechtClaimFaultKind.SharedFile, null));
                 }
             }
 
-            claims.Add(new SpechtClaims(sets[index], read, structure));
+            claims.Add(new SpechtClaims(set, read, structure, shared) { Faults = faults });
         }
 
         return claims;
     }
+
+    /// <summary>
+    /// The reader's Feature-level scope form for <c>claim.scopes.featureTag</c>, or none when the manifest sets none or its
+    /// form holds other than exactly one <c>{feature}</c> (<c>0001-F16</c> OQ-20).
+    /// </summary>
+    /// <param name="form">The form the manifest writes, or null.</param>
+    /// <returns>The scope form, or null.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-019" />
+    private static GherkinClaimTagForm? FeatureScope(string? form) =>
+        form?.Split(FeaturePlaceholder).Length == 2 ? new GherkinClaimTagForm(form, "feature", false, null) : null;
 
     /// <summary>
     /// Makes one Feature of each claim file set that has a location: its document the loaded record, or empty text with no
@@ -183,4 +236,6 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     }
 
     private const string StatusTitle = "Status";
+
+    private const string FeaturePlaceholder = "{feature}";
 }

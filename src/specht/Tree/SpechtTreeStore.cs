@@ -44,10 +44,11 @@ public sealed class SpechtTreeStore(IFileSystem fileSystem)
     /// <param name="root">The directory the path is relative to.</param>
     /// <param name="relativePath">The path as a manifest writes it, its segments separated by <c>/</c>.</param>
     /// <returns>The file under its resolved root-relative path, or null.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-033" />
     /// <implements epic="0001" feature="F16" claim="B-035" />
     public SpechtTreeFile? TryLoad(string root, string relativePath)
     {
-        if (fileSystem.Path.IsPathRooted(relativePath))
+        if (IsRooted(relativePath))
         {
             return null;
         }
@@ -90,6 +91,12 @@ public sealed class SpechtTreeStore(IFileSystem fileSystem)
             return null;
         }
     }
+
+    /// <summary>Whether <paramref name="path"/> is rooted, the test <see cref="TryLoad"/> refuses first (<c>0001-F16</c> B-034, item <c>0395</c>).</summary>
+    /// <param name="path">The path as a manifest writes it.</param>
+    /// <returns>True when the path is rooted.</returns>
+    /// <implements epic="0001" feature="F16" claim="B-034" />
+    public bool IsRooted(string path) => fileSystem.Path.IsPathRooted(path);
 
     /// <implements epic="0109" feature="F1" claim="B-016" />
     /// <implements epic="0001" feature="F1" claim="B-004" />
