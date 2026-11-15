@@ -240,7 +240,7 @@ Feature: Native Gherkin claims
   Scenario: A claim file is not a stray companion
     Given ".spec/features/arithmetic/add.feature" has no specification beside it
     When the check runs
-    Then no "SPEC024" is reported for ".spec/features/arithmetic/add.feature"
+    Then no "SPEC2003" is reported for ".spec/features/arithmetic/add.feature"
 
   @B-023
   Scenario: A record's matrix is held to the native claims
