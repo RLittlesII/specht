@@ -12,6 +12,9 @@
 # join this list once cut.
 # Epic 0228 candidate C, qualified key resolution
 0307
+# Ids claimed twice, item 0128, moved from 0.7.0 on the owner's ruling,
+# 2026-11-16 (it was moved to 0.7.0 from 0.6.0, 2026-11-09).
+0128
 
 0.9.0
 # Onboarding and documentation: epics 0196 and 0002, Features 0002-F1 and
