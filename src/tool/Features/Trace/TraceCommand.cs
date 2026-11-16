@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Report;
 using Specht.Rules.Matrix;
 using Specht.Trace;
 using Specht.Tree;
@@ -21,25 +22,41 @@ namespace Specht.Tool.Features.Trace;
 /// <param name="console">The standard output.</param>
 /// <param name="reader">The check's own read of the tree.</param>
 /// <param name="resolver">The check's matrix resolver.</param>
+/// <param name="store">Writes the trace document to the <c>--report</c> path, as the check's report is written.</param>
 /// <param name="errors">Standard error, or the injected writer.</param>
 /// <implements epic="0001" feature="F13" claim="B-001" />
 /// <implements epic="0001" feature="F13" claim="B-002" />
 /// <implements epic="0001" feature="F13" claim="B-006" />
-public sealed class TraceCommand(IAnsiConsole console, SpechtModelReader reader, MatrixResolver resolver, TextWriter? errors = null)
+/// <implements epic="0001" feature="F13" claim="B-008" />
+/// <implements epic="0001" feature="F13" claim="B-013" />
+public sealed class TraceCommand(
+    IAnsiConsole console, SpechtModelReader reader, MatrixResolver resolver, SpechtReportStore store, TextWriter? errors = null)
     : AsyncCommand<TraceCommand.Settings>
 {
     /// <inheritdoc />
     /// <implements epic="0001" feature="F13" claim="B-001" />
     /// <implements epic="0001" feature="F13" claim="B-002" />
     /// <implements epic="0001" feature="F13" claim="B-006" />
+    /// <implements epic="0001" feature="F13" claim="B-013" />
+    /// <implements epic="0001" feature="F13" claim="B-014" />
+    /// <implements epic="0001" feature="F13" claim="B-015" />
+    /// <implements epic="0001" feature="F13" claim="B-016" />
+    /// <implements epic="0001" feature="F13" claim="B-017" />
+    /// <implements epic="0001" feature="F13" claim="B-018" />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {
             var document = TraceDocument.From(reader.Read(Path.GetFullPath(settings.Root), null), resolver);
+            var json = document.ToJson();
+            if (settings.Report is { } path)
+            {
+                store.Save(json, path);
+            }
+
             if (settings.Json)
             {
-                console.Profile.Out.Writer.WriteLine(document.ToJson());
+                console.Profile.Out.Writer.WriteLine(json);
             }
             else
             {
@@ -79,6 +96,12 @@ public sealed class TraceCommand(IAnsiConsole console, SpechtModelReader reader,
         [CommandOption("--json")]
         [Description("Print the trace as one JSON document.")]
         public bool Json { get; init; }
+
+        /// <summary>Gets the path the trace document is also written to, relative to the working directory; none when omitted.</summary>
+        /// <implements epic="0001" feature="F13" claim="B-013" />
+        [CommandOption("--report <PATH>")]
+        [Description("Also write the trace document to this file, relative to the working directory.")]
+        public string? Report { get; init; }
     }
 
     /// <implements epic="0001" feature="F13" claim="B-006" />

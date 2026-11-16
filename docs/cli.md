@@ -257,7 +257,7 @@ specht facts src/tool/Features/Facts --root . --json
 ## `specht trace`
 
 ```text
-specht trace [--root <DIR>] [--json]
+specht trace [--root <DIR>] [--json] [--report <PATH>]
 ```
 
 Prints where every claim stands, read as the check reads the tree and resolved
@@ -278,17 +278,22 @@ such as `2/3`. A `skipped` test counts in neither number. A claim with no row
 shows `none` and `0/0`. A tab or line break inside a field is written as a
 space.
 
-| Option         | Value   | Default               | Does                                                     |
-| -------------- | ------- | --------------------- | -------------------------------------------------------- |
-| `--root <DIR>` | `<DIR>` | The working directory | Selects the repository whose specification tree is read. |
-| `--json`       | none    | Off                   | Prints the trace as one JSON document.                   |
-| `-h, --help`   | none    | Off                   | Prints command help.                                     |
+| Option            | Value    | Default               | Does                                                     |
+| ----------------- | -------- | --------------------- | -------------------------------------------------------- |
+| `--root <DIR>`    | `<DIR>`  | The working directory | Selects the repository whose specification tree is read. |
+| `--json`          | none     | Off                   | Prints the trace as one JSON document.                   |
+| `--report <PATH>` | `<PATH>` | None                  | Also writes the trace document to this file.             |
+| `-h, --help`      | none     | Off                   | Prints command help.                                     |
+
+**Report file.** `--report` writes the document `--json` prints to `<PATH>`,
+relative to the working directory, creating its directories and replacing a
+file that exists. Stdout and the exit code are the same with and without it.
 
 **Stdout.** One line per claim, or with `--json` one document, as
 [`schema/trace.schema.json`](schema/trace.schema.json) describes it. A claim
 with no row has no `row` member, and a test that does not resolve no `file` or
-`line`. The same tree gives the same bytes. The command writes no file and
-makes no network request.
+`line`. The same tree gives the same bytes. The command writes no file but the
+one `--report` names and makes no network request.
 
 **Exit codes.** The same with and without `--json`: `0` on success, whatever
 the trace shows; `2` for a missing root or manifest; `3` for an invalid

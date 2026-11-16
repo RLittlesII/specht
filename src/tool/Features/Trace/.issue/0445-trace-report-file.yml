@@ -2,7 +2,7 @@ id: "0445"
 type: task
 title: Write the trace document to the --report path
 
-status: ready
+status: done
 
 value: 4
 risk: 2
@@ -25,8 +25,8 @@ claims:
   - B-018
 
 created: "2026-11-14"
-updated: "2026-11-14"
-closed: null
+updated: "2026-11-15"
+closed: "2026-11-15"
 
 summary: |
   `specht trace --report <path>` writes the document `--json` writes to
