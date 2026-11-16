@@ -9,11 +9,12 @@ namespace Specht.Acceptance.Trace;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Trace/.spec/trace.feature</c> (<c>0001-F13</c>): item 0442 binds B-001 to B-003, B-006,
-/// B-007, B-009 and B-019, item 0443 B-004, B-005 and B-020, and item 0444 B-010 to B-012. Each launches the built tool
+/// B-007, B-009 and B-019, item 0443 B-004, B-005 and B-020, and item 0444 B-010 to B-012, and item 0445 B-008 and B-013 to B-018. Each launches the built tool
 /// over a synthetic tree: one
 /// Feature specification with claims B-001 to B-003, a traceability row and a tagged scenario for each until a step
-/// changes them, and one test file under <c>test/</c> holding the test methods a step names as held. The scenarios of
-/// B-008 and B-013 to B-018 stay pending for item 0445: each keeps a step no binding here matches.
+/// changes them, and one test file under <c>test/</c> holding the test methods a step names as held. A run with a report
+/// path is compared with a run without it, and a snapshot of every file under the root before and after the run shows what
+/// the trace wrote.
 /// </summary>
 [Binding]
 [Scope(Feature = "The trace command")]
@@ -177,6 +178,35 @@ public sealed class TraceSteps
         _again = AcceptanceTool.Launch(Tree.Root, "trace", "--root", _rootArgument, "--json");
     }
 
+    [Given("a file already exists at the report path from an earlier run")]
+    public void GivenAFileAtTheReportPath() => Tree.WriteRaw(_reportPath, "stale\n");
+
+    [When("specht trace runs without a report path")]
+    public void WhenTraceRunsWithoutAReportPath()
+    {
+        WriteTree();
+        _before = Snapshot();
+        _result = AcceptanceTool.Launch(Tree.Root, "trace", "--root", _rootArgument);
+        _after = Snapshot();
+    }
+
+    [When("specht trace runs with a report path")]
+    [When("specht trace runs with that report path")]
+    public void WhenTraceRunsWithAReportPath() => RunWithReport("trace", "--root", _rootArgument, "--report", _reportPath);
+
+    [When("specht trace runs with a report path in a directory that does not yet exist")]
+    public void WhenTraceRunsWithAReportPathInANewDirectory()
+    {
+        _reportPath = "reports/new/trace.json";
+        RunWithReport("trace", "--root", _rootArgument, "--report", _reportPath);
+    }
+
+    [When("specht trace runs with a report path and without JSON output")]
+    public void WhenTraceRunsWithAReportPathWithoutJson() => RunWithReport("trace", "--root", _rootArgument, "--report", _reportPath);
+
+    [When("specht trace runs with JSON output and a report path")]
+    public void WhenTraceRunsWithJsonAndAReportPath() => RunWithReport("trace", "--root", _rootArgument, "--json", "--report", _reportPath);
+
     [When("the check runs with --json")]
     public void WhenTheCheckRunsAsJson()
     {
@@ -289,6 +319,66 @@ public sealed class TraceSteps
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _result.ExitCode.Should().Be(code, _result.Stderr);
 
+    [Then("no file is created, modified or deleted")]
+    public void ThenNoFileChanged() => _after.Should().Equal(_before);
+
+    [Then("no file but the one at that path is created, modified or deleted")]
+    public void ThenOnlyTheReportFileChanged()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stderr);
+        _after.Keys.Except(_before.Keys).Should().Equal(_reportPath);
+        _before.Where(file => !_after.TryGetValue(file.Key, out var hash) || hash != file.Value).Should().BeEmpty();
+    }
+
+    [Then("the file at that path is the trace document")]
+    public void ThenTheFileIsTheTraceDocument()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stderr);
+        ReportText.Should().Be(TraceJson());
+    }
+
+    [Then("it validates against the published trace schema")]
+    public void ThenTheFileValidatesAgainstTheTraceSchema()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "docs", "schema", "trace.schema.json");
+        using var json = JsonDocument.Parse(ReportText);
+        var result = JsonSchema.FromText(File.ReadAllText(path))
+            .Evaluate(json.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
+        result.IsValid.Should().BeTrue(Errors(result));
+    }
+
+    [Then("the directory exists")]
+    public void ThenTheDirectoryExists() =>
+        Directory.Exists(Path.GetDirectoryName(Path.Combine(Tree.Root, _reportPath))).Should().BeTrue();
+
+    [Then("the file at that path is this run's trace document and nothing else")]
+    public void ThenTheFileIsThisRunsDocumentAndNothingElse()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stderr);
+        ReportText.Should().Be(TraceJson()).And.NotContain("stale");
+    }
+
+    [Then("the standard output carries the same lines as a run without a report path")]
+    public void ThenTheOutputCarriesTheSameLines()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stderr);
+        _result.Stdout.Should().NotBeEmpty().And.Be(AcceptanceTool.Launch(Tree.Root, "trace", "--root", _rootArgument).Stdout);
+    }
+
+    [Then("the document on the standard output equals the document at the path")]
+    public void ThenTheOutputEqualsTheFile()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stderr);
+        _result.Stdout.TrimEnd('\r', '\n').Should().Be(ReportText);
+    }
+
+    [Then("the exit code is {int}, the one the same run gives without a report path")]
+    public void ThenTheExitCodeIsTheOneWithoutAReportPath(int code)
+    {
+        _result.ExitCode.Should().Be(code, _result.Stderr);
+        AcceptanceTool.Launch(Tree.Root, "trace", "--root", _rootArgument).ExitCode.Should().Be(code);
+    }
+
     [Then("the two outputs are byte-for-byte the same")]
     public void ThenTheTwoOutputsAreTheSame()
     {
@@ -344,6 +434,8 @@ public sealed class TraceSteps
 
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository was prepared.");
 
+    private string ReportText => File.ReadAllText(Path.Combine(Tree.Root, _reportPath));
+
     private string[] Lines
     {
         get
@@ -391,6 +483,23 @@ public sealed class TraceSteps
     private string LineOf(string claim) =>
         Lines.Should().ContainSingle(line => line.StartsWith(FirstPath + "\t", StringComparison.Ordinal)
             && line.Split('\t').ElementAtOrDefault(1) == claim).Which;
+
+    private string TraceJson() => AcceptanceTool.Launch(Tree.Root, "trace", "--root", _rootArgument, "--json").Stdout.TrimEnd('\r', '\n');
+
+    private void RunWithReport(params string[] arguments)
+    {
+        WriteTree();
+        _before = Snapshot();
+        _result = AcceptanceTool.Launch(Tree.Root, arguments);
+        _after = Snapshot();
+    }
+
+    private Dictionary<string, string> Snapshot() =>
+        Directory.EnumerateFiles(Tree.Root, "*", SearchOption.AllDirectories)
+            .ToDictionary(
+                file => Path.GetRelativePath(Tree.Root, file).Replace('\\', '/'),
+                static file => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file))),
+                StringComparer.Ordinal);
 
     private void EditManifest(Action<JsonObject> edit)
     {
@@ -453,6 +562,9 @@ public sealed class TraceSteps
     private SpechtTree? _tree;
     private bool _second;
     private string _rootArgument = ".";
+    private string _reportPath = "trace-report.json";
+    private Dictionary<string, string> _before = [];
+    private Dictionary<string, string> _after = [];
     private (string Claim, string Name) _that;
     private (string Stdout, string Stderr, int ExitCode) _result;
     private (string Stdout, string Stderr, int ExitCode) _again;
