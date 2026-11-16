@@ -7,59 +7,6 @@
 # Open finish lines name child items explicitly; Feature containers remain
 # delivery summaries so newly cut children do not silently enlarge a release.
 
-0.7.0
-# Agent surface completed: the tree's facts 0132-F2, 0132-F4's facts, trace
-# and schema answers, and 0001-F18; the others' items join this list once cut.
-# 0132-F1, the index, is unscheduled (the owner, 2026-11-01).
-# 0132-F2's items, the facts command.
-0364
-0365
-0366
-0367
-0368
-0369
-0370
-0252
-# 0132-F4's mint tool.
-0433
-# 0001-F19's ids record, schema 0.4.0 (ADR-0036): 0436 cuts the version, 0437
-# mints from the record, 0438 has upgrade move the settings into it; added by
-# the owner's selection, 2026-11-13.
-0436
-0437
-0438
-# 0440, the guard over native claims and a mint member outside the id types;
-# added by the owner's selection, 2026-11-14.
-0440
-# Remaining matrix validation, moved from 0.4.0 beside facts and coverage.
-0335
-0336
-0337
-0338
-# 0001-F16, native Gherkin claims in the checker; 0388 cuts schema 0.3.1
-# under 0001-F7 for its opt-in rules (decision 0022).
-0388
-0389
-0390
-0391
-0392
-0393
-0394
-0395
-# 0441, SPEC024 (0001-F6 B-013), and 0442 to 0445, the trace command
-# (0001-F13), the items 0396 waits on; added on the owner's instruction
-# "Cut items for SPEC024 and trace", 2026-11-14.
-0441
-0442
-0443
-0444
-0445
-0396
-# Repository integration: report output and the check's engine entry point it
-# waits on, moved from 0.6.0 by the owner's selection, 2026-11-08.
-0167
-0036
-
 0.8.0
 # Review and presentation: epics 0228, 0194 and 0101. Their Features' items
 # join this list once cut.
