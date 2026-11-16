@@ -1,15 +1,15 @@
 id: "0396"
 type: task
-title: Hold native claims to SPEC024, the matrix rules and the trace
+title: Hold native claims to SPEC2003, the matrix rules and the trace
 
-status: ready
+status: done
 
 risk: 3
 
 parent: "0387"
 children: []
 
-depends_on: ["0391", "0336", "0337", "0441", "0442"] # 0391 gives a set its record and its matrix; 0336 and 0337 are the 0001-F12 rules B-023 runs; 0441 builds SPEC024, which B-022 holds; 0442 builds the trace lines B-024 reads
+depends_on: ["0391", "0336", "0337", "0441", "0442"] # 0391 gives a set its record and its matrix; 0336 and 0337 are the 0001-F12 rules B-023 runs; 0441 builds SPEC2003, which B-022 holds; 0442 builds the trace lines B-024 reads
 spikes: []
 
 spec: src/specht/Rules/NativeClaims/.spec/README.md
@@ -20,19 +20,19 @@ claims:
   - B-024
 
 created: "2026-11-06"
-updated: "2026-11-14"
-closed: null
+updated: "2026-11-15"
+closed: "2026-11-15"
 
 summary: |
   Native claims under the rules and the command still to be built: a
-  claim file is not a stray companion to `SPEC024` (B-022); a record's
+  claim file is not a stray companion to `SPEC2003` (B-022); a record's
   matrix holds one row per native claim, and the `0001-F12` rules
   resolve its rows against the set's claim files (B-023); and without a
   matrix nothing of `0001-F12` reports and `specht trace` lists each
   claim as `none` (B-024).
 
-  Waits on 0441 (`0001-F6` B-013), which builds `SPEC024`, a working
-  name, in schema `0.4.0` (`0001-F6` decision 0012), so B-022's test
+  Waits on 0441 (`0001-F6` B-013), which builds `SPEC2003`, working
+  name `SPEC024`, in schema `0.4.0` (`0001-F6` decision 0012), so B-022's test
   can fail. Waits on 0442 (`0001-F13`),
   which builds the trace lines, so B-024's trace half can fail; B-024
   reads B-001's `none`, and 0443 to 0445 add nothing it reads. 0336,
@@ -43,7 +43,7 @@ summary: |
   becomes (C-5).
 
 acceptance_criteria:
-  - "B-022 — a .feature file a set's glob matches is not reported by SPEC024"
+  - "B-022 — a .feature file a set's glob matches is not reported by SPEC2003"
   - "B-023 — a record's matrix: SPEC4004 one row per native claim; `0001-F12` rules resolve against the set's claim files"
   - "B-024 — no record or no matrix: no `0001-F12` rule and no SPEC4004 reports; the trace lists each claim as `none`"
   - "One catalogue, no second parse of a claim file in the trace (C-5)"
@@ -73,6 +73,20 @@ decisions:
     items 0443 to 0445 not, since B-024 reads only B-001's line. Every
     blocker now has an item, so the status is ready, and the queue holds
     the item until 0441 and 0442 are done. 0336, 0337 and 0391 are done.
+  - |
+    2026-11-14, spec-author: on the repository owner's selection "Fix in
+    0396", relayed by the coordinating session and confirmed by the owner
+    as the owner's directly to the delivering session, B-022 and `0001-F3` B-038 name `SPEC2003`, the
+    id `0001-F6` decision 0013 gives `SPEC024`. The title, summary and
+    B-022 criterion say so; was `SPEC024`. OQ-22 is raised on a companion
+    beside a record that the set's glob does not match.
+  - |
+    2026-11-14, spec-author: on the repository owner's selection
+    "(a) Record is no spec (Recommended)" (OQ-22), a companion file
+    beside a record that the set's glob does not match is held to
+    `0001-F6` B-013 as written. No criterion changes. The decision above
+    is corrected: the owner confirmed "Fix in 0396" directly to the
+    delivering session; was "confirmed to it", the coordinating session.
 
 out_of_scope:
   - "How a § 9 row's scenario and test names resolve - § 5 row 10."

@@ -335,6 +335,40 @@ public sealed class SpechtModelReaderNativeClaimsUnitTests
         feature.Strings(feature.Keys.DependsOn).Should().BeEmpty();
     }
 
+    [Fact]
+    public void AClaimFileSet_WhenRead_ShouldGiveItsNativeFeatureOneFeatureFilePerClaimFileWithEachScenarioCarryingTheTagsThatDeclareIt()
+    {
+        // Given
+        const string Text = "@B-001\nFeature: Arithmetic\n\n  @B-002\n  Scenario: Adds\n    Given two numbers\n\n"
+            + "  Scenario: Adds three\n    Given three numbers\n";
+
+        // When
+        var files = Read("{}", (Add, Text)).Features.Should().ContainSingle().Subject.FeatureFiles;
+
+        // Then
+        var file = files.Should().ContainSingle().Subject;
+        file.RelativePath.Should().Be(Add);
+        file.Tags.Select(static tag => (tag.Id, tag.Line)).Should().Equal(("B-001", 2), ("B-002", 5));
+        file.Scenarios.Select(static scenario => (scenario.Title, scenario.Line, Tags: string.Join(',', scenario.Tags.Select(static tag => tag.Id))))
+            .Should().Equal(("Adds", 5, "B-001,B-002"), ("Adds three", 8, "B-001"));
+    }
+
+    [Fact]
+    public void AnOrphanCompanionSearch_WhenAClaimFileSetsGlobMatchesAFileInALayoutsDirectory_ShouldListOnlyTheCompanionNoSetMatches()
+    {
+        // Given
+        const string Members = """{ "claim": { "files": [ { "glob": "src/arithmetic/.spec/add.feature", "feature": "F1" } ] } }""";
+
+        // When
+        var model = Read(
+            Members,
+            ("src/arithmetic/.spec/add.feature", "Feature: Arithmetic\n\n  @B-001\n  Scenario: Adds\n    Given two numbers\n"),
+            ("src/arithmetic/.spec/other.feature", "Feature: Other\n"));
+
+        // Then
+        model.OrphanCompanions.Should().Equal("src/arithmetic/.spec/other.feature");
+    }
+
     private static SpechtModel Read(string members, params (string Path, string Text)[] files)
     {
         var manifest = JsonNode.Parse(members)!.AsObject();

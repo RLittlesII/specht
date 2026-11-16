@@ -22,16 +22,11 @@ public sealed class MatrixResolver
     public IReadOnlyList<MatrixClaimResolution> ResolveClaims(
         FeatureSpec feature, SpechtStructure structure, SpechtClaims claims, IReadOnlyList<SpechtTestFile> files)
     {
-        if (feature.ClaimFileSet is not null)
-        {
-            return [];
-        }
-
         var rows = Resolve(feature, structure, files).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
         var tags = ClaimTags(feature, structure);
         var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         return claims.Rows.Select((claim, index) => new MatrixClaimResolution(
-            claim, claims.Section!.Rows[index].ElementAtOrDefault(3)?.Trim() ?? string.Empty,
+            claim, Status(claim, claims, index, structure.Markers),
             rows[claim.Id].ToArray(), tags[claim.Id].ToArray(), Scenarios(feature, claim.Id, comparer))).ToArray();
     }
 
@@ -98,6 +93,17 @@ public sealed class MatrixResolver
 
         return rows.ToArray();
     }
+
+    /// <implements epic="0001" feature="F16" claim="B-023" />
+    private static string Status(SpechtClaim claim, SpechtClaims claims, int index, IReadOnlyDictionary<string, string> markers) =>
+        claim.Declaration is { } declaration
+            ? declaration.State switch
+            {
+                "Withdrawn" => markers["withdrawn"],
+                "Superseded" => markers["superseded"],
+                _ => declaration.State,
+            }
+            : claims.Section!.Rows[index].ElementAtOrDefault(3)?.Trim() ?? string.Empty;
 
     /// <implements epic="0001" feature="F13" claim="B-001" />
     /// <implements epic="0001" feature="F13" claim="B-003" />

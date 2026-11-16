@@ -17,7 +17,7 @@ namespace Specht.Trace;
 public sealed record TraceDocument(IReadOnlyList<FeatureTrace> Specifications)
 {
     /// <summary>
-    /// Makes the trace of <paramref name="model"/>: each Feature in discovery order, a native-claim Feature left out, and
+    /// Makes the trace of <paramref name="model"/>: each Feature in discovery order and
     /// each of its claims in claims-table order with the first traceability row naming it, the scenarios carrying its tag
     /// and the tests the row names, every test of a waived, withdrawn or superseded row <c>skipped</c>.
     /// </summary>
@@ -33,7 +33,6 @@ public sealed record TraceDocument(IReadOnlyList<FeatureTrace> Specifications)
         var structure = model.Schemas.Structure;
         var markers = SkippingMarkers(structure.Markers);
         return new(model.Features
-            .Where(static feature => feature.ClaimFileSet is null)
             .Select(feature => new FeatureTrace(
                 feature.RelativePath,
                 identified.Contains(feature) ? feature.Identity : null,

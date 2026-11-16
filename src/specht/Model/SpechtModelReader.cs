@@ -80,7 +80,9 @@ public sealed class SpechtModelReader(
             ClaimFiles = claimFiles,
             ClaimRecords = recordPaths,
             ClaimLocations = claimLocations,
-            OrphanCompanions = discovery.FindOrphanCompanions(root, specifications, inputs),
+            OrphanCompanions = discovery.FindOrphanCompanions(root, specifications, inputs)
+                .Except(claimFiles.SelectMany(static paths => paths), StringComparer.Ordinal)
+                .ToArray(),
         };
         var paths = specifications.Select(static location => location.RelativePath)
             .Concat(companions.SelectMany(static paths => paths))
