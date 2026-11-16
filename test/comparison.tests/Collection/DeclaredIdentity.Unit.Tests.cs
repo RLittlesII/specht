@@ -2,7 +2,11 @@ using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using AwesomeAssertions;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Model;
 using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Tests.Fixtures;
+using WorkloadCaseFixture = Specht.Comparison.Tests.Fixtures.WorkloadCaseFixture;
 
 namespace Specht.Comparison.Tests.Collection;
 

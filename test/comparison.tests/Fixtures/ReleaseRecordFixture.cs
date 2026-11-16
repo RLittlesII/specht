@@ -1,6 +1,7 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison.Tests.Selection;
+namespace Specht.Comparison.Tests.Fixtures;
 
 [AutoFixture(typeof(ReleaseRecord))]
 internal sealed partial class ReleaseRecordFixture

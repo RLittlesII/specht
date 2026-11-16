@@ -4,8 +4,10 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Collection;
 
 /// <summary>Derives a revision's selection, expected inventory, measurement conditions and child environment.</summary>
 public static class RevisionEvidence

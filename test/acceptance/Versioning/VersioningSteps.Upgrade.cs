@@ -276,7 +276,7 @@ public sealed partial class VersioningSteps
     private static void WriteShippedFiles(SpechtTree tree, string version)
     {
         var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
-        var manifest = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         var pinned = manifest["schemaVersion"]?.DeepClone();
         manifest["schemaVersion"] = version;
         File.WriteAllText(path, manifest.ToJsonString());
@@ -287,7 +287,7 @@ public sealed partial class VersioningSteps
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
-    private static System.Collections.Generic.Dictionary<string, byte[]> SnapshotFiles(string root) =>
+    private static Dictionary<string, byte[]> SnapshotFiles(string root) =>
         Directory.GetFiles(root, "*", SearchOption.AllDirectories)
             .ToDictionary(file => Path.GetRelativePath(root, file).Replace('\\', '/'), File.ReadAllBytes, StringComparer.Ordinal);
 

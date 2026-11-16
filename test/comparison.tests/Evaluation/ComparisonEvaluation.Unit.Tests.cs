@@ -1,6 +1,15 @@
 using System.Collections.Immutable;
 using AwesomeAssertions;
+using Specht.Comparison.Evaluation;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
 using Specht.Comparison.Tests.Evidence;
+using CaseEvidenceFixture = Specht.Comparison.Tests.Fixtures.CaseEvidenceFixture;
+using MeasurementInventoryFixture = Specht.Comparison.Tests.Fixtures.MeasurementInventoryFixture;
+using ObservationFixture = Specht.Comparison.Tests.Fixtures.ObservationFixture;
+using SessionManifestFixture = Specht.Comparison.Tests.Fixtures.SessionManifestFixture;
+using TimingIntervalFixture = Specht.Comparison.Tests.Fixtures.TimingIntervalFixture;
+using WorkloadCaseFixture = Specht.Comparison.Tests.Fixtures.WorkloadCaseFixture;
 
 namespace Specht.Comparison.Tests.Evaluation;
 

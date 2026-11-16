@@ -87,7 +87,7 @@ public sealed class TestEvidenceRunnerCollector
             return (false, new TestEvidenceResults("absent", null, System.Array.Empty<TestEvidenceOutcome>()));
         }
 
-        var caseIds = new System.Collections.Generic.HashSet<string>(cases.Select(static item => item.CaseId), System.StringComparer.Ordinal);
+        var caseIds = new HashSet<string>(cases.Select(static item => item.CaseId), System.StringComparer.Ordinal);
         var normalized = new List<TestEvidenceOutcome>();
         foreach (var result in results)
         {

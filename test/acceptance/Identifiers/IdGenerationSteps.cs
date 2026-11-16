@@ -899,7 +899,7 @@ public sealed partial class IdGenerationSteps
         var minter = new Minter(
             new FixedDraws(run.Draws), new HeldIds(
                 new SpechtDiscovery(new FileSystem(), new ChildProcess()),
-                new Specht.Tree.SpechtTreeStore(new FileSystem()),
+                new Tree.SpechtTreeStore(new FileSystem()),
                 new SpechtDocumentParser(new FrontmatterReader()),
                 new FeatureTagParser()), new FixedClock(run.Readings));
         var exitCode = await new MintCommand(console, EngineServices.Reader(), minter, errors)

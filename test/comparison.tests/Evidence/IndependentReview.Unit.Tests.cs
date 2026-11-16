@@ -1,6 +1,11 @@
 using System.Collections.Immutable;
 using AwesomeAssertions;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
+using Specht.Comparison.Selection;
+using Specht.Comparison.Tests.Fixtures;
 using Specht.Comparison.Tests.Selection;
+using ReleaseRecordFixture = Specht.Comparison.Tests.Fixtures.ReleaseRecordFixture;
 
 namespace Specht.Comparison.Tests.Evidence;
 

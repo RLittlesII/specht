@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Immutable IdentityMapping evidence for release comparison.</summary>
 public sealed record IdentityMapping(

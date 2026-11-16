@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Evidence;
 
 /// <summary>Decodes recognised full JSON against explicit native workload mappings.</summary>
 public static class BenchmarkEvidenceReader

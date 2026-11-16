@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>The versioned strict review screens of decision 0002.</summary>
 public sealed record ComparisonPolicy(

@@ -1,8 +1,15 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
 using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Tests.Fixtures;
 using Specht.Comparison.Tests.Selection;
+using MeasurementConditionsFixture = Specht.Comparison.Tests.Fixtures.MeasurementConditionsFixture;
+using ReleaseRecordFixture = Specht.Comparison.Tests.Fixtures.ReleaseRecordFixture;
+using SessionManifestFixture = Specht.Comparison.Tests.Fixtures.SessionManifestFixture;
+using SessionSideFixture = Specht.Comparison.Tests.Fixtures.SessionSideFixture;
 
 namespace Specht.Comparison.Tests.Reporting;
 

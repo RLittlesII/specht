@@ -9,8 +9,11 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
+using Specht.Comparison.Selection;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Workflow;
 
 /// <summary>
 /// The release job's side of the comparison: it saves the pair and writes the request after publication, then attaches the returned

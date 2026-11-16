@@ -23,7 +23,7 @@ public sealed class AnalysisConfigurationReader
                 throw new ArgumentException("Explicit mappings must preserve array dimensions.");
             }
 
-            var wildcard = System.Array.IndexOf(target, "*");
+            var wildcard = Array.IndexOf(target, "*");
             if (wildcard == 0)
             {
                 throw new ArgumentException("A normalized analysis mapping must select an object field.");

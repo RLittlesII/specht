@@ -7,8 +7,9 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Collection;
 
 /// <summary>Reads the workload identity a revision's own benchmarks declare from its built assembly's metadata, without loading or executing it.</summary>
 public static class DeclaredIdentity

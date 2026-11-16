@@ -1,5 +1,3 @@
-namespace Specht.Build;
-
 /// <summary>What <see cref="SchemaVersionNumbering.VerifyAsync"/> found wrong with two neighbouring versions (0001-F7 B-040, B-066, B-088).</summary>
 public enum SchemaVersionNumberingFault
 {

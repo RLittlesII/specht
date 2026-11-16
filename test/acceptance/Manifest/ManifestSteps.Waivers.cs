@@ -33,7 +33,7 @@ public sealed partial class ManifestSteps
         _rejection.Should().BeNull();
         var violation = _report!.Violations.Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC034")).Should().ContainSingle().Subject;
         violation.Identifier.Should().Be("B-001");
-        violation.Severity.Should().Be(Specht.Model.SpechtSeverity.Warning);
+        violation.Severity.Should().Be(Model.SpechtSeverity.Warning);
     }
 
     [Given("the default manifest of schema version {string}")]

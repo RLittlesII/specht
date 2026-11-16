@@ -9,6 +9,9 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Model;
+using Specht.Comparison.Workflow;
 
 namespace Specht.Comparison;
 

@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Evidence;
 
 /// <summary>Pairs the complete inventories while retaining evidence gaps.</summary>
 public static class CasePairing

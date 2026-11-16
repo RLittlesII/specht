@@ -10,8 +10,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Evaluation;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Workflow;
 
 /// <summary>
 /// The comparison job's side: it waits for this attempt's request, collects both pinned revisions, evaluates and renders the bundle, and

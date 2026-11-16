@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>The exporter version and measurement conditions a revision's exports agree on, or why they cannot be used.</summary>
 public sealed record ExportReading(

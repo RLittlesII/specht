@@ -1,6 +1,6 @@
-using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison.Tests.Collection;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal sealed class ScriptedRevisions(string root)
 {
@@ -55,7 +55,7 @@ internal sealed class ScriptedRevisions(string root)
     public Func<string, string, CancellationToken, Task> During { get; set; } = static (_, _, _) => Task.CompletedTask;
 
     public static string SideOf(ProcessRequest request) =>
-        $"{request.WorkingDirectory} {string.Join(' ', request.Arguments)}".Contains("/previous/", StringComparison.Ordinal)
+        $"{request.WorkingDirectory} {string.Join<string>(' ', request.Arguments)}".Contains("/previous/", StringComparison.Ordinal)
             ? "previous"
             : "current";
 
@@ -80,7 +80,7 @@ internal sealed class ScriptedRevisions(string root)
             }
 
             var source = step == "clone" ? request.Arguments[^1] : request.WorkingDirectory;
-            var workspace = Path.Combine(root, Path.GetDirectoryName(source)!);
+            var workspace = Path.Combine(root, Path.GetDirectoryName((string?) source)!);
             switch (step)
             {
                 case "clone":

@@ -10,8 +10,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Specht.Build;
-
 /// <summary>Records schema locks and refuses publication of unlocked versions (0001-F7 B-092, B-093; 0055-F6 B-013).</summary>
 public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
 {
@@ -152,7 +150,7 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
         var lockPath = fileSystem.Path.Combine(root, RelativePath);
         return fileSystem.File.Exists(lockPath)
             ? JsonSerializer.Deserialize<Dictionary<string, string>>(await fileSystem.File.ReadAllTextAsync(lockPath))
-                ?? throw new JsonException($"{RelativePath} must contain a version lock object.")
+              ?? throw new JsonException($"{RelativePath} must contain a version lock object.")
             : new Dictionary<string, string>(StringComparer.Ordinal);
     }
 

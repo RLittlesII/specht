@@ -6,8 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Specht.Build;
-
 /// <summary>Cuts the next schema version from the newest shipped one (0001-F7 B-094 to B-100).</summary>
 public sealed class SchemaVersionCut(IFileSystem fileSystem, string root)
 {

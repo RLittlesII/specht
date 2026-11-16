@@ -1,7 +1,7 @@
 using System.IO;
 using System.Reflection.Metadata;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Collection;
 
 /// <summary>Names the argument types of a custom attribute blob from metadata alone, refusing enumerations it cannot resolve.</summary>
 internal sealed class AttributeTypeNames : ICustomAttributeTypeProvider<string>

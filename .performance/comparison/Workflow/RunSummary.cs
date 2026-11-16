@@ -1,7 +1,9 @@
 using System;
 using System.Text;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Workflow;
 
 /// <summary>Renders a reporting outcome as the step summary of the workflow run.</summary>
 public static class RunSummary

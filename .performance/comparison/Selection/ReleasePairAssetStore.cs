@@ -7,8 +7,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Selection;
 
 /// <summary>Loads or inserts a durable pair using authority supplied by its caller.</summary>
 public sealed class ReleasePairAssetStore(HttpClient client)

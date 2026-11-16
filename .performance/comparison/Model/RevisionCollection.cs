@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>
 /// One revision's collection outcome, its repository-relative full-JSON exports, its session evidence, the identity mappings its own

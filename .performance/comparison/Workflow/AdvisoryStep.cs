@@ -3,8 +3,9 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Workflow;
 
 /// <summary>
 /// Runs one comparison-owned workflow step so that it always succeeds and always leaves its summary. The step reports each stage it

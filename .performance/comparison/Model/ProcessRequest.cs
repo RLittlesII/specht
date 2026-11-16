@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>One child process: a repository-relative working directory and its complete environment.</summary>
 public sealed record ProcessRequest(

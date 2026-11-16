@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Immutable ReleasePair evidence for release comparison.</summary>
 public sealed record ReleasePair(

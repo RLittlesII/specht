@@ -1,6 +1,6 @@
-using System.Collections.Immutable;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison.Tests.Evidence;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal static class EvidenceData
 {
@@ -23,7 +23,16 @@ internal static class EvidenceData
             "fixture" => evidence with { Case = evidence.Case with { FixtureRevision = "2" } },
             "operation revision" => evidence with { Case = evidence.Case with { OperationRevision = "2" } },
             "boundary" => evidence with { Case = evidence.Case with { Boundary = "other" } },
-            "observer" => evidence with { Observations = [.. evidence.Observations.Select(static x => x with { Observer = "other" })] },
+            "observer" => evidence with
+            {
+                Observations =
+                [
+                    .. evidence.Observations.Select(static x => x with
+                        {
+                            Observer = "other"
+                        })
+                ]
+            },
             "confidence" => evidence with
             {
                 Observations = [evidence.Observations[0] with { Interval = new TimingInterval(98, 102, 0.95m) },

@@ -15,6 +15,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Time.Testing;
 using Reqnroll;
 using Specht.Comparison;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Evaluation;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
+using Specht.Comparison.Selection;
+using Specht.Comparison.Workflow;
 
 namespace Specht.Acceptance.Comparison;
 

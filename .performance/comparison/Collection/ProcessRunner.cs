@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Collection;
 
 /// <summary>Runs one child process with exactly the requested environment and kills its whole tree on cancellation.</summary>
 public sealed class ProcessRunner(string repositoryRoot, TimeProvider time)

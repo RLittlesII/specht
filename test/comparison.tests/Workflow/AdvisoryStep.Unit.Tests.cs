@@ -1,6 +1,9 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
+using Specht.Comparison.Model;
 using Specht.Comparison.Tests.Reporting;
+using Specht.Comparison.Workflow;
+using ComparisonDocumentFixture = Specht.Comparison.Tests.Fixtures.ComparisonDocumentFixture;
 
 namespace Specht.Comparison.Tests.Workflow;
 
@@ -12,7 +15,7 @@ public sealed class AdvisoryStepUnitTests
     {
         // Given
         var fileSystem = new MockFileSystem();
-        var outcome = ReportingOutcome.Completed(new ComparisonDocumentFixture(), null).Attached(new ReportReferenceFixture());
+        var outcome = ReportingOutcome.Completed(new ComparisonDocumentFixture(), null).Attached(new Fixtures.ReportReferenceFixture());
 
         // When
         var exitCode = await AdvisoryStep.RunAsync((_, _) => Task.FromResult<ReportingOutcome?>(outcome), ReportingStage.Attachment, fileSystem,

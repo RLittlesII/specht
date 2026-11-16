@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Evaluation;
 
 /// <summary>Judges paired evidence against the strict review screens and reduces the overall judgment.</summary>
 public static class ComparisonEvaluation

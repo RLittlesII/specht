@@ -61,7 +61,7 @@ public sealed class SchemaVersionsUnitTests
     public void ShippedResources_WhenTheirFoldersAreRead_ShouldNameTheirSemanticVersionInEveryTree()
     {
         // Given
-        var assemblies = new[] { typeof(SchemaVersions).Assembly, typeof(Specht.Tool.ExitCodes).Assembly };
+        var assemblies = new[] { typeof(SchemaVersions).Assembly, typeof(Tool.ExitCodes).Assembly };
         var versions = EngineServices.Versions().Versions.Select(static version => $"v{version.Number}").ToList();
 
         // When
@@ -125,7 +125,7 @@ public sealed class SchemaVersionsUnitTests
     public void EachEmbeddedVersion_WhenItsTemplatesAreRead_ShouldNameExactlyTheTemplateFilesTheToolShipsForThatVersion()
     {
         // Given
-        var shipped = typeof(Specht.Tool.ExitCodes).Assembly.GetManifestResourceNames()
+        var shipped = typeof(Tool.ExitCodes).Assembly.GetManifestResourceNames()
             .Where(static name => name.StartsWith("templates/", StringComparison.Ordinal))
             .Select(static name => name.Split('/'))
             .ToLookup(static parts => parts[1], static parts => parts[2]);

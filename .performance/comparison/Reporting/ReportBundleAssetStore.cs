@@ -10,8 +10,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Reporting;
 
 /// <summary>Inserts and verifies a report bundle release asset using authority supplied by its caller.</summary>
 public sealed class ReportBundleAssetStore(HttpClient client)

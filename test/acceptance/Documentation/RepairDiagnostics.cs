@@ -17,7 +17,7 @@ internal sealed class RepairDiagnostics : FixAllContext.DiagnosticProvider
         var tree = await document.GetSyntaxTreeAsync(cancellationToken);
         var diagnostics = await compilation!.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new DocumentationBindingAnalyzer()),
             document.Project.AnalyzerOptions).GetAnalyzerDiagnosticsAsync(cancellationToken);
-        return System.Linq.Enumerable.Where(diagnostics, diagnostic => diagnostic.Location.SourceTree == tree);
+        return Enumerable.Where(diagnostics, diagnostic => diagnostic.Location.SourceTree == tree);
     }
 
     public override Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken) =>

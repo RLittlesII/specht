@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>The workflow run a comparison step executes in, read from the Actions environment.</summary>
 public sealed record RunContext(string EventName, string Ref, string Repository, string RunId, int Attempt, string Sha)

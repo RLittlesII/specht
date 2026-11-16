@@ -1,6 +1,6 @@
 using System;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Immutable ReleaseRecord evidence for release comparison.</summary>
 public sealed record ReleaseRecord(

@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Specht.Build;
-
 /// <summary>Prepares and invokes the working checkout through a locally installed package.</summary>
 /// <param name="fileSystem">The build's file system.</param>
 /// <param name="run">The asynchronous dotnet process boundary.</param>

@@ -88,7 +88,7 @@ public sealed partial class VersioningSteps
     [When("the folders holding its schemas, its templates and its rule pages are read")]
     public void WhenTheFoldersHoldingItsSchemasItsTemplatesAndItsRulePagesAreRead()
     {
-        var names = new[] { typeof(SchemaVersions).Assembly, typeof(Specht.Tool.ExitCodes).Assembly }
+        var names = new[] { typeof(SchemaVersions).Assembly, typeof(Tool.ExitCodes).Assembly }
             .SelectMany(static assembly => assembly.GetManifestResourceNames())
             .Where(static name => name.StartsWith("schema/", StringComparison.Ordinal)
                                   || name.StartsWith("templates/", StringComparison.Ordinal)
@@ -321,7 +321,7 @@ public sealed partial class VersioningSteps
             }
             catch (SpechtManifestException exception)
             {
-                (_stdout, _stderr, _exitCode) = (string.Empty, $"specht: {exception.Message}", Specht.Tool.ExitCodes.InvalidManifest);
+                (_stdout, _stderr, _exitCode) = (string.Empty, $"specht: {exception.Message}", Tool.ExitCodes.InvalidManifest);
             }
 
             return;

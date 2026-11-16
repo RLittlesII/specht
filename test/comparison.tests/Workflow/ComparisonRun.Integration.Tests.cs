@@ -4,9 +4,15 @@ using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.Extensions.Time.Testing;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
 using Specht.Comparison.Tests.Collection;
+using Specht.Comparison.Tests.Fixtures;
 using Specht.Comparison.Tests.Reporting;
 using Specht.Comparison.Tests.Selection;
+using Specht.Comparison.Workflow;
+using ReleaseRecordFixture = Specht.Comparison.Tests.Fixtures.ReleaseRecordFixture;
 
 namespace Specht.Comparison.Tests.Workflow;
 

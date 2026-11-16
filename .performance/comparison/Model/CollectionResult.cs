@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>The paired session and the outcome of each revision.</summary>
 public sealed record CollectionResult(

@@ -1,7 +1,8 @@
 using System.Collections.Immutable;
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison.Tests.Evidence;
+namespace Specht.Comparison.Tests.Fixtures;
 
 [AutoFixture(typeof(WorkloadCase))]
 internal sealed partial class WorkloadCaseFixture

@@ -1,8 +1,6 @@
 using Nuke.Common.Utilities;
 using Rocket.Surgery.Nuke.GithubActions;
 
-namespace Specht.Build;
-
 /// <summary>A workflow job that GitHub Actions cancels once it has run for a stated number of minutes.</summary>
 internal sealed class TimeLimitedJob : RocketSurgeonsGithubActionsJob
 {

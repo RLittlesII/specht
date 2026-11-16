@@ -1,6 +1,7 @@
 using System;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Workflow;
 
 /// <summary>Decides whether a run published a release and whether a comparison request belongs to that publication.</summary>
 public static class ReleaseTrigger
