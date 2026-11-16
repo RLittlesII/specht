@@ -14,4 +14,4 @@ public sealed record GherkinClaimText(
     IReadOnlyList<string> FeatureTagValues,
     IReadOnlyList<string> EpicTagValues,
     IReadOnlyList<int>? FeatureTagLines = null,
-    IReadOnlyList<(int Line, string Title)>? Scenarios = null);
+    IReadOnlyList<GherkinClaimScenario>? Scenarios = null);

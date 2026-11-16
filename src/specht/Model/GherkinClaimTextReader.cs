@@ -179,7 +179,7 @@ public sealed class GherkinClaimTextReader
                 Array.AsReadOnly(_findings.OrderBy(static finding => finding.Line)
                     .ThenBy(static finding => finding.DiagnosticId, StringComparer.Ordinal).ToArray()),
                 Array.AsReadOnly(_featureValues.ToArray()), Array.AsReadOnly(_epicValues.ToArray()), Array.AsReadOnly(_featureLines.ToArray()),
-                Array.AsReadOnly(_cases.Select(static item => (item.Self.Line, item.Title)).ToArray()));
+                Array.AsReadOnly(_cases.Select(static item => new GherkinClaimScenario(item.Self.Line, item.Title)).ToArray()));
         }
 
         /// <implements epic="0201" feature="F7" claim="B-008" />

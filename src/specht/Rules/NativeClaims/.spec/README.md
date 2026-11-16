@@ -578,9 +578,6 @@ reading. No type is added.
 - A native Feature in `Features` now: every rule would run on a Feature with no
   document before items `0391` and `0392` say what it obeys, and the summary
   would count it before B-026.
-- A per-file scenario record with titles now: a new type, and a new source link
-  into the analyzer, which decision 0004 of `0201-F7` does not cover; no claim
-  of this item reads a title.
 - One listing of every `.feature` file, each glob matched after it: the glob's
   reading, `SpechtDiscovery.Pattern`, is discovery's own; one listing per set
   reuses its public method.
@@ -1689,13 +1686,20 @@ catalogue already holds, so the resolver takes claim files as it takes a
 companion and no claim file is parsed twice:
 
 1. `GherkinClaimText` gains one optional positional member, `Scenarios`: every
-   Scenario and Scenario Outline the reader opens, as `(int Line, string Title)`,
+   Scenario and Scenario Outline the reader opens, as `GherkinClaimScenario(int Line, string Title)`,
    in document order. Each entry is the keyword line and the text after the
    keyword, trimmed, which the reader already holds as `Case.Title`. The
-   reader's one constructor call passes it. It is a member of a linked file,
-   not a new type, as `GherkinClaimDeclaration.Scenarios` (item `0390`) and
-   `FeatureTagLines` (item `0395`) were, so the analyzer's link list is
-   unchanged and the analyzer reads nothing of it (§ 5 row 1).
+   reader's one constructor call passes it. The record is `GherkinClaimScenario`
+   ([`GherkinClaimScenario.cs`](../../../Model/GherkinClaimScenario.cs)), a named
+   type and not a public tuple, which the owner's review of this pull request
+   asked for. The analyzer's `RSA2008` allows one type to a file, so it is a file
+   of its own, and `GherkinClaimText` cannot compile in the analyzer without it:
+   `src/analyzers/analyzers.csproj` gains one link line, as `GherkinClaimCaseLine`
+   (item `0390`) has. That is a source link `0201-F7` decision 0004 does not name;
+   it widens no reading, since the file is a supporting type of the linked
+   reader's output as `GherkinClaimCaseLine` is, and the analyzer reads nothing
+   of it (§ 5 row 1). The decision's "no other source link" is read as met by
+   that, which the owner is asked to confirm in review.
 2. `SpechtClaims` gains `Claimed`: the files of `Files` it takes claims from, so
    every file but those in `unclaimed` (B-018), in listing order. The set
    constructor already filters that list, and `Claimed` keeps it. It is empty
@@ -1881,8 +1885,10 @@ reader's `Case.Title`. No type is added.
   already reads, and B-021 makes the claim files a native Feature's companions.
 - Reading claim files with `FeatureTagParser` for their titles. That is a
   second Gherkin reading (item `0390`; A-3, C-1).
-- A scenario record type. It would be a new linked file, which `0201-F7`
-  decision 0004 does not cover; a tuple member needs none.
+- The record declared in `GherkinClaimText.cs`, to add no link. `RSA2008` fails
+  the build on a second type in a file.
+- A `(int Line, string Title)` tuple member. A public tuple is a poor API: the
+  owner's review of this pull request asked for a named type.
 - Filtering inside `ISpecDiscovery.FindOrphanCompanions`. Its signature would
   change for one caller, and the reader already holds both lists.
 - Lifting `FactsDocument.From`'s skip. No claim says what a native Feature's

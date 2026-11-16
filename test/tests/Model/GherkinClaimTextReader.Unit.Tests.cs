@@ -44,7 +44,7 @@ public sealed class GherkinClaimTextReaderUnitTests
         var read = reader.Read(".spec/features/arithmetic/add.feature", text);
 
         // Then
-        read.Scenarios.Should().NotBeNull().And.Equal(lines.Zip(titles, static (line, title) => (line, title)));
+        read.Scenarios.Should().NotBeNull().And.Equal(lines.Zip(titles, static (line, title) => new GherkinClaimScenario(line, title)));
     }
 
     [Fact]
