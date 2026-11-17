@@ -11,7 +11,7 @@ spikes: []
 spec: null
 claims: []
 created: "2026-10-28"
-updated: "2026-10-28"
+updated: "2026-11-17"
 closed: null
 summary: |
   A consumer ran ten specification review rounds. Each run specht reported
@@ -33,6 +33,7 @@ acceptance_criteria:
   - "./build.sh Specht passes and the docs/cli.md help test is unchanged."
 decisions:
   - "2026-10-28, repository owner, chose to specify the two mechanical checks now and park the rest as spikes; this chore states today's limit and does not wait on them."
+  - "2026-11-17, repository owner scheduled this documentation change for 0.9.0."
 out_of_scope:
   - "New rules: the open-question gate and dangling id references are drafted as Features; Then-step wording, constraint tracing, term variants and a warning baseline are spikes 0315 to 0318."
   - "Rewriting the rule pages under docs/rules/ or brief § 4."
