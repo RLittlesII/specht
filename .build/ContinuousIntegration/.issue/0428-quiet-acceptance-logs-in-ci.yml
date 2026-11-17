@@ -2,7 +2,7 @@ id: "0428"
 type: task
 title: Run CI tests on .NET 11 and quiet acceptance logs
 
-status: in-review
+status: done
 
 risk: 1
 
@@ -23,8 +23,8 @@ claims:
   - 0055-F1 B-008
 
 created: "2026-11-09"
-updated: "2026-11-09"
-closed: null
+updated: "2026-11-17"
+closed: "2026-11-17"
 
 summary: |
   Apply decision 0006 to the acceptance test reporter on the build server.
@@ -36,3 +36,9 @@ acceptance_criteria:
   - "0055-F1 B-005 to B-008 — framework selection for all test tiers."
   - "B-004, B-005 and 0055-F3 B-001 — preserve the gate and coverage."
   - "Section 9 records both claims under the workflow's existing no-tests decision."
+
+decisions:
+  - |
+    2026-11-17, repository owner approved closeout. PR #816 delivered the
+    changes. Main run 42765563386 passed. The PR records 13 .NET 11 test
+    modules and 13 Cobertura reports.

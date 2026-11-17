@@ -2,7 +2,7 @@ id: "0264"
 type: task
 title: Move the Unix leg of CI and release to the owner's macOS runner pool
 
-status: in-review
+status: done
 
 value: 3
 risk: 2
@@ -27,8 +27,8 @@ claims:
   - B-024
 
 created: "2026-10-23"
-updated: "2026-10-23"
-closed: null
+updated: "2026-11-17"
+closed: "2026-11-17"
 
 summary: |
   The owner moved this repository's CI off GitHub-hosted Linux onto the
@@ -80,6 +80,12 @@ decisions:
   - "2026-10-23, repository owner: replace the Linux legs with the
     self-hosted pool `[self-hosted, macOS, ARM64]`; Windows and Renovate stay
     hosted (decision 0005)."
+  - |
+    2026-11-17, repository owner approved closeout. PR #261 delivered the
+    migration. Main run 42840365907 passed `build (self-hosted, macOS, ARM64)`
+    and `build (windows-latest)`. Release run 43958369531 passed `build` and
+    `release` on the macOS pool. The active main ruleset (24750041) requires
+    the pull request check `build`.
 
 out_of_scope:
   - "Moving the Renovate workflow - `0055-F2` § 5 #29, `0055-F4` decision

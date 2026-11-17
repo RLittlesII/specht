@@ -28,3 +28,6 @@
 0406
 0407
 0408
+# Explain the scope of a clean check in the user docs.
+0313
+# The analyzer package documentation fix is tracked in GitHub issue #639.
