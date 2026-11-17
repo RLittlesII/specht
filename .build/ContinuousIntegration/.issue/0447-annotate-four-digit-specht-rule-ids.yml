@@ -1,0 +1,42 @@
+id: "0447"
+type: bug
+title: Annotate four-digit Specht rule IDs on pull requests
+
+status: ready
+
+value: 3
+risk: 1
+
+parent: "0063"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-006
+
+created: "2026-11-17"
+updated: "2026-11-17"
+closed: null
+
+summary: |
+  The repository pins schema 0.4.0, which reports four-digit rule IDs.
+  Diagnostic() in .build/SpechtBuild.GitHubActions.cs only recognizes
+  three digits after SPEC. AnnotateChangedFiles therefore drops current
+  diagnostics before it can annotate the diff. Three-digit IDs remain
+  valid for older schema pins.
+
+acceptance_criteria:
+  - "B-006 — errors and warnings using either supported rule-ID width annotate the changed file and line on the macOS pull request check."
+  - "C-6 — a violation outside the PR diff produces no annotation. Existing checker output and exit handling are preserved."
+  - "Record verification of both ID widths and of the changed-file filter."
+
+decisions:
+  - "2026-11-17, repository owner requested the bug be filed during CI closeout review."
+
+out_of_scope:
+  - "Merge-tree checking, tracked by item 0128."
+  - "Changes to the rule IDs a schema version reports."

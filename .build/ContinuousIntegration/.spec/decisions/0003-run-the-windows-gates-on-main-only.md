@@ -74,4 +74,6 @@ names B-007 and B-010 rest on, and a settings change applied by hand
 
 ## Reversal
 
-None.
+On 2026-11-17, the owner withdrew the requirement for a PR Windows
+check in [decision 0007](0007-confirm-the-ci-workflows-and-timeout.md).
+Windows gates continue to run on pushes to `main`.
