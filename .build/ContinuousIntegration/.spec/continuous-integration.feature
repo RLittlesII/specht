@@ -7,25 +7,25 @@ Feature: Continuous integration
   Scenario: A pull request is built
     Given a pull request targeting the main branch that changes code
     When it is opened
-    Then the build runs against the pull request's head
+    Then the build runs against the pull request's head on the owner's macOS runners
 
   @B-001 @boundary
   Scenario: A documentation change inside a specification folder is built
     Given a pull request that changes only Markdown inside a specification folder
     When integration runs
-    Then the build runs against the pull request's head
+    Then the build runs against the pull request's head on the owner's macOS runners
 
   @B-001 @boundary
   Scenario: A documentation change inside the tool's configuration folder is built
     Given a pull request that changes only Markdown inside the tool's configuration folder
     When integration runs
-    Then the build runs against the pull request's head
+    Then the build runs against the pull request's head on the owner's macOS runners
 
   @B-001 @boundary
   Scenario: Documentation changed alongside code is built
     Given a pull request that changes documentation and code together
     When integration runs
-    Then the build runs against the pull request's head
+    Then the build runs against the pull request's head on the owner's macOS runners
 
   @B-001 @boundary
   Scenario: The gates still build the pull request's head when its merge is checked
@@ -45,9 +45,9 @@ Feature: Continuous integration
     Then the build runs against that commit
 
   @B-003
-  Scenario: Every run covers macOS and Windows
-    When integration runs
-    Then integration runs on the owner's macOS runners and on Windows
+  Scenario: A push to main covers macOS and Windows
+    When a commit is pushed to the main branch
+    Then integration runs once on the owner's macOS runners and once on Windows
 
   @B-003 @boundary
   Scenario: No run builds on a hosted Linux runner
@@ -94,9 +94,9 @@ Feature: Continuous integration
     Then no violation is annotated on the pull request's diff
 
   @B-007
-  Scenario: Check names do not change between runs
-    Given two runs on different commits
-    Then each operating system's check has the same name in both
+  Scenario: Check names stay stable for each workflow
+    Given two runs of the same workflow on different commits
+    Then each runner's check has the same name in both
 
   @B-008 @boundary
   Scenario: Integration never publishes
@@ -104,8 +104,8 @@ Feature: Continuous integration
     Then no package is pushed to any feed
 
   @B-010
-  Scenario: Each operating system is its own check
-    When integration runs
+  Scenario: Each main build leg reports its own check
+    When a commit is pushed to the main branch
     Then the macOS and Windows builds each report as a separate check
 
   @B-011
@@ -121,40 +121,29 @@ Feature: Continuous integration
     Then none of the build's gates runs
 
   @B-013
-  Scenario: A documentation-only pull request passes its checks
+  Scenario: A documentation-only pull request passes its build check
     Given a pull request that changes only documentation outside any specification folder and outside the tool's configuration folder
     When integration runs
-    Then the macOS and Windows checks each pass
+    Then the macOS build check passes
 
   @B-014
   Scenario: A pull request with no known changed files is built
     Given a pull request whose changed files cannot be determined
     When integration runs
-    Then the build runs against the pull request's head
+    Then the build runs against the pull request's head on the owner's macOS runners
 
   @B-014 @boundary
   Scenario: A pull request that changes no file is built
     Given a pull request that changes no file
     When integration runs
-    Then the build runs against the pull request's head
+    Then the build runs against the pull request's head on the owner's macOS runners
 
   @B-015
-  Scenario: A pull request skips the gates on Windows
-    Given a pull request that changes code
-    When integration runs on Windows
-    Then none of the build's gates runs
-
-  @B-016
-  Scenario: A pull request passes its Windows check
+  Scenario: A pull request reports only the macOS build check
     Given a pull request that changes code
     When integration runs
-    Then the Windows check passes
-
-  @B-016 @boundary
-  Scenario: A Windows-only failure does not fail a pull request's Windows check
-    Given a pull request whose tests would fail on Windows only
-    When integration runs
-    Then the Windows check passes
+    Then the build check runs on the owner's macOS runners
+    And no Windows check is created
 
   @B-017
   Scenario: A violation only the merge carries is reported before the merge
@@ -176,12 +165,6 @@ Feature: Continuous integration
   Scenario: A documentation-only pull request has no merged tree checked
     Given a pull request that changes only documentation outside any specification folder and outside the tool's configuration folder
     When integration runs
-    Then the self-check runs over no merged tree
-
-  @B-017 @boundary
-  Scenario: A pull request has no merged tree checked on Windows
-    Given a pull request that changes code
-    When integration runs on Windows
     Then the self-check runs over no merged tree
 
   @B-018

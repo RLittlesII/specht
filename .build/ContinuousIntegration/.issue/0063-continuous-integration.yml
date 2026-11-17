@@ -8,7 +8,7 @@ value: 5
 risk: 3
 
 parent: "0055"
-children: ["0064", "0066", "0067", "0102", "0114", "0118", "0140", "0264", "0428"]
+children: ["0064", "0066", "0067", "0102", "0114", "0118", "0140", "0264", "0428", "0447"]
 
 depends_on: []
 spikes: []
@@ -30,15 +30,14 @@ claims:
   - B-013
   - B-014
   - B-015
-  - B-016
 
 created: "2026-10-08"
-updated: "2026-11-09"
+updated: "2026-11-17"
 closed: null
 
 summary: |
-  As the maintainer, I want every pull request to run the build on Linux
-  and every push to `main` to run it on Linux and Windows, from a workflow
+  As the maintainer, I want pull requests to build on macOS and pushes to
+  `main` to build on macOS and Windows, from workflows
   NUKE generates, so that nothing reaches `main` that the build has not
   passed, and `main` is proven everywhere the tool runs.
 
@@ -46,21 +45,20 @@ summary: |
   infrastructure every epic 0001 root item waits on (0021, 0051).
 
 acceptance_criteria:
-  - "B-001 — pull request to `main`: build on ubuntu, on its head (0064; the B-012 exception, 0102; ubuntu alone, 0118)"
+  - "B-001 — pull request to `main`: build the head on macOS (0064, 0102, 0264)"
   - "B-002 — push to `main`: build on the commit (0064)"
-  - "B-003 — once each on ubuntu and windows (0064)"
-  - "B-004 — `Format`, `Compile`, the three tier targets, `Specht` and `Benchmark` through the entry script, where neither B-012 nor B-015 applies (0064; tiers, 0114; B-015, 0118; `Benchmark` on pushes to main only, delivered by 0149 (`0109-F1` B-017; owner, 2026-10-13))"
+  - "B-003 — a push to main builds once on macOS and once on Windows (0064, 0264)"
+  - "B-004 — correctness gates through the entry script, with benchmarks on pushes to main (0064, 0114, 0149)"
   - "B-005 — any target fails: that system's check fails (0064)"
-  - "B-006 — a specification violation annotated on the diff (0066)"
+  - "B-006 — a specification violation annotated on the diff (0066, 0447)"
   - "B-007 — each system's check keeps its name across runs (0064)"
   - "B-008 — no package pushed (0064)"
-  - "B-010 — each system reports as a separate check (0064)"
-  - "B-011 — tool restored from the feed with the workflow's token (0067)"
+  - "B-010 — separate macOS and Windows checks on main (0064, 0264)"
+  - "B-011 — checker restored from NuGet without a package-read credential"
   - "B-012 — Markdown-only pull request: no target runs (0102)"
-  - "B-013 — a skipped pull request's checks pass (0102)"
-  - "B-014 — no changed files, or none determinable: the build runs on ubuntu (0102; ubuntu alone, 0118)"
-  - "B-015 — pull request: no target runs on windows (0118)"
-  - "B-016 — pull request: the windows check passes (0118)"
+  - "B-013 — a documentation-only pull request passes its macOS build check (0102)"
+  - "B-014 — no changed files, or none determinable: build on macOS (0102, 0264)"
+  - "B-015 — a pull request reports one macOS build check (decision 0007)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -80,6 +78,10 @@ decisions:
     2026-10-09, the repository owner: the Windows gates run on a push to
     `main` only; on a pull request the windows leg runs no target and its
     check passes (B-015, B-016, decision 0003; item 0118).
+  - |
+    2026-11-17, the repository owner confirmed the runner topology and
+    timeout (decision 0007). Keep this Feature open for coverage gaps and
+    the merge-tree check (0128). Item 0447 tracks the annotation bug.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
