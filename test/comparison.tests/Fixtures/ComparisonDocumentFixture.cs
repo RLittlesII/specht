@@ -1,7 +1,9 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
-using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Evaluation;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison.Tests.Reporting;
+namespace Specht.Comparison.Tests.Fixtures;
 
 [AutoFixture(typeof(ComparisonDocument))]
 internal sealed partial class ComparisonDocumentFixture

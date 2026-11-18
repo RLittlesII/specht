@@ -4,7 +4,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using AwesomeAssertions;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
 using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Tests.Fixtures;
 
 namespace Specht.Comparison.Tests.Reporting;
 

@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Reqnroll;
-using Specht.Build;
 using Specht.Tests.Shared;
 using Specht.Versioning;
 
@@ -24,7 +23,7 @@ public sealed class ShippedVersionSteps(PackedTool tool)
 {
     [Given("the schema versions 1.0.0 and higher published in packages so far")]
     public async Task GivenTheVersionsFromOneZeroZeroPublishedSoFar() =>
-        _published = [.. (await ReadLockAsync()).Keys.Where(static number => System.Version.Parse(number) >= new System.Version(1, 0, 0))];
+        _published = [.. (await ReadLockAsync()).Keys.Where(static number => Version.Parse(number) >= new Version(1, 0, 0))];
 
     [When("a later tool's embedded versions are enumerated")]
     public void WhenALaterToolsEmbeddedVersionsAreEnumerated() =>
@@ -120,13 +119,13 @@ public sealed class ShippedVersionSteps(PackedTool tool)
     {
         var rules = Path.Combine(tool.Repository, "docs", "rules");
         var versions = Directory.GetDirectories(rules, "v*")
-            .Select(static folder => System.Version.Parse(Path.GetFileName(folder)[1..]))
+            .Select(static folder => Version.Parse(Path.GetFileName(folder)[1..]))
             .Where(static version => version.Major < 1)
             .Order()
             .ToList();
-        HashSet<string> Pages(System.Version version) =>
+        HashSet<string> Pages(Version version) =>
             [.. Directory.GetFiles(Path.Combine(rules, $"v{version.ToString(3)}"), "*.md").Select(static page => Path.GetFileName(page))];
-        bool OptIn(System.Version version, string page) =>
+        bool OptIn(Version version, string page) =>
             File.ReadLines(Path.Combine(rules, $"v{version.ToString(3)}", page))
                 .Skip(1)
                 .TakeWhile(static line => line != "---")

@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Reqnroll;
-using Specht.Build;
 
 namespace Specht.Acceptance.Mcp;
 

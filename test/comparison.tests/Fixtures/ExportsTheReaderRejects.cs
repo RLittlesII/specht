@@ -1,4 +1,4 @@
-namespace Specht.Comparison.Tests.Workflow;
+namespace Specht.Comparison.Tests.Fixtures;
 
 public sealed class ExportsTheReaderRejects : TheoryData<string[], string>
 {

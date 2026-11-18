@@ -1,4 +1,6 @@
-namespace Specht.Comparison;
+using Specht.Comparison.Model;
+
+namespace Specht.Comparison.Evidence;
 
 /// <summary>Recognised dimensional scales, without delta arithmetic or a review policy.</summary>
 public static class MetricUnits

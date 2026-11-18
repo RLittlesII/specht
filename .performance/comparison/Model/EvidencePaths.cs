@@ -1,7 +1,6 @@
-using System;
 using System.Linq;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Checks portable evidence references without consulting ambient paths.</summary>
 public static class EvidencePaths

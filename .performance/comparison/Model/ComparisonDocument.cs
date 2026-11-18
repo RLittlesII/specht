@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Immutable version-1 comparison of a release pair's evaluated cases.</summary>
 public sealed record ComparisonDocument(

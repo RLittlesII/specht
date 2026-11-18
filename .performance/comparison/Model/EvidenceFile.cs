@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>One bundle-relative file of an evidence manifest, with its digest, role and source linkage.</summary>
 public sealed record EvidenceFile(

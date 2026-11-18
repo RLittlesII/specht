@@ -1,5 +1,7 @@
 using System.IO.Abstractions;
 using AwesomeAssertions;
+using Specht.Comparison.Model;
+using Specht.Comparison.Selection;
 
 namespace Specht.Comparison.Tests.Selection;
 
@@ -13,8 +15,8 @@ public sealed class ReleasePairStoreIntegrationTests
         var directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         try
         {
-            ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
-            ReleaseRecord previous = new ReleaseRecordFixture().WithId(10);
+            ReleaseRecord current = new Fixtures.ReleaseRecordFixture().WithId(20);
+            ReleaseRecord previous = new Fixtures.ReleaseRecordFixture().WithId(10);
             var pair = ReleaseSelection.Select(current, new ReleaseCatalog([previous], true, null), "run-1");
             var store = new ReleasePairStore(new FileSystem(), directory);
             await store.GetOrCreateAsync(current, _ => Task.FromResult(pair), TestContext.Current.CancellationToken);
@@ -43,8 +45,8 @@ public sealed class ReleasePairStoreIntegrationTests
         var directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         try
         {
-            ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
-            ReleaseRecord previous = new ReleaseRecordFixture().WithId(10);
+            ReleaseRecord current = new Fixtures.ReleaseRecordFixture().WithId(20);
+            ReleaseRecord previous = new Fixtures.ReleaseRecordFixture().WithId(10);
             var winner = ReleaseSelection.Select(current, new ReleaseCatalog([], true, null), "winner");
             var loser = ReleaseSelection.Select(current, new ReleaseCatalog([previous], true, null), "loser");
             var store = new ReleasePairStore(new FileSystem(), directory);
@@ -81,7 +83,7 @@ public sealed class ReleasePairStoreIntegrationTests
         try
         {
             await File.WriteAllTextAsync(Path.Combine(directory, "comparison-pair-v1.json"), json, TestContext.Current.CancellationToken);
-            ReleaseRecord current = new ReleaseRecordFixture();
+            ReleaseRecord current = new Fixtures.ReleaseRecordFixture();
             var store = new ReleasePairStore(new FileSystem(), directory);
 
             // When

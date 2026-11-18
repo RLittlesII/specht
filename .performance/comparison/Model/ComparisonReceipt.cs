@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Version 1 proof that this run and attempt published the current release and saved its pair.</summary>
 public sealed record ComparisonReceipt(

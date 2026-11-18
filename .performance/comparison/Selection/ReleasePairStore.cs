@@ -4,8 +4,9 @@ using System.IO.Abstractions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Selection;
 
 /// <summary>Persists a versioned pair without replacing an existing selection.</summary>
 public sealed class ReleasePairStore(IFileSystem fileSystem, string directory)

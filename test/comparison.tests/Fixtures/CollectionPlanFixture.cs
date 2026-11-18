@@ -1,6 +1,7 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using Specht.Comparison.Collection;
 
-namespace Specht.Comparison.Tests.Collection;
+namespace Specht.Comparison.Tests.Fixtures;
 
 [AutoFixture(typeof(CollectionPlan))]
 internal sealed partial class CollectionPlanFixture

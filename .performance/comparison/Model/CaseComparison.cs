@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Immutable metric comparisons of one paired workload case.</summary>
 public sealed record CaseComparison(

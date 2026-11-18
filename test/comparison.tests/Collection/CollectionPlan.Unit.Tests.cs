@@ -1,5 +1,8 @@
 using AwesomeAssertions;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Model;
 using Specht.Comparison.Tests.Selection;
+using ReleaseRecordFixture = Specht.Comparison.Tests.Fixtures.ReleaseRecordFixture;
 
 namespace Specht.Comparison.Tests.Collection;
 
@@ -11,7 +14,7 @@ public sealed class CollectionPlanUnitTests
     public void ResolvedPair_WhenPlanning_ShouldPinBothCommitsToOneSession(string previous, string current)
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture()
+        ReleasePair pair = new Fixtures.ReleasePairFixture()
             .WithPrevious(new ReleaseRecordFixture().WithId(10).WithCommit(previous))
             .WithCurrent(new ReleaseRecordFixture().WithId(20).WithCommit(current));
 
@@ -31,7 +34,7 @@ public sealed class CollectionPlanUnitTests
     public void PairWithoutTwoResolvedCommits_WhenPlanning_ShouldReturnNoPlan(bool hasPredecessor, string? previous, string? current)
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture()
+        ReleasePair pair = new Fixtures.ReleasePairFixture()
             .WithPrevious(hasPredecessor
                 ? (ReleaseRecord) new ReleaseRecordFixture().WithId(10).WithCommit(previous).WithResolutionFailure(previous is null ? "Tag unavailable" : null)
                 : null)
@@ -48,7 +51,7 @@ public sealed class CollectionPlanUnitTests
     public void SessionId_WhenPlanning_ShouldPlaceTheWorkspaceUnderTheRepositoryRelativeComparisonFolder()
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture();
+        ReleasePair pair = new Fixtures.ReleasePairFixture();
 
         // When
         var plan = CollectionPlan.For(pair, new string('c', 40), "1", "run-1", 1, "session-7", "runner-1", "Specht.Benchmarks.*", null);
@@ -62,7 +65,7 @@ public sealed class CollectionPlanUnitTests
     public void UnsafeSessionOrComparator_WhenPlanning_ShouldReturnNoPlan(string sessionId, string comparatorCommit)
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture();
+        ReleasePair pair = new Fixtures.ReleasePairFixture();
 
         // When
         var plan = CollectionPlan.For(pair, comparatorCommit, "1", "run-1", 1, sessionId, "runner-1", "Specht.Benchmarks.*", "Short");
@@ -76,7 +79,7 @@ public sealed class CollectionPlanUnitTests
     public void SafeSessionAndComparator_WhenPlanning_ShouldPlan(string sessionId, string comparatorCommit)
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture();
+        ReleasePair pair = new Fixtures.ReleasePairFixture();
 
         // When
         var plan = CollectionPlan.For(pair, comparatorCommit, "1", "run-1", 1, sessionId, "runner-1", "Specht.Benchmarks.*", "Short");

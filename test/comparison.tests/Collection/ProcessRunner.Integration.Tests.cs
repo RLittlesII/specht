@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Globalization;
 using AwesomeAssertions;
 using Microsoft.Extensions.Time.Testing;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Model;
 
 namespace Specht.Comparison.Tests.Collection;
 

@@ -1,4 +1,4 @@
-namespace Specht.Comparison.Tests.Selection;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal sealed class ScriptedHttpHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
 {

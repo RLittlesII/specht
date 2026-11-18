@@ -1,5 +1,9 @@
 using AwesomeAssertions;
+using Specht.Comparison.Model;
+using Specht.Comparison.Tests.Fixtures;
 using Specht.Comparison.Tests.Reporting;
+using Specht.Comparison.Workflow;
+using ComparisonDocumentFixture = Specht.Comparison.Tests.Fixtures.ComparisonDocumentFixture;
 
 namespace Specht.Comparison.Tests.Workflow;
 

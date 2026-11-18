@@ -9,8 +9,18 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
+using ComparisonDocument = Specht.Comparison.Model.ComparisonDocument;
+using EvidenceFile = Specht.Comparison.Model.EvidenceFile;
+using EvidenceManifest = Specht.Comparison.Model.EvidenceManifest;
+using IdentityMapping = Specht.Comparison.Model.IdentityMapping;
+using RawExport = Specht.Comparison.Model.RawExport;
+using ReleasePair = Specht.Comparison.Model.ReleasePair;
+using ReportBundle = Specht.Comparison.Model.ReportBundle;
+using SessionManifest = Specht.Comparison.Model.SessionManifest;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Reporting;
 
 /// <summary>Writes and validates the self-contained per-attempt report bundle.</summary>
 public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)

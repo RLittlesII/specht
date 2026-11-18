@@ -2,7 +2,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Specht.Comparison.Tests.Collection;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal static class SyntheticBenchmarks
 {

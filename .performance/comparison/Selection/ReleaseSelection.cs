@@ -1,8 +1,8 @@
-using System;
 using System.IO;
 using System.Linq;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Selection;
 
 /// <summary>Selects the predecessor from a complete publication catalog.</summary>
 public static class ReleaseSelection

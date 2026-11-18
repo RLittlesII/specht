@@ -1,6 +1,9 @@
 using System.Collections.Immutable;
 using System.Globalization;
 using AwesomeAssertions;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Model;
+using Specht.Comparison.Tests.Fixtures;
 
 namespace Specht.Comparison.Tests.Evidence;
 

@@ -1,6 +1,7 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison.Tests.Workflow;
+namespace Specht.Comparison.Tests.Fixtures;
 
 [AutoFixture(typeof(RunContext))]
 internal sealed partial class RunContextFixture

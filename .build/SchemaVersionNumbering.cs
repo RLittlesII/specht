@@ -6,8 +6,6 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace Specht.Build;
-
 /// <summary>Checks that each shipped schema version is numbered for what changed since the one below it (0001-F7 B-040, B-066, B-088).</summary>
 public sealed class SchemaVersionNumbering(IFileSystem fileSystem, string root)
 {

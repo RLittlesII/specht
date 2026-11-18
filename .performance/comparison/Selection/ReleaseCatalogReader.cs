@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Selection;
 
 /// <summary>Reads every catalog page and peels tags through a caller-supplied HTTP client.</summary>
 public sealed class ReleaseCatalogReader(HttpClient client)

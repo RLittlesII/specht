@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>The comparison-owned steps after release publication, each of which can end a comparison incomplete.</summary>
 public enum ReportingStage

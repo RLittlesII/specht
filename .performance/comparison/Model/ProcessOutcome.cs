@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>A finished child process: its exit code and standard output lines.</summary>
 public sealed record ProcessOutcome(

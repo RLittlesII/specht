@@ -1,7 +1,8 @@
 using System.Collections.Immutable;
 using System.Linq;
+using Specht.Comparison.Reporting;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>
 /// Where release reporting stopped, whether it completed, the judgment and flags computed before it stopped, an actionable reason and

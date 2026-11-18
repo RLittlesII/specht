@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Immutable CaseEvidence evidence for release comparison.</summary>
 public sealed record CaseEvidence(

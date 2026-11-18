@@ -1,7 +1,7 @@
 using System.Reflection;
 using AwesomeAssertions;
 
-namespace Specht.Tests;
+namespace Specht.Analysis.Tests;
 
 /// <summary>
 /// A test class without exactly one tier trait drops out of both filtered tiers while an

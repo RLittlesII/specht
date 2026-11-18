@@ -1,4 +1,4 @@
-namespace Specht.Comparison.Tests.Evidence;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal static class ExportData
 {

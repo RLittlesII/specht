@@ -1,5 +1,3 @@
-namespace Specht.Build;
-
 /// <summary>What <see cref="SchemaVersionLock.VerifyAsync"/> found wrong with one version (0001-F7 B-004, B-089 to B-091).</summary>
 public enum SchemaVersionLockFault
 {

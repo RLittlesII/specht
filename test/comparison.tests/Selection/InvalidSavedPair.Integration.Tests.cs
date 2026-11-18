@@ -1,6 +1,9 @@
 using System.IO.Abstractions;
 using System.Net;
 using AwesomeAssertions;
+using Specht.Comparison.Model;
+using Specht.Comparison.Selection;
+using Specht.Comparison.Tests.Fixtures;
 
 namespace Specht.Comparison.Tests.Selection;
 

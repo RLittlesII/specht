@@ -6,8 +6,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Specht.Comparison.Evidence;
+using Specht.Comparison.Reporting;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Versioned, canonical wire encoding for durable pair and session evidence.</summary>
 public static class ComparisonJson

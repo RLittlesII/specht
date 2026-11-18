@@ -1,6 +1,7 @@
 using System.Linq;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Collection;
 
 /// <summary>Pins both resolved release commits to one comparison session on one runner.</summary>
 public sealed record CollectionPlan(

@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>The independently observed metrics.</summary>
 public enum MetricKind

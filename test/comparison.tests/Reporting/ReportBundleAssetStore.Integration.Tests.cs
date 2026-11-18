@@ -2,8 +2,12 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Net;
 using System.Security.Cryptography;
 using AwesomeAssertions;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
 using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Tests.Fixtures;
 using Specht.Comparison.Tests.Selection;
+using ReleaseRecordFixture = Specht.Comparison.Tests.Fixtures.ReleaseRecordFixture;
 
 namespace Specht.Comparison.Tests.Reporting;
 

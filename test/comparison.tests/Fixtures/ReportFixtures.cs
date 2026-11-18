@@ -1,8 +1,4 @@
-using Specht.Comparison.Tests.Collection;
-using Specht.Comparison.Tests.Evidence;
-using Specht.Comparison.Tests.Selection;
-
-namespace Specht.Comparison.Tests.Reporting;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal static class ReportFixtures
 {

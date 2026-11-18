@@ -8,8 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Collection;
 
 /// <summary>Builds and runs each pinned revision's own benchmark harness in turn, within one bounded session.</summary>
 public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,

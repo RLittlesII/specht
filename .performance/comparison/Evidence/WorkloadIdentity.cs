@@ -2,8 +2,9 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Evidence;
 
 /// <summary>Canonical operation and typed parameter identities, independent of labels.</summary>
 public static class WorkloadIdentity

@@ -1,6 +1,10 @@
 using AwesomeAssertions;
+using Specht.Comparison.Model;
+using Specht.Comparison.Tests.Fixtures;
 using Specht.Comparison.Tests.Reporting;
 using Specht.Comparison.Tests.Selection;
+using Specht.Comparison.Workflow;
+using ReleaseRecordFixture = Specht.Comparison.Tests.Fixtures.ReleaseRecordFixture;
 
 namespace Specht.Comparison.Tests.Workflow;
 

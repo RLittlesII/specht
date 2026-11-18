@@ -1,4 +1,4 @@
-namespace Specht.Comparison;
+namespace Specht.Comparison.Model;
 
 /// <summary>Immutable MeasurementConditions evidence for release comparison.</summary>
 public sealed record MeasurementConditions(

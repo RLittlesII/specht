@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Web;
 
-namespace Specht.Comparison.Tests.Reporting;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal sealed class ReleaseAssetStorage
 {

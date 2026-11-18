@@ -9,8 +9,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Workflow;
 
 /// <summary>Waits, within a bound, for one exact artifact of this workflow run and unpacks it under the repository.</summary>
 public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, TimeProvider time, string repositoryRoot)

@@ -4,8 +4,9 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Specht.Comparison.Model;
 
-namespace Specht.Comparison;
+namespace Specht.Comparison.Reporting;
 
 /// <summary>Projects one comparison document into the human-readable and machine-readable reports.</summary>
 public static class ComparisonReport

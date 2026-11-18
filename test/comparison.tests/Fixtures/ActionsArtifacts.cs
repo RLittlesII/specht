@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Web;
 
-namespace Specht.Comparison.Tests.Workflow;
+namespace Specht.Comparison.Tests.Fixtures;
 
 internal sealed class ActionsArtifacts
 {

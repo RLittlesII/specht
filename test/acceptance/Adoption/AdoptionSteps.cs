@@ -297,7 +297,7 @@ public sealed class AdoptionSteps
         var files = _records.Cast<AdditionalText>().Append(new AdoptionFile("config/consumer.json", _configuration.ToJsonString(), "configuration"))
             .ToImmutableArray();
         return new AnalysisInputAdapter().Read(files, new AdoptionOptions(),
-            new[] { CSharpSyntaxTree.ParseText(_source, path: "src/Consumer.cs") }, Xunit.TestContext.Current.CancellationToken);
+            new[] { CSharpSyntaxTree.ParseText(_source, path: "src/Consumer.cs") }, TestContext.Current.CancellationToken);
     }
 
     private const string FeatureText = """

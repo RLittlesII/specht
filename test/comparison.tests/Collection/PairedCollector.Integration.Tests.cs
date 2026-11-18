@@ -5,7 +5,10 @@ using System.Security.Cryptography;
 using System.Text;
 using AwesomeAssertions;
 using Microsoft.Extensions.Time.Testing;
+using Specht.Comparison.Collection;
+using Specht.Comparison.Model;
 using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Tests.Fixtures;
 
 namespace Specht.Comparison.Tests.Collection;
 

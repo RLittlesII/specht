@@ -5,9 +5,17 @@ using System.Security.Cryptography;
 using System.Text;
 using AwesomeAssertions;
 using Microsoft.Extensions.Time.Testing;
+using Specht.Comparison.Model;
+using Specht.Comparison.Reporting;
 using Specht.Comparison.Tests.Evidence;
+using Specht.Comparison.Tests.Fixtures;
 using Specht.Comparison.Tests.Reporting;
 using Specht.Comparison.Tests.Selection;
+using Specht.Comparison.Workflow;
+using ComparisonDocumentFixture = Specht.Comparison.Tests.Fixtures.ComparisonDocumentFixture;
+using RawExportFixture = Specht.Comparison.Tests.Fixtures.RawExportFixture;
+using ReleaseRecordFixture = Specht.Comparison.Tests.Fixtures.ReleaseRecordFixture;
+using SessionManifestFixture = Specht.Comparison.Tests.Fixtures.SessionManifestFixture;
 
 namespace Specht.Comparison.Tests.Workflow;
 
