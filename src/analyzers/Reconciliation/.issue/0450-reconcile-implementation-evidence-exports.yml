@@ -1,0 +1,36 @@
+id: "0450"
+type: bug
+title: "Reconcile implementation bindings from current compilation evidence"
+status: ready-for-architecture
+value: 3
+risk: 3
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/analyzers/Reconciliation/.spec/README.md
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Adopt https://github.com/RLittlesII/specht/issues/640.
+  Current-source reconciliation narrows the original report: the binding
+  exporter preserves relationship roles, rather than filtering all roles to
+  verifies. TestEvidenceCompilationExporter visits ordinary methods but
+  never exports a named type's documentation bindings; runner integration
+  publishes test-project artifacts. Therefore a valid type-level implements
+  link in a production project has no automatic evidence path today.
+  0201-F5 technical design explicitly keeps a required implementation link
+  missing when no current export carries it. This is an input/delivery gap,
+  not permission to count missing input as covered.
+acceptance_criteria:
+  - "Reproduce type-level and method-level implements separately using a synthetic production project and test project against the current package."
+  - "Agree the production compilation export path and amendment claims under 0201-F3, 0201-F5 and 0201-F6 before implementation; identify currentness and selected-project requirements."
+  - "Cut delivery slices for the agreed input path, and require failing then passing coverage for a required implementation link."
+  - "Keep missing, unavailable, resolved and passing evidence distinct; preserve 0201-F5 C-1 and C-2."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+  - "2026-11-25, reconciliation: source inspection confirms the type-level export gap; no fresh published-package reproduction or fixed verdict is claimed."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

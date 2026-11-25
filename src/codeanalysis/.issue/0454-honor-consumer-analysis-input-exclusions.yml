@@ -1,0 +1,30 @@
+id: "0454"
+type: bug
+title: "Honor consumer manifest exclusions in analyzer input delivery"
+status: ready-for-architecture
+value: 3
+risk: 2
+parent: "0451"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Report #651 point 4, narrowed by the owner's correction: default
+  SpechtInputExclude already omits generated and tool folders. It does not
+  project additional consumer manifest exclusions. Custom excluded
+  specifications still enter AdditionalFiles unless the consumer overrides
+  the MSBuild delivery. This item owns custom input exclusion semantics,
+  not a replacement for the existing default exclusion list.
+acceptance_criteria:
+  - "Reproduce an otherwise valid consumer whose custom-excluded specification rejects analysis only when delivered."
+  - "Agree manifest exclusions and explicit MSBuild selection precedence under 0201-F6, including path-root and glob semantics."
+  - "Prove generated-folder defaults and explicit custom exclusions without changing the checker's discovery contract."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

@@ -8,17 +8,18 @@
 # delivery summaries so newly cut children do not silently enlarge a release.
 
 0.8.0
-# Review and presentation: epics 0228, 0194 and 0101. Their Features' items
-# join this list once cut.
-# Epic 0228 candidate C, qualified key resolution
+# Review groundwork. These are agreement prerequisites and the existing
+# unsliced uniqueness task, not a completed implementation release plan.
+# Qualified-key resolution under epic 0228, candidate C.
 0307
-# Ids claimed twice, item 0128, moved from 0.7.0 on the owner's ruling,
-# 2026-11-16 (it was moved to 0.7.0 from 0.6.0, 2026-11-09).
+# Agree explicit delivery slices for 0128 before implementing them.
+0460
+# Preserve the owner's 2026-11-16 placement; blocked on those agreements.
 0128
 
 0.9.0
-# Onboarding and documentation: epics 0196 and 0002, Features 0002-F1 and
-# 0002-F2. A Feature's items join this list once cut.
+# Onboarding report 0001-F15 and documentation 0002-F1 and 0002-F2.
+# The wider guided journey in epic 0196 remains unscheduled.
 # 0001-F15, the onboarding report.
 0385
 0386
@@ -30,4 +31,5 @@
 0408
 # Explain the scope of a clean check in the user docs.
 0313
-# The analyzer package documentation fix is tracked in GitHub issue #639.
+# Local documentation remedy for outside report #639 and setup points in #651.
+0449

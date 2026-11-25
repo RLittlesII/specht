@@ -2,7 +2,7 @@ id: "0424"
 type: spike
 title: Investigate stale type references in Mermaid architecture diagrams
 
-status: in-review
+status: ready
 
 value: 3
 risk: 3
@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-11-08"
-updated: "2026-11-08"
+updated: "2026-11-25"
 closed: null
 
 summary: |
@@ -51,6 +51,7 @@ decisions:
     repository-wide spike. Mermaid fenced diagrams are the initial investigation
     boundary because they provide structured references; broader Markdown prose
     scanning is not assumed.
+  - "2026-11-25, reconciliation: merged PR #793 only filed this spike; its body says it records the spike only, and its files contain no ADR or experiment. Return it to ready for the investigation; neither research completion nor an architecture choice is inferred from the merge."
 
 out_of_scope:
   - "Shipping a checker rule or analyzer diagnostic; follow-up work after the owner rules on the proposed ADR."

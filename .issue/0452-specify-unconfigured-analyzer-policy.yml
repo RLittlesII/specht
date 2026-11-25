@@ -1,0 +1,30 @@
+id: "0452"
+type: spike
+title: "Specify analyzer behavior before a consumer selects analysis policy"
+status: ready
+value: 3
+risk: 2
+parent: "0451"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Report #651 point 1: AnalysisInputReader requires explicit mappings
+  and currently reports an unavailable snapshot when codeAnalysis is absent.
+  0201-F6 B-003 and B-017 govern enabled analysis with invalid input, but
+  installation alone versus selection of analysis needs an explicit boundary.
+  The standalone declaration-comment analyzer must remain independently
+  scoped. Do not assume absence means clean coverage.
+acceptance_criteria:
+  - "Reproduce an installed package with no policy, an explicitly selected scope with invalid input, and the standalone declaration-comment rule."
+  - "Record an agreement deciding activation and the diagnostic outcome for absent policy, preserving 0201-F6 C-1 and C-3."
+  - "Cut implementation items only after the policy boundary is agreed."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

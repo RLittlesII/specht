@@ -185,6 +185,8 @@ linked, passing test. Setup is in the [walkthrough](docs/walkthrough.md) and the
 
 [Browse the documentation](docs/README.md).
 
+[Planned releases and backlog](docs/roadmap.md).
+
 ## License
 
 [MIT](LICENSE.md) © 2026 Rodney Littles, II. A personal project, published

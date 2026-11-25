@@ -22,3 +22,4 @@ type: reference
 | Connect an MCP client                                      | [MCP](mcp.md)                                                                                                                                  |
 | Mirror work items to GitHub                                | [Reusable mirror action](../.github/actions/mirror/README.md)                                                                                  |
 | Build or release Specht                                    | [Building](building.md), [Releasing](releasing.md)                                                                                             |
+| Understand planned releases and the backlog                | [Roadmap](roadmap.md)                                                                                                                          |

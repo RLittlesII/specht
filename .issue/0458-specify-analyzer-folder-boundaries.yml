@@ -1,0 +1,31 @@
+id: "0458"
+type: spike
+title: "Specify consumer folder-boundary analysis within one assembly"
+status: ready
+value: 3
+risk: 3
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Adopt https://github.com/RLittlesII/specht/issues/667.
+  A consumer requests namespace import restrictions and confined tokens or
+  types inside one assembly, using a provisional consumer table. This is a
+  new analyzer capability under epic 0201, not a bug in claim binding.
+  Agree the two dimensions and evaluate their decomposition before naming
+  Features. ADR-0023 decides whether a setting is C#-specific; no provisional
+  boundaries.json or manifest shape is adopted by this item.
+acceptance_criteria:
+  - "Write the capability agreement for imports and confinements with explicit project-relative scope, syntax/symbol handling and missing-input behavior."
+  - "Use synthetic versions of the consumer's eight mutation cases to bound coverage, ambiguity and diagnostic provenance."
+  - "Record configuration ownership, severity/version compatibility and Feature decomposition; then cut claim-citing delivery items."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

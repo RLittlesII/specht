@@ -1,0 +1,32 @@
+id: "0460"
+type: task
+title: "Agree the release slices for duplicate-id detection"
+status: ready
+value: 3
+risk: 3
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Make item 0128's missing agreement prerequisite explicit while
+  preserving its placement in 0.8.0. Its five cases span in-specification
+  uniqueness, record numbering, work-item allocation and CI merge-tree
+  checking. Item 0128 explicitly excludes authoring these agreements; this
+  item owns that grooming output. Qualified-key resolution remains 0307.
+  Do not promise presentation or all linting from these two investigations.
+acceptance_criteria:
+  - "Read epic 0101 and the current in-specification uniqueness agreement; reconcile delivered cases rather than duplicate them."
+  - "Author or amend the owning agreements and scenarios for the five cases, resolving policy choices in their records; preserve exact schema-version and offline boundaries."
+  - "Cut explicit claim-citing delivery items after agreement and replace the unsliced 0128 release promise with the selected children in .issue/.goal."
+  - "Record the bounded 0.8.0 shipped outcome in docs/roadmap.md; completion of this grooming item alone does not deliver the rules or resolver."
+decisions:
+  - "2026-11-25, repository owner: apply the organization plan. Keep 0128 in 0.8.0 and expose its agreement prerequisite instead of moving the blocked work again."
+out_of_scope:
+  - "Implementing duplicate-id rules, CI merge-tree checking or qualified-key resolution; those follow agreed delivery items."
+  - "Allocating or assuming proposed Feature and rule ids before checking current agreements and open branches."

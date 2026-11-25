@@ -2,7 +2,7 @@ id: "0151"
 type: spike
 title: Weigh returning input failures as values instead of throwing them
 
-status: in-review
+status: blocked
 
 value: 2
 risk: 2
@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-11-01"
+updated: "2026-11-25"
 closed: null
 
 summary: |
@@ -86,6 +86,7 @@ decisions:
     2026-10-11, the repository owner: the candidates are C# 15 union types,
     language-ext v5 beta and Dunet. Not chosen: a hand-written result type on
     C# 14.
+  - "2026-11-25, reconciliation: merged PR #117 delivered proposed ADR-0009 and explicitly left this item open until the owner rules. The ADR remains proposed; this is a decision hold, not an open-PR review. No architecture option is adopted or rejected by this tracker correction."
 
 out_of_scope:
   - "Migrating any code on `main` - a follow-up item that depends on this one, cut after the owner rules on the ADR, with the `0001-F2` § 7 delta."
