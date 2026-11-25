@@ -1,0 +1,29 @@
+id: "0456"
+type: spike
+title: "Specify an opt-out for automatic test evidence runner integration"
+status: ready
+value: 3
+risk: 2
+parent: "0451"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Report #651 point 8: Specht.CodeAnalysis.targets registers the
+  MTP builder hook for IsTestingPlatformApplication and adds runner
+  references without a consumer opt-out. Decide the installation and
+  coverage consequences of opting out before introducing a public property.
+  VSTest integration must be considered explicitly, not assumed identical.
+acceptance_criteria:
+  - "Confirm evaluated MTP runner hooks and copied references with a synthetic consumer."
+  - "Agree whether an opt-out covers MTP only or both runner paths, and define its effect on evidence completeness and diagnostics."
+  - "Choose and record the public property and defaults in the owning agreement before implementation."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

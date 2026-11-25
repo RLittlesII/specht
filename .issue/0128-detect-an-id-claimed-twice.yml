@@ -10,7 +10,7 @@ risk: 2
 parent: null
 children: []
 
-depends_on: []
+depends_on: ["0460"]
 spikes: []
 
 spec: null
@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-09"
-updated: "2026-11-16"
+updated: "2026-11-25"
 closed: null
 
 summary: |
@@ -140,6 +140,7 @@ decisions:
     all of this item in 0.6.0. The id moves from 0.6.0 to 0.7.0 in
     `.issue/.goal`. Status stays `blocked`. Nothing about this item's scope,
     its five cases or the `0101-F6` to `0101-F8` specifications changes.
+  - "2026-11-25, repository owner: apply the organization plan. Item 0460 owns the missing agreement and decomposition prerequisite. Keep this item blocked in 0.8.0; do not implement from its prose criteria."
 
 out_of_scope:
   - "Reserving ids, and the rule for claiming one - 0127, delivered."

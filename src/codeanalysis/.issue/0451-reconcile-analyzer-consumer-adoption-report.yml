@@ -1,0 +1,37 @@
+id: "0451"
+type: bug
+title: "Reconcile analyzer consumer adoption report 651"
+status: blocked
+value: 3
+risk: 1
+parent: "0201"
+children: ["0452", "0453", "0454", "0455", "0456", "0457"]
+depends_on: ["0434", "0449"]
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Adopt https://github.com/RLittlesII/specht/issues/651 as a local
+  intake rollup. Children own the unresolved behavior and integration work;
+  0449 owns the documentation remedies shared with #639.
+  Point 2 is partially delivered by 0434: 0201-F6 B-029 reports policy-reader
+  faults specifically. Generic messages outside that reader remain the
+  explicit boundary in decision 0008 and section 5 row 5. Do not reopen
+  0434 or silently broaden that decision.
+  Point 3 uses the corrected AdditionalFiles metadata workaround in the
+  owner's comment. Point 4 concerns custom manifest exclusions, not the
+  default generated-folder exclusions already present. Points 6 and 7 are
+  routed to 0449; the checker-owned grammar/hash behavior is not declared a
+  bug by this reconciliation. Remaining policy choices require agreement.
+acceptance_criteria:
+  - "Every numbered concern has a local disposition: 1 to 0452; 2 to completed 0434 and its explicit remaining boundary; 3 to 0453; 4 to 0454; 5 to 0455; 6 and 7 to 0449; 8 to 0456; 9 to 0457."
+  - "Verify all child agreements and remedies before closing this rollup; an accepted current boundary is recorded as such, not called a fixed defect."
+  - "Keep the original report as provenance; delivery state and prerequisites live only in local items."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+  - "2026-11-25, reconciliation: 0434 already delivered the agreed policy-message slice. Unconfigured analysis, lifecycle handling, runner opt-out and project selection remain policy questions, not adopted defaults."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

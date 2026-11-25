@@ -1,0 +1,30 @@
+id: "0453"
+type: bug
+title: "Map supplied schema inputs through the consumer manifest"
+status: ready-for-architecture
+value: 3
+risk: 2
+parent: "0451"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Report #651 point 3, including the owner's correction:
+  Specht.CodeAnalysis.props computes schema kinds from file names rather
+  than frontmatterSchemas. A valid nondefault schema name therefore needs
+  an AdditionalFiles Update setting SpechtInputKind to schema:feature.
+  No duplicate schema copy is necessary; preserve the existing workaround
+  until native delivery is specified.
+acceptance_criteria:
+  - "Reproduce a valid renamed feature schema with and without the metadata override in a synthetic packaged consumer."
+  - "Specify the manifest mapping and explicit metadata precedence under 0201-F6 before changing package integration."
+  - "Cover nondefault names and schema identity without copying the schema or introducing ambient network access."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

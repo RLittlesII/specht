@@ -1,0 +1,36 @@
+id: "0449"
+type: chore
+title: "Document XML binding parsing and analyzer setup requirements"
+status: ready
+value: 3
+risk: 2
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Adopt outside report https://github.com/RLittlesII/specht/issues/639
+  and the documentation portions (6 and 7) of report #651.
+  DocumentationBindingReader reads structured XML trivia; the package does
+  not set compiler documentation parsing. The package README does not
+  explain GenerateDocumentationFile or its CS1591 consequence. The requester
+  explicitly accepts documenting the requirement instead of changing parsing.
+  Report #651 also needs the AdditionalFiles diagnostic configuration and
+  the distinction between analyzer mappings and checker-owned id grammars
+  explained, consistent with ADR-0023 and the current ids contract.
+acceptance_criteria:
+  - "Document the supported XML parsing setup and its CS1591 consequence without requiring consumers to enable undocumented-public-member enforcement."
+  - "Give the current global analyzer configuration or NoWarn route for diagnostics on AdditionalFiles, distinguishing it from source-file sections."
+  - "Document schema-kind metadata overrides and consumer input exclusions as current workarounds, citing 0453 and 0454 for native integration work."
+  - "Explain that mapping analyzer grammars does not change the checker's epic grammar or schema-hash obligations; honor ADR-0023 and the current ids layout."
+  - "Check the instructions with a small synthetic consumer of the current package; retain observations and required doc/scenario coverage."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+  - "2026-11-25, reconciliation: #639 permits a documentation remedy; this item is selected for 0.9.0. The organization change does not choose automatic parser-option mutation."
+out_of_scope:
+  - "Changing compiler parse options, analyzer defaults, schema semantics or enforcement scope."

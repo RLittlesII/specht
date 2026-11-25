@@ -1,0 +1,35 @@
+id: "0448"
+type: chore
+title: Reconcile the release plan and outside reports in the local tracker
+status: done
+value: 4
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: "2026-11-25"
+summary: |
+  Apply the owner's issue organization plan of 2026-11-25. Restore the
+  roadmap, make release agreement prerequisites explicit, reconcile the
+  five outside reports with local work, and correct review states against
+  their decision records. GitHub remains the read-only mirror of main.
+acceptance_criteria:
+  - "docs/roadmap.md describes the selected release outcomes, agreement holds, maintenance, research and deferred themes without storing derived ranks."
+  - "The goal file uses local item ids, preserves the existing release order and makes missing release agreements explicit."
+  - "Each outside report has a local disposition with current source or specification evidence, and any unresolved work has an owning local item."
+  - "The two in-review spikes are reconciled with their actual decision records; no adoption or completion is inferred from a missing pull request."
+  - "Queue and mirror allocations agree; formatting, self-check, existing mirror tests and required build checks pass."
+  - "No .feature change needed: scheduling documentation and tracker reconciliation; product behavior is unchanged. Constraints preserved: 0001-F1 C-5, C-9; 0055-F9 C-1, C-2, C-3."
+decisions:
+  - "2026-11-25, repository owner: apply the issue organization plan, update the local tracker and roadmap, reconcile outside reports, and let the mirror update GitHub."
+  - "2026-11-25, delivery: main and open PR #925 checked before allocation. Main ends at 0447; the dependency PR claims no ids. This change allocates 0448 through 0460 above both without waiting for a separate reservation PR."
+  - "2026-11-25, verification: all NUKE gates passed, including the working-checker self-check, Format, Compile, packaged CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest. The 72 legacy mirror tests and queue/mirror allocation checks pass. Self-check retains the two SPEC2003 warnings tracked by 0446; no new warning is attributed to this change."
+
+out_of_scope:
+  - "Product implementation, new rule ids, schema or package versions, architecture adoption, and automatic closure of unverified outside reports."
+  - "Hand edits to mirrored GitHub issues or milestones; the existing mirror applies changes after merge."

@@ -1,0 +1,29 @@
+id: "0459"
+type: spike
+title: "Specify opt-in uppercase base32 formatting for Snowflake ids"
+status: ready
+value: 3
+risk: 2
+parent: "0001"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Adopt https://github.com/RLittlesII/specht/issues/923 as a proposed
+  extension of 0001-F19. FormattingDecorator currently accepts none and
+  base32 and uses a lowercase alphabet. CLI and MCP share the minting
+  pipeline. Agree the opt-in setting and schema compatibility before code;
+  existing Nano ID uppercase behavior is not the requested time-based id.
+acceptance_criteria:
+  - "Agree the setting shape, supported schema pin and default behavior in 0001-F19 before cutting implementation work."
+  - "State numeric equivalence, fixed 13-character width, leading zeros, timestamp preservation, prefix composition and formatting before validation/collision checking."
+  - "State matching CLI/MCP output and no rewrite of existing ids; require falsifiable scenarios for each new claim."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

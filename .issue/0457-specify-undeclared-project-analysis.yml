@@ -1,0 +1,29 @@
+id: "0457"
+type: spike
+title: "Specify analysis for a compiling project absent from policy"
+status: ready
+value: 3
+risk: 2
+parent: "0451"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Report #651 point 9: codeAnalysis.projects explicitly selects
+  projects and frameworks; an undeclared compiling project receives no
+  binding enforcement today. 0201-F6 C-3 requires explicit policy, so
+  analyzing every project by default is a policy change, not an inferred fix.
+  Compare an explicit diagnostic with preserving opt-in selection.
+acceptance_criteria:
+  - "Reproduce empty project selection and an undeclared project beside a declared one."
+  - "Record the agreement on opt-in scope and any diagnostic for an undeclared compiling project, preserving or explicitly superseding 0201-F6 C-3."
+  - "Cut delivery items after agreement, without equating unselected with verified coverage."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."

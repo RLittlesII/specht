@@ -1,0 +1,29 @@
+id: "0455"
+type: spike
+title: "Specify analyzer handling of consumer claim lifecycle vocabulary"
+status: ready
+value: 3
+risk: 2
+parent: "0451"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-25"
+updated: "2026-11-25"
+closed: null
+summary: |
+  Report #651 point 5: consumer statuses outside the normalized
+  claim lifecycle can make the complete analysis snapshot unavailable.
+  Current lifecycle rules are agreed behavior, so accepting new statuses or
+  isolating a bad row requires a specification decision rather than a parser
+  patch. Compare marker mapping and per-claim failure boundaries.
+acceptance_criteria:
+  - "Inventory the current lifecycle contract and reproduce custom status, annotated status and invalid status separately."
+  - "Record which consumer mappings, if any, normalize those inputs and whether a rejected row invalidates the snapshot."
+  - "Specify affected 0201-F1 and 0201-F6 claims and scenario boundaries before cutting implementation work."
+decisions:
+  - "2026-11-25, repository owner: adopt the outside-report reconciliation as local work; implementation follows its agreement."
+out_of_scope:
+  - "Product implementation in the organization change; new behavior requires its specification and scenarios first."
