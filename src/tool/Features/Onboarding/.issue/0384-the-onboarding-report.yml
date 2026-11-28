@@ -22,9 +22,13 @@ claims:
   - B-004
   - B-005
   - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-27"
 closed: null
 
 summary: |
@@ -52,6 +56,10 @@ acceptance_criteria:
   - "B-004 — findings by rule, and a total (0385)"
   - "B-005 — a clean check says no findings (0385)"
   - "B-006 — the check's output and exit code unchanged (0385)"
+  - "B-007 — exit 0 once the report is written; 2 or 3 on an input failure, an absent `--output` included (0385)"
+  - "B-008 — an input failure: the reason on stderr, nothing on stdout (0385)"
+  - "B-009 — no `--output`: a usage line on stderr, nothing on stdout (0385)"
+  - "B-010 — an unwritable file: the reason on stderr, exit 4 (0386)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -66,6 +74,14 @@ decisions:
     terminal already shows. Rejected: one item for the whole Feature, which
     holds the terminal report behind the file write. OQ-2, the command's exit
     codes, is open and is 0385's to settle before it is done.
+  - |
+    2026-11-27, spec-author: OQ-2 resolved by the repository owner
+    (decision 0003), accepting reading (a); B-007 added and carried by 0385.
+    OQ-3, the command's failure output, raised.
+  - |
+    2026-11-27, spec-author: OQ-3 resolved by the repository owner
+    (decision 0004), accepting reading (a); B-008 and B-009 added and carried
+    by 0385, B-010 by 0386.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

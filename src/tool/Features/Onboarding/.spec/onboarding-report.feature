@@ -47,3 +47,45 @@ Feature: The onboarding report
     Given the check reports findings
     When the check runs without an onboarding report request
     Then its output and exit code are unchanged by this Feature
+
+  @B-007
+  Scenario Outline: The exit code says whether the report was written
+    Given <situation>
+    When an onboarding report is requested <request>
+    Then the command exits with code <code>
+
+    Examples:
+      | situation                                                 | request                                       | code |
+      | the check reports findings                                | with a path for its file                      | 0    |
+      | the check reports no findings                             | with a path for its file                      | 0    |
+      | the check reports findings                                | for a root that does not exist, with a path   | 2    |
+      | the manifest has been removed from the root               | with a path for its file                      | 2    |
+      | the manifest has been replaced with one that is not valid | with a path for its file                      | 3    |
+      | the check reports findings                                | without a path for its file                   | 2    |
+
+  @B-008
+  Scenario Outline: An input failure is explained on stderr
+    Given <situation>
+    When an onboarding report is requested <request>
+    Then the reason for the failure is written to standard error
+    And nothing is written to standard output
+
+    Examples:
+      | situation                                                 | request                                     |
+      | the check reports findings                                | for a root that does not exist, with a path |
+      | the manifest has been removed from the root               | with a path for its file                    |
+      | the manifest has been replaced with one that is not valid | with a path for its file                    |
+
+  @B-009
+  Scenario: A request without a path for its file prints its usage
+    Given the check reports findings
+    When an onboarding report is requested without a path for its file
+    Then the command's usage is written to standard error
+    And nothing is written to standard output
+
+  @B-010
+  Scenario: A file that cannot be written fails the request
+    Given the check reports findings
+    When an onboarding report is requested with a path where no file can be written
+    Then the reason the file could not be written is written to standard error
+    And the command exits with code 4
