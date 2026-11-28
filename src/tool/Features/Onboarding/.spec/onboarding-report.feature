@@ -158,6 +158,6 @@ Feature: The onboarding report
     Then the path holds <after>
 
     Examples:
-      | before                   | after                         |
+      | before                      | after                        |
       | a file an earlier run wrote | that earlier file, unchanged |
-      | no file                  | no file                       |
+      | no file                     | no file                      |
