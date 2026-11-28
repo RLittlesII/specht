@@ -36,10 +36,19 @@ alike.
 
 ## Rejected
 
-Not chosen: OQ-4's reading (b), the root and manifest first, then the usage;
-and OQ-5's reading (b), a missing directory as a B-010 failure and an input
-failure leaving an earlier file as it is. Which other options the questions
-put to the owner is not recorded here.
+Each question offered two options and the tool's free-text "Other", which the
+owner did not use.
+
+- **OQ-4, "(b) Root/manifest first".** Its description read: "Report the root
+  and manifest failures first and the usage error after, so these failures
+  read the same way the check's own do."
+- **OQ-5, "(b) Missing folder fails".** Its description read: "A missing
+  folder is a B-010 failure (exit 4); an existing file is replaced; a relative
+  path resolves from the working directory. A run that exits 2 or 3 leaves an
+  earlier file as it is."
+
+What a B-010 refusal leaves at `--output` neither option stated; that is
+OQ-6, raised on spec-reviewer round 2.
 
 ## Affects
 

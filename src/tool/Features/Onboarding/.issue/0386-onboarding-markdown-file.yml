@@ -48,6 +48,7 @@ acceptance_criteria:
   - "B-016 — a relative `--output` resolved from the working directory"
   - "B-017 — a request that exits 2 or 3 leaves no file, removing an earlier one"
   - "B-018 — a request that exits 2 or 3 creates no directory"
+  - "OQ-6 resolved and its answer claimed before this item is done."
   - "Writes only the file at `--output` (C-3); no absolute path in it (C-4)."
   - "§ 9 carries a row naming a test for each id above."
 
@@ -74,6 +75,10 @@ decisions:
     OQ-5 (decision 0005), selecting "(a) Same as --report (Recommended)": the
     file is written as the check writes `--report` (`0001-F3` B-023, B-024,
     B-044 to B-046).
+  - |
+    2026-11-27, spec-author: OQ-6, what a refused write (B-010) leaves at
+    `--output`, raised on spec-reviewer round 2, on the owner's "Yes, fix
+    them"; it is this item's to settle before it is done.
 
 out_of_scope:
   - "The command and the terminal report — 0385."

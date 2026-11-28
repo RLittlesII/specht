@@ -17,10 +17,14 @@ The owner accepted OQ-2's reading (a), as it was put to them:
    `3`: `2` for a missing root or manifest, `3` for an invalid manifest.
 2. It exits `0` once the report is written, whatever the check found, since
    the report explains and does not gate (C-2).
-3. `--output` is required. The summary put to the owner carried this, but
-   OQ-2 held it in spec-author's recommendation, not in reading (a); its owner
-   source is decision 0002's syntax, which shows `--output` unbracketed.
-   Corrected 2026-11-27 on spec-reviewer round 1.
+3. `--output` is required. Its owner source is decision 0002's syntax, which
+   shows `--output` unbracketed; OQ-2 held it in spec-author's
+   recommendation, not in reading (a). The coordinator's summary of reading
+   (a), which the owner answered "Accept (a)", read: "on an input failure,
+   exit with the check's codes, `2` or `3`. Once the report is written, exit
+   `0` whatever the check found, because the report explains findings and does
+   not gate on them (C-2). `--output` would be required." Corrected 2026-11-27
+   on spec-reviewer rounds 1 and 2.
 
 Derived by `spec-author`, not the owner's call: an absent `--output` exits
 `2`. A missing required option is an input failure, call 1 gives an input
