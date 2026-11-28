@@ -1,0 +1,56 @@
+id: "0461"
+type: bug
+title: "A command line the host rejects exits 255"
+status: blocked
+value: 2
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-28"
+updated: "2026-11-28"
+closed: null
+summary: |
+  Observed 2026-11-28 on the built tool (`dotnet run -f net10.0 --
+  frontmatter --stdin --kind`): Spectre.Console.Cli rejects the line before
+  the command runs, prints `Error: Option 'kind' is defined but no value has
+  been provided.` with a caret line on stdout, and exits `255`, Spectre's
+  `-1`. An unknown command takes the same host path (`Unknown command
+  'init'`, exit `255`), as the red notes in § 8 and § 10 of the Init, Trace,
+  Facts and Identifiers specifications record, so every command's parse
+  errors share it.
+
+  `src/tool/Program.cs` composes `CommandApp` with `SetApplicationVersion`
+  and `SetHelpProvider` only: no `PropagateExceptions`, no
+  `SetExceptionHandler`. `0001-F2` § 7 ("The mapping lives in the command,
+  not in `SetExceptionHandler`") chose command-level catching for the
+  engine's failures, not for parse errors. No test pins `-1` or `255` for a
+  parse error; the specifications name `255` only as the failure before
+  implementation.
+
+  Why it may conflict: `0001-F2` C-2 rules out an exception crossing the
+  command boundary to Spectre's `-1`. `0001-F8` OQ-4 reads C-2 as
+  forbidding `-1`, and B-026 maps `--kind` absent to `2`, but `--kind`
+  typed with no value never reaches the command. `0002-F1` OQ-5, open
+  since 2026-10-11, asks the documentation side: `255` is on neither
+  `docs/exit-codes.md` nor `docs/cli.md`. `0001-F15` meets the same
+  question for `--output` typed with no value.
+
+  Blocked on `0001-F2` OQ-13, which decides whether C-2 covers a rejected
+  command line. Value 2: no verdict is wrong, but a script reading the
+  exit code sees an undocumented code. Risk 2: the change is one host
+  composition point and its tests, once the question is answered.
+
+  Filed by spec-author.
+acceptance_criteria:
+  - "`0001-F2` OQ-13 is resolved by the owner."
+  - "If resolved toward a mapped code: a claim and scenario in `0001-F2` state the code and output for a rejected command line before any code change, and `0002-F1` OQ-5 is answered in the same change."
+  - "If resolved as outside C-2: C-2 is amended in place to say so, and the item closes as a specification delta only."
+decisions: []
+out_of_scope:
+  - "Deciding the exit code in this item; that is `0001-F2` OQ-13."
+  - "Changing Spectre.Console.Cli's message text."
+  - "`--version` beside other arguments; that is `0001-F2` OQ-8."
