@@ -149,3 +149,15 @@ Feature: The onboarding report
     Given the manifest has been removed from the root
     When an onboarding report is requested with a path under directories that do not exist
     Then none of those directories is created
+
+  @B-019
+  Scenario Outline: A refused write leaves the path as it was
+    Given <before> at the report's path
+    And the file system refuses a write to that path
+    When an onboarding report is requested with that path
+    Then the path holds <after>
+
+    Examples:
+      | before                   | after                         |
+      | a file an earlier run wrote | that earlier file, unchanged |
+      | no file                  | no file                       |

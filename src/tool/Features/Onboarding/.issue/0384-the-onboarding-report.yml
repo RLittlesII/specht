@@ -34,6 +34,7 @@ claims:
   - B-016
   - B-017
   - B-018
+  - B-019
 
 created: "2026-11-06"
 updated: "2026-11-27"
@@ -72,6 +73,7 @@ acceptance_criteria:
   - "B-012 — an invalid manifest: stderr, no stdout, exit 3 (0385)"
   - "B-013 — several input failures: only the first, in command-line order (0385)"
   - "B-014 to B-018 — the file written as the check writes `--report` (0386)"
+  - "B-019 — a refused write leaves the path as it was (0386)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -102,6 +104,9 @@ decisions:
     2026-11-27, spec-author: OQ-4 and OQ-5 resolved by the repository owner
     (decision 0005); B-013 added and carried by 0385, B-014 to B-018 by
     0386, and B-010 narrowed.
+  - |
+    2026-11-27, spec-author: OQ-6 resolved by the repository owner
+    (decision 0006); B-019 added and carried by 0386.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
