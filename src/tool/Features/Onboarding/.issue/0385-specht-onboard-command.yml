@@ -20,9 +20,14 @@ claims:
   - B-004
   - B-005
   - B-006
+  - B-008
+  - B-009
+  - B-011
+  - B-012
+  - B-013
 
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-27"
 closed: null
 
 summary: |
@@ -36,21 +41,27 @@ summary: |
   Risk 3: a new command in the command-line surface, so its help and
   `docs/cli.md` move together (`0002-F1` B-006 to B-008); B-002's explanation
   comes from the pinned version's rule definitions, the same the check ran
-  (A-2), not from text written for this command; and the command's exit codes
-  are OQ-2, open.
+  (A-2), not from text written for this command; and each input failure
+  states its output and exit code, B-008, B-009, B-011 and B-012 (decisions
+  0003 and 0004), and when several apply the first in command-line order is
+  reported, B-013 (decision 0005).
 
   Waits on no open item: the check it runs is `0001-F2`'s, whose items are
   done, and the rule text is 0040's, done.
 
 acceptance_criteria:
   - "B-001 — one check run, every finding with rule id, severity, path, line, identifier"
-  - "B-002 — the rule explained, with the message and evidence"
+  - "B-002 — the selected schema version's definition of the rule, with the message and evidence"
   - "B-004 — findings by rule, and a total"
   - "B-005 — a clean check says no findings"
   - "B-006 — the check's output and exit code unchanged"
   - "Derived from one check result, deterministic (C-1); no absolute path (C-4)."
   - "`docs/cli.md` gives `onboard` and each option its help lists an entry (`0002-F1` B-006 to B-008), held to the help."
-  - "OQ-2 resolved and its answer claimed before this item is done."
+  - "B-008 — a root that is not a directory: the reason on stderr, nothing on stdout, exit 2"
+  - "B-009 — no `--output`: a usage line on stderr, nothing on stdout, exit 2"
+  - "B-011 — a root with no manifest: the reason on stderr, nothing on stdout, exit 2"
+  - "B-012 — an invalid manifest: the reason on stderr, nothing on stdout, exit 3"
+  - "B-013 — several input failures: only the first, usage then root then manifest, with its code"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -59,6 +70,34 @@ decisions:
     shows, on the repository owner's ruling on OQ-1 (decision 0002). B-003,
     the same findings in the Markdown file, goes to 0386, which writes what
     this item prints. Value omitted, inheriting 0384's.
+  - |
+    2026-11-27, spec-author: B-007 added on the repository owner's
+    resolution of OQ-2 (decision 0003), accepting reading (a): the check's
+    codes 2 or 3 on an input failure, 0 once the report is written whatever
+    the check found, and `--output` required. The absent `--output` as exit 2
+    is spec-author's derivation from that reading, `0001-F2` C-2 and
+    `0001-F8` B-026, not an owner call. OQ-3, what the command prints on
+    those failures and does when the file cannot be written, is open and is
+    this item's to settle before it is done.
+  - |
+    2026-11-27, spec-author: B-008 and B-009 added on the repository
+    owner's resolution of OQ-3 (decision 0004), accepting reading (a). B-009's
+    nothing on stdout is spec-author's derivation from B-007, not an owner
+    call. B-010, the unwritable file, goes to 0386, which writes it.
+  - |
+    2026-11-27, spec-author: spec-reviewer round 1 fixed, on the owner's
+    "Yes, fix them". B-007 moved to 0386: its exit 0 holds once the file is
+    written, which 0386 delivers, and carrying it on both items would let
+    this one close against a condition it cannot meet. B-008 narrowed to a
+    root that is not a directory, with B-011 (no manifest) and B-012 (an
+    invalid manifest) split out, each with its exit code; B-009 given its
+    exit 2. B-002 restated. OQ-4, the order when several failures apply,
+    raised and is this item's to settle before it is done.
+  - |
+    2026-11-27, spec-author: B-013 added on the repository owner's
+    resolution of OQ-4 (decision 0005), selecting "(a) Usage first
+    (Recommended)": several input failures report only the first, in
+    command-line order.
 
 out_of_scope:
   - "The Markdown file at `--output` (B-003) — 0386."
