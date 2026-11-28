@@ -19,9 +19,13 @@ The owner accepted OQ-3's reading (a), as put to them:
    as `specht evidence` does for a report file it cannot write.
 
 Derived by `spec-author`, not the owner's call: an absent `--output` also
-writes nothing on stdout. Call 1 covers input failures, and B-007 treats an
-absent `--output` as one (decision 0003). B-007 is unchanged; exit `4` for an
-unwritable file is a case its mapping does not name, which B-010 states.
+writes nothing on stdout. Call 1 covers input failures, and decision 0003's
+derivation treats an absent `--output` as one; B-009 states it.
+
+Read by spec-reviewer in round 1, and recorded by `spec-author`: the owner's
+choice of (a) over (b), the terminal report printed before an unwritable file
+is reported, means an unwritable file writes nothing on stdout; B-010 states
+it.
 
 ## Why
 
@@ -40,6 +44,9 @@ exit `4` matches the tool's code for a caller-named report it cannot write.
 
 - `0001-F15` OQ-3, resolved; B-008 to B-010, added with their scenarios and
   § 9 rows; items `0384`, `0385` (B-008, B-009) and `0386` (B-010).
+- 2026-11-27, spec-reviewer round 1: B-008 narrowed to a root that is not a
+  directory, B-011 and B-012 split out for the manifest cases, and B-010
+  given nothing on stdout; OQ-4 and OQ-5 raised.
 
 ## Reversal
 

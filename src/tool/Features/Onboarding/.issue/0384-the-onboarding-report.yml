@@ -26,6 +26,14 @@ claims:
   - B-008
   - B-009
   - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
 
 created: "2026-11-06"
 updated: "2026-11-27"
@@ -51,15 +59,19 @@ summary: |
 
 acceptance_criteria:
   - "B-001 — one check run, every finding (0385)"
-  - "B-002 — each finding's rule explained, with its message and evidence (0385)"
+  - "B-002 — each finding's rule definition from the selected schema version, with its message and evidence (0385)"
   - "B-003 — the same findings in the terminal and the Markdown file (0386)"
   - "B-004 — findings by rule, and a total (0385)"
   - "B-005 — a clean check says no findings (0385)"
   - "B-006 — the check's output and exit code unchanged (0385)"
-  - "B-007 — exit 0 once the report is written; 2 or 3 on an input failure, an absent `--output` included (0385)"
-  - "B-008 — an input failure: the reason on stderr, nothing on stdout (0385)"
-  - "B-009 — no `--output`: a usage line on stderr, nothing on stdout (0385)"
-  - "B-010 — an unwritable file: the reason on stderr, exit 4 (0386)"
+  - "B-007 — exit 0 once the file is written, whatever the check found (0386)"
+  - "B-008 — a root that is not a directory: stderr, no stdout, exit 2 (0385)"
+  - "B-009 — no `--output`: a usage line on stderr, no stdout, exit 2 (0385)"
+  - "B-010 — a write the file system refuses: stderr, no stdout, exit 4 (0386)"
+  - "B-011 — a root with no manifest: stderr, no stdout, exit 2 (0385)"
+  - "B-012 — an invalid manifest: stderr, no stdout, exit 3 (0385)"
+  - "B-013 — several input failures: only the first, in command-line order (0385)"
+  - "B-014 to B-018 — the file written as the check writes `--report` (0386)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -82,6 +94,14 @@ decisions:
     2026-11-27, spec-author: OQ-3 resolved by the repository owner
     (decision 0004), accepting reading (a); B-008 and B-009 added and carried
     by 0385, B-010 by 0386.
+  - |
+    2026-11-27, spec-author: spec-reviewer round 1 fixed, on the owner's
+    "Yes, fix them". B-007 moved from 0385 to 0386; B-011 and B-012 split
+    from B-008 and carried by 0385; OQ-4 (0385) and OQ-5 (0386) raised.
+  - |
+    2026-11-27, spec-author: OQ-4 and OQ-5 resolved by the repository owner
+    (decision 0005); B-013 added and carried by 0385, B-014 to B-018 by
+    0386, and B-010 narrowed.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
